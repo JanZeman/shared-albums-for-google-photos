@@ -1,0 +1,349 @@
+/**
+ * Admin Settings Page Styles
+ *
+ * @package JZSA_Shared_Albums
+ * @since 1.0.0
+ */
+
+.jzsa-settings-wrap {
+    max-width: 1200px;
+}
+
+.jzsa-settings-wrap h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.jzsa-version {
+    font-size: 14px;
+    font-weight: normal;
+    color: #646970;
+    background: #f0f0f1;
+    padding: 4px 10px;
+    border-radius: 4px;
+}
+
+.jzsa-settings-container {
+    background: #fff;
+    margin-top: 20px;
+}
+
+.jzsa-section {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.jzsa-section h2 {
+    margin-top: 0;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #2271b1;
+    color: #1d2327;
+    font-size: 20px;
+}
+
+.jzsa-intro {
+    font-size: 15px;
+    color: #50575e;
+    margin-bottom: 24px;
+}
+
+/* Tutorial Steps */
+.jzsa-tutorial-section {
+    background: linear-gradient(to bottom, #fff 0%, #f9f9f9 100%);
+}
+
+.jzsa-step {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 32px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid #dcdcde;
+}
+
+.jzsa-step:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.jzsa-step-number {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    background: #2271b1;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.jzsa-step-content {
+    flex: 1;
+}
+
+.jzsa-step-content h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: #1d2327;
+    font-size: 18px;
+}
+
+.jzsa-step-content p {
+    margin: 8px 0;
+    color: #50575e;
+    line-height: 1.6;
+}
+
+.jzsa-substeps {
+    margin: 12px 0;
+    padding-left: 24px;
+}
+
+.jzsa-substeps li {
+    margin: 8px 0;
+    color: #50575e;
+    line-height: 1.6;
+}
+
+/* Warning Box */
+.jzsa-warning-box {
+    background: #fff8e5;
+    border-left: 4px solid #f0b849;
+    padding: 16px;
+    margin: 16px 0;
+    border-radius: 4px;
+}
+
+.jzsa-warning-box strong {
+    display: block;
+    margin-bottom: 8px;
+    color: #996800;
+}
+
+.jzsa-warning-box p {
+    margin: 4px 0;
+    color: #50575e;
+}
+
+.jzsa-warning-box code {
+    background: #fff;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 13px;
+    border: 1px solid #f0b849;
+}
+
+.jzsa-code-good {
+    color: #007017;
+}
+
+/* Code Blocks */
+.jzsa-code-block {
+    position: relative;
+    background: #f6f7f7;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 16px 120px 16px 16px;
+    margin: 12px 0;
+    font-family: Consolas, Monaco, monospace;
+    overflow-x: auto;
+}
+
+.jzsa-code-block code {
+    display: block;
+    color: #1d2327;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.jzsa-copy-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #2271b1;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.jzsa-copy-btn:hover {
+    background: #135e96;
+}
+
+.jzsa-copy-btn:active {
+    transform: scale(0.98);
+}
+
+.jzsa-help-text {
+    font-size: 13px;
+    color: #646970;
+    font-style: italic;
+}
+
+/* Examples */
+.jzsa-example {
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.jzsa-example:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.jzsa-example h3 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    color: #1d2327;
+    font-size: 16px;
+}
+
+.jzsa-example p {
+    margin: 4px 0 8px 0;
+    color: #50575e;
+}
+
+/* Settings Table */
+.jzsa-settings-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+}
+
+.jzsa-settings-table thead {
+    background: #f6f7f7;
+}
+
+.jzsa-settings-table th {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 2px solid #c3c4c7;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.jzsa-settings-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f1;
+    color: #50575e;
+}
+
+.jzsa-settings-table tr:last-child td {
+    border-bottom: none;
+}
+
+.jzsa-settings-table code {
+    background: #f6f7f7;
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+    color: #d63638;
+    font-family: Consolas, Monaco, monospace;
+}
+
+/* FAQ */
+.jzsa-faq {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    border-left: 4px solid #2271b1;
+}
+
+.jzsa-faq:last-child {
+    margin-bottom: 0;
+}
+
+.jzsa-faq h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: #1d2327;
+    font-size: 15px;
+}
+
+.jzsa-faq ul {
+    margin: 0;
+    padding-left: 24px;
+}
+
+.jzsa-faq li {
+    margin: 8px 0;
+    color: #50575e;
+    line-height: 1.6;
+}
+
+.jzsa-faq code {
+    background: #fff;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    border: 1px solid #dcdcde;
+}
+
+/* Help Section */
+.jzsa-help-section {
+    background: #f0f6fc;
+    border-color: #2271b1;
+}
+
+.jzsa-help-section h2 {
+    border-bottom-color: #2271b1;
+}
+
+.jzsa-help-section p {
+    margin: 12px 0;
+    font-size: 15px;
+}
+
+.jzsa-help-section a {
+    color: #2271b1;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.jzsa-help-section a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 782px) {
+    .jzsa-step {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .jzsa-code-block {
+        padding: 12px 12px 50px 12px;
+    }
+
+    .jzsa-copy-btn {
+        top: auto;
+        bottom: 8px;
+        right: 8px;
+    }
+
+    .jzsa-settings-table {
+        font-size: 13px;
+    }
+
+    .jzsa-settings-table th,
+    .jzsa-settings-table td {
+        padding: 8px;
+    }
+}
