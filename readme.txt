@@ -1,6 +1,6 @@
 === Shared Albums for Google Photos (by JanZeman) ===
 Contributors: janzeman
-Tags: google photos, gallery, photos, embed, swiper
+Tags: google photos, photos, album, albums, gallery, embed, swiper
 Requires at least: 5.0
 Tested up to: 6.9
 Requires PHP: 7.0
