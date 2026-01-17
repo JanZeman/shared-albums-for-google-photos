@@ -161,6 +161,15 @@ class JZSA_Settings_Page {
 					</div>
 
 					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Real Album Example', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Use this concrete album link to quickly test the gallery:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
+							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]</code>
+							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+					</div>
+
+					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Custom Size Gallery', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Set custom width and height:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
