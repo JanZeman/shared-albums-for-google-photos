@@ -2,7 +2,6 @@
  * Admin Settings Page JavaScript
  *
  * @package JZSA_Shared_Albums
- * @since 1.0.0
  */
 
 /**

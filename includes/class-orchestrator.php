@@ -13,7 +13,6 @@
  * - Invalidates cache if CACHE_DURATION constant changes
  *
  * @package JZSA_Shared_Albums
- * @since 1.0.0
  */
 
 // Exit if accessed directly
@@ -137,10 +136,9 @@ class JZSA_Shared_Albums {
 		add_action( 'wp_ajax_nopriv_jzsa_download_image', array( $this, 'handle_download_image' ) );
 	}
 
-	/**
+/**
 	 * Enqueue CSS and JavaScript assets
 	 *
-	 * @since 1.0.0
 	 */
 	public function enqueue_assets() {
 		// Swiper library (bundled locally)
@@ -627,11 +625,10 @@ class JZSA_Shared_Albums {
 		}
 	}
 
-	/**
+/**
 	 * Handle AJAX request to download image
 	 * Proxies the image download to bypass CORS restrictions
 	 *
-	 * @since 1.0.0
 	 */
 	public function handle_download_image() {
 		// Verify nonce.

@@ -5,7 +5,6 @@
  * Input Phase - Responsible for getting data from Google Photos
  *
  * @package JZSA_Shared_Albums
- * @since 1.0.0
  */
 
 // Exit if accessed directly

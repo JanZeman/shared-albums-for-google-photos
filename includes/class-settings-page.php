@@ -5,7 +5,6 @@
  * Provides admin settings page with tutorial and examples
  *
  * @package JZSA_Shared_Albums
- * @since 1.0.0
  */
 
 // Exit if accessed directly
