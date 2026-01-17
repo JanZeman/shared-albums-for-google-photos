@@ -96,6 +96,7 @@ REQUIRED_FILES=(
     "includes/class-settings-page.php"
     "assets/css/admin-settings.css"
     "assets/css/swiper-style.css"
+    "assets/js/admin-settings.js"
     "assets/js/swiper-init.js"
     "assets/vendor/swiper/swiper-bundle.min.css"
     "assets/vendor/swiper/swiper-bundle.min.js"
