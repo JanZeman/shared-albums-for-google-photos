@@ -130,10 +130,10 @@ class JZSA_Settings_Page {
 						<div class="jzsa-step-content">
 							<h3><?php esc_html_e( 'Add the Shortcode to Your Post', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'In your WordPress post or page editor, add the shortcode:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-							<div class="jzsa-code-block">
-								<code>[jzsa-album link="YOUR_LINK_HERE"]</code>
-								<button class="jzsa-copy-btn" onclick="jzsaCopyToClipboard(this, '[jzsa-album link=&quot;&quot;]')"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
-							</div>
+					<div class="jzsa-code-block">
+						<code>[jzsa-album link="YOUR_LINK_HERE"]</code>
+						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					</div>
 							<p class="jzsa-help-text"><?php esc_html_e( 'Replace YOUR_LINK_HERE with the full link you copied from Google Photos.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
@@ -155,10 +155,10 @@ class JZSA_Settings_Page {
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Basic Gallery', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Simple gallery with default settings:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/YOUR_ALBUM_ID"]</code>
-							<button class="jzsa-copy-btn" onclick="jzsaCopyToClipboard(this, '[jzsa-album link=&quot;https://photos.google.com/share/YOUR_ALBUM_ID&quot;]')"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
-						</div>
+					<div class="jzsa-code-block">
+						<code>[jzsa-album link="https://photos.google.com/share/YOUR_ALBUM_ID"]</code>
+						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					</div>
 					</div>
 
 					<div class="jzsa-example">
@@ -173,37 +173,37 @@ class JZSA_Settings_Page {
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Gallery with Album Title', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Display the album title with photo counter:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/YOUR_ALBUM_ID" show-title="true" show-title-with-counter="true"]</code>
-							<button class="jzsa-copy-btn" onclick="jzsaCopyToClipboard(this, '[jzsa-album link=&quot;https://photos.google.com/share/YOUR_ALBUM_ID&quot; show-title=&quot;true&quot;]')"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
-						</div>
+					<div class="jzsa-code-block">
+						<code>[jzsa-album link="https://photos.google.com/share/YOUR_ALBUM_ID" show-title="true" show-title-with-counter="true"]</code>
+						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					</div>
 					</div>
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Gallery With Slower Autoplay', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Set autoplay to change every 8 seconds:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/YOUR_ALBUM_ID" autoplay-delay="8"]</code>
-							<button class="jzsa-copy-btn" onclick="jzsaCopyToClipboard(this, '[jzsa-album link=&quot;https://photos.google.com/share/YOUR_ALBUM_ID&quot; autoplay-delay=&quot;8&quot;]')"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
-						</div>
+					<div class="jzsa-code-block">
+						<code>[jzsa-album link="https://photos.google.com/share/YOUR_ALBUM_ID" autoplay-delay="8"]</code>
+						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					</div>
 					</div>
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Limit Number of Photos Per Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Only load the first 75 photos from a large album (server-side limit):', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/YOUR_ALBUM_ID" max-photos-per-album="75"]</code>
-							<button class="jzsa-copy-btn" onclick="jzsaCopyToClipboard(this, '[jzsa-album link=&quot;https://photos.google.com/share/YOUR_ALBUM_ID&quot; max-photos-per-album=&quot;80&quot;]')"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
-						</div>
+					<div class="jzsa-code-block">
+						<code>[jzsa-album link="https://photos.google.com/share/YOUR_ALBUM_ID" max-photos-per-album="75"]</code>
+						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					</div>
 					</div>
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Gallery Without Autoplay', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Disable autoplay (manual navigation only):', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/YOUR_ALBUM_ID" autoplay="false"]</code>
-							<button class="jzsa-copy-btn" onclick="jzsaCopyToClipboard(this, '[jzsa-album link=&quot;https://photos.google.com/share/YOUR_ALBUM_ID&quot; autoplay=&quot;false&quot;]')"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
-						</div>
+					<div class="jzsa-code-block">
+						<code>[jzsa-album link="https://photos.google.com/share/YOUR_ALBUM_ID" autoplay="false"]</code>
+						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					</div>
 					</div>
 				</div>
 

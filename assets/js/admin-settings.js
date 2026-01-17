@@ -34,3 +34,24 @@ function jzsaCopyToClipboard( button, text ) {
 		button.style.background = '';
 	}, 2000 );
 }
+
+/**
+ * Bind click handlers to all shortcode copy buttons on the settings page.
+ */
+document.addEventListener( 'DOMContentLoaded', function () {
+	var blocks = document.querySelectorAll( '.jzsa-code-block' );
+
+	blocks.forEach( function ( block ) {
+		var button = block.querySelector( '.jzsa-copy-btn' );
+		var codeEl = block.querySelector( 'code' );
+
+		if ( ! button || ! codeEl ) {
+			return;
+		}
+
+		button.addEventListener( 'click', function () {
+			// Use the visible code content as the text to copy.
+			jzsaCopyToClipboard( button, codeEl.textContent || '' );
+		} );
+	} );
+} );
