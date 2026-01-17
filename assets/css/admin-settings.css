@@ -51,6 +51,10 @@
     margin-bottom: 24px;
 }
 
+.jzsa-preview-container {
+    margin-top: 24px;
+}
+
 /* Tutorial Steps */
 .jzsa-tutorial-section {
     background: linear-gradient(to bottom, #fff 0%, #f9f9f9 100%);

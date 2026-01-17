@@ -134,6 +134,25 @@ class JZSA_Shared_Albums {
 		add_action( 'save_post', array( $this, 'clear_cache' ) );
 		add_action( 'wp_ajax_jzsa_download_image', array( $this, 'handle_download_image' ) );
 		add_action( 'wp_ajax_nopriv_jzsa_download_image', array( $this, 'handle_download_image' ) );
+
+		// Also load front-end gallery assets on our settings page so the sample
+		// shortcode preview works inside the admin.
+		if ( is_admin() ) {
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+		}
+	}
+
+/**
+	 * Enqueue front-end gallery assets on the plugin's settings page in admin.
+	 *
+	 * @param string $hook Current admin page hook.
+	 */
+	public function enqueue_admin_assets( $hook ) {
+		if ( 'settings_page_janzeman-shared-albums-for-google-photos' !== $hook ) {
+			return;
+		}
+
+		$this->enqueue_assets();
 	}
 
 /**
