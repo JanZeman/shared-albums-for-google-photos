@@ -40,7 +40,7 @@ class JZSA_Settings_Page {
 	}
 
 	/**
-	 * Enqueue admin styles
+	 * Enqueue admin styles and scripts
 	 *
 	 * @param string $hook Current admin page hook
 	 */
@@ -55,6 +55,14 @@ class JZSA_Settings_Page {
 			plugins_url( 'assets/css/admin-settings.css', dirname( __FILE__ ) ),
 			array(),
 			JZSA_VERSION
+		);
+
+		wp_enqueue_script(
+			'jzsa-admin-settings',
+			plugins_url( 'assets/js/admin-settings.js', dirname( __FILE__ ) ),
+			array(),
+			JZSA_VERSION,
+			true
 		);
 	}
 
@@ -466,32 +474,6 @@ class JZSA_Settings_Page {
 				</div>
 			</div>
 		</div>
-
-		<script>
-		function jzsaCopyToClipboard(button, text) {
-			// Create temporary textarea
-			var textarea = document.createElement('textarea');
-			textarea.value = text;
-			textarea.style.position = 'fixed';
-			textarea.style.opacity = '0';
-			document.body.appendChild(textarea);
-
-			// Select and copy
-			textarea.select();
-			document.execCommand('copy');
-			document.body.removeChild(textarea);
-
-			// Visual feedback
-			var originalText = button.textContent;
-			button.textContent = 'Copied!';
-			button.style.background = '#46b450';
-
-			setTimeout(function() {
-				button.textContent = originalText;
-				button.style.background = '';
-			}, 2000);
-		}
-		</script>
 		<?php
 	}
 }
