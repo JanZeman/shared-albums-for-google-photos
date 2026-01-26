@@ -38,11 +38,9 @@ echo -e "${GREEN}Plugin:${NC} ${PLUGIN_SLUG}"
 echo -e "${GREEN}Version:${NC} ${VERSION}"
 echo ""
 
-# Delete entire release directory
-echo -e "${YELLOW}Cleaning previous release...${NC}"
-if [ -d "$RELEASE_DIR_ROOT" ]; then
-    rm -rf "$RELEASE_DIR_ROOT"
-fi
+# Clean previous build artifacts (but keep any SVN working copies under release/)
+echo -e "${YELLOW}Cleaning previous release build...${NC}"
+rm -rf "$BUILD_DIR" "$EXTRACT_DIR"
 
 # Create build directory structure
 echo -e "${YELLOW}Creating build directory...${NC}"
@@ -150,10 +148,25 @@ if command -v shasum &> /dev/null; then
     echo -e "${GREEN}SHA256:${NC} ${SHA256_HASH}"
 fi
 
-# Unzip to release directory
-echo -e "${YELLOW}Extracting to release directory...${NC}"
+# Unzip to temporary release directory and sync into SVN trunk (if present)
+echo -e "${YELLOW}Extracting to temporary release directory...${NC}"
 unzip -q "$ZIP_PATH" -d "$RELEASE_DIR_ROOT"
 echo -e "${GREEN}✓ Extracted to: ${EXTRACT_DIR}${NC}"
+
+# Determine SVN trunk path (can be overridden by SVN_TRUNK_PATH env var)
+SVN_TRUNK_DEFAULT="${SCRIPT_DIR}/release/wp-svn/${PLUGIN_SLUG}/trunk"
+SVN_TRUNK="${SVN_TRUNK_PATH:-$SVN_TRUNK_DEFAULT}"
+SYNCED_TO_SVN=0
+
+if [ -d "$SVN_TRUNK" ]; then
+    echo -e "${YELLOW}Syncing files into SVN trunk: ${SVN_TRUNK}${NC}"
+    # Remove existing plugin files from trunk, but keep .svn metadata
+    rm -rf "${SVN_TRUNK}"/*
+    cp -R "${EXTRACT_DIR}/"* "$SVN_TRUNK/"
+    SYNCED_TO_SVN=1
+else
+    echo -e "${YELLOW}SVN trunk not found at ${SVN_TRUNK}. Skipping SVN sync.${NC}"
+fi
 
 # Summary
 echo ""
@@ -164,16 +177,47 @@ echo ""
 echo -e "${GREEN}Package:${NC}     ${ZIP_PATH}"
 echo -e "${GREEN}Extracted:${NC}   ${EXTRACT_DIR}"
 echo -e "${GREEN}Size:${NC}        ${FILE_SIZE}"
+if [ "$SYNCED_TO_SVN" -eq 1 ]; then
+    echo -e "${GREEN}SVN trunk:${NC}   ${SVN_TRUNK}"
+fi
 echo ""
 echo -e "${YELLOW}Next steps:${NC}"
-echo "  1. Review extracted files in: ${EXTRACT_DIR}"
-echo "  2. Test by installing ${ZIP_NAME} on a WordPress site"
-echo "  3. Validate with WordPress Plugin Check (if available)"
-echo "  4. Upload to WordPress.org SVN repository (if applicable)"
+if [ "$SYNCED_TO_SVN" -eq 1 ]; then
+    echo "  1. Review files in SVN trunk: ${SVN_TRUNK}"
+    echo "  2. From that directory, run:"
+    echo "       svn status"
+    echo "       # If there are new/unversioned files:"
+    echo "       svn add . --force"
+    echo "       svn status"
+    echo "       svn commit -m \"Release ${VERSION}\""
+    echo "  3. Tag the release (from the plugin SVN root):"
+    echo "       svn copy trunk tags/${VERSION}"
+    echo "       svn commit -m \"Tag version ${VERSION}\""
+else
+    echo "  1. Review extracted files in: ${EXTRACT_DIR}"
+    echo "  2. Test by installing ${ZIP_NAME} on a WordPress site"
+    echo "  3. Validate with WordPress Plugin Check (if available)"
+    echo "  4. Manually copy files into your SVN trunk working copy"
+fi
 echo ""
 
-# Clean up build directory
+# If we synced to SVN, optionally stage new files in SVN and show status
+if [ "$SYNCED_TO_SVN" -eq 1 ] && command -v svn &> /dev/null; then
+    echo -e "${YELLOW}Running 'svn add . --force' in trunk (no commit)...${NC}"
+    (
+        cd "$SVN_TRUNK" && \
+        svn add . --force >/dev/null 2>&1 || true
+    )
+
+    echo -e "${YELLOW}SVN status for trunk:${NC}"
+    (
+        cd "$SVN_TRUNK" && \
+        svn status
+    ) || true
+fi
+
+# Clean up build directory and temporary extract
 echo -e "${YELLOW}Cleaning up build directory...${NC}"
-rm -rf "$BUILD_DIR"
+rm -rf "$BUILD_DIR" "$EXTRACT_DIR"
 
 echo -e "${GREEN}Done!${NC}"
