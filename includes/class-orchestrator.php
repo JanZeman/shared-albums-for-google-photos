@@ -25,12 +25,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class JZSA_Shared_Albums {
 
-	/**
-	 * Plugin version
-	 *
-	 * @var string
-	 */
-	const VERSION = '1.0.0';
 
 	/**
 	 * Cache duration in seconds (24 hours)
@@ -181,14 +175,14 @@ class JZSA_Shared_Albums {
 			'jzsa-style',
 			plugins_url( 'assets/css/swiper-style.css', $this->plugin_file ),
 			array( 'swiper-css' ),
-			self::VERSION
+			JZSA_VERSION
 		);
 
 		wp_enqueue_script(
 			'jzsa-init',
 			plugins_url( 'assets/js/swiper-init.js', $this->plugin_file ),
 			array( 'jquery', 'swiper-js' ),
-			self::VERSION,
+			JZSA_VERSION,
 			true
 		);
 
