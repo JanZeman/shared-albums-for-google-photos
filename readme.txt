@@ -53,10 +53,9 @@ The plugin fetches your public Google Photos album and creates a responsive gall
 
 == Installation ==
 
-1. Upload the plugin files to `/wp-content/plugins/janzeman-shared-albums-for-google-photos/` directory, or install through the WordPress plugins screen
-2. Activate the plugin through the 'Plugins' screen in WordPress
-3. Get a public share link from Google Photos
-4. Use the shortcode in your posts or pages
+1. Install & Activate the plugin
+2. Use this shortcode in your posts or pages: [jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]
+3. Follow the guide in plugin settings to use your own Google Photo albums
 
 == Usage ==
 
