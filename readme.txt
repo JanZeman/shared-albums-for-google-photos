@@ -4,7 +4,7 @@ Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.0
 Tested up to: 6.9
 Requires PHP: 7.0
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -235,6 +235,9 @@ The plugin provides clear feedback:
 
 == Changelog ==
 
+= 1.0.1 =
+* Release related improvements
+
 = 1.0.0 =
 * Initial release
 * Modern Swiper 11 library integration
@@ -253,11 +256,6 @@ The plugin provides clear feedback:
 * Supports both full and short link formats (short links show deprecation warning)
 * User-friendly error messages and warning banners for invalid/deprecated URLs
 * Responsive design with touch gestures
-
-== Upgrade Notice ==
-
-= 1.0.0 =
-Initial release featuring modern Swiper-based gallery with fullscreen, zoom, and lazy loading support.
 
 == Credits ==
 

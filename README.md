@@ -1,6 +1,6 @@
 # Shared Albums for Google Photos (by JanZeman)
 
-[![WordPress Plugin Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
+[![WordPress Plugin Version](https://img.shields.io/badge/version-1.0.1-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
 [![WordPress Compatibility](https://img.shields.io/badge/wordpress-5.0%2B-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
 [![PHP Version](https://img.shields.io/badge/php-7.0%2B-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
 [![License](https://img.shields.io/badge/license-GPL--2.0%2B-blue.svg)](LICENSE)
