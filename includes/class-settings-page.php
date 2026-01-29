@@ -80,7 +80,7 @@ class JZSA_Settings_Page {
 				<!-- Examples Section -->
 				<div class="jzsa-section">
 					<h2><?php esc_html_e( 'Explore this plugin using a sample album', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
-					<p class="jzsa-intro"><?php esc_html_e( 'The fastest way to get familiar with this plugin is to try it on the sample album below. Once you are comfortable, you can change the link to your own Google Photos albums.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<p class="jzsa-intro"><?php esc_html_e( 'The fastest way to get familiar with this plugin is to try it with the sample album we provide. Scroll down to see the examples, copy any shortcode into your page or post, and experiment. Once you feel comfortable, you can generate and use your own Google Photos album links.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Basic Gallery', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
