@@ -28,8 +28,8 @@ class JZSA_Renderer {
 
 		$html = '';
 
-		// Add deprecation warning if needed
-		if ( ! empty( $config['show-deprecation-warning'] ) ) {
+		// Add deprecation warning if needed (admins only)
+		if ( ! empty( $config['show-deprecation-warning'] ) && is_user_logged_in() && current_user_can( 'manage_options' ) ) {
 			$html .= $this->render_deprecation_notice();
 		}
 
