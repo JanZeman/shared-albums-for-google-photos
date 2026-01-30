@@ -82,7 +82,7 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
     autoplay="true"
     autoplay-delay="5"
     autoplay-inactivity-timeout="60"
-    start-at-random-photo="false"
+    start-at="1"
     full-screen-autoplay="true"
     full-screen-autoplay-delay="3"
     full-screen-switch="double-click"
@@ -119,7 +119,7 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
 * **autoplay** - Enable autoplay in normal mode: "true" or "false" (default: true)
 * **autoplay-delay** - Autoplay delay in normal mode, in seconds, supports ranges like "4-12" (default: "4-12")
 * **autoplay-inactivity-timeout** - Time in seconds after which autoplay resumes following user interaction (default: 30)
-* **start-at-random-photo** - Start at random photo each page load: "true" or "false" (default: true)
+* **start-at** - Starting photo: "random" (default) or a 1-based photo index like "1" or "12". Values out of range fall back to 1.
 
 **Fullscreen Settings:**
 

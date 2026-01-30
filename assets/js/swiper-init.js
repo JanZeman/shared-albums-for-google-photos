@@ -1191,16 +1191,25 @@
             loop: true, // Always loop
             fullScreenSwitch: $container.attr('data-full-screen-switch') || 'double-click',
             fullScreenNavigation: $container.attr('data-full-screen-navigation') || 'single-click',
-            startAtRandomPhoto: $container.attr('data-start-at-random-photo') === 'true',
+            startAt: $container.attr('data-start-at') || 'random',
             showTitle: $container.attr('data-show-title') === 'true',
             showCounter: $container.attr('data-show-counter') === 'true',
             albumTitle: $container.attr('data-album-title') || '',
             initialSlide: 0
         };
 
-        // Calculate random initial slide if enabled
-        if (config.startAtRandomPhoto && totalCount > 0) {
-            config.initialSlide = Math.floor(Math.random() * totalCount);
+        // Calculate initial slide based on startAt setting
+        var startAtRaw = (config.startAt || 'random').toString().toLowerCase();
+        if (startAtRaw === 'random') {
+            if (totalCount > 0) {
+                config.initialSlide = Math.floor(Math.random() * totalCount);
+            }
+        } else {
+            var requested = parseInt(startAtRaw, 10);
+            if (isNaN(requested) || requested < 1 || requested > totalCount) {
+                requested = 1; // Out of range or invalid -> start at 1
+            }
+            config.initialSlide = requested - 1;
         }
 
         // Extract config values for easier access
@@ -1214,7 +1223,7 @@
         var loop = config.loop;
         var fullScreenSwitch = config.fullScreenSwitch;
         var fullScreenNavigation = config.fullScreenNavigation;
-        var startAtRandomPhoto = config.startAtRandomPhoto;
+        var startAt = config.startAt;
         var showTitle = config.showTitle;
         var showCounter = config.showCounter;
         var albumTitle = config.albumTitle;
@@ -1224,9 +1233,7 @@
         console.log('  - Mode:', mode);
         console.log('  - Total photos:', totalCount);
         console.log('  - Initial photos loaded:', allPhotos.length);
-        if (startAtRandomPhoto) {
-            console.log('  - Random start enabled: Starting at slide', initialSlide + 1, '/', totalCount);
-        }
+        console.log('  - startAt setting:', startAt, '=> initial slide index (0-based):', initialSlide, '/', totalCount);
 
         // Debug: Log configuration values
         console.log('🔍 Configuration debug:');

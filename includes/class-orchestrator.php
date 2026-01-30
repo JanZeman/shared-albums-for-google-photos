@@ -306,9 +306,9 @@ class JZSA_Shared_Albums {
 			'preview-height' => isset( $atts['preview-height'] ) ? intval( $atts['preview-height'] ) : self::DEFAULT_PREVIEW_HEIGHT,
 
 			// Autoplay (normal mode)
-			'autoplay'              => $this->parse_bool( $atts, 'autoplay', true ),
-			'autoplay-delay'        => $this->parse_delay_range( isset( $atts['autoplay-delay'] ) ? $atts['autoplay-delay'] : self::DEFAULT_AUTOPLAY_DELAY_RANGE ),
-			'start-at-random-photo' => $this->parse_bool( $atts, 'start-at-random-photo', true ),
+			'autoplay'       => $this->parse_bool( $atts, 'autoplay', true ),
+			'autoplay-delay' => $this->parse_delay_range( isset( $atts['autoplay-delay'] ) ? $atts['autoplay-delay'] : self::DEFAULT_AUTOPLAY_DELAY_RANGE ),
+			'start-at'       => $this->parse_start_at( $atts ),
 
 			// Fullscreen autoplay (fullscreen mode only)
 			'full-screen-autoplay'       => $this->parse_bool( $atts, 'full-screen-autoplay', true ),
@@ -387,6 +387,45 @@ class JZSA_Shared_Albums {
 
 		// Default: counter visible.
 		return true;
+	}
+
+	/**
+	 * Parse starting slide position.
+	 *
+	 * New parameter: start-at="random" (default) or a 1-based slide number.
+	 * Legacy support: legacy boolean flag mapping to "random" or "1".
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string "random" or a numeric string >= 1
+	 */
+	private function parse_start_at( $atts ) {
+		// New parameter takes precedence.
+		if ( isset( $atts['start-at'] ) ) {
+			$value = strtolower( trim( (string) $atts['start-at'] ) );
+
+			if ( '' === $value || 'random' === $value ) {
+				return 'random';
+			}
+
+			if ( is_numeric( $value ) ) {
+				$number = intval( $value );
+				if ( $number >= 1 ) {
+					return (string) $number;
+				}
+			}
+
+			// Fallback to random on invalid input.
+			return 'random';
+		}
+
+		// Backward compatibility: interpret legacy boolean flag.
+		if ( isset( $atts['start-at-random-photo'] ) ) {
+			$random_flag = $this->parse_bool( $atts, 'start-at-random-photo', true );
+			return $random_flag ? 'random' : '1';
+		}
+
+		// Default.
+		return 'random';
 	}
 
 	/**

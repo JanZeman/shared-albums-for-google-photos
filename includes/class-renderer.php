@@ -183,9 +183,8 @@ class JZSA_Renderer {
 
 		// Gallery settings
 		$boolean_attrs = array(
-			'autoplay'               => 'data-autoplay',
-			'start-at-random-photo'  => 'data-start-at-random-photo',
-			'full-screen-autoplay'   => 'data-full-screen-autoplay',
+			'autoplay'             => 'data-autoplay',
+			'full-screen-autoplay' => 'data-full-screen-autoplay',
 			'crop-to-fill'           => 'data-crop-to-fill',
 			'media-items-stretch'    => 'data-media-items-stretch',
 			'show-title'             => 'data-show-title',
@@ -203,6 +202,10 @@ class JZSA_Renderer {
 		// Numeric/string attributes
 		if ( isset( $config['autoplay-delay'] ) ) {
 			$attrs[] = sprintf( 'data-autoplay-delay="%s"', esc_attr( $config['autoplay-delay'] ) );
+		}
+
+		if ( isset( $config['start-at'] ) && '' !== $config['start-at'] ) {
+			$attrs[] = sprintf( 'data-start-at="%s"', esc_attr( $config['start-at'] ) );
 		}
 
 		if ( isset( $config['full-screen-autoplay-delay'] ) ) {
