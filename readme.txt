@@ -110,9 +110,6 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
 
 * **image-width** - Full-resolution photo width to fetch from Google (default: 1920)
 * **image-height** - Full-resolution photo height to fetch from Google (default: 1440)
-* **preview-width** - Preview/thumbnail photo width for faster initial load (default: 800)
-* **preview-height** - Preview/thumbnail photo height for faster initial load (default: 600)
-
 **Autoplay Settings:**
 
 * **autoplay** - Enable autoplay in normal mode: "true" or "false" (default: true)

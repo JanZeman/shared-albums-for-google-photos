@@ -236,8 +236,8 @@ class JZSA_Shared_Albums {
 				$cached_data['photos'],
 				$config['image-width'],
 				$config['image-height'],
-				$config['preview-width'],
-				$config['preview-height'],
+				self::DEFAULT_PREVIEW_WIDTH,
+				self::DEFAULT_PREVIEW_HEIGHT,
 				$config['max-photos-per-album']
 			);
 			$config['album-title']              = $cached_data['title'] ?? null;
@@ -273,8 +273,8 @@ class JZSA_Shared_Albums {
 			$result['data']['photos'],
 			$config['image-width'],
 			$config['image-height'],
-			$config['preview-width'],
-			$config['preview-height'],
+			self::DEFAULT_PREVIEW_WIDTH,
+			self::DEFAULT_PREVIEW_HEIGHT,
 			$config['max-photos-per-album']
 		);
 
@@ -302,9 +302,6 @@ class JZSA_Shared_Albums {
 			'height'         => $this->parse_dimension( $atts, 'height', self::DEFAULT_HEIGHT ),
 			'image-width'    => isset( $atts['image-width'] ) ? intval( $atts['image-width'] ) : self::DEFAULT_IMAGE_WIDTH,
 			'image-height'   => isset( $atts['image-height'] ) ? intval( $atts['image-height'] ) : self::DEFAULT_IMAGE_HEIGHT,
-			'preview-width'  => isset( $atts['preview-width'] ) ? intval( $atts['preview-width'] ) : self::DEFAULT_PREVIEW_WIDTH,
-			'preview-height' => isset( $atts['preview-height'] ) ? intval( $atts['preview-height'] ) : self::DEFAULT_PREVIEW_HEIGHT,
-
 			// Autoplay (normal mode)
 			'autoplay'       => $this->parse_bool( $atts, 'autoplay', true ),
 			'autoplay-delay' => $this->parse_delay_range( isset( $atts['autoplay-delay'] ) ? $atts['autoplay-delay'] : self::DEFAULT_AUTOPLAY_DELAY_RANGE ),

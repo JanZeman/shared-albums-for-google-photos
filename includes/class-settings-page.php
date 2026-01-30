@@ -278,21 +278,6 @@ class JZSA_Settings_Page {
 					</div>
 
 					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Faster Preview Images', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Uses smaller preview-width and preview-height values so low-resolution previews load very quickly.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" preview-width="400" preview-height="300"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
-					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-fast-preview">
-						<?php
-							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" preview-width="400" preview-height="300"]' );
-						?>
-					</div>
-					</div>
-
-					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Delayed Autoplay Resume', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Shows how autoplay-inactivity-timeout controls when autoplay resumes after user interaction.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
@@ -557,16 +542,6 @@ class JZSA_Settings_Page {
 								<td><code>image-height</code></td>
 								<td>Full-resolution photo height to fetch from Google</td>
 								<td>1440</td>
-							</tr>
-							<tr>
-								<td><code>preview-width</code></td>
-								<td>Preview/thumbnail photo width for faster initial load</td>
-								<td>800</td>
-							</tr>
-							<tr>
-								<td><code>preview-height</code></td>
-								<td>Preview/thumbnail photo height for faster initial load</td>
-								<td>600</td>
 							</tr>
 						</tbody>
 					</table>
