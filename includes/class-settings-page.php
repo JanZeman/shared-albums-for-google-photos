@@ -384,7 +384,7 @@ class JZSA_Settings_Page {
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Carousel Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Uses mode="carousel" to show multiple photos at once (1 on mobile, 2 on tablet, 3 on desktop).', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<p><?php esc_html_e( 'Uses mode="carousel" to show multiple photos side by side. On mobile and tablets it shows 2 photos at a time, and on desktop it shows 3 photos.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
 						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
@@ -657,8 +657,8 @@ class JZSA_Settings_Page {
 						<tbody>
 							<tr>
 								<td><code>mode</code></td>
-								<td>Gallery mode:<br>• "gallery-player": Single photo viewer with zoom support (pinch/double-click to zoom)<br>• "carousel": Multiple photos visible at once (1 on mobile, 2 on tablet, 3 on desktop)</td>
-								<td>gallery-player</td>
+								<td>Gallery mode:<br>• "player": Single photo viewer with zoom support (pinch/double-click to zoom)<br>• "carousel": Multiple photos visible at once (2 on mobile, 2 on tablet, 3 on desktop)</td>
+								<td>player</td>
 							</tr>
 						</tbody>
 					</table>

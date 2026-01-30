@@ -1103,10 +1103,20 @@
                 }
             };
 
+            // Enforce minimum of 2 visible slides in carousel mode (when enough photos exist)
+            if (config.slidesPerView < 2) {
+                config.slidesPerView = 2;
+            }
+            [''+params.BREAKPOINT_MOBILE, ''+params.BREAKPOINT_TABLET, ''+params.BREAKPOINT_DESKTOP].forEach(function(bp) {
+                if (config.breakpoints[bp] && config.breakpoints[bp].slidesPerView < 2) {
+                    config.breakpoints[bp].slidesPerView = 2;
+                }
+            });
+
             // Disable zoom in carousel mode (doesn't work well with multiple slides)
             config.zoom = false;
         } else {
-            // Gallery-player mode: Single photo viewer with zoom
+            // Player mode: Single photo viewer with zoom
             config.slidesPerView = 1;
             config.spaceBetween = 0;
             config.centeredSlides = true;
@@ -1148,11 +1158,11 @@
         var LAZY_LOAD_PREV_NEXT_AMOUNT = 2; // Number of slides to preload
         var DEFAULT_AUTOPLAY_DELAY_FALLBACK = 5; // seconds - fallback autoplay delay if not specified
 
-        // Carousel mode breakpoint constants
+            // Carousel mode breakpoint constants
         var BREAKPOINT_MOBILE = 320;
         var BREAKPOINT_TABLET = 640;
         var BREAKPOINT_DESKTOP = 1024;
-        var SLIDES_MOBILE = 1;
+        var SLIDES_MOBILE = 2;
         var SLIDES_TABLET = 2;
         var SLIDES_DESKTOP = 3;
         var SPACING_MOBILE = 10;
@@ -1482,7 +1492,7 @@
             }
 
             // Get mode
-            var mode = $gallery.attr('data-mode') || 'gallery-player';
+            var mode = $gallery.attr('data-mode') || 'player';
 
             // Initialize with the mode
             initializeSwiper(this, mode);
