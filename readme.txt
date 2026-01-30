@@ -4,7 +4,7 @@ Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.0
 Tested up to: 6.9
 Requires PHP: 7.0
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -234,6 +234,10 @@ The plugin provides clear feedback:
 4. Shortcode example in post editor
 
 == Changelog ==
+
+= 1.0.2 =
+* Even simpler onboarding
+* Richer Settings page
 
 = 1.0.1 =
 * Release related improvements
