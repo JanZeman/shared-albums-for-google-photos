@@ -114,7 +114,7 @@ class JZSA_Settings_Page {
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Basic Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Simple album with default settings:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<p><?php esc_html_e( 'The default experience of the user if no any parameters are set.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
 							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]</code>
 							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
@@ -129,7 +129,7 @@ class JZSA_Settings_Page {
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Basic Album with deprecated link format', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Same album as above, but using the older short photos.app.goo.gl link format (admins will see a yellow warning banner).', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<p><?php esc_html_e( 'Same as above, but using the older photos.app.goo.gl link format. You as admin will be presented with a warning banner. Visitors will see the album as if it was a normal album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
 							<code>[jzsa-album link="https://photos.app.goo.gl/6qmxgmqdouBFKH3i8"]</code>
 							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
@@ -144,7 +144,7 @@ class JZSA_Settings_Page {
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Custom Size Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Set custom width and height:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<p><?php esc_html_e( 'Set width and height of the preview that fits to your page layout.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
 							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" height="600"]</code>
 							<button class="jzsa-copy-btn" onclick="jzsaCopyToClipboard(this, '[jzsa-album link=&quot;https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R&quot; width=&quot;800&quot; height=&quot;600&quot;]')"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
@@ -158,16 +158,31 @@ class JZSA_Settings_Page {
 					</div>
 
 					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Album with Title', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Display the album title with photo counter:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<h3><?php esc_html_e( 'Album with Title and Photo Counter', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Display the album title succeeded by the counter.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-title="true" show-title-with-counter="true"]</code>
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-title="true"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-title">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-title="true" show-title-with-counter="true"]' );
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-title="true"]' );
+						?>
+					</div>
+					</div>
+
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Album with Title Only', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Display the album title without a photo counter.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<div class="jzsa-code-block">
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-title="true" show-counter="false"]</code>
+						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					</div>
+					<div class="jzsa-preview-container jzsa-preview-container-title">
+						<?php
+							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-title="true" show-counter="false"]' );
 						?>
 					</div>
 					</div>
@@ -673,8 +688,8 @@ class JZSA_Settings_Page {
 								<td>true</td>
 							</tr>
 							<tr>
-								<td><code>show-title-with-counter</code></td>
-								<td>Show title with counter (e.g., "Trip to Bali: 4 / 50"): "true" or "false"</td>
+								<td><code>show-counter</code></td>
+								<td>Show the photo counter (e.g., "4 / 50" or "Trip to Bali: 4 / 50"): "true" or "false"</td>
 								<td>true</td>
 							</tr>
 							<tr>

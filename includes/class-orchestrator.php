@@ -318,16 +318,16 @@ class JZSA_Shared_Albums {
 			'autoplay-inactivity-timeout' => isset( $atts['autoplay-inactivity-timeout'] ) ? intval( $atts['autoplay-inactivity-timeout'] ) : intval( self::DEFAULT_AUTOPLAY_INACTIVITY_TIMEOUT ),
 
 			// Display
-			'mode'                    => $this->parse_mode( $atts ),
-			'background-color'        => $this->parse_color( $atts ),
-			'crop-to-fill'            => $this->parse_bool( $atts, 'crop-to-fill', true ),
-			'media-items-stretch'     => $this->parse_bool( $atts, 'media-items-stretch', false ),
-			'full-screen-switch'      => $this->parse_fullscreen_switch_mode( $atts ),
-			'full-screen-navigation'  => $this->parse_fullscreen_navigation_mode( $atts ),
-			'show-title'              => $this->parse_bool( $atts, 'show-title', false ),
-			'show-title-with-counter' => $this->parse_bool( $atts, 'show-title-with-counter', false ),
-			'show-link-button'        => $this->parse_bool( $atts, 'show-link-button', false ),
-			'show-download-button'    => $this->parse_bool( $atts, 'show-download-button', false ),
+			'mode'                   => $this->parse_mode( $atts ),
+			'background-color'       => $this->parse_color( $atts ),
+			'crop-to-fill'           => $this->parse_bool( $atts, 'crop-to-fill', true ),
+			'media-items-stretch'    => $this->parse_bool( $atts, 'media-items-stretch', false ),
+			'full-screen-switch'     => $this->parse_fullscreen_switch_mode( $atts ),
+			'full-screen-navigation' => $this->parse_fullscreen_navigation_mode( $atts ),
+			'show-title'             => $this->parse_bool( $atts, 'show-title', false ),
+			'show-counter'           => $this->parse_show_counter( $atts ),
+			'show-link-button'       => $this->parse_bool( $atts, 'show-link-button', false ),
+			'show-download-button'   => $this->parse_bool( $atts, 'show-download-button', false ),
 
 			// Photo count
 			'max-photos-per-album'    => $this->parse_max_photos( $atts ),
@@ -371,6 +371,22 @@ class JZSA_Shared_Albums {
 		}
 
 		return 'true' === strtolower( $atts[ $key ] );
+	}
+
+	/**
+	 * Parse counter visibility.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return bool
+	 */
+	private function parse_show_counter( $atts ) {
+		// Preferred parameter: show-counter (defaults to true when omitted).
+		if ( isset( $atts['show-counter'] ) ) {
+			return $this->parse_bool( $atts, 'show-counter', true );
+		}
+
+		// Default: counter visible.
+		return true;
 	}
 
 	/**

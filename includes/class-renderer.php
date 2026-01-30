@@ -109,15 +109,6 @@ class JZSA_Renderer {
 			esc_attr( $styles )
 		);
 
-		// Album title at top (if show-title=true and show-title-with-counter=false)
-		// When show-title-with-counter=true, title is shown in pagination via JS
-		if ( ! empty( $config['album-title'] ) && ! empty( $config['show-title'] ) && empty( $config['show-title-with-counter'] ) ) {
-			$html .= sprintf(
-				'<div class="swiper-album-title">%s</div>',
-				esc_html( $config['album-title'] )
-			);
-		}
-
 		$html .= '<div class="swiper-wrapper"></div>';
 		$html .= '<div class="swiper-button-prev"></div>';
 		$html .= '<div class="swiper-button-next"></div>';
@@ -192,15 +183,15 @@ class JZSA_Renderer {
 
 		// Gallery settings
 		$boolean_attrs = array(
-			'autoplay'                => 'data-autoplay',
-			'start-at-random-photo'   => 'data-start-at-random-photo',
-			'full-screen-autoplay'    => 'data-full-screen-autoplay',
-			'crop-to-fill'            => 'data-crop-to-fill',
-			'media-items-stretch'     => 'data-media-items-stretch',
-			'show-title'              => 'data-show-title',
-			'show-title-with-counter' => 'data-show-title-with-counter',
-			'show-link-button'        => 'data-show-link-button',
-			'show-download-button'    => 'data-show-download-button',
+			'autoplay'               => 'data-autoplay',
+			'start-at-random-photo'  => 'data-start-at-random-photo',
+			'full-screen-autoplay'   => 'data-full-screen-autoplay',
+			'crop-to-fill'           => 'data-crop-to-fill',
+			'media-items-stretch'    => 'data-media-items-stretch',
+			'show-title'             => 'data-show-title',
+			'show-counter'           => 'data-show-counter',
+			'show-link-button'       => 'data-show-link-button',
+			'show-download-button'   => 'data-show-download-button',
 		);
 
 		foreach ( $boolean_attrs as $key => $attr_name ) {

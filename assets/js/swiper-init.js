@@ -1018,18 +1018,30 @@
                 prevEl: '#' + params.galleryId + ' .swiper-button-prev',
             },
 
-            // Pagination - format depends on showTitleWithCounter setting
-            pagination: {
-                el: '#' + params.galleryId + ' .swiper-pagination',
-                type: params.showTitle && params.showTitleWithCounter && params.albumTitle ? 'custom' : 'fraction',
-                renderCustom: function(swiper, current, total) {
-                    // Custom format: "Album Title:   28 / 301"
-                    if (params.showTitle && params.showTitleWithCounter && params.albumTitle) {
-                        return params.albumTitle + ':   ' + current + ' / ' + total;
-                    }
-                    return current + ' / ' + total;
+        // Pagination always lives at the bottom; content depends on title/counter settings.
+        pagination: (function() {
+            var base = {
+                el: '#' + params.galleryId + ' .swiper-pagination'
+            };
+
+            base.type = 'custom';
+            base.renderCustom = function(swiper, current, total) {
+                var hasTitle = !!(params.showTitle && params.albumTitle);
+                var parts = [];
+
+                if (hasTitle) {
+                    parts.push(params.albumTitle);
                 }
-            },
+
+                if (params.showCounter) {
+                    parts.push(current + ' / ' + total);
+                }
+
+                return parts.join(':   ');
+            };
+
+            return base;
+        })(),
 
             // Zoom - enables pinch to zoom and double-click to zoom
             zoom: {
@@ -1181,7 +1193,7 @@
             fullScreenNavigation: $container.attr('data-full-screen-navigation') || 'single-click',
             startAtRandomPhoto: $container.attr('data-start-at-random-photo') === 'true',
             showTitle: $container.attr('data-show-title') === 'true',
-            showTitleWithCounter: $container.attr('data-show-title-with-counter') === 'true',
+            showCounter: $container.attr('data-show-counter') === 'true',
             albumTitle: $container.attr('data-album-title') || '',
             initialSlide: 0
         };
@@ -1204,7 +1216,7 @@
         var fullScreenNavigation = config.fullScreenNavigation;
         var startAtRandomPhoto = config.startAtRandomPhoto;
         var showTitle = config.showTitle;
-        var showTitleWithCounter = config.showTitleWithCounter;
+        var showCounter = config.showCounter;
         var albumTitle = config.albumTitle;
         var initialSlide = config.initialSlide;
 
@@ -1274,7 +1286,7 @@
             galleryId: galleryId,
             initialSlide: initialSlide,
             showTitle: showTitle,
-            showTitleWithCounter: showTitleWithCounter,
+            showCounter: showCounter,
             albumTitle: albumTitle,
             ZOOM_MAX_RATIO: ZOOM_MAX_RATIO,
             ZOOM_MIN_RATIO: ZOOM_MIN_RATIO,
