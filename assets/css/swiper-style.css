@@ -5,15 +5,18 @@
 .jzsa-album {
     width: 100%;
     height: 100%;
-    background: #fff;
+    /* Use configurable background; fallback to black if not set */
+background-color: var(--gallery-bg-color, #FFFFFF);
     position: relative; /* For loader overlay positioning */
 }
 
-.jzsa-album .swiper-slide {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #000;
+/* Make sure all structural layers share the same background color */
+.jzsa-album,
+.jzsa-album .swiper,
+.jzsa-album .swiper-wrapper,
+.jzsa-album .swiper-slide,
+.jzsa-album .swiper-zoom-container {
+    background-color: var(--gallery-bg-color, #FFFFFF);
 }
 
 .jzsa-album .swiper-slide img {
@@ -267,7 +270,7 @@
     height: 100vh !important;
     max-width: 100vw;
     max-height: 100vh;
-    background: #000;
+background-color: var(--gallery-bg-color, #FFFFFF);
 }
 
 /* Pseudo fullscreen styling for iPhone (CSS-based fallback) */
@@ -278,7 +281,7 @@
     height: 100vh !important;
     max-width: 100vw;
     max-height: 100vh;
-    background: #000;
+background-color: var(--gallery-bg-color, #FFFFFF);
     z-index: 9999;
 }
 
@@ -380,9 +383,9 @@ body.jzsa-no-scroll {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Custom background color support */
+/* Custom background color support (redundant but kept for clarity) */
 .jzsa-album[data-background-color] {
-    background-color: var(--gallery-bg-color);
+    background-color: var(--gallery-bg-color, #FFFFFF);
 }
 
 /* Carousel mode specific styles */
