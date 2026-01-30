@@ -318,10 +318,9 @@ class JZSA_Shared_Albums {
 			'autoplay-inactivity-timeout' => isset( $atts['autoplay-inactivity-timeout'] ) ? intval( $atts['autoplay-inactivity-timeout'] ) : intval( self::DEFAULT_AUTOPLAY_INACTIVITY_TIMEOUT ),
 
 			// Display
-			'mode'                   => $this->parse_mode( $atts ),
-			'background-color'       => $this->parse_color( $atts ),
-			'crop-to-fill'           => $this->parse_bool( $atts, 'crop-to-fill', true ),
-			'media-items-stretch'    => $this->parse_bool( $atts, 'media-items-stretch', false ),
+			'mode'             => $this->parse_mode( $atts ),
+			'background-color' => $this->parse_color( $atts ),
+			'image-fit'       => $this->parse_image_fit( $atts ),
 			'full-screen-switch'     => $this->parse_fullscreen_switch_mode( $atts ),
 			'full-screen-navigation' => $this->parse_fullscreen_navigation_mode( $atts ),
 			'show-title'             => $this->parse_bool( $atts, 'show-title', false ),
@@ -426,6 +425,28 @@ class JZSA_Shared_Albums {
 
 		// Default.
 		return 'random';
+	}
+
+	/**
+	 * Parse image fit mode.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string One of 'contain', 'cover', or 'stretch'.
+	 */
+	private function parse_image_fit( $atts ) {
+		if ( ! isset( $atts['image-fit'] ) ) {
+			// Default: cover (matches previous default cropping behaviour)
+			return 'cover';
+		}
+
+		$value = strtolower( trim( (string) $atts['image-fit'] ) );
+
+		if ( in_array( $value, array( 'contain', 'cover', 'stretch' ), true ) ) {
+			return $value;
+		}
+
+		// Fallback to cover on invalid input.
+		return 'cover';
 	}
 
 	/**

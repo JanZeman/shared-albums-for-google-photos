@@ -27,15 +27,15 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     height: auto;
 }
 
-/* Crop to fill - fill container, may crop */
-.jzsa-album[data-crop-to-fill="true"] .swiper-slide img {
+/* image-fit="cover" - fill container, may crop */
+.jzsa-album[data-image-fit="cover"] .swiper-slide img {
     object-fit: cover;
     width: 100%;
     height: 100%;
 }
 
-/* Stretch mode - fill container, may distort */
-.jzsa-album[data-media-items-stretch="true"] .swiper-slide img {
+/* image-fit="stretch" - fill container, may distort */
+.jzsa-album[data-image-fit="stretch"] .swiper-slide img {
     width: 100%;
     height: 100%;
     object-fit: fill;

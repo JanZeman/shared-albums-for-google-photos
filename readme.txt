@@ -76,7 +76,7 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
 `[jzsa-album
     link="https://photos.google.com/share/YOUR_LONG_ALBUM_ID"
     background-color="#000000"
-    crop-to-fill="false"
+    image-fit="contain"
     width="500"
     height="375"
     autoplay="true"
@@ -102,10 +102,9 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
 **Gallery Appearance:**
 
 * **background-color** - Background color hex code or "transparent" (default: #FFFFFF)
-* **crop-to-fill** - Crop images to fill container (maintains aspect ratio): "true" or "false" (default: true)
-* **width** - Gallery width in pixels or "auto" (default: 267)
+* **image-fit** - How photos fit the frame: "cover" (default, fill and crop edges), "contain" (letterbox, no cropping), or "stretch" (fill and distort).
+ * **width** - Gallery width in pixels or "auto" (default: 267)
 * **height** - Gallery height in pixels or "auto" (default: 200)
-* **media-items-stretch** - Stretch images (may distort): "true" or "false" (default: false)
 
 **Image Quality:**
 
@@ -125,8 +124,8 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
 
 * **full-screen-autoplay** - Enable autoplay in fullscreen mode: "true" or "false" (default: true)
 * **full-screen-autoplay-delay** - Autoplay delay in fullscreen mode, in seconds, supports ranges like "3-5" or single values (default: 3)
-* **full-screen-switch** - Full screen switch mode: "button-only" (button only), "single-click" (single-click), or "double-click" (default: double-click). Works both in and out of full screen mode.
-* **full-screen-navigation** - Full screen navigation mode: "buttons-only" (navigation buttons only), "single-click" (click left/right areas to navigate), or "double-click" (double-click left/right areas to navigate) (default: single-click). Only works when in full screen mode.
+* **full-screen-switch** - Full screen switch mode: "double-click" (default: double-click), "button-only" (button only), or "single-click" (single-click). Works both in and out of full screen mode.
+* **full-screen-navigation** - Full screen navigation mode: "single-click" (default: single-click, click left/right areas to navigate), "buttons-only" (navigation buttons only), or "double-click" (double-click left/right areas to navigate). Only works when in full screen mode.
 
 **Display Options:**
 

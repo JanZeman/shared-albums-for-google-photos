@@ -234,30 +234,30 @@ class JZSA_Settings_Page {
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Disable Cropping and Set Custom Background', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Shows photos fully without cropping by turning off the crop-to-fill parameter. This feature exposes the background color. We will set it to green to make it very visible.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<p><?php esc_html_e( 'Shows photos fully without cropping by using image-fit="contain". This feature exposes the background color. We will set it to green to make it very visible.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" crop-to-fill="false" background-color="#008000"]</code>
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" image-fit="contain" background-color="#008000"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-no-crop">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" crop-to-fill="false" background-color="#008000"]' );
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" image-fit="contain" background-color="#008000"]' );
 						?>
 					</div>
 					</div>
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Stretched Images', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Uses media-items-stretch to stretch photos and fill the entire frame (may distort).', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<p><?php esc_html_e( 'Uses image-fit="stretch" to stretch photos and fill the entire frame (may distort).', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" media-items-stretch="true"]</code>
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" image-fit="stretch"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-stretch">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" media-items-stretch="true"]' );
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" image-fit="stretch"]' );
 						?>
 					</div>
 					</div>
@@ -521,9 +521,9 @@ class JZSA_Settings_Page {
 								<td>#FFFFFF</td>
 							</tr>
 							<tr>
-								<td><code>crop-to-fill</code></td>
-								<td>Crop images to fill container (maintains aspect ratio): "true" or "false"</td>
-								<td>true</td>
+								<td><code>image-fit</code></td>
+								<td>How photos fit the frame: "cover" (fill and crop edges), "contain" (letterbox, no cropping), or "stretch" (fill and distort).</td>
+								<td>cover</td>
 							</tr>
 							<tr>
 								<td><code>width</code></td>
@@ -534,11 +534,6 @@ class JZSA_Settings_Page {
 								<td><code>height</code></td>
 								<td>Height in pixels or "auto"</td>
 								<td>200</td>
-							</tr>
-							<tr>
-								<td><code>media-items-stretch</code></td>
-								<td>Stretch images (may distort): "true" or "false"</td>
-								<td>false</td>
 							</tr>
 						</tbody>
 					</table>
@@ -631,12 +626,12 @@ class JZSA_Settings_Page {
 							</tr>
 							<tr>
 								<td><code>full-screen-switch</code></td>
-								<td>Full screen switch mode: "button-only" (button only), "single-click" (single-click), or "double-click". Works both in and out of full screen mode.</td>
+								<td>Full screen switch mode: "double-click" (default), "button-only" (button only), or "single-click" (single-click). Works both in and out of full screen mode.</td>
 								<td>double-click</td>
 							</tr>
 							<tr>
 								<td><code>full-screen-navigation</code></td>
-								<td>Full screen navigation mode: "buttons-only" (navigation buttons only), "single-click" (click left/right areas to navigate), or "double-click" (double-click left/right areas to navigate). Only works when in full screen mode.</td>
+								<td>Full screen navigation mode: "single-click" (click left/right areas to navigate), "buttons-only" (navigation buttons only), or "double-click" (double-click left/right areas to navigate). Only works when in full screen mode.</td>
 								<td>single-click</td>
 							</tr>
 						</tbody>

@@ -185,12 +185,10 @@ class JZSA_Renderer {
 		$boolean_attrs = array(
 			'autoplay'             => 'data-autoplay',
 			'full-screen-autoplay' => 'data-full-screen-autoplay',
-			'crop-to-fill'           => 'data-crop-to-fill',
-			'media-items-stretch'    => 'data-media-items-stretch',
-			'show-title'             => 'data-show-title',
-			'show-counter'           => 'data-show-counter',
-			'show-link-button'       => 'data-show-link-button',
-			'show-download-button'   => 'data-show-download-button',
+			'show-title'           => 'data-show-title',
+			'show-counter'         => 'data-show-counter',
+			'show-link-button'     => 'data-show-link-button',
+			'show-download-button' => 'data-show-download-button',
 		);
 
 		foreach ( $boolean_attrs as $key => $attr_name ) {
@@ -202,6 +200,10 @@ class JZSA_Renderer {
 		// Numeric/string attributes
 		if ( isset( $config['autoplay-delay'] ) ) {
 			$attrs[] = sprintf( 'data-autoplay-delay="%s"', esc_attr( $config['autoplay-delay'] ) );
+		}
+
+		if ( ! empty( $config['image-fit'] ) ) {
+			$attrs[] = sprintf( 'data-image-fit="%s"', esc_attr( $config['image-fit'] ) );
 		}
 
 		if ( isset( $config['start-at'] ) && '' !== $config['start-at'] ) {
