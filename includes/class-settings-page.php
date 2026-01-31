@@ -77,6 +77,64 @@ class JZSA_Settings_Page {
 			</h1>
 
 			<div class="jzsa-settings-container">
+				<!-- Purpose / Scope Section -->
+				<div class="jzsa-section jzsa-section-purpose">
+					<div class="jzsa-attention-box jzsa-attention-purpose">
+						<strong class="jzsa-purpose-heading" style="display:flex; align-items:center; font-size:18px; margin-bottom:6px; gap:10px;">
+							<span class="dashicons dashicons-visibility jzsa-purpose-heading-icon" aria-hidden="true" style="font-size:48px; width: 48px; height:48px;"></span>
+							<span>
+								<?php esc_html_e( 'What this plugin does ', 'janzeman-shared-albums-for-google-photos' ); ?>
+								<span class="jzsa-purpose-heading-negative">
+									<?php esc_html_e( '(and what it does not)', 'janzeman-shared-albums-for-google-photos' ); ?>
+								</span>
+							</span>
+						</strong>
+						<p style="margin: 16px 0 0 0;">
+							<?php esc_html_e( 'This plugin renders one album per shortcode. It does not provide any layout mechanism for multiple albums. One [jzsa-album] shortcode will render one and only one Google Photos album. To display many albums together build your own layout and place one shortcode per album where you want it to appear.', 'janzeman-shared-albums-for-google-photos' ); ?>
+						</p>
+						<div class="jzsa-purpose-diagram-wrapper">
+							<svg class="jzsa-purpose-diagram" viewBox="0 0 360 95" role="img" aria-labelledby="jzsa-purpose-diagram-title jzsa-purpose-diagram-desc">
+								<title id="jzsa-purpose-diagram-title"><?php esc_html_e( 'One album versus multi-album page layout', 'janzeman-shared-albums-for-google-photos' ); ?></title>
+								<desc id="jzsa-purpose-diagram-desc"><?php esc_html_e( 'Left: we render your individual albums, one per shortcode. Right: you create the overall layout of multiple albums on your page.', 'janzeman-shared-albums-for-google-photos' ); ?></desc>
+								
+								<!-- Left: one album gallery rendered by this plugin -->
+								<rect x="1" y="10" width="140" height="73" rx="6" class="jzsa-purpose-panel jzsa-purpose-panel-single" />
+								<text x="72" y="50" text-anchor="middle" class="jzsa-purpose-label">
+									<tspan x="72" dy="-7"><?php esc_html_e( 'We render your', 'janzeman-shared-albums-for-google-photos' ); ?></tspan>
+									<tspan x="72" dy="14"><?php esc_html_e( 'individual albums.', 'janzeman-shared-albums-for-google-photos' ); ?></tspan>
+								</text>
+
+								<!-- Right: multi-album page layout built outside this plugin -->
+								<rect x="169" y="10" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative" />
+								<rect x="250" y="10" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative" />
+								<rect x="169" y="36" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative" />
+								<rect x="250" y="36" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative" />
+								<rect x="169" y="62" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative" />
+								<rect x="250" y="62" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative" />
+
+								<text x="207" y="21" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative">
+									<?php esc_html_e( 'You', 'janzeman-shared-albums-for-google-photos' ); ?>
+								</text>
+								<text x="287" y="21" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative">
+									<?php esc_html_e( 'take', 'janzeman-shared-albums-for-google-photos' ); ?>
+								</text>
+								<text x="207" y="47" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative">
+									<?php esc_html_e( 'care', 'janzeman-shared-albums-for-google-photos' ); ?>
+								</text>
+								<text x="287" y="47" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative">
+									<?php esc_html_e( 'about', 'janzeman-shared-albums-for-google-photos' ); ?>
+								</text>
+								<text x="207" y="73" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative">
+									<?php esc_html_e( 'the', 'janzeman-shared-albums-for-google-photos' ); ?>
+								</text>
+								<text x="287" y="73" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative">
+									<?php esc_html_e( 'layout.', 'janzeman-shared-albums-for-google-photos' ); ?>
+								</text>
+							</svg>
+						</div>
+					</div>
+				</div>
+
 				<!-- Examples Section -->
 				<div class="jzsa-section">
 					<h2><?php esc_html_e( 'Quick Onboarding', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
@@ -104,12 +162,6 @@ class JZSA_Settings_Page {
 							<h3><?php esc_html_e( 'Switch to your own albums', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'When you feel comfortable, replace the sample link in the shortcode with share links from your own Google Photos albums.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
-					</div>
-
-					<div class="jzsa-warning-box jzsa-attention-box">
-						<strong><span class="dashicons dashicons-warning" aria-hidden="true"></span> <?php esc_html_e( 'Attention', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-						<p><?php esc_html_e( 'This plugin always works on the album level: one Google Photos album corresponds to one [jzsa-album] shortcode and to one album gallery on your site.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-						<p><?php esc_html_e( 'If you need a layout that shows many albums together, build that layout in your page or post and place one shortcode per album where you want each gallery.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					</div>
 
 					<div class="jzsa-example">

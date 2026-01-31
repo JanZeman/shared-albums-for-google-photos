@@ -197,6 +197,56 @@
     font-style: italic;
 }
 
+/* Purpose diagram */
+.jzsa-section-purpose {
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.jzsa-purpose-heading,
+.jzsa-purpose-heading-icon {
+    color: #3fa557; /* slightly stronger but still soft green */
+}
+
+.jzsa-purpose-diagram-wrapper {
+    margin: 0 0 0 0;
+}
+
+.jzsa-purpose-diagram {
+    width: 80%; /* adjust this percentage if you want the diagram larger or smaller */
+    max-width: 80%;
+    height: auto;
+    display: block;
+}
+
+.jzsa-purpose-panel {
+    fill: none;
+    stroke: #3fa557; /* softened but clearly green for positive side */
+    stroke-width: 1.2;
+}
+
+.jzsa-purpose-panel-single {
+    stroke-width: 1.2;
+}
+
+.jzsa-purpose-panel-negative {
+    stroke: #d26a5e; /* softened red/coral for negative side */
+}
+
+.jzsa-purpose-label {
+    font-size: 7.5px;
+    fill: #3fa557;
+}
+
+.jzsa-purpose-label-negative {
+    font-size: 7.5px;
+    fill: #d26a5e;
+}
+
+.jzsa-purpose-heading-negative {
+    color: #d26a5e;
+}
+
 /* Examples */
 .jzsa-example {
     margin-bottom: 24px;
