@@ -92,6 +92,9 @@ class JZSA_Settings_Page {
 						<p style="margin: 16px 0 0 0;">
 							<?php esc_html_e( 'This plugin renders one album per shortcode. It does not provide any layout mechanism for multiple albums. One [jzsa-album] shortcode will always render only one given album. To display many albums together you have to build your own layout and place one shortcode per album where you want it to appear.', 'janzeman-shared-albums-for-google-photos' ); ?>
 						</p>
+						<p style="margin: 8px 0 0 0;">
+							<?php esc_html_e( 'For grid layouts or pagination across many albums (for example year-based archives), use your theme or block editor layout tools such as the Query Loop block, and insert one [jzsa-album] shortcode in each grid item.', 'janzeman-shared-albums-for-google-photos' ); ?>
+						</p>
 						<div class="jzsa-purpose-diagram-wrapper">
 							<svg class="jzsa-purpose-diagram" viewBox="0 0 360 95" role="img" aria-labelledby="jzsa-purpose-diagram-title jzsa-purpose-diagram-desc">
 								<title id="jzsa-purpose-diagram-title"><?php esc_html_e( 'One album versus multi-album page layout', 'janzeman-shared-albums-for-google-photos' ); ?></title>
