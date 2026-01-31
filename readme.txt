@@ -232,10 +232,10 @@ The plugin provides clear feedback:
 == Changelog ==
 
 = 1.0.3 =
-* Even simpler onboarding
+* Improved Settings page with more intuitive onboarding and richer, example-driven documentation
 
 = 1.0.2 =
-* Richer Settings page
+* Initial Settings page and onboarding content
 
 = 1.0.1 =
 * Release related improvements
