@@ -138,7 +138,6 @@ class JZSA_Settings_Page {
 				<!-- Quick Onboarding Section -->
 				<div class="jzsa-section">
 					<h2><?php esc_html_e( 'Quick Onboarding', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
-					<p class="jzsa-intro"><?php esc_html_e( 'Follow these three simple steps:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
 					<div class="jzsa-step">
 						<div class="jzsa-step-number">1</div>
