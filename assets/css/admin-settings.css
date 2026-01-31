@@ -235,11 +235,13 @@
 
 .jzsa-purpose-label {
     font-size: 7.5px;
+    font-weight: 600; /* slightly bolder */
     fill: #3fa557;
 }
 
 .jzsa-purpose-label-negative {
     font-size: 7.5px;
+    font-weight: 600; /* slightly bolder */
     fill: #d26a5e;
 }
 
