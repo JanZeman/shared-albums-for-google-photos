@@ -28,6 +28,14 @@
     margin-top: 20px;
 }
 
+/* Shortcode Playground section stands out slightly so it's easy to find
+ * when scrolling back. Light pastel background, subtle border color. */
+.jzsa-section.jzsa-playground-section {
+    background: #f0f6fc; /* same light blue as Help section */
+    border-color: #2271b1;
+    margin-bottom: 32px; /* a bit more breathing room below the playground */
+}
+
 .jzsa-section {
     background: #fff;
     border: 1px solid #c3c4c7;
@@ -53,6 +61,18 @@
 
 .jzsa-preview-container {
     margin-top: 24px;
+}
+
+/* Keep the Playground preview from collapsing while loading or when
+ * showing error messages, so the layout does not jump when clicking
+ * "Update preview". The height roughly matches the default sample
+ * gallery height.
+ */
+.jzsa-playground-preview {
+    min-height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Tutorial Steps */

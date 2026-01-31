@@ -22,6 +22,7 @@ Shared Albums for Google Photos (by JanZeman) allows you to easily display publi
 
 * **Modern Gallery Viewer** - Powered by Swiper 11, a modern mobile-friendly slider
 * **Responsive Design** - Works perfectly on desktop, tablet, and mobile devices
+* **Shortcode Playground** - Admin-only sandbox on the Settings page for experimenting with `[jzsa-album]` shortcodes and previews
 * **Touch Gestures** - Swipe navigation on touch devices
 * **Fullscreen Mode** - Click to view photos in fullscreen
 * **Play/Pause Control** - Fullscreen play/pause button with spacebar keyboard shortcut
@@ -234,6 +235,7 @@ The plugin provides clear feedback:
 
 = 1.0.3 =
 * Improved Settings page with more intuitive onboarding and richer, example-driven documentation
+* Added Shortcode Playground on the Settings page to test and preview `[jzsa-album]` shortcodes without leaving admin
 
 = 1.0.2 =
 * Initial Settings page and onboarding content

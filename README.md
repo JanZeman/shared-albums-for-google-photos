@@ -63,6 +63,7 @@ git clone https://github.com/JanZeman/shared-albums-for-google-photos.git
 - Progressive image loading with lazy loading
 - Responsive design (mobile, tablet, desktop)
 - Customizable via shortcode parameters
+- **Shortcode Playground** on the Settings page for experimenting with `[jzsa-album]` shortcodes and live previews
 - Swiper 11 bundled locally (no CDN dependencies)
 - WordPress coding standards compliant
 

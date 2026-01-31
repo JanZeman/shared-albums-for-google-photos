@@ -164,6 +164,31 @@ class JZSA_Settings_Page {
 						</div>
 					</div>
 
+					<!-- Shortcode Playground (Step 1: static preview) -->
+					<div class="jzsa-section jzsa-playground-section">
+						<h2><?php esc_html_e( 'Shortcode Playground', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+						<p class="jzsa-intro">
+							<?php esc_html_e( 'Use this area to experiment with the [jzsa-album] shortcode. You can paste your own shortcode here and adjust it before using it on a page or post.', 'janzeman-shared-albums-for-google-photos' ); ?>
+						</p>
+
+						<label for="jzsa-playground-shortcode" class="screen-reader-text">
+							<?php esc_html_e( 'Shortcode to test', 'janzeman-shared-albums-for-google-photos' ); ?>
+						</label>
+						<textarea
+							id="jzsa-playground-shortcode"
+							class="large-text code"
+							rows="3"
+						><?php echo esc_textarea( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]' ); ?></textarea>
+
+						<div class="jzsa-preview-container jzsa-playground-preview">
+							<?php
+								// Step 1: static preview using the same sample album as above.
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]' );
+							?>
+						</div>
+					</div>
+
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Basic Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'The default viewer experience when no parameters are set.', 'janzeman-shared-albums-for-google-photos' ); ?></p>

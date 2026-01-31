@@ -128,6 +128,7 @@ class JZSA_Shared_Albums {
 		add_action( 'save_post', array( $this, 'clear_cache' ) );
 		add_action( 'wp_ajax_jzsa_download_image', array( $this, 'handle_download_image' ) );
 		add_action( 'wp_ajax_nopriv_jzsa_download_image', array( $this, 'handle_download_image' ) );
+		add_action( 'wp_ajax_jzsa_shortcode_preview', array( $this, 'handle_shortcode_preview' ) );
 
 		// Also load front-end gallery assets on our settings page so the sample
 		// shortcode preview works inside the admin.
@@ -187,12 +188,17 @@ class JZSA_Shared_Albums {
 		);
 
 		// Localize script for AJAX
+		$download_nonce = wp_create_nonce( 'jzsa_download_nonce' );
+		$preview_nonce  = wp_create_nonce( 'jzsa_shortcode_preview' );
+
 		wp_localize_script(
 			'jzsa-init',
 			'jzsaAjax',
 			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'jzsa_download_nonce' ),
+				'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+				'nonce'        => $download_nonce, // kept for backward compatibility
+				'downloadNonce'=> $download_nonce,
+				'previewNonce' => $preview_nonce,
 			)
 		);
 	}
@@ -712,6 +718,48 @@ class JZSA_Shared_Albums {
 	}
 
 /**
+	 * Handle AJAX shortcode preview for the admin Shortcode Playground.
+	 *
+	 * This is intentionally simple: it only renders the shortcode and returns
+	 * the HTML. The JavaScript side is responsible for deciding whether to
+	 * initialize Swiper on the result or keep it as a static preview.
+	 */
+	public function handle_shortcode_preview() {
+		// Only allow logged-in administrators.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( __( 'Insufficient permissions', 'janzeman-shared-albums-for-google-photos' ) );
+		}
+
+		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
+		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'jzsa_shortcode_preview' ) ) {
+			wp_send_json_error( __( 'Invalid nonce', 'janzeman-shared-albums-for-google-photos' ) );
+		}
+
+		$shortcode = isset( $_POST['shortcode'] ) ? wp_kses_post( wp_unslash( $_POST['shortcode'] ) ) : '';
+
+		if ( empty( $shortcode ) ) {
+			wp_send_json_error( __( 'Empty shortcode', 'janzeman-shared-albums-for-google-photos' ) );
+		}
+
+		// Only allow our own shortcode in this preview endpoint.
+		if ( false === strpos( $shortcode, '[jzsa-album' ) ) {
+			wp_send_json_error( __( 'Only the [jzsa-album] shortcode is supported in this preview.', 'janzeman-shared-albums-for-google-photos' ) );
+		}
+
+		$html = do_shortcode( $shortcode );
+
+		if ( '' === $html ) {
+			wp_send_json_error( __( 'Shortcode did not produce any output.', 'janzeman-shared-albums-for-google-photos' ) );
+		}
+
+		wp_send_json_success(
+			array(
+				'html' => $html,
+			)
+		);
+	}
+
+	/**
 	 * Handle AJAX request to download image
 	 * Proxies the image download to bypass CORS restrictions
 	 *
