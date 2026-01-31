@@ -450,16 +450,16 @@ class JZSA_Settings_Page {
 					</div>
 
 					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Carousel to Player Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Uses mode="carousel-to-player" to combine the best of both modes: displays photos as a carousel, but clicking any photo opens it in a full-screen lightbox where you can view the complete, uncropped image and navigate through the album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<h3><?php esc_html_e( 'Carousel to Single Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Uses mode="carousel-to-single" to combine the best of both modes: displays photos as a carousel, but clicking any photo opens it as a single photo viewer in fullscreen.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel-to-player"]</code>
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel-to-single"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-carousel">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel-to-player"]' );
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel-to-single"]' );
 						?>
 					</div>
 					</div>
@@ -725,10 +725,10 @@ class JZSA_Settings_Page {
 							<tr>
 								<td><code>mode</code></td>
 								<td>Gallery mode:<br>
-									• "player": Single photo viewer with zoom support (pinch/double-click to zoom)<br>
+									• "single": Single photo viewer with zoom support (pinch/double-click to zoom)<br>
 									• "carousel": Multiple photos visible at once (2 on mobile/tablet, 3 on desktop)<br>
-									• "carousel-to-player": Carousel preview (2 or 3 photos visible) that switches to a single photo viewer in fullscreen</td>
-								<td>player</td>
+									• "carousel-to-single": Carousel preview (2 or 3 photos visible) that switches to a single photo viewer in fullscreen</td>
+								<td>single</td>
 							</tr>
 						</tbody>
 					</table>

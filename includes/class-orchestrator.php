@@ -491,25 +491,25 @@ class JZSA_Shared_Albums {
 	 * Parse mode attribute
 	 *
 	 * @param array $atts Attributes
-	 * @return string Mode: 'carousel' or 'player'
+	 * @return string Mode: 'carousel', 'single', or 'carousel-to-single'
 	 */
 	private function parse_mode( $atts ) {
 		if ( ! isset( $atts['mode'] ) ) {
-			// Default to 'player'
-			return 'player';
+			// Default to 'single'
+			return 'single';
 		}
 
 		$mode = strtolower( trim( $atts['mode'] ) );
 
-		// Valid modes: 'carousel', 'player', 'carousel-to-player'
-		$valid_modes = array( 'carousel', 'player', 'carousel-to-player' );
+		// Valid modes: 'carousel', 'single', 'carousel-to-single'
+		$valid_modes = array( 'carousel', 'single', 'carousel-to-single' );
 
 		if ( in_array( $mode, $valid_modes, true ) ) {
 			return $mode;
 		}
 
 		// Default fallback
-		return 'player';
+		return 'single';
 	}
 
 	/**

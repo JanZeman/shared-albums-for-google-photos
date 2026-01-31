@@ -538,15 +538,15 @@ body.jzsa-no-scroll {
 }
 
 /* ============================================================================
-   Carousel-to-player tweaks
+   Carousel-to-single tweaks
    ============================================================================ */
 
-/* Make it clear slides are clickable in carousel-to-player mode */
-.jzsa-album[data-mode="carousel-to-player"] .swiper-slide {
+/* Make it clear slides are clickable in carousel-to-single mode */
+.jzsa-album[data-mode="carousel-to-single"] .swiper-slide {
     cursor: pointer;
 }
 
-.jzsa-album[data-mode="carousel-to-player"] .swiper-slide:hover {
+.jzsa-album[data-mode="carousel-to-single"] .swiper-slide:hover {
     opacity: 0.9;
     transition: opacity 0.2s ease;
 }
