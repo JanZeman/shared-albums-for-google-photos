@@ -142,21 +142,29 @@ class JZSA_Settings_Page {
 					<div class="jzsa-step">
 						<div class="jzsa-step-number">1</div>
 						<div class="jzsa-step-content">
-							<h3><?php esc_html_e( 'Explore This Settings Page Using Our Sample Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php esc_html_e( 'Scroll through the examples below and play with the live sample album (try fullscreen and the embedded controls).', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<h3><?php esc_html_e( 'Explore the Live Sample Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php esc_html_e( 'Use the Shortcode Playground right below to try the live sample album (fullscreen, autoplay, and controls).', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
 
 					<div class="jzsa-step">
 						<div class="jzsa-step-number">2</div>
 						<div class="jzsa-step-content">
-							<h3><?php esc_html_e( 'Try a Shortcode on Your Own Page', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php esc_html_e( 'Copy any shortcode from the examples into one of your pages or posts and experiment with the parameters there.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<h3><?php esc_html_e( 'Browse the Shortcode Samples Below', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php esc_html_e( 'Scroll further down to see different shortcode configurations with descriptions, ready to copy and adapt.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
 
 					<div class="jzsa-step">
 						<div class="jzsa-step-number">3</div>
+						<div class="jzsa-step-content">
+							<h3><?php esc_html_e( 'Try a Shortcode on Your Own Page', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php esc_html_e( 'Copy any shortcode from the Samples section into one of your pages or posts and experiment with the parameters there.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						</div>
+					</div>
+
+					<div class="jzsa-step">
+						<div class="jzsa-step-number">4</div>
 						<div class="jzsa-step-content">
 							<h3><?php esc_html_e( 'Switch to Your Own Albums', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'When you feel comfortable, replace the sample link in the shortcode with share links from your own Google Photos albums.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
