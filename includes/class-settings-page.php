@@ -135,7 +135,7 @@ class JZSA_Settings_Page {
 					</div>
 				</div>
 
-				<!-- Examples Section -->
+				<!-- Quick Onboarding Section -->
 				<div class="jzsa-section">
 					<h2><?php esc_html_e( 'Quick Onboarding', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 					<p class="jzsa-intro"><?php esc_html_e( 'Follow these three simple steps:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
@@ -143,7 +143,7 @@ class JZSA_Settings_Page {
 					<div class="jzsa-step">
 						<div class="jzsa-step-number">1</div>
 						<div class="jzsa-step-content">
-							<h3><?php esc_html_e( 'Explore this Settings page using our sample album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<h3><?php esc_html_e( 'Explore This Settings Page Using Our Sample Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Scroll through the examples below and play with the live sample album (try fullscreen and the embedded controls).', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
@@ -151,7 +151,7 @@ class JZSA_Settings_Page {
 					<div class="jzsa-step">
 						<div class="jzsa-step-number">2</div>
 						<div class="jzsa-step-content">
-							<h3><?php esc_html_e( 'Try a shortcode on your own page', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<h3><?php esc_html_e( 'Try a Shortcode on Your Own Page', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Copy any shortcode from the examples into one of your pages or posts and experiment with the parameters there.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
@@ -159,35 +159,40 @@ class JZSA_Settings_Page {
 					<div class="jzsa-step">
 						<div class="jzsa-step-number">3</div>
 						<div class="jzsa-step-content">
-							<h3><?php esc_html_e( 'Switch to your own albums', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<h3><?php esc_html_e( 'Switch to Your Own Albums', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'When you feel comfortable, replace the sample link in the shortcode with share links from your own Google Photos albums.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
+				</div>
 
-					<!-- Shortcode Playground (Step 1: static preview) -->
-					<div class="jzsa-section jzsa-playground-section">
-						<h2><?php esc_html_e( 'Shortcode Playground', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
-						<p class="jzsa-intro">
-							<?php esc_html_e( 'Use this area to experiment with the [jzsa-album] shortcode. You can paste your own shortcode here and adjust it before using it on a page or post.', 'janzeman-shared-albums-for-google-photos' ); ?>
-						</p>
+				<!-- Shortcode Playground Section -->
+				<div class="jzsa-section jzsa-playground-section">
+					<h2><?php esc_html_e( 'Shortcode Playground', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+					<p class="jzsa-intro">
+						<?php esc_html_e( 'Use this area to experiment with the [jzsa-album] shortcode. You can paste your own shortcode here and adjust it before using it on a page or post.', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</p>
 
-						<label for="jzsa-playground-shortcode" class="screen-reader-text">
-							<?php esc_html_e( 'Shortcode to test', 'janzeman-shared-albums-for-google-photos' ); ?>
-						</label>
-						<textarea
-							id="jzsa-playground-shortcode"
-							class="large-text code"
-							rows="3"
-						><?php echo esc_textarea( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]' ); ?></textarea>
+					<label for="jzsa-playground-shortcode" class="screen-reader-text">
+						<?php esc_html_e( 'Shortcode to test', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</label>
+					<textarea
+						id="jzsa-playground-shortcode"
+						class="large-text code"
+						rows="3"
+					><?php echo esc_textarea( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]' ); ?></textarea>
 
-						<div class="jzsa-preview-container jzsa-playground-preview">
-							<?php
-								// Step 1: static preview using the same sample album as above.
-								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]' );
-							?>
-						</div>
+					<div class="jzsa-preview-container jzsa-playground-preview">
+						<?php
+							// Step 1: static preview using the same sample album as above.
+							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]' );
+						?>
 					</div>
+				</div>
+
+				<!-- Shortcode Samples Section -->
+				<div class="jzsa-section jzsa-samples-section">
+					<h2><?php esc_html_e( 'Shortcode Samples', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Basic Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
@@ -200,21 +205,6 @@ class JZSA_Settings_Page {
 							<?php
 								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]' );
-							?>
-						</div>
-					</div>
-
-					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Basic Album with Deprecated Link Format (admin-only warning)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Same as above, but using the older short link format. Visitors will NOT see this warning, but you as an administrator should update the link to the new format.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.app.goo.gl/6qmxgmqdouBFKH3i8"]</code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
-						</div>
-						<div class="jzsa-preview-container jzsa-preview-container-basic-deprecated">
-							<?php
-								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								echo do_shortcode( '[jzsa-album link="https://photos.app.goo.gl/6qmxgmqdouBFKH3i8"]' );
 							?>
 						</div>
 					</div>
@@ -492,14 +482,14 @@ class JZSA_Settings_Page {
 
 				<!-- Start Tutorial -->
 				<div class="jzsa-section jzsa-tutorial-section">
-					<h2><?php esc_html_e( 'Now use your own albums', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+					<h2><?php esc_html_e( 'Now Use Your Own Albums', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 					<p class="jzsa-intro"><?php esc_html_e( 'After experimenting with the sample album above, follow these simple steps to embed your own Google Photos albums in your posts or pages:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
 					<!-- Step 1 -->
 					<div class="jzsa-step">
 						<div class="jzsa-step-number">1</div>
 						<div class="jzsa-step-content">
-						<h3><?php esc_html_e( 'Open your Google Photos album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<h3><?php esc_html_e( 'Open Your Google Photos Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p>
 								<?php
 								printf(
@@ -764,26 +754,56 @@ class JZSA_Settings_Page {
 					<h2><?php esc_html_e( 'Troubleshooting', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 
 					<div class="jzsa-faq">
-						<h3><?php esc_html_e( 'Plugin shows "Unable to Load Album"', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<h3><?php esc_html_e( 'Plugin Shows "Unable to Load Album"', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<ul>
 							<li><?php esc_html_e( 'Use straight quotes in shortcode attributes: [jzsa-album link="..."] – not [jzsa-album link="…"]. The block editor (Gutenberg) may auto-convert quotes, which breaks shortcode parsing.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'Make sure the album is shared publicly via link in Google Photos.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'Verify you are using the full link format (starts with https://photos.google.com/share/).', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'Check that the album contains at least one photo.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 						</ul>
+
+						<div class="jzsa-example">
+							<h3><?php esc_html_e( 'Sample "Unable to Load Album" Error', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php esc_html_e( 'This example intentionally uses an invalid link to demonstrate the red error message visitors will see when the album cannot be loaded.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<div class="jzsa-code-block">
+								<code>[jzsa-album link="https://photos.google.com/share/INVALID-EXAMPLE-LINK"]</code>
+								<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							</div>
+							<div class="jzsa-preview-container jzsa-preview-container-error-sample">
+								<?php
+									// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+									echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/INVALID-EXAMPLE-LINK"]' );
+								?>
+							</div>
+						</div>
 					</div>
 
 					<div class="jzsa-faq">
-						<h3><?php esc_html_e( 'I see a yellow warning banner', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<h3><?php esc_html_e( 'I See a Yellow Warning Banner', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<ul>
 							<li><?php esc_html_e( 'You are using a short link format (photos.app.goo.gl), which is deprecated by Google Photos.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'This format works as of today, but it may stop working in the future.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'Only logged-in administrators see this warning. For best reliability, update the shortcode to use the full https://photos.google.com/share/... link from your browser\'s address bar.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 						</ul>
+
+						<div class="jzsa-example">
+							<h3><?php esc_html_e( 'Basic Album with Deprecated Link Format (Admin-Only Warning)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php esc_html_e( 'Same as above, but using the older short link format. Visitors will NOT see this warning, but you as an administrator should update the link to the new format.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<div class="jzsa-code-block">
+								<code>[jzsa-album link="https://photos.app.goo.gl/6qmxgmqdouBFKH3i8"]</code>
+								<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							</div>
+							<div class="jzsa-preview-container jzsa-preview-container-basic-deprecated">
+								<?php
+									// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+									echo do_shortcode( '[jzsa-album link="https://photos.app.goo.gl/6qmxgmqdouBFKH3i8"]' );
+								?>
+							</div>
+						</div>
 					</div>
 
 					<div class="jzsa-faq">
-						<h3><?php esc_html_e( 'Changes not showing up?', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<h3><?php esc_html_e( 'Changes Not Showing Up?', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<ul>
 							<li><?php esc_html_e( 'Save or update your post – the cache clears automatically.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'If issues persist, try clearing your browser cache.', 'janzeman-shared-albums-for-google-photos' ); ?></li>

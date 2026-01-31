@@ -108,6 +108,14 @@
     font-weight: 600;
 }
 
+/* Use slightly smaller step numbers in the "Now Use Your Own Albums" tutorial section
+ * so the visual hierarchy between onboarding steps and the detailed tutorial is clear. */
+.jzsa-tutorial-section .jzsa-step-number {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+}
+
 .jzsa-step-content {
     flex: 1;
 }
