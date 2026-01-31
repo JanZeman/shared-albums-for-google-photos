@@ -28,7 +28,7 @@ EXTRACT_DIR="${RELEASE_DIR_ROOT}/${PLUGIN_SLUG}"
 REQUESTED_VERSION="$1"
 if [ -z "$REQUESTED_VERSION" ]; then
     echo -e "${RED}Usage:${NC} $(basename "$0") <version>"
-    echo "Example: $(basename "$0") 1.0.3"
+    echo "Example: $(basename "$0") 1.0.2"
     exit 1
 fi
 
@@ -300,7 +300,8 @@ if [ "$SYNCED_TO_SVN" -eq 1 ]; then
     echo "       svn add . --force"
     echo "       svn status"
     echo "       svn commit -m \"Release ${VERSION}\""
-    echo "  3. Tag the release (from the plugin SVN root):"
+    echo "  3. Tag the release:"
+    echo "       cd .."
     echo "       svn copy trunk tags/${VERSION}"
     echo "       svn commit -m \"Tag version ${VERSION}\""
 else
