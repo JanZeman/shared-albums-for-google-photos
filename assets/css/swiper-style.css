@@ -547,6 +547,7 @@ body.jzsa-no-scroll {
 }
 
 .jzsa-album[data-mode="carousel-to-single"] .swiper-slide:hover {
-    opacity: 0.9;
+    /* Keep cursor feedback for clickability but avoid any dimming/fog effect */
+    opacity: 1;
     transition: opacity 0.2s ease;
 }
