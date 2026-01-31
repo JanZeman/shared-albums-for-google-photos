@@ -129,12 +129,34 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     if tag_points_at_head "$TAG_RAW"; then
         echo -e "${GREEN}✓ Git tag for version ${VERSION} already points at HEAD.${NC}"
     else
-        echo -e "${RED}Error: no git tag for version ${VERSION} points at HEAD.${NC}"
-        echo ""
-        echo "Create one before running release.sh, for example:"
-        echo "  git tag -a ${VERSION} -m \"${VERSION}\""
-        echo "  git push origin ${VERSION}"
-        exit 1
+        # Tag does not point at HEAD; check if it exists at all
+        if git rev-parse "$TAG_RAW" >/dev/null 2>&1; then
+            echo -e "${RED}Error:${NC} git tag '${TAG_RAW}' already exists but does not point at HEAD."
+            echo "Please move HEAD to that tag or delete/adjust the tag manually, then re-run release.sh."
+            exit 1
+        fi
+
+        echo -e "${YELLOW}Creating git tag ${TAG_RAW} at HEAD...${NC}"
+        if ! git tag -a "${TAG_RAW}" -m "${TAG_RAW}"; then
+            echo -e "${RED}Error:${NC} Failed to create git tag '${TAG_RAW}'."
+            exit 1
+        fi
+
+        echo -e "${YELLOW}Pushing branch ${CURRENT_BRANCH} to origin...${NC}"
+        if ! git push origin "${CURRENT_BRANCH}"; then
+            echo -e "${RED}Error:${NC} Failed to push branch '${CURRENT_BRANCH}' to origin."
+            echo "Please fix the git remote issue and push manually."
+            exit 1
+        fi
+
+        echo -e "${YELLOW}Pushing tag ${TAG_RAW} to origin...${NC}"
+        if ! git push origin "${TAG_RAW}"; then
+            echo -e "${RED}Error:${NC} Failed to push git tag '${TAG_RAW}' to origin."
+            echo "You may need to push the tag manually with: git push origin ${TAG_RAW}"
+            exit 1
+        fi
+
+        echo -e "${GREEN}✓ Git tag ${TAG_RAW} created and pushed to origin.${NC}"
     fi
 else
     echo -e "${YELLOW}Warning: not in a git repository; skipping git checks.${NC}"
@@ -293,38 +315,54 @@ fi
 echo ""
 echo -e "${YELLOW}Next steps:${NC}"
 if [ "$SYNCED_TO_SVN" -eq 1 ]; then
-    echo "  1. Review files in SVN trunk: ${SVN_TRUNK}"
-    echo "  2. From that directory, run:"
-    echo "       svn status"
-    echo "       # If there are new/unversioned files:"
-    echo "       svn add . --force"
-    echo "       svn status"
-    echo "       svn commit -m \"Release ${VERSION}\""
-    echo "  3. Tag the release:"
-    echo "       cd .."
-    echo "       svn copy trunk tags/${VERSION}"
-    echo "       svn commit -m \"Tag version ${VERSION}\""
+    echo "  - Git tag has been validated/created and pushed to origin."
+    echo "  - SVN trunk has been synced from the release package."
+    echo "  - If the automatic SVN commit/tagging step (below) fails, follow the printed error message and run the svn commands manually."
 else
-    echo "  1. Review extracted files in: ${EXTRACT_DIR}"
-    echo "  2. Test by installing ${ZIP_NAME} on a WordPress site"
-    echo "  3. Validate with WordPress Plugin Check (if available)"
-    echo "  4. Manually copy files into your SVN trunk working copy"
+    echo "  - Review extracted files in: ${EXTRACT_DIR}"
+    echo "  - Test by installing ${ZIP_NAME} on a WordPress site"
+    echo "  - Validate with WordPress Plugin Check (if available)"
+    echo "  - Manually copy files into your SVN trunk working copy and commit/tag there"
 fi
 echo ""
 
-# If we synced to SVN, optionally stage new files in SVN and show status
+# If we synced to SVN, stage new files in SVN, show status, and optionally commit & tag
 if [ "$SYNCED_TO_SVN" -eq 1 ] && command -v svn &> /dev/null; then
-    echo -e "${YELLOW}Running 'svn add . --force' in trunk (no commit)...${NC}"
+    echo -e "${YELLOW}Running 'svn add . --force' in trunk (no commit yet)...${NC}"
     (
         cd "$SVN_TRUNK" && \
         svn add . --force >/dev/null 2>&1 || true
     )
 
-    echo -e "${YELLOW}SVN status for trunk:${NC}"
-    (
-        cd "$SVN_TRUNK" && \
-        svn status
-    ) || true
+    echo -e "${YELLOW}SVN status for trunk before commit:${NC}"
+    SVN_STATUS_OUTPUT=$(cd "$SVN_TRUNK" && svn status || true)
+    echo "$SVN_STATUS_OUTPUT"
+
+    if [ -z "${SVN_STATUS_OUTPUT}" ]; then
+        echo -e "${YELLOW}No pending changes in SVN trunk; skipping automatic SVN commit and tag.${NC}"
+    else
+        echo -e "${YELLOW}Committing changes to SVN trunk...${NC}"
+        if ! (cd "$SVN_TRUNK" && svn commit -m "Release ${VERSION}"); then
+            echo -e "${RED}Error:${NC} Failed to commit changes to SVN trunk."
+            echo "Please resolve the issue in ${SVN_TRUNK} and commit manually."
+            exit 1
+        fi
+
+        SVN_ROOT="${SVN_TRUNK%/trunk}"
+        if [ ! -d "$SVN_ROOT/tags" ]; then
+            echo -e "${YELLOW}Warning:${NC} SVN tags directory not found under ${SVN_ROOT}; skipping SVN tag creation."
+        else
+            echo -e "${YELLOW}Creating SVN tag ${VERSION}...${NC}"
+            if ! (cd "$SVN_ROOT" && svn copy trunk "tags/${VERSION}" -m "Tag version ${VERSION}"); then
+                echo -e "${RED}Error:${NC} Failed to create SVN tag ${VERSION}."
+                echo "You may need to create the tag manually, for example:"
+                echo "  cd ${SVN_ROOT}"
+                echo "  svn copy trunk tags/${VERSION} -m 'Tag version ${VERSION}'"
+                exit 1
+            fi
+            echo -e "${GREEN}✓ SVN tag ${VERSION} created successfully.${NC}"
+        fi
+    fi
 fi
 
 # Clean up build directory and temporary extract
