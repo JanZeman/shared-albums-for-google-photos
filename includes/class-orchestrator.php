@@ -501,8 +501,8 @@ class JZSA_Shared_Albums {
 
 		$mode = strtolower( trim( $atts['mode'] ) );
 
-		// Valid modes: 'carousel', 'player'
-		$valid_modes = array( 'carousel', 'player' );
+		// Valid modes: 'carousel', 'player', 'carousel-to-player'
+		$valid_modes = array( 'carousel', 'player', 'carousel-to-player' );
 
 		if ( in_array( $mode, $valid_modes, true ) ) {
 			return $mode;

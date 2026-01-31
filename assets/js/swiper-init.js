@@ -265,72 +265,7 @@
         }
     }
 
-    // Helper: Capture detailed layout diagnostics for debugging (no side effects)
-    // NOTE: currently unused in production; keep for future troubleshooting.
-    function debugLayoutSnapshot(label, containerElement) {
-        try {
-            var now = (window.performance && performance.now) ? performance.now().toFixed(1) : Date.now();
-            var galleryId = containerElement && containerElement.id;
-            var scroller = document.scrollingElement || document.documentElement || document.body;
-            var galleryRect = containerElement ? containerElement.getBoundingClientRect() : null;
-
-            // Closest LI and grid ancestors from the gallery container
-            var $container = containerElement ? $(containerElement) : null;
-            var liEl = $container ? $container.closest('li')[0] : null;
-            var gridEl = $container ? $container.closest('.photo-album-grid, .is-layout-grid')[0] : null;
-
-            var liRect = liEl ? liEl.getBoundingClientRect() : null;
-            var gridRect = gridEl ? gridEl.getBoundingClientRect() : null;
-
-            var liStyle = liEl ? window.getComputedStyle(liEl) : null;
-            var gridStyle = gridEl ? window.getComputedStyle(gridEl) : null;
-
-			jzsaDebug('[JZSA LAYOUT]', {
-                label: label,
-                t: now,
-                galleryId: galleryId,
-                viewport: { w: window.innerWidth, h: window.innerHeight },
-                scroll: {
-                    pageXOffset: window.pageXOffset,
-                    pageYOffset: window.pageYOffset,
-                    scrollLeft: scroller ? scroller.scrollLeft : null,
-                    scrollTop: scroller ? scroller.scrollTop : null
-                },
-                galleryRect: galleryRect ? {
-                    left: galleryRect.left,
-                    top: galleryRect.top,
-                    width: galleryRect.width,
-                    height: galleryRect.height
-                } : null,
-                li: liEl ? {
-                    selector: liEl.className || liEl.tagName,
-                    rect: liRect ? {
-                        left: liRect.left,
-                        top: liRect.top,
-                        width: liRect.width,
-                        height: liRect.height
-                    } : null,
-                    widthStyle: liStyle ? liStyle.width : null,
-                    display: liStyle ? liStyle.display : null
-                } : null,
-                grid: gridEl ? {
-                    selector: gridEl.className || gridEl.tagName,
-                    rect: gridRect ? {
-                        left: gridRect.left,
-                        top: gridRect.top,
-                        width: gridRect.width,
-                        height: gridRect.height
-                    } : null,
-                    display: gridStyle ? gridStyle.display : null,
-                    gridTemplateColumns: gridStyle ? gridStyle.gridTemplateColumns : null
-                } : null
-            });
-		} catch (e) {
-			jzsaDebug('[JZSA LAYOUT ERROR]', label, e);
-		}
-    }
-
-    // Helper: Build slides HTML from photo array
+    // Helper: Build slides HTML structure (for photo array)
     function buildSlidesHtml(photos) {
         var html = '';
         photos.forEach(function(photo) {
@@ -428,10 +363,24 @@
         var fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement ||
                                document.mozFullScreenElement || document.msFullscreenElement;
 
-		if (fullscreenElement === containerElement) {
+        if (fullscreenElement === containerElement) {
 			// Entering fullscreen - switch to fullscreen autoplay settings
 			var logPrefix = params.browserPrefix ? ' (' + params.browserPrefix + ')' : '';
 			jzsaDebug('🔍 Fullscreen entered for gallery' + logPrefix + ':', params.galleryId);
+
+            // For carousel-to-player, switch layout to a single slide in
+            // fullscreen while keeping the preview in carousel mode.
+            if (params.mode === 'carousel-to-player') {
+                if (params.originalSlidesPerView == null) {
+                    params.originalSlidesPerView = swiper.params.slidesPerView;
+                    params.originalBreakpoints = swiper.params.breakpoints;
+                    params.originalCenteredSlides = swiper.params.centeredSlides;
+                }
+                swiper.params.slidesPerView = 1;
+                swiper.params.centeredSlides = true;
+                swiper.params.breakpoints = undefined;
+                swiper.update();
+            }
 
             // Add fullscreen class for CSS styling
             $(containerElement).addClass('jzsa-is-fullscreen');
@@ -471,12 +420,30 @@
 					jzsaDebug('▶️  Fullscreen autoplay started (delay: ' + params.fullScreenAutoplayDelay + 's' + logPrefix + ')');
 				}
             }
-		} else if (!fullscreenElement && swiper) {
+        } else if (!fullscreenElement && swiper) {
 			// Exiting fullscreen (this gallery was in fullscreen before) - switch back to normal autoplay settings
 			var logPrefix = params.browserPrefix ? ' (' + params.browserPrefix + ')' : '';
 			jzsaDebug('🔍 Fullscreen exited for gallery' + logPrefix + ':', params.galleryId);
 
-            // (Diagnostics removed in production; keep debugLayoutSnapshot for future use.)
+            // For carousel-to-player, restore the original multi-slide layout
+            // but keep the same logical photo index the user was viewing in
+            // fullscreen. We must capture the realIndex *before* changing
+            // slidesPerView/breakpoints, because Swiper may adjust indices when
+            // layout changes.
+            if (params.mode === 'carousel-to-player' && params.originalSlidesPerView != null) {
+                var targetIndex = (typeof swiper.realIndex === 'number') ? swiper.realIndex : swiper.activeIndex;
+
+                swiper.params.slidesPerView = params.originalSlidesPerView;
+                swiper.params.centeredSlides = params.originalCenteredSlides;
+                swiper.params.breakpoints = params.originalBreakpoints;
+                swiper.update();
+
+                if (swiper.params.loop && typeof swiper.slideToLoop === 'function') {
+                    swiper.slideToLoop(targetIndex, 0, false);
+                } else {
+                    swiper.slideTo(targetIndex, 0, false);
+                }
+            }
 
             // Attempt to auto-correct WordPress grid item width if iOS Safari/WebKit
             // leaves it in a broken state after fullscreen. We compare the parent LI
@@ -599,6 +566,7 @@
             }, timeoutMs);
         }
     }
+
 
     // Helper: Setup fullscreen button
     function setupFullscreenButton(swiper, $container, params) {
@@ -848,6 +816,39 @@
 
     // Helper: Setup fullscreen switch handlers
     function setupFullscreenSwitchHandlers(swiper, $container, params) {
+        // When entering fullscreen from carousel-to-player, ensure we focus the
+        // exact slide the user clicked in the preview (multi-slide) view.
+        function focusClickedSlide(e) {
+            if (params.mode !== 'carousel-to-player') {
+                return;
+            }
+
+            var $clickedSlide = $(e.target).closest('.swiper-slide');
+            if (!$clickedSlide.length) {
+                return;
+            }
+
+            // In loop mode Swiper duplicates slides. Use the real slide index
+            // stored in data-swiper-slide-index to avoid jumping to the
+            // duplicated copy at the end of the wrapper.
+            var realIndexAttr = $clickedSlide.attr('data-swiper-slide-index');
+            var realIndex = realIndexAttr != null ? parseInt(realIndexAttr, 10) : NaN;
+
+            if (!isNaN(realIndex) && realIndex >= 0) {
+                if (swiper.params.loop && typeof swiper.slideToLoop === 'function') {
+                    swiper.slideToLoop(realIndex, 0, false);
+                } else {
+                    swiper.slideTo(realIndex, 0, false);
+                }
+            } else {
+                // Fallback: use DOM index if real index is not available
+                var clickedIndex = $clickedSlide.index();
+                if (clickedIndex >= 0 && clickedIndex < swiper.slides.length) {
+                    swiper.slideTo(clickedIndex, 0, false);
+                }
+            }
+        }
+
         // FULLSCREEN SWITCH HANDLERS (works both in and out of fullscreen)
 		if (params.fullScreenSwitch === 'single-click') {
 			$container.on('click', function(e) {
@@ -858,6 +859,7 @@
 
 						// If entering fullscreen, apply autoplay settings immediately (Android workaround)
 						if (!isFullscreen()) {
+							focusClickedSlide(e);
 							jzsaDebug('🔍 Single-click entering fullscreen');
                             applyFullscreenAutoplaySettings(swiper, {
                                 fullScreenAutoplay: params.fullScreenAutoplay,
@@ -880,6 +882,7 @@
 
 						// If entering fullscreen, apply autoplay settings immediately (Android workaround)
 						if (!isFullscreen()) {
+							focusClickedSlide(e);
 							jzsaDebug('🔍 Double-click entering fullscreen');
                             applyFullscreenAutoplaySettings(swiper, {
                                 fullScreenAutoplay: params.fullScreenAutoplay,
@@ -893,13 +896,14 @@
                 }
             });
 
-            // Mobile double-tap
+			// Mobile double-tap
 			$container.on('touchend', function(e) {
 				if (!shouldIgnoreClick(e.target)) {
-					handleDoubleTap(e, function() {
+					handleDoubleTap(e, function(evt) {
 						if (params.fullScreenNavigation !== 'double-click' || !isFullscreen()) {
 							// If entering fullscreen, apply autoplay settings immediately (Android workaround)
 							if (!isFullscreen()) {
+								focusClickedSlide(evt);
 								jzsaDebug('🔍 Double-tap entering fullscreen');
                                 applyFullscreenAutoplaySettings(swiper, {
                                     fullScreenAutoplay: params.fullScreenAutoplay,
@@ -1034,7 +1038,38 @@
                 }
 
                 if (params.showCounter) {
-                    parts.push(current + ' / ' + total);
+                    // In carousel modes (including carousel-to-player preview), show
+                    // all currently visible photo indices, e.g. "4-6 / 41".
+                    if (params.mode === 'carousel' || params.mode === 'carousel-to-player') {
+                        var slidesPerView = swiper.params.slidesPerView || 1;
+                        var realIndex = (typeof swiper.realIndex === 'number') ? swiper.realIndex : (current - 1);
+                        var visible = [];
+                        var maxVisible = Math.min(slidesPerView, total);
+
+                        for (var i = 0; i < maxVisible; i++) {
+                            var idx = realIndex + i;
+                            if (idx >= total) {
+                                if (swiper.params.loop) {
+                                    idx = idx % total;
+                                } else {
+                                    break;
+                                }
+                            }
+                            visible.push(idx + 1); // 1-based for humans
+                        }
+
+                        if (visible.length === 0) {
+                            // Fallback: show current index if something went wrong
+                            parts.push(current + ' / ' + total);
+                        } else if (visible.length === 1) {
+                            parts.push(visible[0] + ' / ' + total);
+                        } else {
+                            parts.push(visible[0] + '-' + visible[visible.length - 1] + ' / ' + total);
+                        }
+                    } else {
+                        // Player mode (single slide): keep classic "current / total".
+                        parts.push(current + ' / ' + total);
+                    }
                 }
 
                 return parts.join(':   ');
@@ -1080,8 +1115,8 @@
         };
 
         // Mode-specific configuration
-        if (params.mode === 'carousel') {
-            // Carousel mode: Show multiple slides at once
+        if (params.mode === 'carousel' || params.mode === 'carousel-to-player') {
+            // Carousel mode (and carousel-to-player): Show multiple slides at once
             config.slidesPerView = params.SLIDES_MOBILE;
             config.spaceBetween = params.SPACING_MOBILE;
             config.centeredSlides = false;
@@ -1351,13 +1386,19 @@
         // Create params object for handleFullscreenChange
         var fullscreenChangeParams = {
             galleryId: galleryId,
+            mode: mode,
             fullScreenAutoplay: fullScreenAutoplay,
             fullScreenAutoplayDelay: fullScreenAutoplayDelay,
             autoplay: autoplay,
             autoplayDelay: autoplayDelay,
             autoplayPausedByInteraction: autoplayPausedByInteraction,
             autoplayInactivityTimeout: autoplayInactivityTimeout,
-            browserPrefix: null
+            browserPrefix: null,
+            // For carousel-to-player: remember original layout so we can
+            // temporarily switch to a single-slide view in fullscreen.
+            originalSlidesPerView: null,
+            originalBreakpoints: null,
+            originalCenteredSlides: null
         };
 
         // Fullscreen change event listeners - Standard API (Chrome, Firefox, Edge)
@@ -1393,6 +1434,7 @@
         // ------------------------------------------------------------------------
 
         var fullscreenParams = {
+            mode: mode,
             fullScreenSwitch: fullScreenSwitch,
             fullScreenNavigation: fullScreenNavigation,
             fullScreenAutoplay: fullScreenAutoplay,
@@ -1425,6 +1467,17 @@
         // ------------------------------------------------------------------------
 
         setupNavigationHandlers(swiper, $container, fullScreenNavigation, fullscreenChangeParams);
+
+        // ------------------------------------------------------------------------
+        // Carousel-to-player mode
+        // ------------------------------------------------------------------------
+
+        // For now, carousel-to-player uses the same Swiper configuration as
+        // carousel. Fullscreen still works via the standard fullscreen button
+        // and behaves like the regular gallery; no extra lightbox logic.
+        if (mode === 'carousel-to-player') {
+            jzsaDebug('Carousel-to-player mode: using standard carousel behaviour for gallery', galleryId);
+        }
 
         // ------------------------------------------------------------------------
         // Pause autoplay when user clicks navigation buttons

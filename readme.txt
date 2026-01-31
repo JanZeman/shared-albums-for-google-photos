@@ -136,6 +136,7 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
 * **mode** - Gallery mode (default: player):
   - "player": Single photo viewer with zoom support. Users can pinch to zoom or double-click to zoom.
   - "carousel": Multiple photos visible at once. On mobile and tablets it shows 2 photos at a time, and on desktop it shows 3 photos.
+  - "carousel-to-player": Combines carousel and player modes. Displays photos as a carousel, but clicking any photo opens it in a lightbox where you can view the complete, uncropped image and navigate through the album using arrow keys or navigation buttons.
 
 = Getting Your Album Share Link =
 

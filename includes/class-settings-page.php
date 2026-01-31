@@ -90,7 +90,7 @@ class JZSA_Settings_Page {
 							</span>
 						</strong>
 						<p style="margin: 16px 0 0 0;">
-							<?php esc_html_e( 'This plugin renders one album per shortcode. It does not provide any layout mechanism for multiple albums. One [jzsa-album] shortcode will render one and only one Google Photos album. To display many albums together build your own layout and place one shortcode per album where you want it to appear.', 'janzeman-shared-albums-for-google-photos' ); ?>
+							<?php esc_html_e( 'This plugin renders one album per shortcode. It does not provide any layout mechanism for multiple albums. One [jzsa-album] shortcode will always render only one given album. To display many albums together you have to build your own layout and place one shortcode per album where you want it to appear.', 'janzeman-shared-albums-for-google-photos' ); ?>
 						</p>
 						<div class="jzsa-purpose-diagram-wrapper">
 							<svg class="jzsa-purpose-diagram" viewBox="0 0 360 95" role="img" aria-labelledby="jzsa-purpose-diagram-title jzsa-purpose-diagram-desc">
@@ -448,6 +448,21 @@ class JZSA_Settings_Page {
 						?>
 					</div>
 					</div>
+
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Carousel to Player Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Uses mode="carousel-to-player" to combine the best of both modes: displays photos as a carousel, but clicking any photo opens it in a full-screen lightbox where you can view the complete, uncropped image and navigate through the album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<div class="jzsa-code-block">
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel-to-player"]</code>
+						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					</div>
+					<div class="jzsa-preview-container jzsa-preview-container-carousel">
+						<?php
+							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel-to-player"]' );
+						?>
+					</div>
+					</div>
 				</div>
 
 				<!-- Start Tutorial -->
@@ -709,7 +724,10 @@ class JZSA_Settings_Page {
 						<tbody>
 							<tr>
 								<td><code>mode</code></td>
-								<td>Gallery mode:<br>• "player": Single photo viewer with zoom support (pinch/double-click to zoom)<br>• "carousel": Multiple photos visible at once (2 on mobile, 2 on tablet, 3 on desktop)</td>
+								<td>Gallery mode:<br>
+									• "player": Single photo viewer with zoom support (pinch/double-click to zoom)<br>
+									• "carousel": Multiple photos visible at once (2 on mobile/tablet, 3 on desktop)<br>
+									• "carousel-to-player": Carousel preview (2 or 3 photos visible) that switches to a single photo viewer in fullscreen</td>
 								<td>player</td>
 							</tr>
 						</tbody>
