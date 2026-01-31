@@ -641,7 +641,7 @@ class JZSA_Shared_Albums {
 			return $this->renderer->render_error(
 				__( 'Invalid Google Photos URL', 'janzeman-shared-albums-for-google-photos' ),
 				__( 'The URL provided is not a valid Google Photos share link.', 'janzeman-shared-albums-for-google-photos' ),
-				__( 'Please use a valid Google Photos URL, ideally its full form: https://photos.google.com/share/... ', 'janzeman-shared-albums-for-google-photos' ) .
+				__( 'Please use a valid Google Photos URL, ideally in its full form: https://photos.google.com/share/... ', 'janzeman-shared-albums-for-google-photos' ) .
 					' <a href="https://support.google.com/photos/answer/6131416" target="_blank" rel="noopener">' .
 					esc_html__( 'How to share a Google Photos album', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
 			);
