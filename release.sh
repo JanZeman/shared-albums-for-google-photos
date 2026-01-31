@@ -22,6 +22,21 @@ BUILD_DIR="${RELEASE_DIR_ROOT}/build"
 RELEASE_DIR="${BUILD_DIR}/${PLUGIN_SLUG}"
 EXTRACT_DIR="${RELEASE_DIR_ROOT}/${PLUGIN_SLUG}"
 
+# ---------------------------------------------------------------------------
+# Parse required version argument
+# ---------------------------------------------------------------------------
+REQUESTED_VERSION="$1"
+if [ -z "$REQUESTED_VERSION" ]; then
+    echo -e "${RED}Usage:${NC} $(basename "$0") <version>"
+    echo "Example: $(basename "$0") 1.0.3"
+    exit 1
+fi
+
+# Basic sanity check for version format (X.Y or X.Y.Z); do not be too strict
+if ! echo "$REQUESTED_VERSION" | grep -Eq '^[0-9]+\.[0-9]+(\.[0-9]+)?$'; then
+    echo -e "${YELLOW}Warning:${NC} Requested version '$REQUESTED_VERSION' does not look like a typical semantic version. Continuing anyway..."
+fi
+
 # Extract version from main plugin file
 VERSION=$(grep -E "^\s*\*\s*Version:" "${SCRIPT_DIR}/janzeman-shared-albums-for-google-photos.php" | awk '{print $3}' | tr -d '\r')
 
@@ -30,12 +45,107 @@ if [ -z "$VERSION" ]; then
     exit 1
 fi
 
+if [ "$VERSION" != "$REQUESTED_VERSION" ]; then
+    echo -e "${RED}Error:${NC} Version in main plugin file is '${VERSION}', but you requested '${REQUESTED_VERSION}'."
+    echo "Please bump the plugin header version first."
+    exit 1
+fi
+
+# ---------------------------------------------------------------------------
+# Validate that all versioned files reference the requested version
+# ---------------------------------------------------------------------------
+VERSION_ERRORS=0
+
+# 1) Main plugin constant
+if ! grep -q "define( 'JZSA_VERSION', '${REQUESTED_VERSION}'" "${SCRIPT_DIR}/janzeman-shared-albums-for-google-photos.php"; then
+    echo -e "${RED}Error:${NC} JZSA_VERSION constant does not match ${REQUESTED_VERSION} in janzeman-shared-albums-for-google-photos.php"
+    VERSION_ERRORS=1
+fi
+
+# 2) readme.txt Stable tag
+if ! grep -q "Stable tag: ${REQUESTED_VERSION}" "${SCRIPT_DIR}/readme.txt"; then
+    echo -e "${RED}Error:${NC} readme.txt Stable tag is not ${REQUESTED_VERSION}"
+    VERSION_ERRORS=1
+fi
+
+# 3) README.md version badge
+if ! grep -q "version-${REQUESTED_VERSION}-blue" "${SCRIPT_DIR}/README.md"; then
+    echo -e "${RED}Error:${NC} README.md version badge does not reference ${REQUESTED_VERSION}"
+    VERSION_ERRORS=1
+fi
+
+# 4) readme.txt changelog section for this version
+if ! grep -q "= ${REQUESTED_VERSION} =" "${SCRIPT_DIR}/readme.txt"; then
+    echo -e "${RED}Error:${NC} readme.txt does not contain a changelog section header '= ${REQUESTED_VERSION} ='"
+    VERSION_ERRORS=1
+else
+    # Ensure there is at least one bullet point under this version before next header
+    if ! awk -v v="${REQUESTED_VERSION}" '
+        $0 ~ "^= " v " =" { in_section=1; next }
+        in_section && $0 ~ "^=" { exit 1 }
+        in_section && $0 ~ "^\*" { found=1 }
+        END { exit found ? 0 : 1 }
+    ' "${SCRIPT_DIR}/readme.txt"; then
+        echo -e "${RED}Error:${NC} Changelog section for ${REQUESTED_VERSION} in readme.txt has no bullet items."
+        VERSION_ERRORS=1
+    fi
+fi
+
+if [ "$VERSION_ERRORS" -ne 0 ]; then
+    echo -e "${RED}Version validation failed.${NC} Please update the files above before releasing."
+    exit 1
+fi
+
+# ---------------------------------------------------------------------------
+# Read-only git checks (optional but strongly recommended)
+# - Ensure we are on main/master
+# - Ensure working tree is clean
+# - Ensure a git tag matching this version points at HEAD (vX.Y.Z or X.Y.Z)
+# ---------------------------------------------------------------------------
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo -e "${YELLOW}Checking git state...${NC}"
+
+    CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    if [ "$CURRENT_BRANCH" != "main" ] && [ "$CURRENT_BRANCH" != "master" ]; then
+        echo -e "${RED}Error: release.sh should be run from main/master (current: ${CURRENT_BRANCH}).${NC}"
+        exit 1
+    fi
+
+    # Fail if working tree is dirty
+    if ! git diff-index --quiet HEAD --; then
+        echo -e "${RED}Error: git working tree is not clean. Commit or stash your changes first.${NC}"
+        git status -sb || true
+        exit 1
+    fi
+
+    TAG_RAW="${VERSION}"
+
+    tag_points_at_head() {
+        local tag="$1"
+        git rev-parse "$tag" >/dev/null 2>&1 || return 1
+        git tag --points-at HEAD | grep -qx "$tag"
+    }
+
+    if tag_points_at_head "$TAG_RAW"; then
+        echo -e "${GREEN}✓ Git tag for version ${VERSION} already points at HEAD.${NC}"
+    else
+        echo -e "${RED}Error: no git tag for version ${VERSION} points at HEAD.${NC}"
+        echo ""
+        echo "Create one before running release.sh, for example:"
+        echo "  git tag -a ${VERSION} -m \"${VERSION}\""
+        echo "  git push origin ${VERSION}"
+        exit 1
+    fi
+else
+    echo -e "${YELLOW}Warning: not in a git repository; skipping git checks.${NC}"
+fi
+
 echo -e "${BLUE}================================================================${NC}"
 echo -e "${BLUE}  Shared Albums for Google Photos (by JanZeman) Release Script  ${NC}"
 echo -e "${BLUE}================================================================${NC}"
 echo ""
-echo -e "${GREEN}Plugin:${NC} ${PLUGIN_SLUG}"
-echo -e "${GREEN}Version:${NC} ${VERSION}"
+echo -e "${GREEN}Plugin:${NC}   ${PLUGIN_SLUG}"
+echo -e "${GREEN}Version:${NC}  ${VERSION} (requested: ${REQUESTED_VERSION})"
 echo ""
 
 # Clean previous build artifacts (but keep any SVN working copies under release/)
