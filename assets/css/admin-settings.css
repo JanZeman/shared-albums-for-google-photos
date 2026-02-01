@@ -231,10 +231,6 @@
     padding-bottom: 12px;
 }
 
-.jzsa-purpose-heading,
-.jzsa-purpose-heading-icon {
-    color: #3fa557; /* slightly stronger but still soft green */
-}
 
 .jzsa-purpose-diagram-wrapper {
     margin: 0 0 0 0;
@@ -249,7 +245,8 @@
 
 .jzsa-purpose-panel {
     fill: none;
-    stroke: #3fa557; /* softened but clearly green for positive side */
+    /* match main heading/body text color for the positive box */
+    stroke: #1d2327;
     stroke-width: 1.2;
 }
 
@@ -258,24 +255,42 @@
 }
 
 .jzsa-purpose-panel-negative {
-    stroke: #d26a5e; /* softened red/coral for negative side */
+    /* base color if no specific variant is applied */
+    stroke: #e45757;
 }
+
+/* Individual colors for the six "your task" boxes on the right side,
+ * using a palette inspired by the logo wedges, clockwise starting with blue.
+ * We intentionally skip yellow and green for box colors. */
+.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-1 { stroke: #42a5f5; }
+.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-2 { stroke: #4f5194; }
+.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-3 { stroke: #804d87; }
+.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-4 { stroke: #df2668; }
+.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-5 { stroke: #e52826; }
+.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-6 { stroke: #f18935; }
 
 .jzsa-purpose-label {
     font-size: 7.5px;
     font-weight: 600; /* slightly bolder */
-    fill: #3fa557;
+    /* same dark color as the "What This Plugin Does" heading text */
+    fill: #1d2327;
 }
 
 .jzsa-purpose-label-negative {
     font-size: 7.5px;
     font-weight: 600; /* slightly bolder */
-    fill: #d26a5e;
+    fill: #e45757; /* fallback */
 }
 
-.jzsa-purpose-heading-negative {
-    color: #d26a5e;
-}
+/* Match label colors with their corresponding boxes */
+.jzsa-purpose-label-negative.jzsa-purpose-label-neg-1 { fill: #42a5f5; }
+.jzsa-purpose-label-negative.jzsa-purpose-label-neg-2 { fill: #4f5194; }
+.jzsa-purpose-label-negative.jzsa-purpose-label-neg-3 { fill: #804d87; }
+.jzsa-purpose-label-negative.jzsa-purpose-label-neg-4 { fill: #df2668; }
+.jzsa-purpose-label-negative.jzsa-purpose-label-neg-5 { fill: #e52826; }
+.jzsa-purpose-label-negative.jzsa-purpose-label-neg-6 { fill: #f18935; }
+
+/* Heading suffix is now rendered in the default heading color only. */
 
 /* Examples */
 .jzsa-example {

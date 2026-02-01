@@ -78,17 +78,14 @@ class JZSA_Settings_Page {
 
 			<div class="jzsa-settings-container">
 				<!-- Purpose / Scope Section -->
-				<div class="jzsa-section jzsa-section-purpose">
-					<div class="jzsa-attention-box jzsa-attention-purpose">
-						<strong class="jzsa-purpose-heading" style="display:flex; align-items:center; font-size:18px; margin-bottom:6px; gap:10px;">
-							<span class="dashicons dashicons-visibility jzsa-purpose-heading-icon" aria-hidden="true" style="font-size:48px; width: 48px; height:48px;"></span>
-							<span>
-								<?php esc_html_e( 'What this plugin does ', 'janzeman-shared-albums-for-google-photos' ); ?>
-								<span class="jzsa-purpose-heading-negative">
-									<?php esc_html_e( '(and what it does not)', 'janzeman-shared-albums-for-google-photos' ); ?>
-								</span>
-							</span>
-						</strong>
+						<div class="jzsa-section jzsa-section-purpose">
+							<div class="jzsa-attention-box jzsa-attention-purpose">
+								<strong class="jzsa-purpose-heading" style="display:flex; align-items:center; font-size:18px; margin-bottom:6px; gap:10px;">
+									<img src="<?php echo esc_url( JZSA_PLUGIN_URL . 'assets/icon-256x256.gif' ); ?>" alt="<?php esc_attr_e( 'Shared Albums for Google Photos logo', 'janzeman-shared-albums-for-google-photos' ); ?>" class="jzsa-purpose-heading-icon" style="width:48px; height:48px; border-radius:8px;" />
+									<span>
+										<?php esc_html_e( 'What This Plugin Does – and What You Must Do Yourself', 'janzeman-shared-albums-for-google-photos' ); ?>
+									</span>
+								</strong>
 						<p style="margin: 16px 0 0 0;">
 							<?php esc_html_e( 'This plugin renders one album per shortcode. It does not provide any layout mechanism for multiple albums. One [jzsa-album] shortcode will always render only one given album. To display many albums together you have to build your own layout and place one shortcode per album where you want it to appear.', 'janzeman-shared-albums-for-google-photos' ); ?>
 						</p>
@@ -108,29 +105,29 @@ class JZSA_Settings_Page {
 								</text>
 
 								<!-- Right: multi-album page layout built outside this plugin -->
-								<rect x="169" y="10" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative" />
-								<rect x="250" y="10" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative" />
-								<rect x="169" y="36" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative" />
-								<rect x="250" y="36" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative" />
-								<rect x="169" y="62" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative" />
-								<rect x="250" y="62" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative" />
+								<rect x="169" y="10" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative jzsa-purpose-panel-neg-1" />
+								<rect x="250" y="10" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative jzsa-purpose-panel-neg-2" />
+								<rect x="169" y="36" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative jzsa-purpose-panel-neg-3" />
+								<rect x="250" y="36" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative jzsa-purpose-panel-neg-4" />
+								<rect x="169" y="62" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative jzsa-purpose-panel-neg-5" />
+								<rect x="250" y="62" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative jzsa-purpose-panel-neg-6" />
 
-								<text x="207" y="21" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative">
+								<text x="207" y="21" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-1">
 									<?php esc_html_e( 'You', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
-								<text x="287" y="21" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative">
+								<text x="287" y="21" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-2">
 									<?php esc_html_e( 'take', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
-								<text x="207" y="47" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative">
+								<text x="207" y="47" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-3">
 									<?php esc_html_e( 'care', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
-								<text x="287" y="47" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative">
+								<text x="287" y="47" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-4">
 									<?php esc_html_e( 'about', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
-								<text x="207" y="73" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative">
+								<text x="207" y="73" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-5">
 									<?php esc_html_e( 'the', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
-								<text x="287" y="73" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative">
+								<text x="287" y="73" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-6">
 									<?php esc_html_e( 'layout.', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
 							</svg>

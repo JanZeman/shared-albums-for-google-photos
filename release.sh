@@ -230,6 +230,7 @@ REQUIRED_FILES=(
     "assets/js/swiper-init.js"
     "assets/vendor/swiper/swiper-bundle.min.css"
     "assets/vendor/swiper/swiper-bundle.min.js"
+    "assets/icon-256x256.gif"
 )
 
 VALIDATION_FAILED=0
