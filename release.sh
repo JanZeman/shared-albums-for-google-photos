@@ -353,14 +353,32 @@ if [ "$SYNCED_TO_SVN" -eq 1 ] && command -v svn &> /dev/null; then
             echo -e "${YELLOW}Warning:${NC} SVN tags directory not found under ${SVN_ROOT}; skipping SVN tag creation."
         else
             echo -e "${YELLOW}Creating SVN tag ${VERSION}...${NC}"
-            if ! (cd "$SVN_ROOT" && svn copy trunk "tags/${VERSION}" -m "Tag version ${VERSION}"); then
-                echo -e "${RED}Error:${NC} Failed to create SVN tag ${VERSION}."
-                echo "You may need to create the tag manually, for example:"
-                echo "  cd ${SVN_ROOT}"
-                echo "  svn copy trunk tags/${VERSION} -m 'Tag version ${VERSION}'"
-                exit 1
+
+            # If the tag already exists, don't try to recreate it
+            if (cd "$SVN_ROOT" && svn info "tags/${VERSION}" >/dev/null 2>&1); then
+                echo -e "${YELLOW}SVN tag ${VERSION} already exists; skipping tag creation.${NC}"
+            else
+                # First create a working-copy copy of trunk -> tags/${VERSION}
+                if ! (cd "$SVN_ROOT" && svn copy trunk "tags/${VERSION}"); then
+                    echo -e "${RED}Error:${NC} Failed to schedule SVN tag ${VERSION} for addition."
+                    echo "Please create the tag manually, for example:"
+                    echo "  cd ${SVN_ROOT}"
+                    echo "  svn copy trunk \"tags/${VERSION}\""
+                    echo "  svn commit \"tags/${VERSION}\" -m 'Tag version ${VERSION}'"
+                    exit 1
+                fi
+
+                # Then commit the new tag path with a log message
+                if ! (cd "$SVN_ROOT" && svn commit "tags/${VERSION}" -m "Tag version ${VERSION}"); then
+                    echo -e "${RED}Error:${NC} Failed to commit SVN tag ${VERSION}."
+                    echo "Please commit the tag manually, for example:"
+                    echo "  cd ${SVN_ROOT}"
+                    echo "  svn commit \"tags/${VERSION}\" -m 'Tag version ${VERSION}'"
+                    exit 1
+                fi
+
+                echo -e "${GREEN}✓ SVN tag ${VERSION} created and committed successfully.${NC}"
             fi
-            echo -e "${GREEN}✓ SVN tag ${VERSION} created successfully.${NC}"
         fi
     fi
 fi
