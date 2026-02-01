@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/JanZeman/shared-albums-for-google-photos
  * Author URI: https://github.com/JanZeman
  * Description: Display publicly shared Google Photos albums with a modern Swiper-based gallery viewer. Not affiliated with or endorsed by Google LLC.
- * Version: 1.0.6
+ * Version: 1.0.7
  * Requires at least: 5.0
  * Requires PHP: 7.0
  * Author: Jan Zeman
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'JZSA_VERSION', '1.0.6' );
+define( 'JZSA_VERSION', '1.0.7' );
 define( 'JZSA_PLUGIN_FILE', __FILE__ );
 define( 'JZSA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'JZSA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
