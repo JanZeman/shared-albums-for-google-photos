@@ -55,8 +55,8 @@ The plugin fetches your public Google Photos album and creates a responsive gall
 == Installation ==
 
 1. Install & Activate the plugin
-2. Use this shortcode in your posts or pages: [jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]
-3. Follow the guide in plugin settings to use your own Google Photo albums
+2. Open Settings page of this plugin. It is a rich onboarding guide as well.
+3. Once comprotable use your own Google Photo albums on your own pages and posts.
 
 == Usage ==
 
