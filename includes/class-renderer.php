@@ -313,10 +313,22 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-full-screen-image-fit="%s"', esc_attr( $config['full-screen-image-fit'] ) );
 		}
 
+		if ( ! empty( $config['background-color'] ) ) {
+			$attrs[] = sprintf( 'data-background-color="%s"', esc_attr( $config['background-color'] ) );
+		}
+
+		// Build inline style for CSS custom property
+		$styles = array();
+		if ( ! empty( $config['background-color'] ) && $config['background-color'] !== 'transparent' ) {
+			$styles[] = '--gallery-bg-color: ' . esc_attr( $config['background-color'] );
+		}
+		$style_attr = ! empty( $styles ) ? sprintf( ' style="%s"', implode( '; ', $styles ) ) : '';
+
 		return sprintf(
-			'<div id="%s" class="jzsa-album jzsa-grid-album" %s></div>',
+			'<div id="%s" class="jzsa-album jzsa-grid-album" %s%s></div>',
 			esc_attr( $gallery_id ),
-			implode( ' ', $attrs )
+			implode( ' ', $attrs ),
+			$style_attr
 		);
 	}
 

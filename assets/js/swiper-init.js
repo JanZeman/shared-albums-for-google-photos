@@ -1602,13 +1602,20 @@
             'data-album-title',
             'data-album-url',
             'data-image-fit',
-            'data-full-screen-image-fit'
+            'data-full-screen-image-fit',
+            'data-background-color'
         ];
         for (var i = 0; i < forwardAttrs.length; i++) {
             var val = $gridContainer.attr(forwardAttrs[i]);
             if (val !== undefined) {
                 $player.attr(forwardAttrs[i], val);
             }
+        }
+
+        // Forward --gallery-bg-color CSS custom property for fullscreen background
+        var bgColor = $gridContainer.attr('data-background-color');
+        if (bgColor && bgColor !== 'transparent') {
+            $player[0].style.setProperty('--gallery-bg-color', bgColor);
         }
 
         return playerId;
