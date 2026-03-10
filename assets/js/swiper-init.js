@@ -1603,6 +1603,8 @@
             'data-full-screen-autoplay',
             'data-full-screen-autoplay-delay',
             'data-autoplay-inactivity-timeout',
+            'data-full-screen-switch',
+            'data-full-screen-navigation',
             'data-show-title',
             'data-show-counter',
             'data-album-title',
@@ -1711,6 +1713,7 @@
                 (src !== photo.full ? ' data-full-src="' + photo.full + '"' : '') +
                 ' data-index="' + globalIndex + '"' +
                 ' alt="Photo ' + (globalIndex + 1) + '"' +
+                ' draggable="false"' +
                 ' loading="lazy">';
         });
 
@@ -1757,6 +1760,7 @@
                     (src !== item.photo.full ? ' data-full-src="' + item.photo.full + '"' : '') +
                     ' data-index="' + item.index + '"' +
                     ' alt="Photo ' + (item.index + 1) + '"' +
+                    ' draggable="false"' +
                     ' loading="lazy"' +
                     ' style="width:' + width + 'px;height:' + targetHeight + 'px;">';
             });
@@ -1930,6 +1934,138 @@
         } else {
             $container.css('max-height', '');
         }
+    }
+
+    /**
+     * Enable desktop mouse drag behavior for grid pagination/scrolling.
+     *
+     * @param {jQuery} $container Grid album element.
+     * @param {Object} config     { enabled, mode, onPageSwipe }.
+     */
+    function setupGridMouseInteractions($container, config) {
+        var id = $container.attr('id') || 'grid';
+        var ns = '.jzsaGridMouse-' + id;
+        var options = config || {};
+        var mode = options.mode || '';
+        var enabled = !!options.enabled;
+        var onPageSwipe = typeof options.onPageSwipe === 'function' ? options.onPageSwipe : null;
+
+        $container.off(ns);
+        $(document).off(ns);
+        $container.removeClass('jzsa-grid-draggable jzsa-grid-grabbing');
+        $container.removeData('jzsaGridSuppressClick');
+
+        if (!enabled) {
+            return;
+        }
+
+        $container.addClass('jzsa-grid-draggable');
+
+        var state = {
+            active: false,
+            moved: false,
+            swipeTriggered: false,
+            startX: 0,
+            startY: 0,
+            startScrollTop: 0
+        };
+
+        function suppressNextThumbClick() {
+            $container.data('jzsaGridSuppressClick', true);
+            window.setTimeout(function() {
+                $container.removeData('jzsaGridSuppressClick');
+            }, 180);
+        }
+
+        function stopDraggingState() {
+            state.active = false;
+            $container.removeClass('jzsa-grid-grabbing');
+        }
+
+        $container.on('dragstart' + ns, '.jzsa-grid-thumb', function(e) {
+            e.preventDefault();
+        });
+
+        $container.on('click' + ns, '.jzsa-grid-thumb', function(e) {
+            if ($container.data('jzsaGridSuppressClick')) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+            }
+        });
+
+        $container.on('mousedown' + ns, function(e) {
+            if (e.which !== 1) {
+                return;
+            }
+
+            if ($(e.target).closest('.swiper-button-prev, .swiper-button-next').length) {
+                return;
+            }
+
+            state.active = true;
+            state.moved = false;
+            state.swipeTriggered = false;
+            state.startX = e.pageX;
+            state.startY = e.pageY;
+            state.startScrollTop = $container.scrollTop();
+
+            $container.addClass('jzsa-grid-grabbing');
+            e.preventDefault();
+        });
+
+        $(document).on('mousemove' + ns, function(e) {
+            if (!state.active) {
+                return;
+            }
+
+            var deltaX = e.pageX - state.startX;
+            var deltaY = e.pageY - state.startY;
+
+            if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+                state.moved = true;
+            }
+
+            if (mode === 'scroll') {
+                $container.scrollTop(state.startScrollTop - deltaY);
+                e.preventDefault();
+                return;
+            }
+
+            if (mode === 'pagination' && !state.swipeTriggered) {
+                var threshold = Math.max(30, ($container.width() || 0) * 0.10);
+                var isHorizontalGesture = Math.abs(deltaX) > Math.abs(deltaY);
+                if (isHorizontalGesture && Math.abs(deltaX) >= threshold) {
+                    state.swipeTriggered = true;
+                    suppressNextThumbClick();
+                    if (onPageSwipe) {
+                        onPageSwipe(deltaX < 0 ? 1 : -1);
+                    }
+                    e.preventDefault();
+                }
+            }
+        });
+
+        $(document).on('mouseup' + ns, function() {
+            if (!state.active) {
+                return;
+            }
+
+            if (state.moved || state.swipeTriggered) {
+                suppressNextThumbClick();
+            }
+            stopDraggingState();
+        });
+
+        $(document).on('mouseleave' + ns, function() {
+            if (!state.active) {
+                return;
+            }
+
+            if (state.moved || state.swipeTriggered) {
+                suppressNextThumbClick();
+            }
+            stopDraggingState();
+        });
     }
 
     /**
@@ -2216,7 +2352,8 @@
                     );
 
                     var totalJustifiedRows = justified.rows.length;
-                    if (totalJustifiedRows > gridRows) {
+                    var isJustifiedScrollable = totalJustifiedRows > gridRows;
+                    if (isJustifiedScrollable) {
                         var visibleHeight = (gridRows * justified.targetHeight) + ((gridRows - 1) * gap);
                         setGridScrollableState($container, true, visibleHeight);
                     } else {
@@ -2226,6 +2363,10 @@
                     paginationState.currentPage = 0;
                     paginationState.totalPages = 1;
                     removeGridPaginationControls($container);
+                    setupGridMouseInteractions($container, {
+                        enabled: isJustifiedScrollable,
+                        mode: 'scroll'
+                    });
                 } else {
                     setGridScrollableState($container, false);
 
@@ -2254,12 +2395,32 @@
                         renderJustifiedPage();
                     }
 
-                    setupGridPaginationControls($container, paginationState, function(nextPage, direction) {
+                    var onJustifiedPageChange = function(nextPage, direction) {
                         paginationState.currentPage = nextPage;
                         renderCurrentGridPage({
                             animate: true,
                             direction: direction
                         });
+                    };
+
+                    setupGridPaginationControls($container, paginationState, onJustifiedPageChange);
+                    setupGridMouseInteractions($container, {
+                        enabled: paginationState.totalPages > 1,
+                        mode: 'pagination',
+                        onPageSwipe: function(direction) {
+                            if ($container.data('jzsaGridAnimating')) {
+                                return;
+                            }
+
+                            var nextPage = paginationState.currentPage + direction;
+                            if (nextPage < 0) {
+                                nextPage = paginationState.totalPages - 1;
+                            } else if (nextPage > paginationState.totalPages - 1) {
+                                nextPage = 0;
+                            }
+
+                            onJustifiedPageChange(nextPage, direction);
+                        }
                     });
                 }
             } else {
@@ -2270,7 +2431,8 @@
                     buildUniformGrid($container, allItems);
 
                     var totalUniformRows = activeColumns > 0 ? Math.ceil(allPhotos.length / activeColumns) : 0;
-                    if (totalUniformRows > gridRows) {
+                    var isUniformScrollable = totalUniformRows > gridRows;
+                    if (isUniformScrollable) {
                         var $firstThumb = $container.find('.jzsa-grid-thumb').first();
                         var rowHeight = $firstThumb.length ? $firstThumb.outerHeight() : 0;
 
@@ -2300,6 +2462,10 @@
                     paginationState.currentPage = 0;
                     paginationState.totalPages = 1;
                     removeGridPaginationControls($container);
+                    setupGridMouseInteractions($container, {
+                        enabled: isUniformScrollable,
+                        mode: 'scroll'
+                    });
                 } else {
                     setGridScrollableState($container, false);
 
@@ -2322,12 +2488,32 @@
                         renderUniformPage();
                     }
 
-                    setupGridPaginationControls($container, paginationState, function(nextPage, direction) {
+                    var onUniformPageChange = function(nextPage, direction) {
                         paginationState.currentPage = nextPage;
                         renderCurrentGridPage({
                             animate: true,
                             direction: direction
                         });
+                    };
+
+                    setupGridPaginationControls($container, paginationState, onUniformPageChange);
+                    setupGridMouseInteractions($container, {
+                        enabled: paginationState.totalPages > 1,
+                        mode: 'pagination',
+                        onPageSwipe: function(direction) {
+                            if ($container.data('jzsaGridAnimating')) {
+                                return;
+                            }
+
+                            var nextPage = paginationState.currentPage + direction;
+                            if (nextPage < 0) {
+                                nextPage = paginationState.totalPages - 1;
+                            } else if (nextPage > paginationState.totalPages - 1) {
+                                nextPage = 0;
+                            }
+
+                            onUniformPageChange(nextPage, direction);
+                        }
                     });
                 }
             }
@@ -2354,10 +2540,10 @@
         var $player = $('#' + playerId);
         initializeSwiper($player[0], 'player');
 
-        // Open fullscreen player when a thumbnail is clicked — just slideTo
-        // and toggleFullscreen, exactly like the fullscreen button in other modes.
-        $container.on('click', '.jzsa-grid-thumb', function() {
-            var index = parseInt($(this).attr('data-index'), 10) || 0;
+        var fullScreenSwitch = $container.attr('data-full-screen-switch') || 'double-click';
+
+        function openGridPlayerFromThumb(targetEl) {
+            var index = parseInt($(targetEl).attr('data-index'), 10) || 0;
             var swiper = swipers[playerId];
             if (swiper) {
                 if (swiper.params.loop && typeof swiper.slideToLoop === 'function') {
@@ -2367,7 +2553,34 @@
                 }
             }
             toggleFullscreen($player[0]);
-        });
+        }
+
+        if (fullScreenSwitch === 'single-click') {
+            $container.on('click', '.jzsa-grid-thumb', function(e) {
+                if ($container.data('jzsaGridSuppressClick')) {
+                    return;
+                }
+                e.preventDefault();
+                openGridPlayerFromThumb(this);
+            });
+        } else if (fullScreenSwitch === 'double-click') {
+            $container.on('dblclick', '.jzsa-grid-thumb', function(e) {
+                e.preventDefault();
+                openGridPlayerFromThumb(this);
+            });
+
+            // Mobile/touch fallback for double-click mode.
+            $container.on('touchend', '.jzsa-grid-thumb', function(e) {
+                if ($container.data('jzsaGridSuppressClick')) {
+                    return;
+                }
+                handleDoubleTap(e, function() {
+                    openGridPlayerFromThumb(e.currentTarget || e.target);
+                });
+            });
+        } else {
+            jzsaDebug('Grid fullscreen entry disabled by full-screen-switch=button-only for', $container.attr('id'));
+        }
 
         $container.addClass('jzsa-loaded');
         jzsaDebug(

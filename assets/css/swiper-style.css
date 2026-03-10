@@ -679,10 +679,29 @@ body.jzsa-no-scroll {
 .jzsa-grid-thumb {
     cursor: pointer;
     transition: opacity 0.15s ease;
+    -webkit-user-drag: none;
+    user-select: none;
 }
 
 .jzsa-grid-thumb:hover {
     opacity: 0.85;
+}
+
+.jzsa-grid-album.jzsa-grid-draggable {
+    cursor: grab;
+    user-select: none;
+}
+
+.jzsa-grid-album.jzsa-grid-draggable .jzsa-grid-thumb {
+    cursor: inherit;
+}
+
+.jzsa-grid-album.jzsa-grid-draggable.jzsa-grid-grabbing {
+    cursor: grabbing;
+}
+
+.jzsa-grid-album.jzsa-grid-draggable.jzsa-grid-grabbing .jzsa-grid-thumb {
+    cursor: inherit;
 }
 
 .jzsa-grid-album.jzsa-grid-scrollable {

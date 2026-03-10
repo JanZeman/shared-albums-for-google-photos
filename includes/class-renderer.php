@@ -307,6 +307,14 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-autoplay-inactivity-timeout="%s"', esc_attr( $config['autoplay-inactivity-timeout'] ) );
 		}
 
+		if ( ! empty( $config['full-screen-switch'] ) ) {
+			$attrs[] = sprintf( 'data-full-screen-switch="%s"', esc_attr( $config['full-screen-switch'] ) );
+		}
+
+		if ( ! empty( $config['full-screen-navigation'] ) ) {
+			$attrs[] = sprintf( 'data-full-screen-navigation="%s"', esc_attr( $config['full-screen-navigation'] ) );
+		}
+
 		if ( ! empty( $config['image-fit'] ) ) {
 			$attrs[] = sprintf( 'data-image-fit="%s"', esc_attr( $config['image-fit'] ) );
 		}
