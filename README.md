@@ -58,7 +58,7 @@ git clone https://github.com/JanZeman/shared-albums-for-google-photos.git
 
 ## Key Features
 
-- Multiple display modes — single-photo slider, carousel variants, or thumbnail grid
+- Multiple display modes — single-photo slider, carousel variants, or thumbnail grid (with optional `grid-rows` paging/scrolling)
 - Touch gestures, zoom support, keyboard navigation
 - Progressive image loading with lazy loading
 - Responsive design (mobile, tablet, desktop)

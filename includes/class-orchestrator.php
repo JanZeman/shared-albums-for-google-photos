@@ -342,6 +342,7 @@ class JZSA_Shared_Albums {
 			'grid-columns-mobile' => $this->parse_grid_int( $atts, 'grid-columns-mobile', 1 ),
 			'grid-row-height'     => $this->parse_grid_row_height( $atts ),
 			'grid-rows'           => $this->parse_grid_rows( $atts ),
+			'grid-scroller'       => $this->parse_bool( $atts, 'grid-scroller', false ),
 			'grid-start-at'       => isset( $atts['grid-start-at'] ) ? strtolower( trim( (string) $atts['grid-start-at'] ) ) : '1',
 		);
 

@@ -1873,6 +1873,9 @@
                     return;
                 }
                 e.preventDefault();
+                if ($container.data('jzsaGridAnimating')) {
+                    return;
+                }
 
                 var nextPage = state.currentPage + direction;
                 if (nextPage < 0) {
@@ -1881,7 +1884,7 @@
                     nextPage = 0;
                 }
 
-                onPageChange(nextPage);
+                onPageChange(nextPage, direction);
             }
 
             $el.off('click.jzsaGrid keydown.jzsaGrid');
@@ -1895,6 +1898,210 @@
         $status.text((state.currentPage + 1) + ' / ' + state.totalPages);
         $prev.removeClass('swiper-button-disabled').attr('aria-disabled', 'false');
         $next.removeClass('swiper-button-disabled').attr('aria-disabled', 'false');
+    }
+
+    /**
+     * Remove grid pagination controls if they are present.
+     *
+     * @param {jQuery} $container Grid album element.
+     */
+    function removeGridPaginationControls($container) {
+        $('#' + $container.attr('id') + '-grid-controls').remove();
+    }
+
+    /**
+     * Enable or disable fixed-height grid scrolling.
+     *
+     * @param {jQuery} $container Grid album element.
+     * @param {boolean} enabled   Whether scrolling mode is enabled.
+     * @param {number} maxHeight  Max visible height in pixels.
+     */
+    function setGridScrollableState($container, enabled, maxHeight) {
+        if (!enabled) {
+            $container.removeClass('jzsa-grid-scrollable');
+            $container.css('max-height', '');
+            return;
+        }
+
+        $container.addClass('jzsa-grid-scrollable');
+
+        if (typeof maxHeight === 'number' && maxHeight > 0) {
+            $container.css('max-height', Math.floor(maxHeight) + 'px');
+        } else {
+            $container.css('max-height', '');
+        }
+    }
+
+    /**
+     * Animate grid page changes with a horizontal slide similar to single mode.
+     *
+     * @param {jQuery}  $container     Grid album element.
+     * @param {number}  direction      +1 next page, -1 previous page.
+     * @param {Function} renderNewPage Callback that renders the next page into $container.
+     */
+    function animateGridPageTransition($container, direction, renderNewPage) {
+        var GRID_PAGE_TRANSITION_MS = 600;
+
+        if (!$container || !$container.length || typeof renderNewPage !== 'function') {
+            return;
+        }
+
+        if ($container.data('jzsaGridAnimating')) {
+            renderNewPage();
+            return;
+        }
+
+        var $shell = ensureGridShell($container);
+        var outgoingRect = $container[0] ? $container[0].getBoundingClientRect() : null;
+        var outgoingHeight = outgoingRect ? outgoingRect.height : $container.outerHeight();
+        var outgoingWidth = outgoingRect ? outgoingRect.width : $container.outerWidth();
+
+        if (!outgoingWidth || !outgoingHeight) {
+            renderNewPage();
+            return;
+        }
+
+        function createGridSnapshot($source) {
+            var $snapshot = $source.clone(false, false);
+            var isCssGrid = false;
+            $snapshot.removeAttr('id');
+            $snapshot.removeClass('jzsa-grid-scrollable jzsa-grid-transition-target');
+            $snapshot.css({
+                maxHeight: '',
+                overflowY: '',
+                overflowX: '',
+                visibility: '',
+                transform: '',
+                transition: '',
+                scrollbarGutter: ''
+            });
+
+            var sourceRect = $source[0] ? $source[0].getBoundingClientRect() : null;
+            if (sourceRect && sourceRect.width > 0) {
+                $snapshot.css('width', sourceRect.width + 'px');
+            }
+
+            // Freeze computed layout to prevent intermediate one-tile flashes.
+            if ($source[0] && window.getComputedStyle) {
+                var sourceStyle = window.getComputedStyle($source[0]);
+                if (sourceStyle && sourceStyle.display === 'grid') {
+                    isCssGrid = true;
+                    $snapshot.css({
+                        display: 'grid',
+                        gridTemplateColumns: sourceStyle.gridTemplateColumns,
+                        gridAutoRows: sourceStyle.gridAutoRows,
+                        gap: sourceStyle.gap
+                    });
+                }
+            }
+
+            var sourceThumbs = $source.find('.jzsa-grid-thumb');
+            var snapshotThumbs = $snapshot.find('.jzsa-grid-thumb');
+            snapshotThumbs.each(function(i) {
+                var sourceThumb = sourceThumbs.get(i);
+                if (!sourceThumb) {
+                    return;
+                }
+
+                var rect = sourceThumb.getBoundingClientRect();
+                if (!isCssGrid && rect.width > 0 && rect.height > 0) {
+                    this.style.width = rect.width + 'px';
+                    this.style.height = rect.height + 'px';
+                    this.style.aspectRatio = '';
+                }
+
+                this.setAttribute('loading', 'eager');
+                this.setAttribute('decoding', 'sync');
+            });
+            return $snapshot;
+        }
+
+        var $outgoingSnapshot = createGridSnapshot($container);
+
+        $shell.addClass('jzsa-grid-transitioning');
+        $container.data('jzsaGridAnimating', true);
+        $container.css('visibility', 'hidden');
+
+        renderNewPage();
+
+        var $incomingSnapshot = createGridSnapshot($container);
+
+        // Keep shell height fixed during transition to avoid temporary layout shifts.
+        var stageHeight = outgoingHeight;
+        if (stageHeight > 0) {
+            $shell.css({
+                height: stageHeight + 'px',
+                minHeight: stageHeight + 'px'
+            });
+        }
+
+        $shell.find('.jzsa-grid-slide-stage').remove();
+
+        var $stage = $('<div class="jzsa-grid-slide-stage"></div>');
+        var $track = $('<div class="jzsa-grid-slide-track"></div>');
+        var $panelA = $('<div class="jzsa-grid-slide-panel"></div>');
+        var $panelB = $('<div class="jzsa-grid-slide-panel"></div>');
+        var slideDistance = outgoingWidth;
+
+        if (stageHeight > 0) {
+            $stage.css('height', stageHeight + 'px');
+            $track.css('height', stageHeight + 'px');
+        }
+        if (!slideDistance || slideDistance <= 0) {
+            var shellRect = $shell[0] ? $shell[0].getBoundingClientRect() : null;
+            slideDistance = shellRect ? shellRect.width : ($shell.width() || 0);
+        }
+        $track.css({
+            width: (slideDistance * 2) + 'px',
+            transitionDuration: GRID_PAGE_TRANSITION_MS + 'ms'
+        });
+        $panelA.css({
+            width: slideDistance + 'px',
+            maxWidth: slideDistance + 'px',
+            flex: '0 0 ' + slideDistance + 'px'
+        });
+        $panelB.css({
+            width: slideDistance + 'px',
+            maxWidth: slideDistance + 'px',
+            flex: '0 0 ' + slideDistance + 'px'
+        });
+
+        if (direction > 0) {
+            // Next page: current content moves left, next content comes from right.
+            $panelA.append($outgoingSnapshot);
+            $panelB.append($incomingSnapshot);
+            $track.css('transform', 'translateX(0px)');
+        } else {
+            // Previous page: current content moves right, previous content comes from left.
+            $panelA.append($incomingSnapshot);
+            $panelB.append($outgoingSnapshot);
+            $track.css('transform', 'translateX(' + (-slideDistance) + 'px)');
+        }
+
+        $track.append($panelA, $panelB);
+        $stage.append($track);
+        $shell.append($stage);
+
+        if ($track[0]) {
+            $track[0].offsetHeight;
+        }
+
+        if (direction > 0) {
+            $track.css('transform', 'translateX(' + (-slideDistance) + 'px)');
+        } else {
+            $track.css('transform', 'translateX(0px)');
+        }
+
+        window.setTimeout(function() {
+            $stage.remove();
+            $container.css('visibility', '');
+            $shell.removeClass('jzsa-grid-transitioning');
+            $shell.css({
+                height: '',
+                minHeight: ''
+            });
+            $container.data('jzsaGridAnimating', false);
+        }, GRID_PAGE_TRANSITION_MS + 40);
     }
 
     /**
@@ -1962,6 +2169,7 @@
 
         var requestedGridRows = parseInt($container.attr('data-grid-rows'), 10);
         var gridRows = (!isNaN(requestedGridRows) && requestedGridRows > 0) ? requestedGridRows : 0;
+        var gridScroller = $container.attr('data-grid-scroller') === 'true';
 
         // Apply grid-start-at: rotate the photo array so the grid begins at a
         // different offset. "random" shuffles the order on each page load.
@@ -1990,43 +2198,139 @@
             totalPages: 1
         };
 
-        function renderCurrentGridPage() {
+        function renderCurrentGridPage(options) {
+            var renderOptions = options || {};
+            var useScroller = gridScroller && gridRows > 0;
+            var gap = 4;
+
             if (layout === 'justified') {
                 var justified = getJustifiedLayoutData($container, allPhotos);
-                var rowsPerPage = gridRows > 0 ? gridRows : (justified.rows.length || 1);
-                paginationState.totalPages = justified.rows.length > 0 ? Math.ceil(justified.rows.length / rowsPerPage) : 1;
-                clampGridPage(paginationState);
 
-                var rowStart = paginationState.currentPage * rowsPerPage;
-                var rowsForPage = (gridRows > 0)
-                    ? justified.rows.slice(rowStart, rowStart + rowsPerPage)
-                    : justified.rows;
+                if (useScroller) {
+                    renderJustifiedRows(
+                        $container,
+                        justified.rows,
+                        justified.containerWidth,
+                        justified.targetHeight,
+                        justified.gap
+                    );
 
-                renderJustifiedRows(
-                    $container,
-                    rowsForPage,
-                    justified.containerWidth,
-                    justified.targetHeight,
-                    justified.gap
-                );
+                    var totalJustifiedRows = justified.rows.length;
+                    if (totalJustifiedRows > gridRows) {
+                        var visibleHeight = (gridRows * justified.targetHeight) + ((gridRows - 1) * gap);
+                        setGridScrollableState($container, true, visibleHeight);
+                    } else {
+                        setGridScrollableState($container, false);
+                    }
+
+                    paginationState.currentPage = 0;
+                    paginationState.totalPages = 1;
+                    removeGridPaginationControls($container);
+                } else {
+                    setGridScrollableState($container, false);
+
+                    var rowsPerPage = gridRows > 0 ? gridRows : (justified.rows.length || 1);
+                    paginationState.totalPages = justified.rows.length > 0 ? Math.ceil(justified.rows.length / rowsPerPage) : 1;
+                    clampGridPage(paginationState);
+
+                    var rowStart = paginationState.currentPage * rowsPerPage;
+                    var rowsForPage = (gridRows > 0)
+                        ? justified.rows.slice(rowStart, rowStart + rowsPerPage)
+                        : justified.rows;
+
+                    var renderJustifiedPage = function() {
+                        renderJustifiedRows(
+                            $container,
+                            rowsForPage,
+                            justified.containerWidth,
+                            justified.targetHeight,
+                            justified.gap
+                        );
+                    };
+
+                    if (renderOptions.animate) {
+                        animateGridPageTransition($container, renderOptions.direction || 1, renderJustifiedPage);
+                    } else {
+                        renderJustifiedPage();
+                    }
+
+                    setupGridPaginationControls($container, paginationState, function(nextPage, direction) {
+                        paginationState.currentPage = nextPage;
+                        renderCurrentGridPage({
+                            animate: true,
+                            direction: direction
+                        });
+                    });
+                }
             } else {
                 var activeColumns = getUniformColumnsForViewport($container);
-                var photosPerPage = gridRows > 0 ? (gridRows * activeColumns) : allPhotos.length;
-                if (photosPerPage <= 0) {
-                    photosPerPage = allPhotos.length > 0 ? allPhotos.length : 1;
+                var allItems = getGridPageItems(allPhotos, 0, allPhotos.length || 1);
+
+                if (useScroller) {
+                    buildUniformGrid($container, allItems);
+
+                    var totalUniformRows = activeColumns > 0 ? Math.ceil(allPhotos.length / activeColumns) : 0;
+                    if (totalUniformRows > gridRows) {
+                        var $firstThumb = $container.find('.jzsa-grid-thumb').first();
+                        var rowHeight = $firstThumb.length ? $firstThumb.outerHeight() : 0;
+
+                        if (!rowHeight || rowHeight <= 0) {
+                            var containerWidth = getGridContainerWidth($container);
+                            var cellWidth = (containerWidth - (gap * (activeColumns - 1))) / activeColumns;
+                            rowHeight = cellWidth * 0.75; // 4:3 aspect ratio in uniform layout
+                        }
+
+                        var visibleUniformHeight = (gridRows * rowHeight) + ((gridRows - 1) * gap);
+                        setGridScrollableState($container, true, visibleUniformHeight);
+
+                        // Second pass: once scrollbar appears, available width can
+                        // shrink slightly, which changes thumbnail height. Re-measure
+                        // and apply a corrected max-height to avoid showing a strip
+                        // of the next row.
+                        var $adjustedThumb = $container.find('.jzsa-grid-thumb').first();
+                        var adjustedRowHeight = $adjustedThumb.length ? $adjustedThumb.outerHeight() : 0;
+                        if (adjustedRowHeight && adjustedRowHeight > 0) {
+                            var adjustedVisibleHeight = (gridRows * adjustedRowHeight) + ((gridRows - 1) * gap) - 1;
+                            setGridScrollableState($container, true, adjustedVisibleHeight);
+                        }
+                    } else {
+                        setGridScrollableState($container, false);
+                    }
+
+                    paginationState.currentPage = 0;
+                    paginationState.totalPages = 1;
+                    removeGridPaginationControls($container);
+                } else {
+                    setGridScrollableState($container, false);
+
+                    var photosPerPage = gridRows > 0 ? (gridRows * activeColumns) : allPhotos.length;
+                    if (photosPerPage <= 0) {
+                        photosPerPage = allPhotos.length > 0 ? allPhotos.length : 1;
+                    }
+
+                    paginationState.totalPages = allPhotos.length > 0 ? Math.ceil(allPhotos.length / photosPerPage) : 1;
+                    clampGridPage(paginationState);
+
+                    var pageItems = getGridPageItems(allPhotos, paginationState.currentPage, photosPerPage);
+                    var renderUniformPage = function() {
+                        buildUniformGrid($container, pageItems);
+                    };
+
+                    if (renderOptions.animate) {
+                        animateGridPageTransition($container, renderOptions.direction || 1, renderUniformPage);
+                    } else {
+                        renderUniformPage();
+                    }
+
+                    setupGridPaginationControls($container, paginationState, function(nextPage, direction) {
+                        paginationState.currentPage = nextPage;
+                        renderCurrentGridPage({
+                            animate: true,
+                            direction: direction
+                        });
+                    });
                 }
-
-                paginationState.totalPages = allPhotos.length > 0 ? Math.ceil(allPhotos.length / photosPerPage) : 1;
-                clampGridPage(paginationState);
-
-                var pageItems = getGridPageItems(allPhotos, paginationState.currentPage, photosPerPage);
-                buildUniformGrid($container, pageItems);
             }
-
-            setupGridPaginationControls($container, paginationState, function(nextPage) {
-                paginationState.currentPage = nextPage;
-                renderCurrentGridPage();
-            });
         }
 
         renderCurrentGridPage();
@@ -2073,8 +2377,10 @@
             layout,
             '| photos:',
             allPhotos.length,
-            '| rows per page:',
+            '| rows:',
             gridRows > 0 ? gridRows : 'all',
+            '| scroller:',
+            gridScroller ? 'true' : 'false',
             '| pages:',
             paginationState.totalPages
         );

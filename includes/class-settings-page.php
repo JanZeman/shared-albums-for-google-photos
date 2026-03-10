@@ -550,6 +550,21 @@ class JZSA_Settings_Page {
 						?>
 					</div>
 					</div>
+
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Grid Mode – Scrolling Rows', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Use grid-scroller="true" with grid-rows to show a fixed-height, vertically scrollable grid instead of page controls.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<div class="jzsa-code-block">
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="grid" grid-layout="uniform" grid-columns="3" grid-rows="2" grid-scroller="true" max-photos-per-album="18"]</code>
+						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					</div>
+					<div class="jzsa-preview-container jzsa-preview-container-grid-scroller" style="height:auto;">
+						<?php
+							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="grid" grid-layout="uniform" grid-columns="3" grid-rows="2" grid-scroller="true" max-photos-per-album="18"]' );
+						?>
+					</div>
+					</div>
 				</div>
 
 				<!-- Start Tutorial -->
@@ -820,7 +835,7 @@ class JZSA_Settings_Page {
 									• "single": Single photo viewer with zoom support (pinch/double-click to zoom)<br>
 									• "carousel": Multiple photos visible at once (2 on mobile/tablet, 3 on desktop)<br>
 									• "carousel-to-single": Carousel preview (2 or 3 photos visible) that switches to a single photo viewer in fullscreen<br>
-									• "grid": Thumbnail grid with optional paging via <code>grid-rows</code>; click any thumbnail to open it in a fullscreen viewer</td>
+									• "grid": Thumbnail grid with optional paging or scrolling via <code>grid-rows</code> and <code>grid-scroller</code>; click any thumbnail to open it in a fullscreen viewer</td>
 								<td>single</td>
 							</tr>
 						</tbody>
@@ -864,8 +879,13 @@ class JZSA_Settings_Page {
 							</tr>
 							<tr>
 								<td><code>grid-rows</code></td>
-								<td><?php esc_html_e( 'Number of grid rows per page. If more rows are available, the existing prev/next controls and pagination are used for grid page navigation. Use 0 to show all rows on one page.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Number of visible grid rows when row limiting is enabled. If more rows are available, grid uses paging by default or scrolling when grid-scroller="true". Use 0 to show all rows.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>0 (all rows)</td>
+							</tr>
+							<tr>
+								<td><code>grid-scroller</code></td>
+								<td><?php esc_html_e( 'When set to "true" (and grid-rows > 0), uses a single vertically scrollable grid instead of page controls.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>false</td>
 							</tr>
 							<tr>
 								<td><code>grid-start-at</code></td>

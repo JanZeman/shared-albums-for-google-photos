@@ -659,6 +659,10 @@ body.jzsa-no-scroll {
     overflow: hidden;
 }
 
+.jzsa-grid-album[data-grid-layout="justified"] .jzsa-justified-row:last-child {
+    margin-bottom: 0;
+}
+
 .jzsa-grid-album[data-grid-layout="justified"] .jzsa-grid-thumb {
     object-fit: cover;
     flex-shrink: 0;
@@ -681,9 +685,20 @@ body.jzsa-no-scroll {
     opacity: 0.85;
 }
 
+.jzsa-grid-album.jzsa-grid-scrollable {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable;
+}
+
 /* Grid pagination controls (uses existing Swiper-style controls) */
 .jzsa-grid-shell {
     position: relative;
+}
+
+.jzsa-grid-shell.jzsa-grid-transitioning {
+    overflow: hidden;
 }
 
 .jzsa-grid-controls {
@@ -710,6 +725,47 @@ body.jzsa-no-scroll {
     transform: none;
     margin: 0 auto;
     max-width: max-content;
+    pointer-events: none;
+}
+
+.jzsa-grid-slide-stage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 15;
+}
+
+.jzsa-grid-slide-track {
+    display: flex;
+    width: 200%;
+    transition: transform 0.6s ease;
+}
+
+.jzsa-grid-slide-panel {
+    flex: 0 0 50%;
+    max-width: 50%;
+    overflow: hidden;
+}
+
+.jzsa-grid-slide-panel .jzsa-justified-row:last-child {
+    margin-bottom: 0;
+}
+
+.jzsa-grid-slide-panel .jzsa-grid-thumb {
+    display: block;
+}
+
+.jzsa-grid-slide-panel .jzsa-grid-thumb:hover {
+    opacity: 1;
+}
+
+.jzsa-grid-slide-panel .jzsa-grid-thumb,
+.jzsa-grid-slide-panel .jzsa-justified-row,
+.jzsa-grid-slide-panel img {
     pointer-events: none;
 }
 
