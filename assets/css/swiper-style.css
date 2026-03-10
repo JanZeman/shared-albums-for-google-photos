@@ -41,6 +41,37 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     object-fit: fill;
 }
 
+/* full-screen-image-fit overrides image-fit when in fullscreen */
+.jzsa-album:fullscreen[data-full-screen-image-fit="contain"] .swiper-slide img,
+.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="contain"] .swiper-slide img,
+.jzsa-album:-moz-full-screen[data-full-screen-image-fit="contain"] .swiper-slide img,
+.jzsa-album:-ms-fullscreen[data-full-screen-image-fit="contain"] .swiper-slide img,
+.jzsa-album.jzsa-pseudo-fullscreen[data-full-screen-image-fit="contain"] .swiper-slide img {
+    object-fit: contain;
+    width: auto;
+    height: auto;
+}
+
+.jzsa-album:fullscreen[data-full-screen-image-fit="cover"] .swiper-slide img,
+.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="cover"] .swiper-slide img,
+.jzsa-album:-moz-full-screen[data-full-screen-image-fit="cover"] .swiper-slide img,
+.jzsa-album:-ms-fullscreen[data-full-screen-image-fit="cover"] .swiper-slide img,
+.jzsa-album.jzsa-pseudo-fullscreen[data-full-screen-image-fit="cover"] .swiper-slide img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+
+.jzsa-album:fullscreen[data-full-screen-image-fit="stretch"] .swiper-slide img,
+.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="stretch"] .swiper-slide img,
+.jzsa-album:-moz-full-screen[data-full-screen-image-fit="stretch"] .swiper-slide img,
+.jzsa-album:-ms-fullscreen[data-full-screen-image-fit="stretch"] .swiper-slide img,
+.jzsa-album.jzsa-pseudo-fullscreen[data-full-screen-image-fit="stretch"] .swiper-slide img {
+    object-fit: fill;
+    width: 100%;
+    height: 100%;
+}
+
 /* Navigation buttons */
 .jzsa-album .swiper-button-next,
 .jzsa-album .swiper-button-prev {

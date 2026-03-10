@@ -323,7 +323,8 @@ class JZSA_Shared_Albums {
 			// Display
 			'mode'             => $this->parse_mode( $atts ),
 			'background-color' => $this->parse_color( $atts ),
-			'image-fit'       => $this->parse_image_fit( $atts ),
+			'image-fit'              => $this->parse_image_fit( $atts ),
+			'full-screen-image-fit'  => $this->parse_fullscreen_image_fit( $atts ),
 			'full-screen-switch'     => $this->parse_fullscreen_switch_mode( $atts ),
 			'full-screen-navigation' => $this->parse_fullscreen_navigation_mode( $atts ),
 			'show-title'             => $this->parse_bool( $atts, 'show-title', false ),
@@ -457,6 +458,27 @@ class JZSA_Shared_Albums {
 
 		// Fallback to cover on invalid input.
 		return 'cover';
+	}
+
+	/**
+	 * Parse full-screen-image-fit attribute.
+	 *
+	 * Falls back to image-fit when not explicitly provided, so the fullscreen
+	 * view inherits the inline setting by default.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string One of 'contain', 'cover', or 'stretch'.
+	 */
+	private function parse_fullscreen_image_fit( $atts ) {
+		if ( isset( $atts['full-screen-image-fit'] ) ) {
+			$value = strtolower( trim( (string) $atts['full-screen-image-fit'] ) );
+			if ( in_array( $value, array( 'contain', 'cover', 'stretch' ), true ) ) {
+				return $value;
+			}
+		}
+
+		// Not set or invalid — inherit from image-fit.
+		return $this->parse_image_fit( $atts );
 	}
 
 	/**

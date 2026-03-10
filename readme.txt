@@ -125,6 +125,7 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
 * **full-screen-autoplay-delay** - Autoplay delay in fullscreen mode, in seconds, supports ranges like "3-5" or single values (default: 3)
 * **full-screen-switch** - Full screen switch mode: "double-click" (default: double-click), "button-only" (button only), or "single-click" (single-click). Works both in and out of full screen mode.
 * **full-screen-navigation** - Full screen navigation mode: "single-click" (default: single-click, click left/right areas to navigate), "buttons-only" (navigation buttons only), or "double-click" (double-click left/right areas to navigate). Only works when in full screen mode.
+* **full-screen-image-fit** - How photos fit the frame in fullscreen: "cover" (fill and crop edges), "contain" (letterbox, no cropping), or "stretch" (fill and distort). If not set, inherits from image-fit.
 
 **Display Options:**
 

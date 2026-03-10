@@ -1601,7 +1601,8 @@
             'data-show-counter',
             'data-album-title',
             'data-album-url',
-            'data-image-fit'
+            'data-image-fit',
+            'data-full-screen-image-fit'
         ];
         for (var i = 0; i < forwardAttrs.length; i++) {
             var val = $gridContainer.attr(forwardAttrs[i]);

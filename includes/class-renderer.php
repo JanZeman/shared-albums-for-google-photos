@@ -212,6 +212,10 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-image-fit="%s"', esc_attr( $config['image-fit'] ) );
 		}
 
+		if ( ! empty( $config['full-screen-image-fit'] ) ) {
+			$attrs[] = sprintf( 'data-full-screen-image-fit="%s"', esc_attr( $config['full-screen-image-fit'] ) );
+		}
+
 		if ( isset( $config['start-at'] ) && '' !== $config['start-at'] ) {
 			$attrs[] = sprintf( 'data-start-at="%s"', esc_attr( $config['start-at'] ) );
 		}
@@ -302,6 +306,10 @@ class JZSA_Renderer {
 
 		if ( ! empty( $config['image-fit'] ) ) {
 			$attrs[] = sprintf( 'data-image-fit="%s"', esc_attr( $config['image-fit'] ) );
+		}
+
+		if ( ! empty( $config['full-screen-image-fit'] ) ) {
+			$attrs[] = sprintf( 'data-full-screen-image-fit="%s"', esc_attr( $config['full-screen-image-fit'] ) );
 		}
 
 		return sprintf(

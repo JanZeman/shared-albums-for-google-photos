@@ -748,6 +748,11 @@ class JZSA_Settings_Page {
 								<td>Full screen navigation mode: "single-click" (click left/right areas to navigate), "buttons-only" (navigation buttons only), or "double-click" (double-click left/right areas to navigate). Only works when in full screen mode.</td>
 								<td>single-click</td>
 							</tr>
+							<tr>
+								<td><code>full-screen-image-fit</code></td>
+								<td>How photos fit the frame in fullscreen: "cover" (fill and crop edges), "contain" (letterbox, no cropping), or "stretch" (fill and distort). If not set, inherits from <code>image-fit</code>.</td>
+								<td>same as image-fit</td>
+							</tr>
 						</tbody>
 					</table>
 
