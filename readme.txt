@@ -149,6 +149,7 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
 * **grid-columns-tablet** - Number of columns on tablet screens ≤ 768 px (default: 2, uniform only).
 * **grid-columns-mobile** - Number of columns on mobile screens ≤ 480 px (default: 1, uniform only).
 * **grid-row-height** - Target row height in pixels for the justified layout, 50–800 (default: 200).
+* **grid-start-at** - Which photo the grid starts at: a 1-based index (e.g. "5") to rotate the grid, or "random" to shuffle the order on each page load (default: 1).
 
 = Getting Your Album Share Link =
 

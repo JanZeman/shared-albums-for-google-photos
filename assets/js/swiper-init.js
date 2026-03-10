@@ -1772,6 +1772,28 @@
             allPhotos = allPhotos.slice(0, OLD_IOS_MAX_PHOTOS);
         }
 
+        // Apply grid-start-at: rotate the photo array so the grid begins at a
+        // different offset. "random" shuffles the order on each page load.
+        var startAtRaw = ($container.attr('data-grid-start-at') || '1').toString().toLowerCase();
+        if (startAtRaw === 'random' && allPhotos.length > 1) {
+            // Fisher-Yates shuffle
+            for (var si = allPhotos.length - 1; si > 0; si--) {
+                var sj = Math.floor(Math.random() * (si + 1));
+                var tmp = allPhotos[si];
+                allPhotos[si] = allPhotos[sj];
+                allPhotos[sj] = tmp;
+            }
+        } else if (startAtRaw && startAtRaw !== 'random') {
+            var startIdx = parseInt(startAtRaw, 10);
+            if (!isNaN(startIdx) && startIdx > 1 && startIdx <= allPhotos.length) {
+                // Rotate: photos before startIdx move to the end
+                allPhotos = allPhotos.slice(startIdx - 1).concat(allPhotos.slice(0, startIdx - 1));
+            }
+        }
+
+        // Update the container's data so the fullscreen player gets the same order
+        $container.attr('data-all-photos', JSON.stringify(allPhotos));
+
         if (layout === 'justified') {
             buildJustifiedGrid($container, allPhotos);
 
