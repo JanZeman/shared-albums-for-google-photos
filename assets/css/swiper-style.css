@@ -41,31 +41,51 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     object-fit: fill;
 }
 
-/* full-screen-image-fit overrides image-fit when in fullscreen */
-.jzsa-album:fullscreen[data-full-screen-image-fit="contain"] .swiper-slide img,
-.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="contain"] .swiper-slide img,
-.jzsa-album:-moz-full-screen[data-full-screen-image-fit="contain"] .swiper-slide img,
-.jzsa-album:-ms-fullscreen[data-full-screen-image-fit="contain"] .swiper-slide img,
+/* full-screen-image-fit overrides image-fit when in fullscreen.
+   Each vendor prefix MUST be in its own rule — grouping them causes browsers
+   to drop the entire rule when they encounter an unrecognised pseudo-class. */
+.jzsa-album:fullscreen[data-full-screen-image-fit="contain"] .swiper-slide img {
+    object-fit: contain;
+    width: auto;
+    height: auto;
+}
+.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="contain"] .swiper-slide img {
+    object-fit: contain;
+    width: auto;
+    height: auto;
+}
 .jzsa-album.jzsa-pseudo-fullscreen[data-full-screen-image-fit="contain"] .swiper-slide img {
     object-fit: contain;
     width: auto;
     height: auto;
 }
 
-.jzsa-album:fullscreen[data-full-screen-image-fit="cover"] .swiper-slide img,
-.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="cover"] .swiper-slide img,
-.jzsa-album:-moz-full-screen[data-full-screen-image-fit="cover"] .swiper-slide img,
-.jzsa-album:-ms-fullscreen[data-full-screen-image-fit="cover"] .swiper-slide img,
+.jzsa-album:fullscreen[data-full-screen-image-fit="cover"] .swiper-slide img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="cover"] .swiper-slide img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
 .jzsa-album.jzsa-pseudo-fullscreen[data-full-screen-image-fit="cover"] .swiper-slide img {
     object-fit: cover;
     width: 100%;
     height: 100%;
 }
 
-.jzsa-album:fullscreen[data-full-screen-image-fit="stretch"] .swiper-slide img,
-.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="stretch"] .swiper-slide img,
-.jzsa-album:-moz-full-screen[data-full-screen-image-fit="stretch"] .swiper-slide img,
-.jzsa-album:-ms-fullscreen[data-full-screen-image-fit="stretch"] .swiper-slide img,
+.jzsa-album:fullscreen[data-full-screen-image-fit="stretch"] .swiper-slide img {
+    object-fit: fill;
+    width: 100%;
+    height: 100%;
+}
+.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="stretch"] .swiper-slide img {
+    object-fit: fill;
+    width: 100%;
+    height: 100%;
+}
 .jzsa-album.jzsa-pseudo-fullscreen[data-full-screen-image-fit="stretch"] .swiper-slide img {
     object-fit: fill;
     width: 100%;
@@ -285,23 +305,27 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 }
 
 /* When in fullscreen, show exit fullscreen icon */
-.jzsa-album:fullscreen .swiper-button-fullscreen:after,
-.jzsa-album:-webkit-full-screen .swiper-button-fullscreen:after,
-.jzsa-album:-moz-full-screen .swiper-button-fullscreen:after,
-.jzsa-album:-ms-fullscreen .swiper-button-fullscreen:after {
+.jzsa-album:fullscreen .swiper-button-fullscreen:after {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>');
+}
+.jzsa-album:-webkit-full-screen .swiper-button-fullscreen:after {
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>');
 }
 
 /* Fullscreen mode styling */
-.jzsa-album:fullscreen,
-.jzsa-album:-webkit-full-screen,
-.jzsa-album:-moz-full-screen,
-.jzsa-album:-ms-fullscreen {
+.jzsa-album:fullscreen {
     width: 100vw !important;
     height: 100vh !important;
     max-width: 100vw;
     max-height: 100vh;
-background-color: var(--gallery-bg-color, #FFFFFF);
+    background-color: var(--gallery-bg-color, #FFFFFF);
+}
+.jzsa-album:-webkit-full-screen {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw;
+    max-height: 100vh;
+    background-color: var(--gallery-bg-color, #FFFFFF);
 }
 
 /* Pseudo fullscreen styling for iPhone (CSS-based fallback) */
@@ -443,45 +467,46 @@ body.jzsa-no-scroll {
     cursor: default;
 }
 
-/* Full screen navigation - cursor feedback and mobile tap highlight removal (only in fullscreen) */
+/* Full screen navigation - cursor feedback and mobile tap highlight removal (only in fullscreen).
+   Each vendor prefix in its own rule to avoid browser invalidation. */
 .jzsa-album:fullscreen[data-full-screen-navigation="single-click"] .swiper-slide,
-.jzsa-album:fullscreen[data-full-screen-navigation="double-click"] .swiper-slide,
-.jzsa-album:-webkit-full-screen[data-full-screen-navigation="single-click"] .swiper-slide,
-.jzsa-album:-webkit-full-screen[data-full-screen-navigation="double-click"] .swiper-slide,
-.jzsa-album:-moz-full-screen[data-full-screen-navigation="single-click"] .swiper-slide,
-.jzsa-album:-moz-full-screen[data-full-screen-navigation="double-click"] .swiper-slide,
-.jzsa-album:-ms-fullscreen[data-full-screen-navigation="single-click"] .swiper-slide,
-.jzsa-album:-ms-fullscreen[data-full-screen-navigation="double-click"] .swiper-slide {
+.jzsa-album:fullscreen[data-full-screen-navigation="double-click"] .swiper-slide {
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
+    user-select: none;
+}
+.jzsa-album:-webkit-full-screen[data-full-screen-navigation="single-click"] .swiper-slide,
+.jzsa-album:-webkit-full-screen[data-full-screen-navigation="double-click"] .swiper-slide {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
     user-select: none;
 }
 
 /* Left half cursor (previous) - only in fullscreen */
 .jzsa-album:fullscreen[data-full-screen-navigation="single-click"] .swiper-slide:hover,
-.jzsa-album:fullscreen[data-full-screen-navigation="double-click"] .swiper-slide:hover,
+.jzsa-album:fullscreen[data-full-screen-navigation="double-click"] .swiper-slide:hover {
+    cursor: w-resize;
+}
 .jzsa-album:-webkit-full-screen[data-full-screen-navigation="single-click"] .swiper-slide:hover,
-.jzsa-album:-webkit-full-screen[data-full-screen-navigation="double-click"] .swiper-slide:hover,
-.jzsa-album:-moz-full-screen[data-full-screen-navigation="single-click"] .swiper-slide:hover,
-.jzsa-album:-moz-full-screen[data-full-screen-navigation="double-click"] .swiper-slide:hover,
-.jzsa-album:-ms-fullscreen[data-full-screen-navigation="single-click"] .swiper-slide:hover,
-.jzsa-album:-ms-fullscreen[data-full-screen-navigation="double-click"] .swiper-slide:hover {
+.jzsa-album:-webkit-full-screen[data-full-screen-navigation="double-click"] .swiper-slide:hover {
     cursor: w-resize;
 }
 
 /* Right half cursor (next) - using pseudo-element trick - only in fullscreen */
 .jzsa-album:fullscreen[data-full-screen-navigation="single-click"] .swiper-slide::after,
-.jzsa-album:fullscreen[data-full-screen-navigation="double-click"] .swiper-slide::after,
+.jzsa-album:fullscreen[data-full-screen-navigation="double-click"] .swiper-slide::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    cursor: e-resize;
+}
 .jzsa-album:-webkit-full-screen[data-full-screen-navigation="single-click"] .swiper-slide::after,
-.jzsa-album:-webkit-full-screen[data-full-screen-navigation="double-click"] .swiper-slide::after,
-.jzsa-album:-moz-full-screen[data-full-screen-navigation="single-click"] .swiper-slide::after,
-.jzsa-album:-moz-full-screen[data-full-screen-navigation="double-click"] .swiper-slide::after,
-.jzsa-album:-ms-fullscreen[data-full-screen-navigation="single-click"] .swiper-slide::after,
-.jzsa-album:-ms-fullscreen[data-full-screen-navigation="double-click"] .swiper-slide::after {
+.jzsa-album:-webkit-full-screen[data-full-screen-navigation="double-click"] .swiper-slide::after {
     content: '';
     position: absolute;
     top: 0;
@@ -619,6 +644,12 @@ body.jzsa-no-scroll {
     object-fit: cover;
     display: block;
 }
+.jzsa-grid-album[data-grid-layout="uniform"][data-image-fit="contain"] .jzsa-grid-thumb {
+    object-fit: contain;
+}
+.jzsa-grid-album[data-grid-layout="uniform"][data-image-fit="stretch"] .jzsa-grid-thumb {
+    object-fit: fill;
+}
 
 /* Justified grid layout */
 .jzsa-grid-album[data-grid-layout="justified"] .jzsa-justified-row {
@@ -632,6 +663,12 @@ body.jzsa-no-scroll {
     object-fit: cover;
     flex-shrink: 0;
     display: block;
+}
+.jzsa-grid-album[data-grid-layout="justified"][data-image-fit="contain"] .jzsa-grid-thumb {
+    object-fit: contain;
+}
+.jzsa-grid-album[data-grid-layout="justified"][data-image-fit="stretch"] .jzsa-grid-thumb {
+    object-fit: fill;
 }
 
 /* Shared thumbnail hover */
