@@ -681,6 +681,38 @@ body.jzsa-no-scroll {
     opacity: 0.85;
 }
 
+/* Grid pagination controls (uses existing Swiper-style controls) */
+.jzsa-grid-shell {
+    position: relative;
+}
+
+.jzsa-grid-controls {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    background-color: transparent;
+    pointer-events: none;
+}
+
+.jzsa-grid-controls .swiper-button-prev,
+.jzsa-grid-controls .swiper-button-next {
+    margin-top: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: auto;
+}
+
+.jzsa-grid-controls .swiper-pagination {
+    top: auto;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    transform: none;
+    margin: 0 auto;
+    max-width: max-content;
+    pointer-events: none;
+}
+
 /* ============================================================================
    Grid fullscreen player (hidden until fullscreen is entered)
    ============================================================================ */

@@ -20,7 +20,7 @@ Shared Albums for Google Photos (by JanZeman) allows you to easily display publi
 
 = Features =
 
-* **Grid Mode** - Display all photos as a thumbnail grid
+* **Grid Mode** - Display photos as a thumbnail grid with uniform/justified layouts and optional paging
 * **Modern Gallery Viewer** - Powered by Swiper 11, a modern mobile-friendly slider
 * **Responsive Design** - Works perfectly on desktop, tablet, and mobile devices
 * **Shortcode Playground** - Admin-only sandbox on the Settings page for experimenting with `[jzsa-album]` shortcodes and previews
@@ -140,7 +140,7 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
   - "single": Single photo viewer with zoom support. Users can pinch to zoom or double-click to zoom.
   - "carousel": Multiple photos visible at once. On mobile and tablets it shows 2 photos at a time, and on desktop it shows 3 photos.
   - "carousel-to-single": Carousel preview (2 or 3 photos visible) that switches to a single photo viewer in fullscreen.
-  - "grid": Thumbnail grid — all photos visible at once. Click any thumbnail to open it in a fullscreen viewer.
+  - "grid": Thumbnail grid with a pagination support. Click any thumbnail to open it in a fullscreen viewer.
 
 **Grid Mode Options** (only apply when mode="grid"):
 
@@ -149,6 +149,7 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
 * **grid-columns-tablet** - Number of columns on tablet screens ≤ 768 px (default: 2, uniform only).
 * **grid-columns-mobile** - Number of columns on mobile screens ≤ 480 px (default: 1, uniform only).
 * **grid-row-height** - Target row height in pixels for the justified layout, 50–800 (default: 200).
+* **grid-rows** - Number of grid rows per page. If more rows are available, existing prev/next controls and pagination are used for grid navigation. Use 0 to show all rows on one page (default: 0).
 * **grid-start-at** - Which photo the grid starts at: a 1-based index (e.g. "5") to rotate the grid, or "random" to shuffle the order on each page load (default: 1).
 
 = Getting Your Album Share Link =

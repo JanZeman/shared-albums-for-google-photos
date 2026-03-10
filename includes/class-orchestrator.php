@@ -341,6 +341,7 @@ class JZSA_Shared_Albums {
 			'grid-columns-tablet' => $this->parse_grid_int( $atts, 'grid-columns-tablet', 2 ),
 			'grid-columns-mobile' => $this->parse_grid_int( $atts, 'grid-columns-mobile', 1 ),
 			'grid-row-height'     => $this->parse_grid_row_height( $atts ),
+			'grid-rows'           => $this->parse_grid_rows( $atts ),
 			'grid-start-at'       => isset( $atts['grid-start-at'] ) ? strtolower( trim( (string) $atts['grid-start-at'] ) ) : '1',
 		);
 
@@ -600,6 +601,33 @@ class JZSA_Shared_Albums {
 		$value = intval( $atts['grid-row-height'] );
 
 		return ( $value >= 50 && $value <= 800 ) ? $value : 200;
+	}
+
+	/**
+	 * Parse grid-rows attribute.
+	 *
+	 * Controls how many grid rows are shown per page.
+	 * Use 0 (or omit) to show all rows on one page.
+	 *
+	 * @param array $atts Attributes.
+	 * @return int
+	 */
+	private function parse_grid_rows( $atts ) {
+		if ( ! isset( $atts['grid-rows'] ) ) {
+			return 0;
+		}
+
+		$value = intval( $atts['grid-rows'] );
+
+		if ( $value <= 0 ) {
+			return 0;
+		}
+
+		if ( $value > self::MAX_PHOTOS ) {
+			return self::MAX_PHOTOS;
+		}
+
+		return $value;
 	}
 
 	/**

@@ -1579,8 +1579,14 @@
         html += '<div class="swiper-button-fullscreen"></div>';
         html += '</div>';
 
-        // Insert the player right after the grid container
-        $gridContainer.after(html);
+        // Insert player after the grid shell when present so controls can stay
+        // overlaid on top of the grid without affecting player placement.
+        var $shell = $gridContainer.parent('.jzsa-grid-shell');
+        if ($shell.length) {
+            $shell.after(html);
+        } else {
+            $gridContainer.after(html);
+        }
 
         var $player = $('#' + playerId);
 
@@ -1682,9 +1688,9 @@
      * Render a uniform CSS-grid of thumbnails into `$container`.
      *
      * @param {jQuery} $container Grid album element.
-     * @param {Array}  photos     Photo objects {preview, full}.
+     * @param {Array}  pageItems  Array of objects: { photo, index }.
      */
-    function buildUniformGrid($container, photos) {
+    function buildUniformGrid($container, pageItems) {
         var columns       = parseInt($container.attr('data-grid-columns'), 10)        || 3;
         var columnsTablet = parseInt($container.attr('data-grid-columns-tablet'), 10) || 2;
         var columnsMobile = parseInt($container.attr('data-grid-columns-mobile'), 10) || 1;
@@ -1695,14 +1701,16 @@
         $container[0].style.setProperty('--jzsa-grid-columns-mobile', columnsMobile);
 
         var html = '';
-        photos.forEach(function(photo, index) {
+        pageItems.forEach(function(item) {
+            var photo = item.photo;
+            var globalIndex = item.index;
             var src = photo.preview || photo.full;
             html +=
                 '<img class="jzsa-grid-thumb"' +
                 ' src="' + src + '"' +
                 (src !== photo.full ? ' data-full-src="' + photo.full + '"' : '') +
-                ' data-index="' + index + '"' +
-                ' alt="Photo ' + (index + 1) + '"' +
+                ' data-index="' + globalIndex + '"' +
+                ' alt="Photo ' + (globalIndex + 1) + '"' +
                 ' loading="lazy">';
         });
 
@@ -1710,32 +1718,29 @@
     }
 
     /**
-     * Render a justified (Flickr-style) grid of thumbnails into `$container`.
+     * Measure grid width with a safe fallback.
      *
      * @param {jQuery} $container Grid album element.
-     * @param {Array}  photos     Photo objects {preview, full}.
+     * @return {number}
      */
-    function buildJustifiedGrid($container, photos) {
-        var targetHeight = parseInt($container.attr('data-grid-row-height'), 10) || 200;
-        var gap          = 4; // px gap between photos (also set in CSS)
-
-        // Measure available width; fall back gracefully if not yet laid out
+    function getGridContainerWidth($container) {
         var containerWidth = $container.width();
         if (!containerWidth || containerWidth < 10) {
-            containerWidth = 800;
+            return 800;
         }
+        return containerWidth;
+    }
 
-        // Attach aspect ratio to each photo
-        var photosWithRatios = photos.map(function(photo, index) {
-            return {
-                photo: photo,
-                ratio: parseAspectRatio(photo.preview || photo.full),
-                index: index,
-            };
-        });
-
-        var rows = buildJustifiedRows(photosWithRatios, containerWidth, targetHeight, gap);
-
+    /**
+     * Render precomputed justified rows into `$container`.
+     *
+     * @param {jQuery} $container      Grid album element.
+     * @param {Array}  rows            Array of justified rows.
+     * @param {number} containerWidth  Available width in pixels.
+     * @param {number} targetHeight    Row height in pixels.
+     * @param {number} gap             Gap between thumbnails in pixels.
+     */
+    function renderJustifiedRows($container, rows, containerWidth, targetHeight, gap) {
         var html = '';
         rows.forEach(function(row) {
             var totalRatio    = row.reduce(function(sum, item) { return sum + item.ratio; }, 0);
@@ -1762,6 +1767,182 @@
     }
 
     /**
+     * Determine the active uniform-grid column count for the current viewport.
+     *
+     * @param {jQuery} $container Grid album element.
+     * @return {number}
+     */
+    function getUniformColumnsForViewport($container) {
+        var columnsDesktop = parseInt($container.attr('data-grid-columns'), 10) || 3;
+        var columnsTablet  = parseInt($container.attr('data-grid-columns-tablet'), 10) || 2;
+        var columnsMobile  = parseInt($container.attr('data-grid-columns-mobile'), 10) || 1;
+        var viewportWidth  = window.innerWidth || document.documentElement.clientWidth || 1024;
+
+        if (viewportWidth <= 480) {
+            return columnsMobile;
+        }
+
+        if (viewportWidth <= 768) {
+            return columnsTablet;
+        }
+
+        return columnsDesktop;
+    }
+
+    /**
+     * Build a page slice of photos for the grid renderer.
+     *
+     * @param {Array}  allPhotos Full ordered photo array.
+     * @param {number} pageIndex Zero-based page index.
+     * @param {number} pageSize  Photos per page.
+     * @return {Array} Array of objects: { photo, index }.
+     */
+    function getGridPageItems(allPhotos, pageIndex, pageSize) {
+        var items = [];
+        var safePageSize = pageSize > 0 ? pageSize : (allPhotos.length || 1);
+        var start = pageIndex * safePageSize;
+        var end = Math.min(start + safePageSize, allPhotos.length);
+
+        for (var i = start; i < end; i++) {
+            items.push({
+                photo: allPhotos[i],
+                index: i
+            });
+        }
+
+        return items;
+    }
+
+    /**
+     * Ensure the grid container is wrapped by a positioned shell for overlay controls.
+     *
+     * @param {jQuery} $container Grid album element.
+     * @return {jQuery} Shell element.
+     */
+    function ensureGridShell($container) {
+        var $shell = $container.parent('.jzsa-grid-shell');
+
+        if ($shell.length) {
+            return $shell;
+        }
+
+        $container.wrap('<div class="jzsa-grid-shell"></div>');
+        return $container.parent('.jzsa-grid-shell');
+    }
+
+    /**
+     * Build/update grid pagination controls using existing Swiper-style controls.
+     *
+     * @param {jQuery}   $container    Grid album element.
+     * @param {Object}   state         Pagination state object.
+     * @param {Function} onPageChange  Callback invoked with next page index.
+     */
+    function setupGridPaginationControls($container, state, onPageChange) {
+        var controlsId = $container.attr('id') + '-grid-controls';
+        var $shell = ensureGridShell($container);
+        var $controls = $('#' + controlsId);
+
+        if (state.totalPages <= 1) {
+            $controls.remove();
+            return;
+        }
+
+        if (!$controls.length) {
+            var html =
+                '<div id="' + controlsId + '" class="jzsa-grid-controls jzsa-album" role="group" aria-label="Grid page navigation">' +
+                    '<div class="swiper-button-prev" role="button" tabindex="0" aria-label="Previous grid page"></div>' +
+                    '<div class="swiper-pagination" aria-live="polite"></div>' +
+                    '<div class="swiper-button-next" role="button" tabindex="0" aria-label="Next grid page"></div>' +
+                '</div>';
+
+            $shell.append(html);
+            $controls = $('#' + controlsId);
+        }
+
+        var $prev = $controls.find('.swiper-button-prev');
+        var $next = $controls.find('.swiper-button-next');
+        var $status = $controls.find('.swiper-pagination');
+
+        function isActivationKey(e) {
+            return e.key === 'Enter' || e.key === ' ' || e.keyCode === 13 || e.keyCode === 32;
+        }
+
+        function bindControl($el, direction) {
+            function activate(e) {
+                if (e.type === 'keydown' && !isActivationKey(e)) {
+                    return;
+                }
+                e.preventDefault();
+
+                var nextPage = state.currentPage + direction;
+                if (nextPage < 0) {
+                    nextPage = state.totalPages - 1;
+                } else if (nextPage > state.totalPages - 1) {
+                    nextPage = 0;
+                }
+
+                onPageChange(nextPage);
+            }
+
+            $el.off('click.jzsaGrid keydown.jzsaGrid');
+            $el.on('click.jzsaGrid', activate);
+            $el.on('keydown.jzsaGrid', activate);
+        }
+
+        bindControl($prev, -1);
+        bindControl($next, 1);
+
+        $status.text((state.currentPage + 1) + ' / ' + state.totalPages);
+        $prev.removeClass('swiper-button-disabled').attr('aria-disabled', 'false');
+        $next.removeClass('swiper-button-disabled').attr('aria-disabled', 'false');
+    }
+
+    /**
+     * Build justified rows for all photos, preserving global photo indices.
+     *
+     * @param {jQuery} $container Grid album element.
+     * @param {Array}  allPhotos  Full photo array.
+     * @return {Object} { rows, targetHeight, gap, containerWidth }.
+     */
+    function getJustifiedLayoutData($container, allPhotos) {
+        var targetHeight = parseInt($container.attr('data-grid-row-height'), 10) || 200;
+        var gap = 4;
+        var containerWidth = getGridContainerWidth($container);
+
+        var photosWithRatios = allPhotos.map(function(photo, index) {
+            return {
+                photo: photo,
+                ratio: parseAspectRatio(photo.preview || photo.full),
+                index: index
+            };
+        });
+
+        return {
+            rows: buildJustifiedRows(photosWithRatios, containerWidth, targetHeight, gap),
+            targetHeight: targetHeight,
+            gap: gap,
+            containerWidth: containerWidth
+        };
+    }
+
+    /**
+     * Clamp the page index so it always stays within valid bounds.
+     *
+     * @param {Object} state Pagination state object.
+     */
+    function clampGridPage(state) {
+        if (state.currentPage < 0) {
+            state.currentPage = 0;
+        }
+        if (state.currentPage > state.totalPages - 1) {
+            state.currentPage = state.totalPages - 1;
+        }
+        if (state.currentPage < 0) {
+            state.currentPage = 0;
+        }
+    }
+
+    /**
      * Initialize a grid-mode gallery.
      * Renders thumbnails and attaches click-to-fullscreen handler.
      *
@@ -1778,6 +1959,9 @@
         if (isOldIosWebkit() && allPhotos.length > OLD_IOS_MAX_PHOTOS) {
             allPhotos = allPhotos.slice(0, OLD_IOS_MAX_PHOTOS);
         }
+
+        var requestedGridRows = parseInt($container.attr('data-grid-rows'), 10);
+        var gridRows = (!isNaN(requestedGridRows) && requestedGridRows > 0) ? requestedGridRows : 0;
 
         // Apply grid-start-at: rotate the photo array so the grid begins at a
         // different offset. "random" shuffles the order on each page load.
@@ -1801,20 +1985,64 @@
         // Update the container's data so the fullscreen player gets the same order
         $container.attr('data-all-photos', JSON.stringify(allPhotos));
 
-        if (layout === 'justified') {
-            buildJustifiedGrid($container, allPhotos);
+        var paginationState = {
+            currentPage: 0,
+            totalPages: 1
+        };
 
-            // Recalculate on resize so rows stay flush to the container edge
-            var resizeTimer;
-            $(window).on('resize.jzsa-grid-' + $container.attr('id'), function() {
-                clearTimeout(resizeTimer);
-                resizeTimer = setTimeout(function() {
-                    buildJustifiedGrid($container, allPhotos);
-                }, 150);
+        function renderCurrentGridPage() {
+            if (layout === 'justified') {
+                var justified = getJustifiedLayoutData($container, allPhotos);
+                var rowsPerPage = gridRows > 0 ? gridRows : (justified.rows.length || 1);
+                paginationState.totalPages = justified.rows.length > 0 ? Math.ceil(justified.rows.length / rowsPerPage) : 1;
+                clampGridPage(paginationState);
+
+                var rowStart = paginationState.currentPage * rowsPerPage;
+                var rowsForPage = (gridRows > 0)
+                    ? justified.rows.slice(rowStart, rowStart + rowsPerPage)
+                    : justified.rows;
+
+                renderJustifiedRows(
+                    $container,
+                    rowsForPage,
+                    justified.containerWidth,
+                    justified.targetHeight,
+                    justified.gap
+                );
+            } else {
+                var activeColumns = getUniformColumnsForViewport($container);
+                var photosPerPage = gridRows > 0 ? (gridRows * activeColumns) : allPhotos.length;
+                if (photosPerPage <= 0) {
+                    photosPerPage = allPhotos.length > 0 ? allPhotos.length : 1;
+                }
+
+                paginationState.totalPages = allPhotos.length > 0 ? Math.ceil(allPhotos.length / photosPerPage) : 1;
+                clampGridPage(paginationState);
+
+                var pageItems = getGridPageItems(allPhotos, paginationState.currentPage, photosPerPage);
+                buildUniformGrid($container, pageItems);
+            }
+
+            setupGridPaginationControls($container, paginationState, function(nextPage) {
+                paginationState.currentPage = nextPage;
+                renderCurrentGridPage();
             });
-        } else {
-            buildUniformGrid($container, allPhotos);
         }
+
+        renderCurrentGridPage();
+
+        // Re-render grid page on resize:
+        // - justified layout depends on container width
+        // - uniform layout pagination depends on active breakpoint/column count
+        var resizeNamespace = 'resize.jzsa-grid-' + $container.attr('id');
+        $(window).off(resizeNamespace);
+        var resizeTimer;
+        $(window).on(resizeNamespace, function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                renderCurrentGridPage();
+            }, 150);
+        });
 
         // Build the fullscreen player and initialize it eagerly (same as
         // player/carousel modes — Swiper is always ready, not lazily created).
@@ -1838,7 +2066,18 @@
         });
 
         $container.addClass('jzsa-loaded');
-        jzsaDebug('✅ Grid initialized:', $container.attr('id'), '| layout:', layout, '| photos:', allPhotos.length);
+        jzsaDebug(
+            '✅ Grid initialized:',
+            $container.attr('id'),
+            '| layout:',
+            layout,
+            '| photos:',
+            allPhotos.length,
+            '| rows per page:',
+            gridRows > 0 ? gridRows : 'all',
+            '| pages:',
+            paginationState.totalPages
+        );
     }
 
     // ============================================================================
@@ -1846,7 +2085,7 @@
     // ============================================================================
 
     function initializeAllGalleries() {
-        $('.jzsa-album').not('.jzsa-grid-player').each(function(index) {
+        $('.jzsa-album').not('.jzsa-grid-player, .jzsa-grid-controls').each(function(index) {
             var $gallery = $(this);
 
             // Generate unique ID if not present
