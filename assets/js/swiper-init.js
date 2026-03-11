@@ -1856,12 +1856,68 @@
             var hoverPauseSupported = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
             var autoplayPausedByHover = false;
             var hoverPausedWithStopFallback = false;
+            var suppressHoverPauseUntilLeave = false;
             var autoplayHoverNamespace = '.jzsaAutoplayHover-' + galleryId;
+            var autoplayHoverFullscreenNamespace = '.jzsaAutoplayHoverFs-' + galleryId;
             $container.off('mouseenter' + autoplayHoverNamespace + ' mouseleave' + autoplayHoverNamespace);
+
+            function handleHoverFullscreenExit() {
+                // Some browsers emit pointer/hover events while exiting fullscreen.
+                // Ignore hover-based pause until cursor leaves the gallery once.
+                suppressHoverPauseUntilLeave = true;
+                autoplayPausedByHover = false;
+                hoverPausedWithStopFallback = false;
+
+                // Defensive recovery: after fullscreen exit, ensure inline autoplay is
+                // actually advancing (some browsers can leave autoplay in paused/running state).
+                if (!autoplay || !swiper.autoplay || fullscreenChangeParams.autoplayPausedByInteraction) {
+                    return;
+                }
+
+                window.setTimeout(function() {
+                    if (isFullscreen($container[0]) || !swiper.autoplay || fullscreenChangeParams.autoplayPausedByInteraction) {
+                        return;
+                    }
+
+                    var normalDelay = autoplayDelay * MILLISECONDS_PER_SECOND;
+                    swiper.params.autoplay.delay = normalDelay;
+                    swiper.autoplay.delay = normalDelay;
+
+                    if (typeof swiper.autoplay.resume === 'function' && swiper.autoplay.paused) {
+                        swiper.autoplay.resume();
+                    } else if (!swiper.autoplay.running) {
+                        swiper.autoplay.start();
+                    }
+                }, 80);
+            }
+
+            $(document).off(
+                'fullscreenchange' + autoplayHoverFullscreenNamespace +
+                ' webkitfullscreenchange' + autoplayHoverFullscreenNamespace +
+                ' mozfullscreenchange' + autoplayHoverFullscreenNamespace +
+                ' MSFullscreenChange' + autoplayHoverFullscreenNamespace
+            );
+            $(document).on(
+                'fullscreenchange' + autoplayHoverFullscreenNamespace +
+                ' webkitfullscreenchange' + autoplayHoverFullscreenNamespace +
+                ' mozfullscreenchange' + autoplayHoverFullscreenNamespace +
+                ' MSFullscreenChange' + autoplayHoverFullscreenNamespace,
+                function() {
+                    if (!isFullscreen($container[0])) {
+                        handleHoverFullscreenExit();
+                    }
+                }
+            );
+            $container.off('jzsa:fullscreen-state' + autoplayHoverFullscreenNamespace);
+            $container.on('jzsa:fullscreen-state' + autoplayHoverFullscreenNamespace, function(e, isActive) {
+                if (!isActive) {
+                    handleHoverFullscreenExit();
+                }
+            });
 
             if (autoplay && hoverPauseSupported && swiper.autoplay) {
                 $container.on('mouseenter' + autoplayHoverNamespace, function() {
-                    if (isFullscreen($container[0]) || fullscreenChangeParams.autoplayPausedByInteraction) {
+                    if (suppressHoverPauseUntilLeave || isFullscreen($container[0]) || fullscreenChangeParams.autoplayPausedByInteraction) {
                         return;
                     }
 
@@ -1878,6 +1934,13 @@
                 });
 
                 $container.on('mouseleave' + autoplayHoverNamespace, function() {
+                    if (suppressHoverPauseUntilLeave) {
+                        suppressHoverPauseUntilLeave = false;
+                        autoplayPausedByHover = false;
+                        hoverPausedWithStopFallback = false;
+                        return;
+                    }
+
                     if (!autoplayPausedByHover || isFullscreen($container[0]) || fullscreenChangeParams.autoplayPausedByInteraction) {
                         return;
                     }
@@ -1949,10 +2012,10 @@
             });
 
             // ------------------------------------------------------------------------
-            // Pause autoplay on swipe/touch gestures
+            // Pause autoplay on actual swipe/drag gestures (not plain clicks/taps)
             // ------------------------------------------------------------------------
 
-            swiper.on('touchStart', function() {
+            swiper.on('sliderFirstMove', function() {
                 pauseAutoplayOnInteraction(swiper, fullscreenChangeParams);
             });
 
