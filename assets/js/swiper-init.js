@@ -1385,7 +1385,9 @@
                     }
                 }
 
-                return parts.join(':   ');
+                var result = parts.join(':   ');
+                $(swiper.el).find('.swiper-pagination').toggle(result !== '');
+                return result;
             };
 
             return base;
@@ -2486,6 +2488,7 @@
      */
     function setupGridPaginationControls($container, state, onPageChange, options) {
         var config = options || {};
+        var showCounter = config.showCounter !== false;
         var showAutoplayProgress = !!config.showAutoplayProgress;
         var showAutoplayControls = !!config.showAutoplayControls;
         var isAutoplayRunning = typeof config.isAutoplayRunning === 'function' ? config.isAutoplayRunning : null;
@@ -2575,7 +2578,11 @@
             $playPause.removeClass('playing');
         }
 
-        $status.text((state.currentPage + 1) + ' / ' + state.totalPages);
+        if (showCounter) {
+            $status.text((state.currentPage + 1) + ' / ' + state.totalPages).show();
+        } else {
+            $status.hide();
+        }
         $prev.removeClass('swiper-button-disabled').attr('aria-disabled', 'false');
         $next.removeClass('swiper-button-disabled').attr('aria-disabled', 'false');
         $progressBar.css({
@@ -3588,6 +3595,7 @@
                     };
 
                     setupGridPaginationControls($container, paginationState, onJustifiedPageChange, {
+                        showCounter: $container.attr('data-show-counter') !== 'false',
                         showAutoplayProgress: shouldShowGridAutoplayProgress(),
                         showAutoplayControls: gridAutoplayEnabled,
                         isAutoplayRunning: function() {
@@ -3785,6 +3793,7 @@
                     };
 
                     setupGridPaginationControls($container, paginationState, onUniformPageChange, {
+                        showCounter: $container.attr('data-show-counter') !== 'false',
                         showAutoplayProgress: shouldShowGridAutoplayProgress(),
                         showAutoplayControls: gridAutoplayEnabled,
                         isAutoplayRunning: function() {
