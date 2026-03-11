@@ -639,7 +639,7 @@ class JZSA_Settings_Page {
 
 				<!-- Shortcode Parameters -->
 				<div class="jzsa-section">
-					<h2><?php esc_html_e( 'List of All Shortcode Parameters', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+					<h2><?php esc_html_e( 'All Shortcode Parameters', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 
 					<h3><?php esc_html_e( 'Required', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 					<table class="jzsa-settings-table">
@@ -815,6 +815,24 @@ class JZSA_Settings_Page {
 								<td><code>show-download-button</code></td>
 								<td>Show download button to save current photo: "true" or "false"</td>
 								<td>false</td>
+							</tr>
+						</tbody>
+					</table>
+
+					<h3><?php esc_html_e( 'Advanced', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<table class="jzsa-settings-table">
+						<thead>
+							<tr>
+								<th>Parameter</th>
+								<th>Description</th>
+								<th>Default</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><code>max-photos-per-album</code></td>
+								<td>Maximum number of photos to display from the album (1–300). Google Photos typically returns up to 300 photos per album.</td>
+								<td>300</td>
 							</tr>
 						</tbody>
 					</table>

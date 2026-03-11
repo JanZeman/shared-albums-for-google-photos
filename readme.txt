@@ -98,60 +98,11 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
 
 = Shortcode Parameters =
 
-**Required:**
+The only required parameter is **link** — the Google Photos share URL.
 
-* **link** - Google Photos share URL (supports both full and short link formats)
+All other parameters are optional and control appearance, autoplay, fullscreen behavior, display options, gallery mode, and grid layout.
 
-**Gallery Appearance:**
-
-* **background-color** - Background color hex code or "transparent" (default: #FFFFFF)
-* **image-fit** - How photos fit the frame: "cover" (default, fill and crop edges), "contain" (letterbox, no cropping), or "stretch" (fill and distort).
- * **width** - Gallery width in pixels or "auto" (default: 267)
-* **height** - Gallery height in pixels or "auto" (default: 200)
-
-**Image Quality:**
-
-* **image-width** - Full-resolution photo width to fetch from Google (default: 1920)
-* **image-height** - Full-resolution photo height to fetch from Google (default: 1440)
-**Autoplay Settings:**
-
-* **autoplay** - Enable autoplay in normal mode: "true" or "false" (default: true). In `mode="grid"` with pagination (`grid-rows > 0` and `grid-scroller="false"`), this advances to the next grid page automatically.
-* **autoplay-delay** - Autoplay delay in normal mode, in seconds, supports ranges like "4-12" (default: "4-12"). In paginated grid mode this is the delay between page changes.
-* **autoplay-inactivity-timeout** - Time in seconds after which autoplay resumes following user interaction (default: 30)
-* **start-at** - Starting photo: "random" (default) or a 1-based photo index like "1" or "12". Values out of range fall back to 1.
-
-**Fullscreen Settings:**
-
-* **full-screen-autoplay** - Enable autoplay in fullscreen mode: "true" or "false" (default: true)
-* **full-screen-autoplay-delay** - Autoplay delay in fullscreen mode, in seconds, supports ranges like "3-5" or single values (default: 3)
-* **full-screen-switch** - Full screen switch mode: "double-click" (default: double-click), "button-only" (button only), or "single-click" (single-click). Works both in and out of full screen mode.
-* **full-screen-navigation** - Full screen navigation mode: "single-click" (default: single-click, click left/right areas to navigate), "buttons-only" (navigation buttons only), or "double-click" (double-click left/right areas to navigate). Only works when in full screen mode.
-* **full-screen-image-fit** - How photos fit the frame in fullscreen: "cover" (fill and crop edges), "contain" (letterbox, no cropping), or "stretch" (fill and distort). If not set, inherits from image-fit.
-
-**Display Options:**
-
-* **show-title** - Display album title: "true" or "false" (default: true)
-* **show-counter** - Show the photo counter (e.g., "4 / 50" or "Trip to Bali: 4 / 50"): "true" or "false" (default: true)
-* **show-link-button** - Show external link button to open album in Google Photos: "true" or "false" (default: false)
-* **show-download-button** - Show download button to save current photo: "true" or "false" (default: false)
-
-**Gallery Mode:**
-
-* **mode** - Gallery mode (default: single):
-  - "single": Single photo viewer with zoom support. Users can pinch to zoom or double-click to zoom.
-  - "carousel": Multiple photos visible at once. On mobile and tablets it shows 2 photos at a time, and on desktop it shows 3 photos.
-  - "carousel-to-single": Carousel preview (2 or 3 photos visible) that switches to a single photo viewer in fullscreen.
-  - "grid": Thumbnail grid. Optionally limit visible rows with `grid-rows`, then choose paging (default) or scrolling (`grid-scroller="true"`). Click any thumbnail to open it in a fullscreen viewer.
-
-**Grid Mode Options** (only apply when mode="grid"):
-
-* **grid-layout** - Grid layout algorithm: "uniform" (equal-size cells, default) or "justified" (photos fill each row at their natural aspect ratio, like Google Photos).
-* **grid-columns** - Number of columns on desktop screens (default: 3, uniform only).
-* **grid-columns-tablet** - Number of columns on tablet screens ≤ 768 px (default: 2, uniform only).
-* **grid-columns-mobile** - Number of columns on mobile screens ≤ 480 px (default: 1, uniform only).
-* **grid-row-height** - Target row height in pixels for the justified layout, 50–800 (default: 200).
-* **grid-rows** - Number of visible grid rows when row limiting is enabled. If more rows are available, grid uses paging by default or scrolling when `grid-scroller="true"`. Use 0 to show all rows (default: 0).
-* **grid-scroller** - Grid overflow behavior when `grid-rows` > 0: "false" (default) uses paging controls; "true" uses one vertically scrollable grid.
+For the complete list of all parameters with descriptions and defaults, visit the plugin's **Settings** page in your WordPress admin (Settings → Shared Albums for Google Photos). The Settings page also includes a Playground for experimenting with shortcodes and live Samples you can copy.
 
 = Getting Your Album Share Link =
 
