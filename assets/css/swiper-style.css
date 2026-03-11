@@ -758,7 +758,7 @@ body.jzsa-no-scroll {
 /* Grid container: reset swiper height so the grid grows with its content */
 .jzsa-grid-album {
     height: auto;
-    background-color: transparent;
+    background-color: var(--gallery-bg-color, #FFFFFF);
     position: static;
 }
 
