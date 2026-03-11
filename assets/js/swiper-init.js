@@ -2107,7 +2107,7 @@
 
         // Build full player DOM structure (mirrors PHP build_gallery_container)
         var html =
-            '<div id="' + playerId + '" class="jzsa-album swiper jzsa-grid-player">' +
+            '<div id="' + playerId + '" class="jzsa-album swiper jzsa-grid-player jzsa-loader-pending jzsa-content-intro">' +
                 '<div class="swiper-wrapper"></div>' +
                 '<div class="swiper-button-prev"></div>' +
                 '<div class="swiper-button-next"></div>' +

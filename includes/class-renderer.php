@@ -109,7 +109,7 @@ class JZSA_Renderer {
 		$attrs  = $this->build_data_attributes( $config );
 
 		$html = sprintf(
-			'<div id="%s" class="jzsa-album swiper" %s style="%s">',
+			'<div id="%s" class="jzsa-album swiper jzsa-loader-pending jzsa-content-intro" %s style="%s">',
 			esc_attr( $gallery_id ),
 			$attrs,
 			esc_attr( $styles )
@@ -356,7 +356,7 @@ class JZSA_Renderer {
 		$style_attr = ! empty( $styles ) ? sprintf( ' style="%s"', esc_attr( implode( '; ', $styles ) ) ) : '';
 
 		return sprintf(
-			'<div id="%s" class="jzsa-album jzsa-grid-album" %s%s></div>',
+			'<div id="%s" class="jzsa-album jzsa-grid-album jzsa-loader-pending jzsa-grid-loading jzsa-content-intro" %s%s></div>',
 			esc_attr( $gallery_id ),
 			implode( ' ', $attrs ),
 			$style_attr

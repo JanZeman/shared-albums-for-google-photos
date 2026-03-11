@@ -172,18 +172,21 @@ class JZSA_Shared_Albums {
 		);
 
 		// Custom assets
+		$style_version = $this->get_asset_version( 'assets/css/swiper-style.css' );
+		$script_version = $this->get_asset_version( 'assets/js/swiper-init.js' );
+
 		wp_enqueue_style(
 			'jzsa-style',
 			plugins_url( 'assets/css/swiper-style.css', $this->plugin_file ),
 			array( 'swiper-css' ),
-			JZSA_VERSION
+			$style_version
 		);
 
 		wp_enqueue_script(
 			'jzsa-init',
 			plugins_url( 'assets/js/swiper-init.js', $this->plugin_file ),
 			array( 'jquery', 'swiper-js' ),
-			JZSA_VERSION,
+			$script_version,
 			true
 		);
 
@@ -201,6 +204,26 @@ class JZSA_Shared_Albums {
 				'previewNonce' => $preview_nonce,
 			)
 		);
+	}
+
+	/**
+	 * Build an asset version that busts caches when file content changes.
+	 *
+	 * @param string $relative_path Path relative to plugin root.
+	 * @return string Version string.
+	 */
+	private function get_asset_version( $relative_path ) {
+		$relative_path = ltrim( $relative_path, '/\\' );
+		$full_path = plugin_dir_path( $this->plugin_file ) . $relative_path;
+
+		if ( file_exists( $full_path ) ) {
+			$mtime = filemtime( $full_path );
+			if ( false !== $mtime ) {
+				return JZSA_VERSION . '.' . intval( $mtime );
+			}
+		}
+
+		return JZSA_VERSION;
 	}
 
 	/**

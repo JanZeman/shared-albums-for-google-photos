@@ -631,6 +631,27 @@ body.jzsa-no-scroll {
     animation: none;
 }
 
+/* Safe default: keep single/player controls hidden until initial content is ready.
+   This prevents controls flashing before images on slower or highly optimized setups. */
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-prev,
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-next,
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-pagination,
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-fullscreen:not(.jzsa-grid-thumb-fs-btn),
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-play-pause,
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-download,
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-external-link,
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-autoplay-progress {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    animation: none;
+}
+
+/* Keep Swiper slide content hidden until the first image is considered loaded. */
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-wrapper {
+    visibility: hidden;
+}
+
 /* Hide controls while gallery is still in loading-pending state. */
 .jzsa-album.jzsa-loader-pending .swiper-button-prev,
 .jzsa-album.jzsa-loader-pending .swiper-button-next,
@@ -660,6 +681,13 @@ body.jzsa-no-scroll {
 
 /* Grid controls live in a sibling overlay shell; hide them while the grid is pending. */
 .jzsa-grid-shell > .jzsa-grid-album.jzsa-loader-pending ~ .jzsa-grid-controls {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    animation: none;
+}
+
+.jzsa-grid-shell > .jzsa-grid-album:not(.jzsa-loaded) ~ .jzsa-grid-controls {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
