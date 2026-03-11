@@ -275,7 +275,6 @@ class JZSA_Renderer {
 		$attrs[] = sprintf( 'data-grid-row-height="%d"', intval( $config['grid-row-height'] ) );
 		$attrs[] = sprintf( 'data-grid-rows="%d"', intval( $config['grid-rows'] ) );
 		$attrs[] = sprintf( 'data-grid-scroller="%s"', ! empty( $config['grid-scroller'] ) ? 'true' : 'false' );
-		$attrs[] = sprintf( 'data-grid-start-at="%s"', esc_attr( $config['grid-start-at'] ) );
 
 		if ( isset( $config['autoplay'] ) ) {
 			$attrs[] = sprintf( 'data-autoplay="%s"', $config['autoplay'] ? 'true' : 'false' );

@@ -343,7 +343,6 @@ class JZSA_Shared_Albums {
 			'grid-row-height'     => $this->parse_grid_row_height( $atts ),
 			'grid-rows'           => $this->parse_grid_rows( $atts ),
 			'grid-scroller'       => $this->parse_bool( $atts, 'grid-scroller', false ),
-			'grid-start-at'       => $this->parse_grid_start_at( $atts ),
 		);
 
 		return $config;
@@ -629,50 +628,6 @@ class JZSA_Shared_Albums {
 		}
 
 		return $value;
-	}
-
-	/**
-	 * Parse grid-start-at attribute with start-at fallback.
-	 *
-	 * Priority:
-	 * 1. Explicit grid-start-at.
-	 * 2. Explicit start-at / start-at-random-photo (for easier reuse across modes).
-	 * 3. Default grid start (1).
-	 *
-	 * @param array $atts Attributes.
-	 * @return string "random" or numeric string >= 1.
-	 */
-	private function parse_grid_start_at( $atts ) {
-		if ( isset( $atts['grid-start-at'] ) ) {
-			$value = strtolower( trim( (string) $atts['grid-start-at'] ) );
-
-			if ( 'random' === $value ) {
-				return 'random';
-			}
-
-			if ( is_numeric( $value ) ) {
-				$number = intval( $value );
-				if ( $number >= 1 ) {
-					return (string) $number;
-				}
-			}
-
-			return '1';
-		}
-
-		if ( isset( $atts['start-at'] ) || isset( $atts['start-at-random-photo'] ) ) {
-			$start_at = $this->parse_start_at( $atts );
-			if ( 'random' === $start_at ) {
-				return 'random';
-			}
-
-			$number = intval( $start_at );
-			if ( $number >= 1 ) {
-				return (string) $number;
-			}
-		}
-
-		return '1';
 	}
 
 	/**

@@ -742,7 +742,7 @@ class JZSA_Settings_Page {
 							</tr>
 							<tr>
 								<td><code>start-at</code></td>
-								<td>Starting photo: "random" (default) or a 1-based photo index like "1" or "12". Values out of range fall back to 1. In grid mode this is used as fallback when <code>grid-start-at</code> is not set.</td>
+								<td>Starting photo: "random" (default) or a 1-based photo index like "1" or "12". Values out of range fall back to 1.</td>
 								<td>random</td>
 							</tr>
 						</tbody>
@@ -886,11 +886,6 @@ class JZSA_Settings_Page {
 								<td><code>grid-scroller</code></td>
 								<td><?php esc_html_e( 'When set to "true" (and grid-rows > 0), uses a single vertically scrollable grid instead of page controls.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>false</td>
-							</tr>
-							<tr>
-								<td><code>grid-start-at</code></td>
-								<td><?php esc_html_e( 'Which photo the grid starts at: a 1-based index (e.g. "5") to rotate the grid, or "random" to shuffle the order on each page load. Overrides start-at for grid mode when set.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td>1</td>
 							</tr>
 						</tbody>
 					</table>

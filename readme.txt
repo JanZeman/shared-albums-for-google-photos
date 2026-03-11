@@ -118,7 +118,7 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
 * **autoplay** - Enable autoplay in normal mode: "true" or "false" (default: true). In `mode="grid"` with pagination (`grid-rows > 0` and `grid-scroller="false"`), this advances to the next grid page automatically.
 * **autoplay-delay** - Autoplay delay in normal mode, in seconds, supports ranges like "4-12" (default: "4-12"). In paginated grid mode this is the delay between page changes.
 * **autoplay-inactivity-timeout** - Time in seconds after which autoplay resumes following user interaction (default: 30)
-* **start-at** - Starting photo: "random" (default) or a 1-based photo index like "1" or "12". Values out of range fall back to 1. In grid mode, this is used as a fallback when `grid-start-at` is not set.
+* **start-at** - Starting photo: "random" (default) or a 1-based photo index like "1" or "12". Values out of range fall back to 1.
 
 **Fullscreen Settings:**
 
@@ -152,7 +152,6 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
 * **grid-row-height** - Target row height in pixels for the justified layout, 50–800 (default: 200).
 * **grid-rows** - Number of visible grid rows when row limiting is enabled. If more rows are available, grid uses paging by default or scrolling when `grid-scroller="true"`. Use 0 to show all rows (default: 0).
 * **grid-scroller** - Grid overflow behavior when `grid-rows` > 0: "false" (default) uses paging controls; "true" uses one vertically scrollable grid.
-* **grid-start-at** - Which photo the grid starts at: a 1-based index (e.g. "5") to rotate the grid, or "random" to shuffle the order on each page load (default: 1). When set, it overrides `start-at` for grid mode.
 
 = Getting Your Album Share Link =
 
