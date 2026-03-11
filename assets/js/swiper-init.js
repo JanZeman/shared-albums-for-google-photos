@@ -1034,6 +1034,23 @@
     // Helper: Setup progressive image loading
     function setupProgressiveImageLoading(swiper, $container) {
         var fullImageRegistry = {};
+        var fullscreenGateToken = 0;
+        var hasQueuedFullscreenBulkPreload = false;
+
+        function setFullscreenQualityGate(active) {
+            if (!$container || !$container.length) {
+                return;
+            }
+
+            if (active) {
+                if ($container.find('.jzsa-loader').length === 0) {
+                    $container.append(buildLoaderHtml('Loading full-resolution photo...'));
+                }
+                $container.addClass('jzsa-fullscreen-waiting');
+            } else {
+                $container.removeClass('jzsa-fullscreen-waiting');
+            }
+        }
 
         function ensureFullImageCached(fullSrc, onLoad, onError) {
             if (!fullSrc) {
@@ -1130,7 +1147,7 @@
         }
 
         // Swap to full source (never preview) once the full image is cached.
-        function loadFullImage($img) {
+        function loadFullImage($img, onReady, onError) {
             if (!$img || !$img.length) {
                 return;
             }
@@ -1151,6 +1168,9 @@
                         return;
                     }
                     markImageAsFullLoaded($img, fullSrc);
+                    if (typeof onReady === 'function') {
+                        onReady($img, fullSrc);
+                    }
                 },
                 function() {
                     if (!$img.closest('html').length) {
@@ -1159,6 +1179,9 @@
                     $img.addClass('jzsa-image-error');
                     $img.data('full-loaded', 'error');
                     console.warn('Failed to load image:', fullSrc);
+                    if (typeof onError === 'function') {
+                        onError($img, fullSrc);
+                    }
                 }
             );
         }
@@ -1196,18 +1219,61 @@
             });
         }
 
+        function isRenderedAsFull($img) {
+            if (!$img || !$img.length) {
+                return true;
+            }
+            var fullSrc = $img.attr('data-full-src');
+            if (!fullSrc) {
+                return true;
+            }
+            return $img.data('full-loaded') === true && $img.attr('src') === fullSrc;
+        }
+
         function runProgressiveLoadingCycle() {
             var inFullscreen = !$container || !$container.length || isFullscreen($container[0]);
 
             if (inFullscreen) {
-                // Fullscreen rule: render with full-res sources only.
-                processOffsets([0, 1, -1, 2, -2], loadFullImage);
+                var $currentImg = getSlideImageAt(swiper.activeIndex);
+                var needsCurrentGate = !isRenderedAsFull($currentImg);
+
+                if (needsCurrentGate) {
+                    fullscreenGateToken += 1;
+                    var gateToken = fullscreenGateToken;
+                    setFullscreenQualityGate(true);
+                    loadFullImage(
+                        $currentImg,
+                        function() {
+                            if (gateToken !== fullscreenGateToken) {
+                                return;
+                            }
+                            setFullscreenQualityGate(false);
+                        },
+                        function() {
+                            if (gateToken !== fullscreenGateToken) {
+                                return;
+                            }
+                            setFullscreenQualityGate(false);
+                        }
+                    );
+                } else {
+                    setFullscreenQualityGate(false);
+                }
+
+                // Fullscreen rule: keep visible and nearby queue in full-res.
+                processOffsets([1, -1, 2, -2], loadFullImage);
 
                 // Aggressively preload the queue for smooth looping in fullscreen.
                 processOffsets([3, -3, 4, -4], preloadFullImage);
-                preloadAllSlidesFull();
+                if (!hasQueuedFullscreenBulkPreload) {
+                    hasQueuedFullscreenBulkPreload = true;
+                    preloadAllSlidesFull();
+                }
                 return;
             }
+
+            fullscreenGateToken += 1;
+            setFullscreenQualityGate(false);
 
             // Outside fullscreen, keep previews on screen but warm the cache for likely next images.
             processOffsets([0, 1, -1, 2], preloadFullImage);
@@ -1215,6 +1281,9 @@
 
         runProgressiveLoadingCycle();
 
+        swiper.on('slideChangeTransitionStart', function() {
+            runProgressiveLoadingCycle();
+        });
         swiper.on('slideChange', function() {
             runProgressiveLoadingCycle();
         });

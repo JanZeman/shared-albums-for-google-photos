@@ -605,6 +605,31 @@ body.jzsa-no-scroll {
     visibility: hidden;
 }
 
+/* Fullscreen quality gate: hide slideshow briefly until active full-res image is ready. */
+.jzsa-album.jzsa-fullscreen-waiting .jzsa-loader {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.jzsa-album.jzsa-fullscreen-waiting .swiper-wrapper {
+    visibility: hidden;
+}
+
+.jzsa-album.jzsa-fullscreen-waiting .swiper-button-prev,
+.jzsa-album.jzsa-fullscreen-waiting .swiper-button-next,
+.jzsa-album.jzsa-fullscreen-waiting .swiper-pagination,
+.jzsa-album.jzsa-fullscreen-waiting .swiper-button-fullscreen:not(.jzsa-grid-thumb-fs-btn),
+.jzsa-album.jzsa-fullscreen-waiting .swiper-button-play-pause,
+.jzsa-album.jzsa-fullscreen-waiting .swiper-button-download,
+.jzsa-album.jzsa-fullscreen-waiting .swiper-button-external-link,
+.jzsa-album.jzsa-fullscreen-waiting .swiper-autoplay-progress {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    animation: none;
+}
+
 /* Hide controls while gallery is still in loading-pending state. */
 .jzsa-album.jzsa-loader-pending .swiper-button-prev,
 .jzsa-album.jzsa-loader-pending .swiper-button-next,
