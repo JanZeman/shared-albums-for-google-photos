@@ -20,6 +20,8 @@ Shared Albums for Google Photos (by JanZeman) allows you to easily display publi
 
 = Features =
 
+* **Grid Mode** - Display photos as a thumbnail grid with uniform/justified layouts
+* **Grid Paging Or Scrolling** - Use `grid-rows` with optional `grid-scroller` to choose page controls or a single scrollable grid
 * **Modern Gallery Viewer** - Powered by Swiper 11, a modern mobile-friendly slider
 * **Responsive Design** - Works perfectly on desktop, tablet, and mobile devices
 * **Shortcode Playground** - Admin-only sandbox on the Settings page for experimenting with `[jzsa-album]` shortcodes and previews
@@ -96,48 +98,11 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
 
 = Shortcode Parameters =
 
-**Required:**
+The only required parameter is **link** — the Google Photos share URL.
 
-* **link** - Google Photos share URL (supports both full and short link formats)
+All other parameters are optional and control appearance, autoplay, fullscreen behavior, display options, gallery mode, and grid layout.
 
-**Gallery Appearance:**
-
-* **background-color** - Background color hex code or "transparent" (default: #FFFFFF)
-* **image-fit** - How photos fit the frame: "cover" (default, fill and crop edges), "contain" (letterbox, no cropping), or "stretch" (fill and distort).
- * **width** - Gallery width in pixels or "auto" (default: 267)
-* **height** - Gallery height in pixels or "auto" (default: 200)
-
-**Image Quality:**
-
-* **image-width** - Full-resolution photo width to fetch from Google (default: 1920)
-* **image-height** - Full-resolution photo height to fetch from Google (default: 1440)
-**Autoplay Settings:**
-
-* **autoplay** - Enable autoplay in normal mode: "true" or "false" (default: true)
-* **autoplay-delay** - Autoplay delay in normal mode, in seconds, supports ranges like "4-12" (default: "4-12")
-* **autoplay-inactivity-timeout** - Time in seconds after which autoplay resumes following user interaction (default: 30)
-* **start-at** - Starting photo: "random" (default) or a 1-based photo index like "1" or "12". Values out of range fall back to 1.
-
-**Fullscreen Settings:**
-
-* **full-screen-autoplay** - Enable autoplay in fullscreen mode: "true" or "false" (default: true)
-* **full-screen-autoplay-delay** - Autoplay delay in fullscreen mode, in seconds, supports ranges like "3-5" or single values (default: 3)
-* **full-screen-switch** - Full screen switch mode: "double-click" (default: double-click), "button-only" (button only), or "single-click" (single-click). Works both in and out of full screen mode.
-* **full-screen-navigation** - Full screen navigation mode: "single-click" (default: single-click, click left/right areas to navigate), "buttons-only" (navigation buttons only), or "double-click" (double-click left/right areas to navigate). Only works when in full screen mode.
-
-**Display Options:**
-
-* **show-title** - Display album title: "true" or "false" (default: true)
-* **show-counter** - Show the photo counter (e.g., "4 / 50" or "Trip to Bali: 4 / 50"): "true" or "false" (default: true)
-* **show-link-button** - Show external link button to open album in Google Photos: "true" or "false" (default: false)
-* **show-download-button** - Show download button to save current photo: "true" or "false" (default: false)
-
-**Gallery Mode:**
-
-* **mode** - Gallery mode (default: single):
-  - "single": Single photo viewer with zoom support. Users can pinch to zoom or double-click to zoom.
-  - "carousel": Multiple photos visible at once. On mobile and tablets it shows 2 photos at a time, and on desktop it shows 3 photos.
-  - "carousel-to-single": Carousel preview (2 or 3 photos visible) that switches to a single photo viewer in fullscreen.
+For the complete list of all parameters with descriptions and defaults, visit the plugin's **Settings** page in your WordPress admin (Settings → Shared Albums for Google Photos). The Settings page also includes a Playground for experimenting with shortcodes and live Samples you can copy.
 
 = Getting Your Album Share Link =
 
@@ -234,7 +199,7 @@ The plugin provides clear feedback:
 == Changelog ==
 
 = 1.0.7 =
-* ...
+* Grid mode support
 
 = 1.0.6 =
 * New animated logo
@@ -285,4 +250,7 @@ This plugin does not collect or store any user data.
 
 == Support ==
 
-For support, please visit the [plugin support forum](https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/) or [GitHub repository](https://github.com/JanZeman/shared-albums-for-google-photos).
+* **Bug reports:** [Open an issue on GitHub](https://github.com/JanZeman/shared-albums-for-google-photos/issues/new)
+* **Feature requests:** [Post on the support forum](https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/)
+* **Leave a rating:** [Review on WordPress.org](https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/reviews/#new-post)
+* **Buy Me a Coffee:** [buymeacoffee.com/janzeman](https://www.buymeacoffee.com/janzeman)

@@ -33,7 +33,13 @@ class JZSA_Renderer {
 			$html .= $this->render_deprecation_notice();
 		}
 
-		// Build gallery container
+		// Grid mode: plain thumbnail grid, no Swiper structure
+		if ( 'grid' === $config['mode'] ) {
+			$html .= $this->build_grid_container( $gallery_id, $config );
+			return $html;
+		}
+
+		// Build Swiper gallery container
 		$html .= $this->build_gallery_container( $gallery_id, $config );
 
 		return $html;
@@ -103,7 +109,7 @@ class JZSA_Renderer {
 		$attrs  = $this->build_data_attributes( $config );
 
 		$html = sprintf(
-			'<div id="%s" class="jzsa-album swiper" %s style="%s">',
+			'<div id="%s" class="jzsa-album swiper jzsa-loader-pending jzsa-content-intro" %s style="%s">',
 			esc_attr( $gallery_id ),
 			$attrs,
 			esc_attr( $styles )
@@ -206,6 +212,10 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-image-fit="%s"', esc_attr( $config['image-fit'] ) );
 		}
 
+		if ( ! empty( $config['full-screen-image-fit'] ) ) {
+			$attrs[] = sprintf( 'data-full-screen-image-fit="%s"', esc_attr( $config['full-screen-image-fit'] ) );
+		}
+
 		if ( isset( $config['start-at'] ) && '' !== $config['start-at'] ) {
 			$attrs[] = sprintf( 'data-start-at="%s"', esc_attr( $config['start-at'] ) );
 		}
@@ -239,6 +249,118 @@ class JZSA_Renderer {
 		}
 
 		return implode( ' ', $attrs );
+	}
+
+	/**
+	 * Build grid gallery container HTML (no Swiper — plain thumbnail grid).
+	 * Thumbnails and layout are rendered by JS after page load.
+	 *
+	 * @param string $gallery_id Gallery ID.
+	 * @param array  $config     Configuration.
+	 * @return string HTML.
+	 */
+	private function build_grid_container( $gallery_id, $config ) {
+		$attrs = array();
+
+		if ( ! empty( $config['photos'] ) ) {
+			$attrs[] = sprintf( 'data-all-photos=\'%s\'', esc_attr( wp_json_encode( $config['photos'] ) ) );
+			$attrs[] = sprintf( 'data-total-count="%d"', count( $config['photos'] ) );
+		}
+
+		$attrs[] = 'data-mode="grid"';
+		$attrs[] = sprintf( 'data-grid-layout="%s"', esc_attr( $config['grid-layout'] ) );
+		$attrs[] = sprintf( 'data-grid-sizing-model="%s"', esc_attr( $config['grid-sizing-model'] ) );
+		$attrs[] = sprintf( 'data-grid-columns="%d"', intval( $config['grid-columns'] ) );
+		$attrs[] = sprintf( 'data-grid-columns-tablet="%d"', intval( $config['grid-columns-tablet'] ) );
+		$attrs[] = sprintf( 'data-grid-columns-mobile="%d"', intval( $config['grid-columns-mobile'] ) );
+		$attrs[] = sprintf( 'data-grid-row-height="%d"', intval( $config['grid-row-height'] ) );
+		$attrs[] = sprintf( 'data-grid-rows="%d"', intval( $config['grid-rows'] ) );
+		$attrs[] = sprintf( 'data-grid-scroller="%s"', ! empty( $config['grid-scroller'] ) ? 'true' : 'false' );
+		if ( ! empty( $config['width-explicit'] ) && isset( $config['width'] ) && $config['width'] !== 'auto' ) {
+			$attrs[] = sprintf( 'data-grid-explicit-width="%d"', intval( $config['width'] ) );
+		}
+		if ( ! empty( $config['height-explicit'] ) && isset( $config['height'] ) && $config['height'] !== 'auto' ) {
+			$attrs[] = sprintf( 'data-grid-explicit-height="%d"', intval( $config['height'] ) );
+		}
+
+		if ( isset( $config['autoplay'] ) ) {
+			$attrs[] = sprintf( 'data-autoplay="%s"', $config['autoplay'] ? 'true' : 'false' );
+		}
+
+		if ( isset( $config['autoplay-delay'] ) ) {
+			$attrs[] = sprintf( 'data-autoplay-delay="%s"', esc_attr( $config['autoplay-delay'] ) );
+		}
+
+		if ( ! empty( $config['album-url'] ) ) {
+			$attrs[] = sprintf( 'data-album-url="%s"', esc_url( $config['album-url'] ) );
+		}
+
+		if ( ! empty( $config['album-title'] ) ) {
+			$attrs[] = sprintf( 'data-album-title="%s"', esc_attr( $config['album-title'] ) );
+		}
+
+		// Fullscreen player settings (grid click opens fullscreen with full player experience)
+		$player_booleans = array(
+			'full-screen-autoplay' => 'data-full-screen-autoplay',
+			'show-title'           => 'data-show-title',
+			'show-counter'         => 'data-show-counter',
+			'show-link-button'     => 'data-show-link-button',
+			'show-download-button' => 'data-show-download-button',
+		);
+		foreach ( $player_booleans as $key => $attr_name ) {
+			if ( isset( $config[ $key ] ) ) {
+				$attrs[] = sprintf( '%s="%s"', $attr_name, $config[ $key ] ? 'true' : 'false' );
+			}
+		}
+
+		if ( isset( $config['full-screen-autoplay-delay'] ) ) {
+			$attrs[] = sprintf( 'data-full-screen-autoplay-delay="%s"', esc_attr( $config['full-screen-autoplay-delay'] ) );
+		}
+
+		if ( isset( $config['autoplay-inactivity-timeout'] ) ) {
+			$attrs[] = sprintf( 'data-autoplay-inactivity-timeout="%s"', esc_attr( $config['autoplay-inactivity-timeout'] ) );
+		}
+
+		if ( ! empty( $config['full-screen-switch'] ) ) {
+			$attrs[] = sprintf( 'data-full-screen-switch="%s"', esc_attr( $config['full-screen-switch'] ) );
+		}
+
+		if ( ! empty( $config['full-screen-navigation'] ) ) {
+			$attrs[] = sprintf( 'data-full-screen-navigation="%s"', esc_attr( $config['full-screen-navigation'] ) );
+		}
+
+		if ( ! empty( $config['image-fit'] ) ) {
+			$attrs[] = sprintf( 'data-image-fit="%s"', esc_attr( $config['image-fit'] ) );
+		}
+
+		if ( ! empty( $config['full-screen-image-fit'] ) ) {
+			$attrs[] = sprintf( 'data-full-screen-image-fit="%s"', esc_attr( $config['full-screen-image-fit'] ) );
+		}
+
+		if ( ! empty( $config['background-color'] ) ) {
+			$attrs[] = sprintf( 'data-background-color="%s"', esc_attr( $config['background-color'] ) );
+		}
+
+		// Grid should keep its traditional responsive sizing unless width/height
+		// were explicitly provided in shortcode.
+		$styles = array();
+		if ( ! empty( $config['background-color'] ) && $config['background-color'] !== 'transparent' ) {
+			$styles[] = '--gallery-bg-color: ' . esc_attr( $config['background-color'] );
+		}
+		if ( ! empty( $config['width-explicit'] ) && isset( $config['width'] ) && $config['width'] !== 'auto' ) {
+			$styles[] = 'width: ' . intval( $config['width'] ) . 'px';
+		}
+		if ( ! empty( $config['height-explicit'] ) && isset( $config['height'] ) && $config['height'] !== 'auto' ) {
+			$styles[] = 'height: ' . intval( $config['height'] ) . 'px';
+		}
+		$style_attr = ! empty( $styles ) ? sprintf( ' style="%s"', esc_attr( implode( '; ', $styles ) ) ) : '';
+
+		return sprintf(
+			'<div id="%s" class="jzsa-album jzsa-grid-album jzsa-loader-pending jzsa-grid-loading jzsa-content-intro" %s%s></div>',
+			esc_attr( $gallery_id ),
+			implode( ' ', $attrs ),
+			$style_attr
+		);
 	}
 
 	/**

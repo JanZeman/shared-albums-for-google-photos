@@ -172,18 +172,21 @@ class JZSA_Shared_Albums {
 		);
 
 		// Custom assets
+		$style_version = $this->get_asset_version( 'assets/css/swiper-style.css' );
+		$script_version = $this->get_asset_version( 'assets/js/swiper-init.js' );
+
 		wp_enqueue_style(
 			'jzsa-style',
 			plugins_url( 'assets/css/swiper-style.css', $this->plugin_file ),
 			array( 'swiper-css' ),
-			JZSA_VERSION
+			$style_version
 		);
 
 		wp_enqueue_script(
 			'jzsa-init',
 			plugins_url( 'assets/js/swiper-init.js', $this->plugin_file ),
 			array( 'jquery', 'swiper-js' ),
-			JZSA_VERSION,
+			$script_version,
 			true
 		);
 
@@ -201,6 +204,26 @@ class JZSA_Shared_Albums {
 				'previewNonce' => $preview_nonce,
 			)
 		);
+	}
+
+	/**
+	 * Build an asset version that busts caches when file content changes.
+	 *
+	 * @param string $relative_path Path relative to plugin root.
+	 * @return string Version string.
+	 */
+	private function get_asset_version( $relative_path ) {
+		$relative_path = ltrim( $relative_path, '/\\' );
+		$full_path = plugin_dir_path( $this->plugin_file ) . $relative_path;
+
+		if ( file_exists( $full_path ) ) {
+			$mtime = filemtime( $full_path );
+			if ( false !== $mtime ) {
+				return JZSA_VERSION . '.' . intval( $mtime );
+			}
+		}
+
+		return JZSA_VERSION;
 	}
 
 	/**
@@ -304,10 +327,13 @@ class JZSA_Shared_Albums {
 			'album-url' => $url,
 
 			// Dimensions
-			'width'          => $this->parse_dimension( $atts, 'width', self::DEFAULT_WIDTH ),
-			'height'         => $this->parse_dimension( $atts, 'height', self::DEFAULT_HEIGHT ),
-			'image-width'    => isset( $atts['image-width'] ) ? intval( $atts['image-width'] ) : self::DEFAULT_IMAGE_WIDTH,
-			'image-height'   => isset( $atts['image-height'] ) ? intval( $atts['image-height'] ) : self::DEFAULT_IMAGE_HEIGHT,
+			'width'           => $this->parse_dimension( $atts, 'width', self::DEFAULT_WIDTH ),
+			'height'          => $this->parse_dimension( $atts, 'height', self::DEFAULT_HEIGHT ),
+			// Track whether width/height were explicitly set in shortcode.
+			'width-explicit'  => isset( $atts['width'] ),
+			'height-explicit' => isset( $atts['height'] ),
+			'image-width'     => isset( $atts['image-width'] ) ? intval( $atts['image-width'] ) : self::DEFAULT_IMAGE_WIDTH,
+			'image-height'    => isset( $atts['image-height'] ) ? intval( $atts['image-height'] ) : self::DEFAULT_IMAGE_HEIGHT,
 			// Autoplay (normal mode)
 			'autoplay'       => $this->parse_bool( $atts, 'autoplay', true ),
 			'autoplay-delay' => $this->parse_delay_range( isset( $atts['autoplay-delay'] ) ? $atts['autoplay-delay'] : self::DEFAULT_AUTOPLAY_DELAY_RANGE ),
@@ -323,7 +349,8 @@ class JZSA_Shared_Albums {
 			// Display
 			'mode'             => $this->parse_mode( $atts ),
 			'background-color' => $this->parse_color( $atts ),
-			'image-fit'       => $this->parse_image_fit( $atts ),
+			'image-fit'              => $this->parse_image_fit( $atts ),
+			'full-screen-image-fit'  => $this->parse_fullscreen_image_fit( $atts ),
 			'full-screen-switch'     => $this->parse_fullscreen_switch_mode( $atts ),
 			'full-screen-navigation' => $this->parse_fullscreen_navigation_mode( $atts ),
 			'show-title'             => $this->parse_bool( $atts, 'show-title', false ),
@@ -333,6 +360,16 @@ class JZSA_Shared_Albums {
 
 			// Photo count
 			'max-photos-per-album'    => $this->parse_max_photos( $atts ),
+
+			// Grid mode
+			'grid-layout'         => $this->parse_grid_layout( $atts ),
+			'grid-sizing-model'   => $this->parse_grid_sizing_model( $atts ),
+			'grid-columns'        => $this->parse_grid_int( $atts, 'grid-columns', 3 ),
+			'grid-columns-tablet' => $this->parse_grid_int( $atts, 'grid-columns-tablet', 2 ),
+			'grid-columns-mobile' => $this->parse_grid_int( $atts, 'grid-columns-mobile', 1 ),
+			'grid-row-height'     => $this->parse_grid_row_height( $atts ),
+			'grid-rows'           => $this->parse_grid_rows( $atts ),
+			'grid-scroller'       => $this->parse_bool( $atts, 'grid-scroller', false ),
 		);
 
 		return $config;
@@ -453,6 +490,27 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
+	 * Parse full-screen-image-fit attribute.
+	 *
+	 * Falls back to image-fit when not explicitly provided, so the fullscreen
+	 * view inherits the inline setting by default.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string One of 'contain', 'cover', or 'stretch'.
+	 */
+	private function parse_fullscreen_image_fit( $atts ) {
+		if ( isset( $atts['full-screen-image-fit'] ) ) {
+			$value = strtolower( trim( (string) $atts['full-screen-image-fit'] ) );
+			if ( in_array( $value, array( 'contain', 'cover', 'stretch' ), true ) ) {
+				return $value;
+			}
+		}
+
+		// Not set or invalid — inherit from image-fit.
+		return $this->parse_image_fit( $atts );
+	}
+
+	/**
 	 * Parse delay range attribute (supports ranges like "4-12" or single values like "3")
 	 *
 	 * @param string|int $value Delay value (can be range like "4-12" or single value)
@@ -497,7 +555,7 @@ class JZSA_Shared_Albums {
 	 * Parse mode attribute
 	 *
 	 * @param array $atts Attributes
-	 * @return string Mode: 'carousel', 'single', or 'carousel-to-single'
+	 * @return string Mode: 'carousel', 'single', 'carousel-to-single', or 'grid'
 	 */
 	private function parse_mode( $atts ) {
 		if ( ! isset( $atts['mode'] ) ) {
@@ -507,8 +565,8 @@ class JZSA_Shared_Albums {
 
 		$mode = strtolower( trim( $atts['mode'] ) );
 
-		// Valid modes: 'carousel', 'single', 'carousel-to-single'
-		$valid_modes = array( 'carousel', 'single', 'carousel-to-single' );
+		// Valid modes: 'carousel', 'single', 'carousel-to-single', 'grid'
+		$valid_modes = array( 'carousel', 'single', 'carousel-to-single', 'grid' );
 
 		if ( in_array( $mode, $valid_modes, true ) ) {
 			return $mode;
@@ -516,6 +574,107 @@ class JZSA_Shared_Albums {
 
 		// Default fallback
 		return 'single';
+	}
+
+	/**
+	 * Parse grid-layout attribute.
+	 *
+	 * @param array $atts Attributes.
+	 * @return string 'uniform' or 'justified'
+	 */
+	private function parse_grid_layout( $atts ) {
+		if ( ! isset( $atts['grid-layout'] ) ) {
+			return 'uniform';
+		}
+
+		$value = strtolower( trim( $atts['grid-layout'] ) );
+
+		if ( in_array( $value, array( 'uniform', 'justified' ), true ) ) {
+			return $value;
+		}
+
+		return 'uniform';
+	}
+
+	/**
+	 * Parse grid-sizing-model attribute.
+	 *
+	 * @param array $atts Attributes.
+	 * @return string 'ratio' or 'fill'
+	 */
+	private function parse_grid_sizing_model( $atts ) {
+		if ( ! isset( $atts['grid-sizing-model'] ) ) {
+			return 'ratio';
+		}
+
+		$value = strtolower( trim( $atts['grid-sizing-model'] ) );
+
+		if ( in_array( $value, array( 'ratio', 'fill' ), true ) ) {
+			return $value;
+		}
+
+		return 'ratio';
+	}
+
+	/**
+	 * Parse an integer grid column/row count attribute.
+	 *
+	 * @param array  $atts    Attributes.
+	 * @param string $key     Attribute key.
+	 * @param int    $default Default value.
+	 * @return int
+	 */
+	private function parse_grid_int( $atts, $key, $default ) {
+		if ( ! isset( $atts[ $key ] ) ) {
+			return $default;
+		}
+
+		$value = intval( $atts[ $key ] );
+
+		return ( $value >= 1 && $value <= 12 ) ? $value : $default;
+	}
+
+	/**
+	 * Parse grid-row-height attribute (pixels, 50–800).
+	 *
+	 * @param array $atts Attributes.
+	 * @return int
+	 */
+	private function parse_grid_row_height( $atts ) {
+		if ( ! isset( $atts['grid-row-height'] ) ) {
+			return 200;
+		}
+
+		$value = intval( $atts['grid-row-height'] );
+
+		return ( $value >= 50 && $value <= 800 ) ? $value : 200;
+	}
+
+	/**
+	 * Parse grid-rows attribute.
+	 *
+	 * Controls how many grid rows are shown per page.
+	 * Use 0 (or omit) to show all rows on one page.
+	 *
+	 * @param array $atts Attributes.
+	 * @return int
+	 */
+	private function parse_grid_rows( $atts ) {
+		if ( ! isset( $atts['grid-rows'] ) ) {
+			return 0;
+		}
+
+		$value = intval( $atts['grid-rows'] );
+
+		if ( $value <= 0 ) {
+			return 0;
+		}
+
+		if ( $value > self::MAX_PHOTOS ) {
+			return self::MAX_PHOTOS;
+		}
+
+		return $value;
 	}
 
 	/**

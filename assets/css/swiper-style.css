@@ -10,6 +10,23 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     position: relative; /* For loader overlay positioning */
 }
 
+/* Initial gallery fade-in on load (content appears gradually). */
+.jzsa-album.jzsa-content-intro {
+    opacity: 0;
+    transition: opacity 1000ms ease-out;
+}
+
+.jzsa-album.jzsa-content-intro.jzsa-content-intro-visible {
+    opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .jzsa-album.jzsa-content-intro {
+        opacity: 1;
+        transition: none;
+    }
+}
+
 /* Make sure all structural layers share the same background color */
 .jzsa-album,
 .jzsa-album .swiper,
@@ -39,6 +56,57 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     width: 100%;
     height: 100%;
     object-fit: fill;
+}
+
+/* full-screen-image-fit overrides image-fit when in fullscreen.
+   Each vendor prefix MUST be in its own rule — grouping them causes browsers
+   to drop the entire rule when they encounter an unrecognised pseudo-class. */
+.jzsa-album:fullscreen[data-full-screen-image-fit="contain"] .swiper-slide img {
+    object-fit: contain;
+    width: auto;
+    height: auto;
+}
+.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="contain"] .swiper-slide img {
+    object-fit: contain;
+    width: auto;
+    height: auto;
+}
+.jzsa-album.jzsa-pseudo-fullscreen[data-full-screen-image-fit="contain"] .swiper-slide img {
+    object-fit: contain;
+    width: auto;
+    height: auto;
+}
+
+.jzsa-album:fullscreen[data-full-screen-image-fit="cover"] .swiper-slide img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="cover"] .swiper-slide img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+.jzsa-album.jzsa-pseudo-fullscreen[data-full-screen-image-fit="cover"] .swiper-slide img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+
+.jzsa-album:fullscreen[data-full-screen-image-fit="stretch"] .swiper-slide img {
+    object-fit: fill;
+    width: 100%;
+    height: 100%;
+}
+.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="stretch"] .swiper-slide img {
+    object-fit: fill;
+    width: 100%;
+    height: 100%;
+}
+.jzsa-album.jzsa-pseudo-fullscreen[data-full-screen-image-fit="stretch"] .swiper-slide img {
+    object-fit: fill;
+    width: 100%;
+    height: 100%;
 }
 
 /* Navigation buttons */
@@ -162,14 +230,14 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     transition: transform linear;
 }
 
-/* Play/Pause button (only visible in fullscreen) */
+/* Play/Pause button */
 .jzsa-album .swiper-button-play-pause {
     position: absolute;
-    bottom: 65px;
+    bottom: 38px;
     left: 50%;
     transform: translateX(-50%);
-    width: 50px;
-    height: 50px;
+    width: 44px;
+    height: 44px;
     background: rgba(0, 0, 0, 0.5);
     border: none;
     border-radius: 50%;
@@ -179,6 +247,10 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     align-items: center;
     justify-content: center;
     transition: background 0.3s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 0;
+    margin: 0;
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -187,9 +259,48 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     user-select: none;
 }
 
-/* Show play/pause button only in fullscreen - using JS class toggle */
+.jzsa-album .swiper-button-play-pause:focus,
+.jzsa-album .swiper-button-play-pause:focus-visible,
+.jzsa-album .swiper-button-play-pause:active {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.95);
+    border: none;
+}
+
+/* Show play/pause button in fullscreen, and inline when autoplay is enabled */
 .jzsa-album.jzsa-is-fullscreen .swiper-button-play-pause {
     display: flex;
+    bottom: 54px;
+}
+
+.jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
+    display: flex;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen):hover .swiper-button-play-pause,
+    .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen):focus-within .swiper-button-play-pause {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+/* Keep inline hover behavior predictable (do not force opacity via control intro animation). */
+.jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen).jzsa-loaded .swiper-button-play-pause {
+    animation: none;
+}
+
+@media (hover: none), (pointer: coarse) {
+    .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
+        display: none;
+        opacity: 0;
+        pointer-events: none;
+    }
 }
 
 .jzsa-album .swiper-button-play-pause:hover {
@@ -254,23 +365,27 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 }
 
 /* When in fullscreen, show exit fullscreen icon */
-.jzsa-album:fullscreen .swiper-button-fullscreen:after,
-.jzsa-album:-webkit-full-screen .swiper-button-fullscreen:after,
-.jzsa-album:-moz-full-screen .swiper-button-fullscreen:after,
-.jzsa-album:-ms-fullscreen .swiper-button-fullscreen:after {
+.jzsa-album:fullscreen .swiper-button-fullscreen:after {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>');
+}
+.jzsa-album:-webkit-full-screen .swiper-button-fullscreen:after {
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>');
 }
 
 /* Fullscreen mode styling */
-.jzsa-album:fullscreen,
-.jzsa-album:-webkit-full-screen,
-.jzsa-album:-moz-full-screen,
-.jzsa-album:-ms-fullscreen {
+.jzsa-album:fullscreen {
     width: 100vw !important;
     height: 100vh !important;
     max-width: 100vw;
     max-height: 100vh;
-background-color: var(--gallery-bg-color, #FFFFFF);
+    background-color: var(--gallery-bg-color, #FFFFFF);
+}
+.jzsa-album:-webkit-full-screen {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw;
+    max-height: 100vh;
+    background-color: var(--gallery-bg-color, #FFFFFF);
 }
 
 /* Pseudo fullscreen styling for iPhone (CSS-based fallback) */
@@ -412,45 +527,46 @@ body.jzsa-no-scroll {
     cursor: default;
 }
 
-/* Full screen navigation - cursor feedback and mobile tap highlight removal (only in fullscreen) */
+/* Full screen navigation - cursor feedback and mobile tap highlight removal (only in fullscreen).
+   Each vendor prefix in its own rule to avoid browser invalidation. */
 .jzsa-album:fullscreen[data-full-screen-navigation="single-click"] .swiper-slide,
-.jzsa-album:fullscreen[data-full-screen-navigation="double-click"] .swiper-slide,
-.jzsa-album:-webkit-full-screen[data-full-screen-navigation="single-click"] .swiper-slide,
-.jzsa-album:-webkit-full-screen[data-full-screen-navigation="double-click"] .swiper-slide,
-.jzsa-album:-moz-full-screen[data-full-screen-navigation="single-click"] .swiper-slide,
-.jzsa-album:-moz-full-screen[data-full-screen-navigation="double-click"] .swiper-slide,
-.jzsa-album:-ms-fullscreen[data-full-screen-navigation="single-click"] .swiper-slide,
-.jzsa-album:-ms-fullscreen[data-full-screen-navigation="double-click"] .swiper-slide {
+.jzsa-album:fullscreen[data-full-screen-navigation="double-click"] .swiper-slide {
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
+    user-select: none;
+}
+.jzsa-album:-webkit-full-screen[data-full-screen-navigation="single-click"] .swiper-slide,
+.jzsa-album:-webkit-full-screen[data-full-screen-navigation="double-click"] .swiper-slide {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
     user-select: none;
 }
 
 /* Left half cursor (previous) - only in fullscreen */
 .jzsa-album:fullscreen[data-full-screen-navigation="single-click"] .swiper-slide:hover,
-.jzsa-album:fullscreen[data-full-screen-navigation="double-click"] .swiper-slide:hover,
+.jzsa-album:fullscreen[data-full-screen-navigation="double-click"] .swiper-slide:hover {
+    cursor: w-resize;
+}
 .jzsa-album:-webkit-full-screen[data-full-screen-navigation="single-click"] .swiper-slide:hover,
-.jzsa-album:-webkit-full-screen[data-full-screen-navigation="double-click"] .swiper-slide:hover,
-.jzsa-album:-moz-full-screen[data-full-screen-navigation="single-click"] .swiper-slide:hover,
-.jzsa-album:-moz-full-screen[data-full-screen-navigation="double-click"] .swiper-slide:hover,
-.jzsa-album:-ms-fullscreen[data-full-screen-navigation="single-click"] .swiper-slide:hover,
-.jzsa-album:-ms-fullscreen[data-full-screen-navigation="double-click"] .swiper-slide:hover {
+.jzsa-album:-webkit-full-screen[data-full-screen-navigation="double-click"] .swiper-slide:hover {
     cursor: w-resize;
 }
 
 /* Right half cursor (next) - using pseudo-element trick - only in fullscreen */
 .jzsa-album:fullscreen[data-full-screen-navigation="single-click"] .swiper-slide::after,
-.jzsa-album:fullscreen[data-full-screen-navigation="double-click"] .swiper-slide::after,
+.jzsa-album:fullscreen[data-full-screen-navigation="double-click"] .swiper-slide::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    cursor: e-resize;
+}
 .jzsa-album:-webkit-full-screen[data-full-screen-navigation="single-click"] .swiper-slide::after,
-.jzsa-album:-webkit-full-screen[data-full-screen-navigation="double-click"] .swiper-slide::after,
-.jzsa-album:-moz-full-screen[data-full-screen-navigation="single-click"] .swiper-slide::after,
-.jzsa-album:-moz-full-screen[data-full-screen-navigation="double-click"] .swiper-slide::after,
-.jzsa-album:-ms-fullscreen[data-full-screen-navigation="single-click"] .swiper-slide::after,
-.jzsa-album:-ms-fullscreen[data-full-screen-navigation="double-click"] .swiper-slide::after {
+.jzsa-album:-webkit-full-screen[data-full-screen-navigation="double-click"] .swiper-slide::after {
     content: '';
     position: absolute;
     top: 0;
@@ -475,9 +591,121 @@ body.jzsa-no-scroll {
     transition: opacity 0.35s ease-in-out;
 }
 
+.jzsa-album.jzsa-loader-pending .jzsa-loader {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.jzsa-album.jzsa-loader-pending.jzsa-loader-visible .jzsa-loader {
+    opacity: 1;
+    visibility: visible;
+}
+
 .jzsa-album.jzsa-loaded .jzsa-loader {
     opacity: 0;
     visibility: hidden;
+}
+
+/* Fullscreen quality gate: hide slideshow briefly until active full-res image is ready. */
+.jzsa-album.jzsa-fullscreen-waiting .jzsa-loader {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.jzsa-album.jzsa-fullscreen-waiting .swiper-wrapper {
+    visibility: hidden;
+}
+
+.jzsa-album.jzsa-fullscreen-waiting .swiper-button-prev,
+.jzsa-album.jzsa-fullscreen-waiting .swiper-button-next,
+.jzsa-album.jzsa-fullscreen-waiting .swiper-pagination,
+.jzsa-album.jzsa-fullscreen-waiting .swiper-button-fullscreen:not(.jzsa-grid-thumb-fs-btn),
+.jzsa-album.jzsa-fullscreen-waiting .swiper-button-play-pause,
+.jzsa-album.jzsa-fullscreen-waiting .swiper-button-download,
+.jzsa-album.jzsa-fullscreen-waiting .swiper-button-external-link,
+.jzsa-album.jzsa-fullscreen-waiting .swiper-autoplay-progress {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    animation: none;
+}
+
+/* Safe default: keep single/player controls hidden until initial content is ready.
+   This prevents controls flashing before images on slower or highly optimized setups. */
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-prev,
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-next,
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-pagination,
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-fullscreen:not(.jzsa-grid-thumb-fs-btn),
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-play-pause,
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-download,
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-external-link,
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-autoplay-progress {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    animation: none;
+}
+
+/* Keep Swiper slide content hidden until the first image is considered loaded. */
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-wrapper {
+    visibility: hidden;
+}
+
+/* Hide controls while gallery is still in loading-pending state. */
+.jzsa-album.jzsa-loader-pending .swiper-button-prev,
+.jzsa-album.jzsa-loader-pending .swiper-button-next,
+.jzsa-album.jzsa-loader-pending .swiper-pagination,
+.jzsa-album.jzsa-loader-pending .swiper-button-fullscreen:not(.jzsa-grid-thumb-fs-btn),
+.jzsa-album.jzsa-loader-pending .swiper-button-play-pause,
+.jzsa-album.jzsa-loader-pending .swiper-button-download,
+.jzsa-album.jzsa-loader-pending .swiper-button-external-link,
+.jzsa-album.jzsa-loader-pending .swiper-autoplay-progress {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    animation: none;
+}
+
+.jzsa-album.jzsa-loaded .swiper-button-prev,
+.jzsa-album.jzsa-loaded .swiper-button-next,
+.jzsa-album.jzsa-loaded .swiper-pagination,
+.jzsa-album.jzsa-loaded .swiper-button-fullscreen:not(.jzsa-grid-thumb-fs-btn),
+.jzsa-album.jzsa-loaded .swiper-button-play-pause,
+.jzsa-album.jzsa-loaded .swiper-button-download,
+.jzsa-album.jzsa-loaded .swiper-button-external-link,
+.jzsa-album.jzsa-loaded .swiper-autoplay-progress {
+    visibility: visible;
+    animation: jzsa-controls-fade-in 1000ms ease-out both;
+}
+
+/* Grid controls live in a sibling overlay shell; hide them while the grid is pending. */
+.jzsa-grid-shell > .jzsa-grid-album.jzsa-loader-pending ~ .jzsa-grid-controls {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    animation: none;
+}
+
+.jzsa-grid-shell > .jzsa-grid-album:not(.jzsa-loaded) ~ .jzsa-grid-controls {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    animation: none;
+}
+
+.jzsa-grid-shell > .jzsa-grid-album.jzsa-loaded ~ .jzsa-grid-controls {
+    visibility: visible;
+    animation: jzsa-controls-fade-in 1000ms ease-out both;
+}
+
+@keyframes jzsa-controls-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 .jzsa-loader-inner {
@@ -550,4 +778,305 @@ body.jzsa-no-scroll {
     /* Keep cursor feedback for clickability but avoid any dimming/fog effect */
     opacity: 1;
     transition: opacity 0.2s ease;
+}
+
+/* ============================================================================
+   Grid mode
+   ============================================================================ */
+
+/* Grid container: reset swiper height so the grid grows with its content */
+.jzsa-grid-album {
+    height: auto;
+    background-color: var(--gallery-bg-color, #FFFFFF);
+    position: static;
+}
+
+.jzsa-grid-album.jzsa-grid-loading {
+    min-height: 140px;
+}
+
+.jzsa-grid-album.jzsa-grid-loading .jzsa-loader {
+    background: radial-gradient(circle at top, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.58));
+}
+
+/* Uniform grid layout */
+.jzsa-grid-album[data-grid-layout="uniform"] {
+    display: grid;
+    grid-template-columns: repeat(var(--jzsa-grid-columns, 3), 1fr);
+    gap: 4px;
+    align-content: start;
+}
+
+@media (max-width: 768px) {
+    .jzsa-grid-album[data-grid-layout="uniform"] {
+        grid-template-columns: repeat(var(--jzsa-grid-columns-tablet, 2), 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .jzsa-grid-album[data-grid-layout="uniform"] {
+        grid-template-columns: repeat(var(--jzsa-grid-columns-mobile, 1), 1fr);
+    }
+}
+
+.jzsa-grid-album[data-grid-layout="uniform"] .jzsa-grid-thumb {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    display: block;
+}
+
+.jzsa-grid-album[data-grid-layout="uniform"] .jzsa-grid-placeholder {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    display: block;
+    box-sizing: border-box;
+    border: 2px dashed rgba(128, 128, 128, 0.15);
+    background: rgba(128, 128, 128, 0.04);
+    border-radius: 2px;
+    pointer-events: none;
+    user-select: none;
+}
+
+.jzsa-grid-album[data-grid-layout="uniform"] .jzsa-grid-tile-fill {
+    aspect-ratio: auto;
+}
+.jzsa-grid-album[data-grid-layout="uniform"][data-image-fit="contain"] .jzsa-grid-thumb {
+    object-fit: contain;
+}
+.jzsa-grid-album[data-grid-layout="uniform"][data-image-fit="stretch"] .jzsa-grid-thumb {
+    object-fit: fill;
+}
+
+/* Justified grid layout */
+.jzsa-grid-album[data-grid-layout="justified"] .jzsa-justified-row {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 4px;
+    overflow: hidden;
+}
+
+.jzsa-grid-album[data-grid-layout="justified"] .jzsa-justified-row:last-child {
+    margin-bottom: 0;
+}
+
+.jzsa-grid-album[data-grid-layout="justified"] .jzsa-grid-thumb {
+    object-fit: cover;
+    flex-shrink: 0;
+    display: block;
+}
+.jzsa-grid-album[data-grid-layout="justified"][data-image-fit="contain"] .jzsa-grid-thumb {
+    object-fit: contain;
+}
+.jzsa-grid-album[data-grid-layout="justified"][data-image-fit="stretch"] .jzsa-grid-thumb {
+    object-fit: fill;
+}
+
+/* Shared thumbnail hover */
+.jzsa-grid-thumb {
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+.jzsa-grid-thumb:hover {
+    opacity: 0.85;
+}
+
+.jzsa-grid-item {
+    position: relative;
+}
+
+.jzsa-grid-item .jzsa-grid-thumb-fs-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 12;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+.jzsa-grid-album[data-full-screen-switch="button-only"] .jzsa-grid-item:hover .jzsa-grid-thumb-fs-btn,
+.jzsa-grid-album[data-full-screen-switch="button-only"] .jzsa-grid-item:focus-within .jzsa-grid-thumb-fs-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+@media (hover: none) {
+    .jzsa-grid-album[data-full-screen-switch="button-only"] .jzsa-grid-item .jzsa-grid-thumb-fs-btn {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+.jzsa-grid-album.jzsa-grid-draggable {
+    cursor: grab;
+    user-select: none;
+}
+
+.jzsa-grid-shell.jzsa-grid-draggable {
+    cursor: grab;
+}
+
+.jzsa-grid-album.jzsa-grid-draggable .jzsa-grid-thumb {
+    cursor: inherit;
+}
+
+.jzsa-grid-album.jzsa-grid-draggable.jzsa-grid-grabbing {
+    cursor: grabbing;
+}
+
+.jzsa-grid-shell.jzsa-grid-draggable.jzsa-grid-grabbing {
+    cursor: grabbing;
+}
+
+.jzsa-grid-album.jzsa-grid-draggable.jzsa-grid-grabbing .jzsa-grid-thumb {
+    cursor: inherit;
+}
+
+.jzsa-grid-shell.jzsa-grid-draggable .jzsa-grid-slide-stage,
+.jzsa-grid-shell.jzsa-grid-draggable .jzsa-grid-slide-track,
+.jzsa-grid-shell.jzsa-grid-draggable .jzsa-grid-slide-panel {
+    cursor: inherit;
+}
+
+.jzsa-grid-album.jzsa-grid-scrollable {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable;
+}
+
+/* Grid pagination controls (uses existing Swiper-style controls) */
+.jzsa-grid-shell {
+    position: relative;
+}
+
+.jzsa-grid-shell.jzsa-grid-shell-bounded {
+    overflow: hidden;
+}
+
+.jzsa-grid-shell.jzsa-grid-transitioning {
+    overflow: hidden;
+}
+
+.jzsa-grid-controls {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    background-color: transparent;
+    pointer-events: none;
+}
+
+.jzsa-grid-controls .swiper-button-prev,
+.jzsa-grid-controls .swiper-button-next {
+    margin-top: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: auto;
+}
+
+.jzsa-grid-controls .swiper-pagination {
+    top: auto;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    transform: none;
+    margin: 0 auto;
+    max-width: max-content;
+    pointer-events: none;
+}
+
+.jzsa-grid-controls .swiper-button-fullscreen {
+    pointer-events: auto;
+}
+
+.jzsa-grid-controls .swiper-button-play-pause {
+    width: 44px;
+    height: 44px;
+    bottom: 40px;
+    pointer-events: none;
+}
+
+.jzsa-grid-controls.jzsa-grid-autoplay-enabled .swiper-button-play-pause {
+    display: flex;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .jzsa-grid-controls.jzsa-grid-autoplay-enabled .swiper-button-play-pause {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .jzsa-grid-shell:hover .jzsa-grid-controls.jzsa-grid-autoplay-enabled .swiper-button-play-pause,
+    .jzsa-grid-shell:focus-within .jzsa-grid-controls.jzsa-grid-autoplay-enabled .swiper-button-play-pause {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+@media (hover: none), (pointer: coarse) {
+    .jzsa-grid-controls.jzsa-grid-autoplay-enabled .swiper-button-play-pause {
+        display: none;
+        opacity: 0;
+        pointer-events: none;
+    }
+}
+
+.jzsa-grid-slide-stage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 15;
+}
+
+.jzsa-grid-slide-track {
+    display: flex;
+    width: 200%;
+    transition: transform 0.6s ease;
+}
+
+.jzsa-grid-slide-panel {
+    flex: 0 0 50%;
+    max-width: 50%;
+    overflow: hidden;
+}
+
+.jzsa-grid-slide-panel .jzsa-justified-row:last-child {
+    margin-bottom: 0;
+}
+
+.jzsa-grid-slide-panel .jzsa-grid-thumb {
+    display: block;
+}
+
+.jzsa-grid-slide-panel .jzsa-grid-thumb:hover {
+    opacity: 1;
+}
+
+.jzsa-grid-slide-panel .jzsa-grid-thumb,
+.jzsa-grid-slide-panel .jzsa-justified-row,
+.jzsa-grid-slide-panel img {
+    pointer-events: none;
+}
+
+/* ============================================================================
+   Grid fullscreen player (hidden until fullscreen is entered)
+   ============================================================================ */
+
+/* Grid fullscreen player: rendered off-screen at viewport size so Swiper can
+   measure dimensions during init. The existing .jzsa-album:fullscreen and
+   .jzsa-album.jzsa-pseudo-fullscreen CSS handles the rest — exactly the same
+   mechanism used by player/carousel/carousel-to-single modes. */
+.jzsa-grid-player {
+    position: fixed;
+    left: -200vw;
+    width: 100vw;
+    height: 100vh;
 }

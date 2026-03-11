@@ -28,11 +28,11 @@
     margin-top: 20px;
 }
 
-/* Shortcode Playground section stands out slightly so it's easy to find
+/* Playground section stands out slightly so it's easy to find
  * when scrolling back. Light pastel background, subtle border color. */
 .jzsa-section.jzsa-playground-section {
-    background: #f0f6fc; /* same light blue as Help section */
-    border-color: #2271b1;
+    background: #f0fcf4;
+    border-color: #1a7a3a;
     margin-bottom: 32px; /* a bit more breathing room below the playground */
 }
 
@@ -259,15 +259,17 @@
     stroke: #e45757;
 }
 
-/* Individual colors for the six "your task" boxes on the right side,
- * using a palette inspired by the logo wedges, clockwise starting with blue.
- * We intentionally skip yellow and green for box colors. */
-.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-1 { stroke: #42a5f5; }
-.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-2 { stroke: #4f5194; }
-.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-3 { stroke: #804d87; }
-.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-4 { stroke: #df2668; }
-.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-5 { stroke: #e52826; }
-.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-6 { stroke: #f18935; }
+/* Individual colors for the eight "your task" boxes on the right side.
+ * Palette sampled from the logo aperture wedges, clockwise from blue.
+ * Each box border and text share the same color. */
+.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-1 { stroke: #3d8bd5; }
+.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-2 { stroke: #4a4494; }
+.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-3 { stroke: #8b3a7e; }
+.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-4 { stroke: #c92558; }
+.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-5 { stroke: #d93025; }
+.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-6 { stroke: #e8702a; }
+.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-7 { stroke: #f0a818; }
+.jzsa-purpose-panel-negative.jzsa-purpose-panel-neg-8 { stroke: #f4c724; }
 
 .jzsa-purpose-label {
     font-size: 7.5px;
@@ -282,13 +284,15 @@
     fill: #e45757; /* fallback */
 }
 
-/* Match label colors with their corresponding boxes */
-.jzsa-purpose-label-negative.jzsa-purpose-label-neg-1 { fill: #42a5f5; }
-.jzsa-purpose-label-negative.jzsa-purpose-label-neg-2 { fill: #4f5194; }
-.jzsa-purpose-label-negative.jzsa-purpose-label-neg-3 { fill: #804d87; }
-.jzsa-purpose-label-negative.jzsa-purpose-label-neg-4 { fill: #df2668; }
-.jzsa-purpose-label-negative.jzsa-purpose-label-neg-5 { fill: #e52826; }
-.jzsa-purpose-label-negative.jzsa-purpose-label-neg-6 { fill: #f18935; }
+/* Label colors shifted left: each box's text uses the next box's border color */
+.jzsa-purpose-label-negative.jzsa-purpose-label-neg-1 { fill: #4a4494; }
+.jzsa-purpose-label-negative.jzsa-purpose-label-neg-2 { fill: #8b3a7e; }
+.jzsa-purpose-label-negative.jzsa-purpose-label-neg-3 { fill: #c92558; }
+.jzsa-purpose-label-negative.jzsa-purpose-label-neg-4 { fill: #d93025; }
+.jzsa-purpose-label-negative.jzsa-purpose-label-neg-5 { fill: #e8702a; }
+.jzsa-purpose-label-negative.jzsa-purpose-label-neg-6 { fill: #f0a818; }
+.jzsa-purpose-label-negative.jzsa-purpose-label-neg-7 { fill: #f4c724; }
+.jzsa-purpose-label-negative.jzsa-purpose-label-neg-8 { fill: #3d8bd5; }
 
 /* Heading suffix is now rendered in the default heading color only. */
 
@@ -394,14 +398,14 @@
     border: 1px solid #dcdcde;
 }
 
-/* Help Section */
+/* Help Section (reddish) */
 .jzsa-help-section {
-    background: #f0f6fc;
-    border-color: #2271b1;
+    background: #fef0f0;
+    border-color: #b12222;
 }
 
 .jzsa-help-section h2 {
-    border-bottom-color: #2271b1;
+    border-bottom-color: #b12222;
 }
 
 .jzsa-help-section p {
@@ -410,12 +414,37 @@
 }
 
 .jzsa-help-section a {
-    color: #2271b1;
+    color: #b12222;
     text-decoration: none;
     font-weight: 500;
 }
 
 .jzsa-help-section a:hover {
+    text-decoration: underline;
+}
+
+/* Happy Section (greenish) */
+.jzsa-happy-section {
+    background: #f0fcf4;
+    border-color: #1a7a3a;
+}
+
+.jzsa-happy-section h2 {
+    border-bottom-color: #1a7a3a;
+}
+
+.jzsa-happy-section p {
+    margin: 12px 0;
+    font-size: 15px;
+}
+
+.jzsa-happy-section a {
+    color: #1a7a3a;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.jzsa-happy-section a:hover {
     text-decoration: underline;
 }
 

@@ -23,12 +23,22 @@ RELEASE_DIR="${BUILD_DIR}/${PLUGIN_SLUG}"
 EXTRACT_DIR="${RELEASE_DIR_ROOT}/${PLUGIN_SLUG}"
 
 # ---------------------------------------------------------------------------
-# Parse required version argument
+# Parse arguments
 # ---------------------------------------------------------------------------
-REQUESTED_VERSION="$1"
+ZIP_ONLY=0
+REQUESTED_VERSION=""
+
+for arg in "$@"; do
+    case "$arg" in
+        --zip-only) ZIP_ONLY=1 ;;
+        *)          REQUESTED_VERSION="$arg" ;;
+    esac
+done
+
 if [ -z "$REQUESTED_VERSION" ]; then
-    echo -e "${RED}Usage:${NC} $(basename "$0") <version>"
+    echo -e "${RED}Usage:${NC} $(basename "$0") [--zip-only] <version>"
     echo "Example: $(basename "$0") 1.0.2"
+    echo "         $(basename "$0") --zip-only 1.0.7"
     exit 1
 fi
 
@@ -97,12 +107,11 @@ if [ "$VERSION_ERRORS" -ne 0 ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Read-only git checks (optional but strongly recommended)
-# - Ensure we are on main/master
-# - Ensure working tree is clean
-# - Ensure a git tag matching this version points at HEAD (vX.Y.Z or X.Y.Z)
+# Git checks, tagging, and push (skipped with --zip-only)
 # ---------------------------------------------------------------------------
-if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+if [ "$ZIP_ONLY" -eq 1 ]; then
+    echo -e "${YELLOW}--zip-only: skipping git checks and tagging.${NC}"
+elif git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     echo -e "${YELLOW}Checking git state...${NC}"
 
     CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
@@ -281,24 +290,29 @@ if command -v shasum &> /dev/null; then
     echo -e "${GREEN}SHA256:${NC} ${SHA256_HASH}"
 fi
 
-# Unzip to temporary release directory and sync into SVN trunk (if present)
-echo -e "${YELLOW}Extracting to temporary release directory...${NC}"
-unzip -q "$ZIP_PATH" -d "$RELEASE_DIR_ROOT"
-echo -e "${GREEN}✓ Extracted to: ${EXTRACT_DIR}${NC}"
-
-# Determine SVN trunk path (can be overridden by SVN_TRUNK_PATH env var)
-SVN_TRUNK_DEFAULT="${SCRIPT_DIR}/release/wp-svn/${PLUGIN_SLUG}/trunk"
-SVN_TRUNK="${SVN_TRUNK_PATH:-$SVN_TRUNK_DEFAULT}"
 SYNCED_TO_SVN=0
 
-if [ -d "$SVN_TRUNK" ]; then
-    echo -e "${YELLOW}Syncing files into SVN trunk: ${SVN_TRUNK}${NC}"
-    # Remove existing plugin files from trunk, but keep .svn metadata
-    rm -rf "${SVN_TRUNK}"/*
-    cp -R "${EXTRACT_DIR}/"* "$SVN_TRUNK/"
-    SYNCED_TO_SVN=1
+if [ "$ZIP_ONLY" -eq 1 ]; then
+    echo -e "${YELLOW}--zip-only: skipping SVN sync.${NC}"
 else
-    echo -e "${YELLOW}SVN trunk not found at ${SVN_TRUNK}. Skipping SVN sync.${NC}"
+    # Unzip to temporary release directory and sync into SVN trunk (if present)
+    echo -e "${YELLOW}Extracting to temporary release directory...${NC}"
+    unzip -q "$ZIP_PATH" -d "$RELEASE_DIR_ROOT"
+    echo -e "${GREEN}✓ Extracted to: ${EXTRACT_DIR}${NC}"
+
+    # Determine SVN trunk path (can be overridden by SVN_TRUNK_PATH env var)
+    SVN_TRUNK_DEFAULT="${SCRIPT_DIR}/release/wp-svn/${PLUGIN_SLUG}/trunk"
+    SVN_TRUNK="${SVN_TRUNK_PATH:-$SVN_TRUNK_DEFAULT}"
+
+    if [ -d "$SVN_TRUNK" ]; then
+        echo -e "${YELLOW}Syncing files into SVN trunk: ${SVN_TRUNK}${NC}"
+        # Remove existing plugin files from trunk, but keep .svn metadata
+        rm -rf "${SVN_TRUNK}"/*
+        cp -R "${EXTRACT_DIR}/"* "$SVN_TRUNK/"
+        SYNCED_TO_SVN=1
+    else
+        echo -e "${YELLOW}SVN trunk not found at ${SVN_TRUNK}. Skipping SVN sync.${NC}"
+    fi
 fi
 
 # Summary
@@ -328,7 +342,7 @@ fi
 echo ""
 
 # If we synced to SVN, stage new files in SVN, show status, and optionally commit & tag
-if [ "$SYNCED_TO_SVN" -eq 1 ] && command -v svn &> /dev/null; then
+if [ "$ZIP_ONLY" -eq 0 ] && [ "$SYNCED_TO_SVN" -eq 1 ] && command -v svn &> /dev/null; then
     echo -e "${YELLOW}Running 'svn add . --force' in trunk (no commit yet)...${NC}"
     (
         cd "$SVN_TRUNK" && \

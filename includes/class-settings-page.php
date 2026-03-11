@@ -80,37 +80,22 @@ class JZSA_Settings_Page {
 				<!-- Purpose / Scope Section -->
 						<div class="jzsa-section jzsa-section-purpose">
 							<div class="jzsa-attention-box jzsa-attention-purpose">
-								<strong class="jzsa-purpose-heading" style="display:flex; align-items:center; font-size:18px; margin-bottom:6px; gap:10px;">
-									<img src="<?php echo esc_url( JZSA_PLUGIN_URL . 'assets/icon-256x256.gif' ); ?>" alt="<?php esc_attr_e( 'Shared Albums for Google Photos logo', 'janzeman-shared-albums-for-google-photos' ); ?>" class="jzsa-purpose-heading-icon" style="width:48px; height:48px; border-radius:8px;" />
-									<span>
-										<?php esc_html_e( 'What This Plugin Does – and What You Must Do Yourself', 'janzeman-shared-albums-for-google-photos' ); ?>
-									</span>
+								<strong class="jzsa-purpose-heading" style="font-size:18px; margin-bottom:6px;">
+									<?php esc_html_e( 'What This Plugin Does – and What It Doesn\'t', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</strong>
 						<p style="margin: 16px 0 0 0;">
-							<?php esc_html_e( 'This plugin renders one album per shortcode. It does not provide any layout mechanism for multiple albums. One [jzsa-album] shortcode will always render only one given album. To display many albums together you have to build your own layout and place one shortcode per album where you want it to appear.', 'janzeman-shared-albums-for-google-photos' ); ?>
-						</p>
-						<p style="margin: 8px 0 0 0;">
-							<?php
-							printf(
-								wp_kses(
-									/* translators: %s: "Query Loop block" (block name) wrapped in <strong>. */
-									__( 'For grid layouts or pagination across many albums (for example year-based archives), use your theme or block editor layout tools such as the %s block, and insert one [jzsa-album] shortcode in each grid item.', 'janzeman-shared-albums-for-google-photos' ),
-									array( 'strong' => array() )
-								),
-								'<strong>Query Loop</strong>'
-							);
-							?>
+							<?php esc_html_e( 'This plugin renders one album per shortcode. It does not provide any layout mechanism for multiple albums. One [jzsa-album] shortcode will always render only one given album. To display many albums together, build your own layout with one shortcode per album — for example using columns, the Query Loop block, or any page builder of your choice.', 'janzeman-shared-albums-for-google-photos' ); ?>
 						</p>
 						<div class="jzsa-purpose-diagram-wrapper">
-							<svg class="jzsa-purpose-diagram" viewBox="0 0 360 95" role="img" aria-labelledby="jzsa-purpose-diagram-title jzsa-purpose-diagram-desc">
+							<svg class="jzsa-purpose-diagram" viewBox="0 0 360 121" role="img" aria-labelledby="jzsa-purpose-diagram-title jzsa-purpose-diagram-desc">
 								<title id="jzsa-purpose-diagram-title"><?php esc_html_e( 'One album versus multi-album page layout', 'janzeman-shared-albums-for-google-photos' ); ?></title>
 								<desc id="jzsa-purpose-diagram-desc"><?php esc_html_e( 'Left: we render your individual albums, one per shortcode. Right: you create the overall layout of multiple albums on your page.', 'janzeman-shared-albums-for-google-photos' ); ?></desc>
-								
+
 								<!-- Left: one album gallery rendered by this plugin -->
-								<rect x="1" y="10" width="140" height="73" rx="6" class="jzsa-purpose-panel jzsa-purpose-panel-single" />
-								<text x="72" y="50" text-anchor="middle" class="jzsa-purpose-label">
-									<tspan x="72" dy="-7"><?php esc_html_e( 'We render your', 'janzeman-shared-albums-for-google-photos' ); ?></tspan>
-									<tspan x="72" dy="14"><?php esc_html_e( 'individual albums.', 'janzeman-shared-albums-for-google-photos' ); ?></tspan>
+								<rect x="1" y="10" width="140" height="99" rx="6" class="jzsa-purpose-panel jzsa-purpose-panel-single" />
+								<image href="<?php echo esc_url( JZSA_PLUGIN_URL . 'assets/icon-256x256.gif' ); ?>" x="33" y="15" width="75" height="75" />
+								<text x="72" y="99" text-anchor="middle" class="jzsa-purpose-label">
+									<?php esc_html_e( 'We render your album.', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
 
 								<!-- Right: multi-album page layout built outside this plugin -->
@@ -120,26 +105,84 @@ class JZSA_Settings_Page {
 								<rect x="250" y="36" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative jzsa-purpose-panel-neg-4" />
 								<rect x="169" y="62" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative jzsa-purpose-panel-neg-5" />
 								<rect x="250" y="62" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative jzsa-purpose-panel-neg-6" />
+								<rect x="169" y="88" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative jzsa-purpose-panel-neg-7" />
+								<rect x="250" y="88" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative jzsa-purpose-panel-neg-8" />
 
 								<text x="207" y="21" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-1">
 									<?php esc_html_e( 'You', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
 								<text x="287" y="21" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-2">
-									<?php esc_html_e( 'take', 'janzeman-shared-albums-for-google-photos' ); ?>
+									<?php esc_html_e( 'must', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
 								<text x="207" y="47" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-3">
-									<?php esc_html_e( 'care', 'janzeman-shared-albums-for-google-photos' ); ?>
+									<?php esc_html_e( 'take', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
 								<text x="287" y="47" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-4">
-									<?php esc_html_e( 'about', 'janzeman-shared-albums-for-google-photos' ); ?>
+									<?php esc_html_e( 'care', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
 								<text x="207" y="73" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-5">
-									<?php esc_html_e( 'the', 'janzeman-shared-albums-for-google-photos' ); ?>
+									<?php esc_html_e( 'about', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
 								<text x="287" y="73" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-6">
+									<?php esc_html_e( 'the', 'janzeman-shared-albums-for-google-photos' ); ?>
+								</text>
+								<text x="207" y="99" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-7">
+									<?php esc_html_e( 'multi-album', 'janzeman-shared-albums-for-google-photos' ); ?>
+								</text>
+								<text x="287" y="99" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-8">
 									<?php esc_html_e( 'layout.', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
 							</svg>
+						</div>
+					</div>
+				</div>
+
+				<div class="jzsa-section jzsa-help-section">
+					<h2><?php esc_html_e( 'This Plugin Has Potential, But...', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+					<p>
+						<?php
+						printf(
+							/* translators: %s: link to GitHub issues. */
+							esc_html__( 'I found a bug! Please %s.', 'janzeman-shared-albums-for-google-photos' ),
+							'<a href="https://github.com/JanZeman/shared-albums-for-google-photos/issues/new" target="_blank" rel="noopener">' . esc_html__( 'report it on GitHub', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
+						);
+						?>
+					</p>
+					<p>
+						<?php
+						printf(
+							/* translators: %s: link to WordPress.org support forum. */
+							esc_html__( 'I am missing a feature! Please %s.', 'janzeman-shared-albums-for-google-photos' ),
+							'<a href="https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/" target="_blank" rel="noopener">' . esc_html__( 'request it on the support forum', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
+						);
+						?>
+					</p>
+				</div>
+
+				<div class="jzsa-section jzsa-happy-section">
+					<h2><?php esc_html_e( 'I Am a Happy User of This Plugin :)', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+					<p>
+						<?php
+						printf(
+							/* translators: %s: link to WordPress.org reviews. */
+							esc_html__( 'Please %s — it helps other users discover the plugin and keeps development going.', 'janzeman-shared-albums-for-google-photos' ),
+							'<a href="https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/reviews/#new-post" target="_blank" rel="noopener">' . esc_html__( 'leave a rating on WordPress.org', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
+						);
+						?>
+					</p>
+					<div class="jzsa-support-coffee" style="margin-top: 16px; padding: 16px; display: flex; align-items: flex-start; gap: 16px;">
+						<img src="<?php echo esc_url( plugins_url( 'assets/Photographer_128x128.png', dirname( __FILE__ ) ) ); ?>" alt="" style="width: 64px; height: 64px; flex-shrink: 0;">
+						<div style="flex: 1;">
+							<a href="https://www.buymeacoffee.com/janzeman" target="_blank" rel="noopener" style="font-weight: bold; text-decoration: none;"><?php esc_html_e( 'Buy Me a Coffee', 'janzeman-shared-albums-for-google-photos' ); ?></a> <span style="font-size: 1.2em; margin-left: 5px;">&#9749;</span>
+							<p style="margin: 4px 0 0;">
+								<?php
+								printf(
+									/* translators: %s: Buy Me a Coffee link. */
+									esc_html__( 'Please consider %s. Made by a hobbyist WordPress developer and occasional photographer. Thank you :)', 'janzeman-shared-albums-for-google-photos' ),
+									'<a href="https://www.buymeacoffee.com/janzeman" target="_blank" rel="noopener">' . esc_html__( 'supporting its development', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
+								);
+								?>
+							</p>
 						</div>
 					</div>
 				</div>
@@ -155,15 +198,15 @@ class JZSA_Settings_Page {
 						<div class="jzsa-step-number">1</div>
 						<div class="jzsa-step-content">
 							<h3><?php esc_html_e( 'Understand What Your Visitors Will See', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php esc_html_e( 'Use the Shortcode Playground below to explore the sample album: try the main controls, enter and exit fullscreen, understand what your visitors will experience.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'Use the Playground below to explore the sample album: try the main controls, enter and exit fullscreen, understand what your visitors will experience.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
 
 					<div class="jzsa-step">
 						<div class="jzsa-step-number">2</div>
 						<div class="jzsa-step-content">
-							<h3><?php esc_html_e( 'Browse the Shortcode Samples Further Below', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php esc_html_e( 'Scroll down to the Shortcode Samples section to see different shortcode configurations with descriptions, ready to copy and adapt.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<h3><?php esc_html_e( 'Browse the Samples Further Below', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php esc_html_e( 'Scroll down to the Samples section to see different shortcode configurations with descriptions, ready to copy and adapt.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
 
@@ -171,7 +214,7 @@ class JZSA_Settings_Page {
 						<div class="jzsa-step-number">3</div>
 						<div class="jzsa-step-content">
 							<h3><?php esc_html_e( 'Try the Samples in the Playground', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php esc_html_e( 'Copy some of the sample shortcodes, paste them into the Shortcode Playground textarea on this page end experiment with shortcode modifications.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'Copy some of the sample shortcodes, paste them into the Playground textarea on this page and experiment with shortcode modifications.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
 
@@ -192,9 +235,9 @@ class JZSA_Settings_Page {
 					</div>
 				</div>
 
-				<!-- Shortcode Playground Section -->
+				<!-- Playground Section -->
 				<div class="jzsa-section jzsa-playground-section">
-					<h2><?php esc_html_e( 'Shortcode Playground', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+					<h2><?php esc_html_e( 'Playground', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 					<p class="jzsa-intro">
 						<?php esc_html_e( 'Use this area to experiment with the [jzsa-album] shortcode. You can paste your own shortcode here and adjust it before using it on a page or post.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</p>
@@ -217,9 +260,9 @@ class JZSA_Settings_Page {
 					</div>
 				</div>
 
-				<!-- Shortcode Samples Section -->
+				<!-- Samples Section -->
 				<div class="jzsa-section jzsa-samples-section">
-					<h2><?php esc_html_e( 'Shortcode Samples', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+					<h2><?php esc_html_e( 'Samples', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Basic Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
@@ -505,6 +548,66 @@ class JZSA_Settings_Page {
 						?>
 					</div>
 					</div>
+
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Grid Mode – Uniform Layout', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Uses mode="grid" to display photos as a thumbnail grid. Every cell has the same size. Click any thumbnail to open it in a fullscreen viewer.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<div class="jzsa-code-block">
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="grid" grid-layout="uniform" grid-columns="4" grid-columns-tablet="3" grid-columns-mobile="2" max-photos-per-album="12"]</code>
+						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					</div>
+					<div class="jzsa-preview-container jzsa-preview-container-grid-uniform" style="height:auto;">
+						<?php
+							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="grid" grid-layout="uniform" grid-columns="4" grid-columns-tablet="3" grid-columns-mobile="2" max-photos-per-album="12"]' );
+						?>
+					</div>
+					</div>
+
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Grid Mode – Justified Layout', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Uses grid-layout="justified" so photos keep their natural aspect ratios and fill each row edge-to-edge, similar to Google Photos. Click any thumbnail to open it in a fullscreen viewer.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<div class="jzsa-code-block">
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="grid" grid-layout="justified" grid-row-height="180" max-photos-per-album="7"]</code>
+						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					</div>
+					<div class="jzsa-preview-container jzsa-preview-container-grid-justified" style="height:auto;">
+						<?php
+							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="grid" grid-layout="justified" grid-row-height="180" max-photos-per-album="7"]' );
+						?>
+					</div>
+					</div>
+
+						<div class="jzsa-example">
+							<h3><?php esc_html_e( 'Grid Mode – Paged Thumbnails', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php esc_html_e( 'Use grid-rows to split the grid into pages. The same previous/next and pagination controls are reused for grid page navigation. Use grid-sizing-model="ratio" (default) to keep fixed tile aspect ratio, or grid-sizing-model="fill" to stretch row heights and fill explicit control height.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
+							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="grid" grid-layout="uniform" grid-columns="3" grid-rows="2" grid-sizing-model="ratio" max-photos-per-album="18"]</code>
+							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+						<div class="jzsa-preview-container jzsa-preview-container-grid-paged" style="height:auto;">
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="grid" grid-layout="uniform" grid-columns="3" grid-rows="2" grid-sizing-model="ratio" max-photos-per-album="18"]' );
+							?>
+						</div>
+						</div>
+
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Grid Mode – Scrolling Rows', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Use grid-scroller="true" with grid-rows to show a fixed-height, vertically scrollable grid instead of page controls.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<div class="jzsa-code-block">
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="grid" grid-layout="uniform" grid-columns="3" grid-rows="2" grid-scroller="true" max-photos-per-album="18"]</code>
+						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					</div>
+					<div class="jzsa-preview-container jzsa-preview-container-grid-scroller" style="height:auto;">
+						<?php
+							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="grid" grid-layout="uniform" grid-columns="3" grid-rows="2" grid-scroller="true" max-photos-per-album="18"]' );
+						?>
+					</div>
+					</div>
 				</div>
 
 				<!-- Start Tutorial -->
@@ -579,7 +682,7 @@ class JZSA_Settings_Page {
 
 				<!-- Shortcode Parameters -->
 				<div class="jzsa-section">
-					<h2><?php esc_html_e( 'List of All Shortcode Parameters', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+					<h2><?php esc_html_e( 'All Shortcode Parameters', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 
 					<h3><?php esc_html_e( 'Required', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 					<table class="jzsa-settings-table">
@@ -595,6 +698,28 @@ class JZSA_Settings_Page {
 								<td><code>link</code></td>
 								<td><?php esc_html_e( 'Google Photos share URL (supports both full and short link formats)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td><em><?php esc_html_e( 'Required', 'janzeman-shared-albums-for-google-photos' ); ?></em></td>
+							</tr>
+						</tbody>
+					</table>
+
+					<h3><?php esc_html_e( 'Gallery Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<table class="jzsa-settings-table">
+						<thead>
+							<tr>
+								<th>Parameter</th>
+								<th>Description</th>
+								<th>Default</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><code>mode</code></td>
+								<td>Gallery mode:<br>
+									• "single": Single photo viewer with zoom support (pinch/double-click to zoom)<br>
+									• "carousel": Multiple photos visible at once (2 on mobile/tablet, 3 on desktop)<br>
+									• "carousel-to-single": Carousel preview (2 or 3 photos visible) that switches to a single photo viewer in fullscreen<br>
+									• "grid": Thumbnail grid with optional paging or scrolling via <code>grid-rows</code> and <code>grid-scroller</code>; click any thumbnail to open it in a fullscreen viewer</td>
+								<td>single</td>
 							</tr>
 						</tbody>
 					</table>
@@ -619,16 +744,16 @@ class JZSA_Settings_Page {
 								<td>How photos fit the frame: "cover" (fill and crop edges), "contain" (letterbox, no cropping), or "stretch" (fill and distort).</td>
 								<td>cover</td>
 							</tr>
-							<tr>
-								<td><code>width</code></td>
-								<td>Width in pixels or "auto"</td>
-								<td>267</td>
-							</tr>
-							<tr>
-								<td><code>height</code></td>
-								<td>Height in pixels or "auto"</td>
-								<td>200</td>
-							</tr>
+								<tr>
+									<td><code>width</code></td>
+									<td>Width in pixels or "auto". In <code>mode="grid"</code>, prefer <code>grid-columns</code>/<code>grid-rows</code>.</td>
+									<td>267</td>
+								</tr>
+								<tr>
+									<td><code>height</code></td>
+									<td>Height in pixels or "auto". In <code>mode="grid"</code>, prefer <code>grid-columns</code>/<code>grid-rows</code>.</td>
+									<td>200</td>
+								</tr>
 						</tbody>
 					</table>
 
@@ -667,12 +792,12 @@ class JZSA_Settings_Page {
 						<tbody>
 							<tr>
 								<td><code>autoplay</code></td>
-								<td>Enable autoplay in normal mode: "true" or "false"</td>
+								<td>Enable autoplay in normal mode: "true" or "false". In <code>mode="grid"</code> with pagination (<code>grid-rows &gt; 0</code> and <code>grid-scroller="false"</code>), this advances grid pages automatically.</td>
 								<td>true</td>
 							</tr>
 							<tr>
 								<td><code>autoplay-delay</code></td>
-								<td>Autoplay delay in normal mode, in seconds, supports ranges like "4-12"</td>
+								<td>Autoplay delay in normal mode, in seconds, supports ranges like "4-12". In paginated grid mode this is the delay between page changes.</td>
 								<td>"4-12"</td>
 							</tr>
 							<tr>
@@ -718,6 +843,11 @@ class JZSA_Settings_Page {
 								<td>Full screen navigation mode: "single-click" (click left/right areas to navigate), "buttons-only" (navigation buttons only), or "double-click" (double-click left/right areas to navigate). Only works when in full screen mode.</td>
 								<td>single-click</td>
 							</tr>
+							<tr>
+								<td><code>full-screen-image-fit</code></td>
+								<td>How photos fit the frame in fullscreen: "cover" (fill and crop edges), "contain" (letterbox, no cropping), or "stretch" (fill and distort). If not set, inherits from <code>image-fit</code>.</td>
+								<td>same as image-fit</td>
+							</tr>
 						</tbody>
 					</table>
 
@@ -754,7 +884,7 @@ class JZSA_Settings_Page {
 						</tbody>
 					</table>
 
-					<h3><?php esc_html_e( 'Gallery Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<h3><?php esc_html_e( 'Advanced', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 					<table class="jzsa-settings-table">
 						<thead>
 							<tr>
@@ -765,12 +895,63 @@ class JZSA_Settings_Page {
 						</thead>
 						<tbody>
 							<tr>
-								<td><code>mode</code></td>
-								<td>Gallery mode:<br>
-									• "single": Single photo viewer with zoom support (pinch/double-click to zoom)<br>
-									• "carousel": Multiple photos visible at once (2 on mobile/tablet, 3 on desktop)<br>
-									• "carousel-to-single": Carousel preview (2 or 3 photos visible) that switches to a single photo viewer in fullscreen</td>
-								<td>single</td>
+								<td><code>max-photos-per-album</code></td>
+								<td>Maximum number of photos to display from the album (1–300). Google Photos typically returns up to 300 photos per album.</td>
+								<td>300</td>
+							</tr>
+						</tbody>
+					</table>
+
+					<h3><?php esc_html_e( 'Grid Mode Options', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<p><?php esc_html_e( 'These parameters only apply when mode="grid".', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<table class="jzsa-settings-table">
+						<thead>
+							<tr>
+								<th><?php esc_html_e( 'Parameter', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Description', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Default', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+								<tr>
+									<td><code>grid-layout</code></td>
+									<td><?php esc_html_e( 'Grid layout algorithm: "uniform" (equal-size cells) or "justified" (photos fill each row at their natural aspect ratio, like Google Photos)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+									<td>uniform</td>
+								</tr>
+								<tr>
+									<td><code>grid-sizing-model</code></td>
+									<td><?php esc_html_e( 'Uniform grid sizing model: "ratio" keeps a fixed tile ratio (default), while "fill" stretches row heights to fill an explicit control height when width/height and grid-rows are used.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+									<td>ratio</td>
+								</tr>
+								<tr>
+									<td><code>grid-columns</code></td>
+									<td><?php esc_html_e( 'Number of columns on desktop (uniform layout only)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+									<td>3</td>
+								</tr>
+							<tr>
+								<td><code>grid-columns-tablet</code></td>
+								<td><?php esc_html_e( 'Number of columns on tablet screens ≤ 768 px (uniform layout only)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>2</td>
+							</tr>
+							<tr>
+								<td><code>grid-columns-mobile</code></td>
+								<td><?php esc_html_e( 'Number of columns on mobile screens ≤ 480 px (uniform layout only)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>1</td>
+							</tr>
+							<tr>
+								<td><code>grid-row-height</code></td>
+								<td><?php esc_html_e( 'Target row height in pixels for the justified layout (50–800)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>200</td>
+							</tr>
+							<tr>
+								<td><code>grid-rows</code></td>
+								<td><?php esc_html_e( 'Number of visible grid rows when row limiting is enabled. If more rows are available, grid uses paging by default or scrolling when grid-scroller="true". Use 0 to show all rows.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>0 (all rows)</td>
+							</tr>
+							<tr>
+								<td><code>grid-scroller</code></td>
+								<td><?php esc_html_e( 'When set to "true" (and grid-rows > 0), uses a single vertically scrollable grid instead of page controls.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>false</td>
 							</tr>
 						</tbody>
 					</table>
@@ -838,27 +1019,54 @@ class JZSA_Settings_Page {
 					</div>
 				</div>
 
-				<!-- Help & Support -->
 				<div class="jzsa-section jzsa-help-section">
-					<h2><?php esc_html_e( 'Need More Help?', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+					<h2><?php esc_html_e( 'This Plugin Has Potential, But...', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 					<p>
 						<?php
-					printf(
-						/* translators: %s: link to plugin page on WordPress.org. */
-						esc_html__( 'For detailed documentation on all available settings, visit the %s.', 'janzeman-shared-albums-for-google-photos' ),
-						'<a href="https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/" target="_blank" rel="noopener">' . esc_html__( 'plugin page', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
-					);
+						printf(
+							/* translators: %s: link to GitHub issues. */
+							esc_html__( 'I found a bug! Please %s.', 'janzeman-shared-albums-for-google-photos' ),
+							'<a href="https://github.com/JanZeman/shared-albums-for-google-photos/issues/new" target="_blank" rel="noopener">' . esc_html__( 'report it on GitHub', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
+						);
 						?>
 					</p>
 					<p>
 						<?php
 						printf(
-							/* translators: %s: link to GitHub issues. */
-							esc_html__( 'Found a bug or have a feature request? %s.', 'janzeman-shared-albums-for-google-photos' ),
-							'<a href="https://github.com/JanZeman/shared-albums-for-google-photos/issues" target="_blank" rel="noopener">' . esc_html__( 'Report it on GitHub', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
+							/* translators: %s: link to WordPress.org support forum. */
+							esc_html__( 'I am missing a feature! Please %s.', 'janzeman-shared-albums-for-google-photos' ),
+							'<a href="https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/" target="_blank" rel="noopener">' . esc_html__( 'request it on the support forum', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
 						);
 						?>
 					</p>
+				</div>
+
+				<div class="jzsa-section jzsa-happy-section">
+					<h2><?php esc_html_e( 'I Am a Happy User of This Plugin :)', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+					<p>
+						<?php
+						printf(
+							/* translators: %s: link to WordPress.org reviews. */
+							esc_html__( 'Please %s — it helps other users discover the plugin and keeps development going.', 'janzeman-shared-albums-for-google-photos' ),
+							'<a href="https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/reviews/#new-post" target="_blank" rel="noopener">' . esc_html__( 'leave a rating on WordPress.org', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
+						);
+						?>
+					</p>
+					<div class="jzsa-support-coffee" style="margin-top: 16px; padding: 16px; display: flex; align-items: flex-start; gap: 16px;">
+						<img src="<?php echo esc_url( plugins_url( 'assets/Photographer_128x128.png', dirname( __FILE__ ) ) ); ?>" alt="" style="width: 64px; height: 64px; flex-shrink: 0;">
+						<div style="flex: 1;">
+							<a href="https://www.buymeacoffee.com/janzeman" target="_blank" rel="noopener" style="font-weight: bold; text-decoration: none;"><?php esc_html_e( 'Buy Me a Coffee', 'janzeman-shared-albums-for-google-photos' ); ?></a> <span style="font-size: 1.2em; margin-left: 5px;">&#9749;</span>
+							<p style="margin: 4px 0 0;">
+								<?php
+								printf(
+									/* translators: %s: Buy Me a Coffee link. */
+									esc_html__( 'Please consider %s. Made by a hobbyist WordPress developer and occasional photographer. Thank you :)', 'janzeman-shared-albums-for-google-photos' ),
+									'<a href="https://www.buymeacoffee.com/janzeman" target="_blank" rel="noopener">' . esc_html__( 'supporting its development', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
+								);
+								?>
+							</p>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

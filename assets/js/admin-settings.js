@@ -112,16 +112,25 @@ function jzsaRunPlaygroundPreview() {
 			// Step 2b: initialize Swiper for the newly rendered gallery, using the
 			// same initializer as the front‑end. This makes the preview fully
 			// interactive, but we only do it once per Update click.
-			if ( window.SharedGooglePhotos && typeof window.SharedGooglePhotos.initialize === 'function' ) {
+			if ( window.SharedGooglePhotos ) {
 				var album = preview.querySelector( '.jzsa-album' );
 				if ( album ) {
-					var mode = album.getAttribute( 'data-mode' ) || 'single';
-					window.SharedGooglePhotos.initialize( album, mode );
+					var mode = album.getAttribute( 'data-mode' ) || 'player';
+					if ( mode === 'grid' && typeof window.SharedGooglePhotos.initializeGrid === 'function' ) {
+						window.SharedGooglePhotos.initializeGrid( album );
+					} else if ( typeof window.SharedGooglePhotos.initialize === 'function' ) {
+						window.SharedGooglePhotos.initialize( album, mode );
+					}
 				}
 			}
 		} )
 		.catch( function ( error ) {
-			preview.innerHTML = '<div class="jzsa-playground-error">Unable to contact the server for preview.</div>';
+				var errorMessage = 'Preview rendering error';
+			if ( error && error.message ) {
+				errorMessage += ': ' + error.message;
+			}
+			preview.innerHTML = '<div class="jzsa-playground-error"></div>';
+			preview.querySelector( '.jzsa-playground-error' ).textContent = errorMessage;
 			if ( window.console && console.error ) {
 				console.error( 'JZSA Shortcode Playground preview error:', error );
 			}

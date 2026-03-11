@@ -58,13 +58,13 @@ git clone https://github.com/JanZeman/shared-albums-for-google-photos.git
 
 ## Key Features
 
-- Modern Swiper 11 gallery with fullscreen mode
+- Multiple display modes — single-photo slider, carousel variants, or thumbnail grid (with optional `grid-rows` paging/scrolling)
 - Touch gestures, zoom support, keyboard navigation
 - Progressive image loading with lazy loading
 - Responsive design (mobile, tablet, desktop)
 - Customizable via shortcode parameters
-- **Shortcode Playground** on the Settings page for experimenting with `[jzsa-album]` shortcodes and live previews
-- Swiper 11 bundled locally (no CDN dependencies)
+- Shortcode Playground on the Settings page for experimenting with `[jzsa-album]` shortcodes and live previews
+- Modern Swiper 11 gallery with fullscreen mode (bundled locally, no CDN dependencies)
 - WordPress coding standards compliant
 
 ---
