@@ -304,10 +304,13 @@ class JZSA_Shared_Albums {
 			'album-url' => $url,
 
 			// Dimensions
-			'width'          => $this->parse_dimension( $atts, 'width', self::DEFAULT_WIDTH ),
-			'height'         => $this->parse_dimension( $atts, 'height', self::DEFAULT_HEIGHT ),
-			'image-width'    => isset( $atts['image-width'] ) ? intval( $atts['image-width'] ) : self::DEFAULT_IMAGE_WIDTH,
-			'image-height'   => isset( $atts['image-height'] ) ? intval( $atts['image-height'] ) : self::DEFAULT_IMAGE_HEIGHT,
+			'width'           => $this->parse_dimension( $atts, 'width', self::DEFAULT_WIDTH ),
+			'height'          => $this->parse_dimension( $atts, 'height', self::DEFAULT_HEIGHT ),
+			// Track whether width/height were explicitly set in shortcode.
+			'width-explicit'  => isset( $atts['width'] ),
+			'height-explicit' => isset( $atts['height'] ),
+			'image-width'     => isset( $atts['image-width'] ) ? intval( $atts['image-width'] ) : self::DEFAULT_IMAGE_WIDTH,
+			'image-height'    => isset( $atts['image-height'] ) ? intval( $atts['image-height'] ) : self::DEFAULT_IMAGE_HEIGHT,
 			// Autoplay (normal mode)
 			'autoplay'       => $this->parse_bool( $atts, 'autoplay', true ),
 			'autoplay-delay' => $this->parse_delay_range( isset( $atts['autoplay-delay'] ) ? $atts['autoplay-delay'] : self::DEFAULT_AUTOPLAY_DELAY_RANGE ),
@@ -337,6 +340,7 @@ class JZSA_Shared_Albums {
 
 			// Grid mode
 			'grid-layout'         => $this->parse_grid_layout( $atts ),
+			'grid-sizing-model'   => $this->parse_grid_sizing_model( $atts ),
 			'grid-columns'        => $this->parse_grid_int( $atts, 'grid-columns', 3 ),
 			'grid-columns-tablet' => $this->parse_grid_int( $atts, 'grid-columns-tablet', 2 ),
 			'grid-columns-mobile' => $this->parse_grid_int( $atts, 'grid-columns-mobile', 1 ),
@@ -567,6 +571,26 @@ class JZSA_Shared_Albums {
 		}
 
 		return 'uniform';
+	}
+
+	/**
+	 * Parse grid-sizing-model attribute.
+	 *
+	 * @param array $atts Attributes.
+	 * @return string 'ratio' or 'fill'
+	 */
+	private function parse_grid_sizing_model( $atts ) {
+		if ( ! isset( $atts['grid-sizing-model'] ) ) {
+			return 'ratio';
+		}
+
+		$value = strtolower( trim( $atts['grid-sizing-model'] ) );
+
+		if ( in_array( $value, array( 'ratio', 'fill' ), true ) ) {
+			return $value;
+		}
+
+		return 'ratio';
 	}
 
 	/**

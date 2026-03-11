@@ -230,14 +230,14 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     transition: transform linear;
 }
 
-/* Play/Pause button (only visible in fullscreen) */
+/* Play/Pause button */
 .jzsa-album .swiper-button-play-pause {
     position: absolute;
-    bottom: 65px;
+    bottom: 38px;
     left: 50%;
     transform: translateX(-50%);
-    width: 50px;
-    height: 50px;
+    width: 44px;
+    height: 44px;
     background: rgba(0, 0, 0, 0.5);
     border: none;
     border-radius: 50%;
@@ -247,6 +247,10 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     align-items: center;
     justify-content: center;
     transition: background 0.3s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 0;
+    margin: 0;
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -255,9 +259,47 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     user-select: none;
 }
 
-/* Show play/pause button only in fullscreen - using JS class toggle */
+.jzsa-album .swiper-button-play-pause:focus,
+.jzsa-album .swiper-button-play-pause:focus-visible,
+.jzsa-album .swiper-button-play-pause:active {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.95);
+    border: none;
+}
+
+/* Show play/pause button in fullscreen, and inline when autoplay is enabled */
 .jzsa-album.jzsa-is-fullscreen .swiper-button-play-pause {
     display: flex;
+    bottom: 54px;
+}
+
+.jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
+    display: flex;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen):hover .swiper-button-play-pause,
+    .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen):focus-within .swiper-button-play-pause {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+/* Keep inline hover behavior predictable (do not force opacity via control intro animation). */
+.jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen).jzsa-loaded .swiper-button-play-pause {
+    animation: none;
+}
+
+@media (hover: none), (pointer: coarse) {
+    .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
+        opacity: 1;
+        pointer-events: auto;
+    }
 }
 
 .jzsa-album .swiper-button-play-pause:hover {
@@ -690,7 +732,7 @@ body.jzsa-no-scroll {
 
 /* Grid container: reset swiper height so the grid grows with its content */
 .jzsa-grid-album {
-    height: auto !important;
+    height: auto;
     background-color: transparent;
     position: static;
 }
@@ -708,6 +750,7 @@ body.jzsa-no-scroll {
     display: grid;
     grid-template-columns: repeat(var(--jzsa-grid-columns, 3), 1fr);
     gap: 4px;
+    align-content: start;
 }
 
 @media (max-width: 768px) {
@@ -739,6 +782,10 @@ body.jzsa-no-scroll {
     border-radius: 2px;
     pointer-events: none;
     user-select: none;
+}
+
+.jzsa-grid-album[data-grid-layout="uniform"] .jzsa-grid-tile-fill {
+    aspect-ratio: auto;
 }
 .jzsa-grid-album[data-grid-layout="uniform"][data-image-fit="contain"] .jzsa-grid-thumb {
     object-fit: contain;
@@ -853,6 +900,10 @@ body.jzsa-no-scroll {
     position: relative;
 }
 
+.jzsa-grid-shell.jzsa-grid-shell-bounded {
+    overflow: hidden;
+}
+
 .jzsa-grid-shell.jzsa-grid-transitioning {
     overflow: hidden;
 }
@@ -886,6 +937,37 @@ body.jzsa-no-scroll {
 
 .jzsa-grid-controls .swiper-button-fullscreen {
     pointer-events: auto;
+}
+
+.jzsa-grid-controls .swiper-button-play-pause {
+    width: 44px;
+    height: 44px;
+    bottom: 40px;
+    pointer-events: none;
+}
+
+.jzsa-grid-controls.jzsa-grid-autoplay-enabled .swiper-button-play-pause {
+    display: flex;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .jzsa-grid-controls.jzsa-grid-autoplay-enabled .swiper-button-play-pause {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .jzsa-grid-shell:hover .jzsa-grid-controls.jzsa-grid-autoplay-enabled .swiper-button-play-pause,
+    .jzsa-grid-shell:focus-within .jzsa-grid-controls.jzsa-grid-autoplay-enabled .swiper-button-play-pause {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+@media (hover: none), (pointer: coarse) {
+    .jzsa-grid-controls.jzsa-grid-autoplay-enabled .swiper-button-play-pause {
+        opacity: 1;
+        pointer-events: auto;
+    }
 }
 
 .jzsa-grid-slide-stage {

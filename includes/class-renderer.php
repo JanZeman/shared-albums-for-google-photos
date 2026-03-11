@@ -269,12 +269,19 @@ class JZSA_Renderer {
 
 		$attrs[] = 'data-mode="grid"';
 		$attrs[] = sprintf( 'data-grid-layout="%s"', esc_attr( $config['grid-layout'] ) );
+		$attrs[] = sprintf( 'data-grid-sizing-model="%s"', esc_attr( $config['grid-sizing-model'] ) );
 		$attrs[] = sprintf( 'data-grid-columns="%d"', intval( $config['grid-columns'] ) );
 		$attrs[] = sprintf( 'data-grid-columns-tablet="%d"', intval( $config['grid-columns-tablet'] ) );
 		$attrs[] = sprintf( 'data-grid-columns-mobile="%d"', intval( $config['grid-columns-mobile'] ) );
 		$attrs[] = sprintf( 'data-grid-row-height="%d"', intval( $config['grid-row-height'] ) );
 		$attrs[] = sprintf( 'data-grid-rows="%d"', intval( $config['grid-rows'] ) );
 		$attrs[] = sprintf( 'data-grid-scroller="%s"', ! empty( $config['grid-scroller'] ) ? 'true' : 'false' );
+		if ( ! empty( $config['width-explicit'] ) && isset( $config['width'] ) && $config['width'] !== 'auto' ) {
+			$attrs[] = sprintf( 'data-grid-explicit-width="%d"', intval( $config['width'] ) );
+		}
+		if ( ! empty( $config['height-explicit'] ) && isset( $config['height'] ) && $config['height'] !== 'auto' ) {
+			$attrs[] = sprintf( 'data-grid-explicit-height="%d"', intval( $config['height'] ) );
+		}
 
 		if ( isset( $config['autoplay'] ) ) {
 			$attrs[] = sprintf( 'data-autoplay="%s"', $config['autoplay'] ? 'true' : 'false' );
@@ -334,12 +341,19 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-background-color="%s"', esc_attr( $config['background-color'] ) );
 		}
 
-		// Build inline style for CSS custom property
+		// Grid should keep its traditional responsive sizing unless width/height
+		// were explicitly provided in shortcode.
 		$styles = array();
 		if ( ! empty( $config['background-color'] ) && $config['background-color'] !== 'transparent' ) {
 			$styles[] = '--gallery-bg-color: ' . esc_attr( $config['background-color'] );
 		}
-		$style_attr = ! empty( $styles ) ? sprintf( ' style="%s"', implode( '; ', $styles ) ) : '';
+		if ( ! empty( $config['width-explicit'] ) && isset( $config['width'] ) && $config['width'] !== 'auto' ) {
+			$styles[] = 'width: ' . intval( $config['width'] ) . 'px';
+		}
+		if ( ! empty( $config['height-explicit'] ) && isset( $config['height'] ) && $config['height'] !== 'auto' ) {
+			$styles[] = 'height: ' . intval( $config['height'] ) . 'px';
+		}
+		$style_attr = ! empty( $styles ) ? sprintf( ' style="%s"', esc_attr( implode( '; ', $styles ) ) ) : '';
 
 		return sprintf(
 			'<div id="%s" class="jzsa-album jzsa-grid-album" %s%s></div>',
