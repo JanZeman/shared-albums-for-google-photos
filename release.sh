@@ -2,7 +2,15 @@
 
 #
 # Shared Albums for Google Photos (by JanZeman) - Release Script
-# Creates a clean WordPress plugin release package
+#
+# Default:  Bumps version numbers across all files, builds a ZIP package.
+#           Does NOT touch git tags or SVN — safe for local testing.
+#
+# --now:    Full release. Everything above plus git tag + push and
+#           SVN trunk sync + commit + tag.
+#
+# Usage:    ./release.sh <version>          # build ZIP only
+#           ./release.sh --now <version>    # full release
 #
 
 set -e  # Exit on error
@@ -25,20 +33,24 @@ EXTRACT_DIR="${RELEASE_DIR_ROOT}/${PLUGIN_SLUG}"
 # ---------------------------------------------------------------------------
 # Parse arguments
 # ---------------------------------------------------------------------------
-ZIP_ONLY=0
+FULL_RELEASE=0
 REQUESTED_VERSION=""
 
 for arg in "$@"; do
     case "$arg" in
-        --zip-only) ZIP_ONLY=1 ;;
+        --now) FULL_RELEASE=1 ;;
         *)          REQUESTED_VERSION="$arg" ;;
     esac
 done
 
 if [ -z "$REQUESTED_VERSION" ]; then
-    echo -e "${RED}Usage:${NC} $(basename "$0") [--zip-only] <version>"
+    echo -e "${RED}Usage:${NC} $(basename "$0") [--now] <version>"
+    echo ""
+    echo "  Default:  Bump versions, build ZIP (no git tag, no SVN)"
+    echo "  --now:     Full release (git tag + push, SVN sync + commit)"
+    echo ""
     echo "Example: $(basename "$0") 1.0.39"
-    echo "         $(basename "$0") --zip-only 1.0.39"
+    echo "         $(basename "$0") --now 1.0.39"
     exit 1
 fi
 
@@ -47,18 +59,48 @@ if ! echo "$REQUESTED_VERSION" | grep -Eq '^[0-9]+\.[0-9]+(\.[0-9]+)?$'; then
     echo -e "${YELLOW}Warning:${NC} Requested version '$REQUESTED_VERSION' does not look like a typical semantic version. Continuing anyway..."
 fi
 
-# Extract version from main plugin file
-VERSION=$(grep -E "^\s*\*\s*Version:" "${SCRIPT_DIR}/janzeman-shared-albums-for-google-photos.php" | awk '{print $3}' | tr -d '\r')
+# ---------------------------------------------------------------------------
+# Bump version in all versioned files
+# ---------------------------------------------------------------------------
+MAIN_PHP="${SCRIPT_DIR}/janzeman-shared-albums-for-google-photos.php"
+README_TXT="${SCRIPT_DIR}/readme.txt"
+README_MD="${SCRIPT_DIR}/README.md"
+
+# Extract current version from main plugin file
+VERSION=$(grep -E "^\s*\*\s*Version:" "$MAIN_PHP" | awk '{print $3}' | tr -d '\r')
 
 if [ -z "$VERSION" ]; then
     echo -e "${RED}Error: Could not extract version from janzeman-shared-albums-for-google-photos.php${NC}"
     exit 1
 fi
 
-if [ "$VERSION" != "$REQUESTED_VERSION" ]; then
-    echo -e "${RED}Error:${NC} Version in main plugin file is '${VERSION}', but you requested '${REQUESTED_VERSION}'."
-    echo "Please bump the plugin header version first."
-    exit 1
+if [ "$VERSION" = "$REQUESTED_VERSION" ]; then
+    echo -e "${GREEN}All versioned files already at ${REQUESTED_VERSION}; nothing to bump.${NC}"
+else
+    echo -e "${YELLOW}Bumping version: ${VERSION} → ${REQUESTED_VERSION}${NC}"
+
+    # Escape dots for sed patterns
+    OLD_ESC=$(echo "$VERSION" | sed 's/\./\\./g')
+    NEW_ESC="$REQUESTED_VERSION"
+
+    # 1) Main plugin file – header comment
+    sed -i '' "s/^\( \* Version:\) ${OLD_ESC}$/\1 ${NEW_ESC}/" "$MAIN_PHP"
+    echo -e "  ${GREEN}✓${NC} Plugin header Version"
+
+    # 2) Main plugin file – JZSA_VERSION constant
+    sed -i '' "s/define( 'JZSA_VERSION', '${OLD_ESC}' );/define( 'JZSA_VERSION', '${NEW_ESC}' );/" "$MAIN_PHP"
+    echo -e "  ${GREEN}✓${NC} JZSA_VERSION constant"
+
+    # 3) readme.txt – Stable tag
+    sed -i '' "s/^Stable tag: ${OLD_ESC}$/Stable tag: ${NEW_ESC}/" "$README_TXT"
+    echo -e "  ${GREEN}✓${NC} readme.txt Stable tag"
+
+    # 4) README.md – version badge
+    sed -i '' "s/version-${OLD_ESC}-blue/version-${NEW_ESC}-blue/g" "$README_MD"
+    echo -e "  ${GREEN}✓${NC} README.md version badge"
+
+    # Re-read to confirm
+    VERSION=$(grep -E "^\s*\*\s*Version:" "$MAIN_PHP" | awk '{print $3}' | tr -d '\r')
 fi
 
 # ---------------------------------------------------------------------------
@@ -66,51 +108,54 @@ fi
 # ---------------------------------------------------------------------------
 VERSION_ERRORS=0
 
-# 1) Main plugin constant
-if ! grep -q "define( 'JZSA_VERSION', '${REQUESTED_VERSION}'" "${SCRIPT_DIR}/janzeman-shared-albums-for-google-photos.php"; then
-    echo -e "${RED}Error:${NC} JZSA_VERSION constant does not match ${REQUESTED_VERSION} in janzeman-shared-albums-for-google-photos.php"
+if ! grep -q "define( 'JZSA_VERSION', '${REQUESTED_VERSION}'" "$MAIN_PHP"; then
+    echo -e "${RED}Error:${NC} JZSA_VERSION constant does not match ${REQUESTED_VERSION}"
     VERSION_ERRORS=1
 fi
 
-# 2) readme.txt Stable tag
-if ! grep -q "Stable tag: ${REQUESTED_VERSION}" "${SCRIPT_DIR}/readme.txt"; then
+if [ "$VERSION" != "$REQUESTED_VERSION" ]; then
+    echo -e "${RED}Error:${NC} Plugin header Version is '${VERSION}', expected '${REQUESTED_VERSION}'"
+    VERSION_ERRORS=1
+fi
+
+if ! grep -q "Stable tag: ${REQUESTED_VERSION}" "$README_TXT"; then
     echo -e "${RED}Error:${NC} readme.txt Stable tag is not ${REQUESTED_VERSION}"
     VERSION_ERRORS=1
 fi
 
-# 3) README.md version badge
-if ! grep -q "version-${REQUESTED_VERSION}-blue" "${SCRIPT_DIR}/README.md"; then
+if ! grep -q "version-${REQUESTED_VERSION}-blue" "$README_MD"; then
     echo -e "${RED}Error:${NC} README.md version badge does not reference ${REQUESTED_VERSION}"
     VERSION_ERRORS=1
 fi
 
-# 4) readme.txt changelog section for this version
-if ! grep -q "= ${REQUESTED_VERSION} =" "${SCRIPT_DIR}/readme.txt"; then
+if ! grep -q "= ${REQUESTED_VERSION} =" "$README_TXT"; then
     echo -e "${RED}Error:${NC} readme.txt does not contain a changelog section header '= ${REQUESTED_VERSION} ='"
+    echo "  Please add a changelog entry manually before releasing."
     VERSION_ERRORS=1
 else
-    # Ensure there is at least one bullet point under this version before next header
     if ! awk -v v="${REQUESTED_VERSION}" '
         $0 ~ "^= " v " =" { in_section=1; next }
         in_section && $0 ~ "^=" { exit 1 }
         in_section && $0 ~ "^\*" { found=1 }
         END { exit found ? 0 : 1 }
-    ' "${SCRIPT_DIR}/readme.txt"; then
+    ' "$README_TXT"; then
         echo -e "${RED}Error:${NC} Changelog section for ${REQUESTED_VERSION} in readme.txt has no bullet items."
         VERSION_ERRORS=1
     fi
 fi
 
 if [ "$VERSION_ERRORS" -ne 0 ]; then
-    echo -e "${RED}Version validation failed.${NC} Please update the files above before releasing."
+    echo -e "${RED}Version validation failed.${NC} Please fix the issues above before releasing."
     exit 1
 fi
 
+echo -e "${GREEN}✓ All version references verified at ${REQUESTED_VERSION}${NC}"
+
 # ---------------------------------------------------------------------------
-# Git checks, tagging, and push (skipped with --zip-only)
+# Git checks, tagging, and push (only with --now)
 # ---------------------------------------------------------------------------
-if [ "$ZIP_ONLY" -eq 1 ]; then
-    echo -e "${YELLOW}--zip-only: skipping git checks and tagging.${NC}"
+if [ "$FULL_RELEASE" -eq 0 ]; then
+    echo -e "${YELLOW}Skipping git checks and tagging (use --now for full release).${NC}"
 elif git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     echo -e "${YELLOW}Checking git state...${NC}"
 
@@ -292,8 +337,8 @@ fi
 
 SYNCED_TO_SVN=0
 
-if [ "$ZIP_ONLY" -eq 1 ]; then
-    echo -e "${YELLOW}--zip-only: skipping SVN sync.${NC}"
+if [ "$FULL_RELEASE" -eq 0 ]; then
+    echo -e "${YELLOW}Skipping SVN sync (use --now for full release).${NC}"
 else
     # Unzip to temporary release directory and sync into SVN trunk (if present)
     echo -e "${YELLOW}Extracting to temporary release directory...${NC}"
@@ -334,15 +379,13 @@ if [ "$SYNCED_TO_SVN" -eq 1 ]; then
     echo "  - SVN trunk has been synced from the release package."
     echo "  - If the automatic SVN commit/tagging step (below) fails, follow the printed error message and run the svn commands manually."
 else
-    echo "  - Review extracted files in: ${EXTRACT_DIR}"
     echo "  - Test by installing ${ZIP_NAME} on a WordPress site"
-    echo "  - Validate with WordPress Plugin Check (if available)"
-    echo "  - Manually copy files into your SVN trunk working copy and commit/tag there"
+    echo "  - When ready, run: $(basename "$0") --now ${REQUESTED_VERSION}"
 fi
 echo ""
 
 # If we synced to SVN, stage new files in SVN, show status, and optionally commit & tag
-if [ "$ZIP_ONLY" -eq 0 ] && [ "$SYNCED_TO_SVN" -eq 1 ] && command -v svn &> /dev/null; then
+if [ "$FULL_RELEASE" -eq 1 ] && [ "$SYNCED_TO_SVN" -eq 1 ] && command -v svn &> /dev/null; then
     echo -e "${YELLOW}Running 'svn add . --force' in trunk (no commit yet)...${NC}"
     (
         cd "$SVN_TRUNK" && \
