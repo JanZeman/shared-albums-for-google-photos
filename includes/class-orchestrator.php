@@ -492,8 +492,7 @@ class JZSA_Shared_Albums {
 	/**
 	 * Parse full-screen-image-fit attribute.
 	 *
-	 * Falls back to image-fit when not explicitly provided, so the fullscreen
-	 * view inherits the inline setting by default.
+	 * Defaults to 'contain' when not explicitly provided.
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string One of 'contain', 'cover', or 'stretch'.
@@ -506,8 +505,8 @@ class JZSA_Shared_Albums {
 			}
 		}
 
-		// Not set or invalid — inherit from image-fit.
-		return $this->parse_image_fit( $atts );
+		// Not set or invalid — default to 'contain'.
+		return 'contain';
 	}
 
 	/**
@@ -535,7 +534,7 @@ class JZSA_Shared_Albums {
 	 */
 	private function parse_color( $atts ) {
 		if ( ! isset( $atts['background-color'] ) ) {
-			return '#FFFFFF';
+			return '#000000';
 		}
 
 		$color = $atts['background-color'];

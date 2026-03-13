@@ -737,7 +737,7 @@ class JZSA_Settings_Page {
 							<tr>
 								<td><code>background-color</code></td>
 								<td>Background color hex code or "transparent"</td>
-								<td>#FFFFFF</td>
+								<td>#000000</td>
 							</tr>
 							<tr>
 								<td><code>image-fit</code></td>
@@ -845,8 +845,8 @@ class JZSA_Settings_Page {
 							</tr>
 							<tr>
 								<td><code>full-screen-image-fit</code></td>
-								<td>How photos fit the frame in fullscreen: "cover" (fill and crop edges), "contain" (letterbox, no cropping), or "stretch" (fill and distort). If not set, inherits from <code>image-fit</code>.</td>
-								<td>same as image-fit</td>
+								<td>How photos fit the frame in fullscreen: "contain" (letterbox, no cropping), "cover" (fill and crop edges), or "stretch" (fill and distort).</td>
+								<td>contain</td>
 							</tr>
 						</tbody>
 					</table>
