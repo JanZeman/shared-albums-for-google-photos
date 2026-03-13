@@ -835,8 +835,8 @@ class JZSA_Settings_Page {
 							</tr>
 							<tr>
 								<td><code>full-screen-switch</code></td>
-								<td>Full screen switch mode: "double-click" (default), "button-only" (button only), or "single-click" (single-click). Works both in and out of full screen mode.</td>
-								<td>double-click</td>
+								<td>Full screen switch mode: "single-click" (default), "double-click" (double-click), or "button-only" (button only). Works both in and out of full screen mode.</td>
+								<td>single-click</td>
 							</tr>
 							<tr>
 								<td><code>full-screen-navigation</code></td>

@@ -233,7 +233,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 /* Play/Pause button */
 .jzsa-album .swiper-button-play-pause {
     position: absolute;
-    bottom: 38px;
+    bottom: 41px;
     left: 50%;
     transform: translateX(-50%);
     width: 44px;
@@ -270,7 +270,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 /* Show play/pause button in fullscreen, and inline when autoplay is enabled */
 .jzsa-album.jzsa-is-fullscreen .swiper-button-play-pause {
     display: flex;
-    bottom: 54px;
+    bottom: 64px;
 }
 
 .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
@@ -898,8 +898,8 @@ body.jzsa-no-scroll {
     transition: opacity 0.15s ease;
 }
 
-.jzsa-grid-album[data-full-screen-switch="button-only"] .jzsa-grid-item:hover .jzsa-grid-thumb-fs-btn,
-.jzsa-grid-album[data-full-screen-switch="button-only"] .jzsa-grid-item:focus-within .jzsa-grid-thumb-fs-btn {
+.jzsa-grid-album .jzsa-grid-item:hover .jzsa-grid-thumb-fs-btn,
+.jzsa-grid-album .jzsa-grid-item:focus-within .jzsa-grid-thumb-fs-btn {
     opacity: 1;
     pointer-events: auto;
 }

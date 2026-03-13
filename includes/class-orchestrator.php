@@ -685,21 +685,21 @@ class JZSA_Shared_Albums {
 	 */
 	private function parse_fullscreen_switch_mode( $atts ) {
 		if ( ! isset( $atts['full-screen-switch'] ) ) {
-			// Default to 'double-click'
-			return 'double-click';
+			// Default to 'single-click'
+			return 'single-click';
 		}
 
 		$mode = strtolower( trim( $atts['full-screen-switch'] ) );
 
-		// Valid modes: 'button-only', 'single-click', 'double-click'
-		$valid_modes = array( 'button-only', 'single-click', 'double-click' );
+		// Valid modes: 'single-click', 'double-click', 'button-only'
+		$valid_modes = array( 'single-click', 'double-click', 'button-only' );
 
 		if ( in_array( $mode, $valid_modes, true ) ) {
 			return $mode;
 		}
 
 		// Default fallback
-		return 'double-click';
+		return 'single-click';
 	}
 
 		/**

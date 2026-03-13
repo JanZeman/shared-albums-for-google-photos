@@ -1555,7 +1555,7 @@
 
             // Display settings
             loop: true, // Always loop
-            fullScreenSwitch: $container.attr('data-full-screen-switch') || 'double-click',
+            fullScreenSwitch: $container.attr('data-full-screen-switch') || 'single-click',
             fullScreenNavigation: $container.attr('data-full-screen-navigation') || 'single-click',
             startAt: $container.attr('data-start-at') || 'random',
             showTitle: $container.attr('data-show-title') === 'true',
@@ -2261,8 +2261,6 @@
         var columns       = parseInt($container.attr('data-grid-columns'), 10)        || 3;
         var columnsTablet = parseInt($container.attr('data-grid-columns-tablet'), 10) || 2;
         var columnsMobile = parseInt($container.attr('data-grid-columns-mobile'), 10) || 1;
-        var buttonOnlyFullscreen = $container.attr('data-full-screen-switch') === 'button-only';
-
         // Pass column counts as CSS custom properties so the media queries pick them up
         $container[0].style.setProperty('--jzsa-grid-columns',        columns);
         $container[0].style.setProperty('--jzsa-grid-columns-tablet', columnsTablet);
@@ -2273,28 +2271,17 @@
             var photo = item.photo;
             var globalIndex = item.index;
             var src = photo.preview || photo.full;
-            if (buttonOnlyFullscreen) {
-                html +=
-                    '<div class="jzsa-grid-item" data-index="' + globalIndex + '">' +
-                        '<img class="jzsa-grid-thumb' + tileFillClass + '"' +
-                        ' src="' + src + '"' +
-                        (src !== photo.full ? ' data-full-src="' + photo.full + '"' : '') +
-                        ' data-index="' + globalIndex + '"' +
-                        ' alt="Photo ' + (globalIndex + 1) + '"' +
-                        ' draggable="false"' +
-                        ' loading="lazy"' + tileStyleAttr + '>' +
-                        '<div class="jzsa-grid-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open photo ' + (globalIndex + 1) + ' in fullscreen"></div>' +
-                    '</div>';
-            } else {
-                html +=
+            html +=
+                '<div class="jzsa-grid-item" data-index="' + globalIndex + '">' +
                     '<img class="jzsa-grid-thumb' + tileFillClass + '"' +
                     ' src="' + src + '"' +
                     (src !== photo.full ? ' data-full-src="' + photo.full + '"' : '') +
                     ' data-index="' + globalIndex + '"' +
                     ' alt="Photo ' + (globalIndex + 1) + '"' +
                     ' draggable="false"' +
-                    ' loading="lazy"' + tileStyleAttr + '>';
-            }
+                    ' loading="lazy"' + tileStyleAttr + '>' +
+                    '<div class="jzsa-grid-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open photo ' + (globalIndex + 1) + ' in fullscreen"></div>' +
+                '</div>';
         });
 
         for (var i = 0; i < placeholderCount; i++) {
@@ -2342,7 +2329,6 @@
      * @param {number} gap             Gap between thumbnails in pixels.
      */
     function renderJustifiedRows($container, rows, containerWidth, targetHeight, gap) {
-        var buttonOnlyFullscreen = $container.attr('data-full-screen-switch') === 'button-only';
         var html = '';
         rows.forEach(function(row) {
             var totalRatio    = row.reduce(function(sum, item) { return sum + item.ratio; }, 0);
@@ -2353,21 +2339,8 @@
             row.forEach(function(item) {
                 var width = Math.round((item.ratio / totalRatio) * availableWidth);
                 var src   = item.photo.preview || item.photo.full;
-                if (buttonOnlyFullscreen) {
-                    html +=
-                        '<div class="jzsa-grid-item" data-index="' + item.index + '" style="width:' + width + 'px;height:' + targetHeight + 'px;">' +
-                            '<img class="jzsa-grid-thumb jzsa-justified-thumb"' +
-                            ' src="' + src + '"' +
-                            (src !== item.photo.full ? ' data-full-src="' + item.photo.full + '"' : '') +
-                            ' data-index="' + item.index + '"' +
-                            ' alt="Photo ' + (item.index + 1) + '"' +
-                            ' draggable="false"' +
-                            ' loading="lazy"' +
-                            ' style="width:100%;height:100%;">' +
-                            '<div class="jzsa-grid-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open photo ' + (item.index + 1) + ' in fullscreen"></div>' +
-                        '</div>';
-                } else {
-                    html +=
+                html +=
+                    '<div class="jzsa-grid-item" data-index="' + item.index + '" style="width:' + width + 'px;height:' + targetHeight + 'px;">' +
                         '<img class="jzsa-grid-thumb jzsa-justified-thumb"' +
                         ' src="' + src + '"' +
                         (src !== item.photo.full ? ' data-full-src="' + item.photo.full + '"' : '') +
@@ -2375,8 +2348,9 @@
                         ' alt="Photo ' + (item.index + 1) + '"' +
                         ' draggable="false"' +
                         ' loading="lazy"' +
-                        ' style="width:' + width + 'px;height:' + targetHeight + 'px;">';
-                }
+                        ' style="width:100%;height:100%;">' +
+                        '<div class="jzsa-grid-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open photo ' + (item.index + 1) + ' in fullscreen"></div>' +
+                    '</div>';
             });
             html += '</div>';
         });
@@ -3921,7 +3895,7 @@
             }
         );
 
-        var fullScreenSwitch = $container.attr('data-full-screen-switch') || 'double-click';
+        var fullScreenSwitch = $container.attr('data-full-screen-switch') || 'single-click';
 
         function openGridPlayerAtIndex(index) {
             var safeIndex = typeof index === 'number' && index >= 0 ? index : 0;
@@ -3980,21 +3954,22 @@
                     openGridPlayerFromThumb(e.currentTarget || e.target);
                 });
             });
-        } else if (fullScreenSwitch === 'button-only') {
-            $container.on('click', '.jzsa-grid-thumb-fs-btn', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                openGridPlayerFromThumb(this);
-            });
-            $container.on('keydown', '.jzsa-grid-thumb-fs-btn', function(e) {
-                if (e.key !== 'Enter' && e.key !== ' ' && e.keyCode !== 13 && e.keyCode !== 32) {
-                    return;
-                }
-                e.preventDefault();
-                e.stopPropagation();
-                openGridPlayerFromThumb(this);
-            });
         }
+
+        // Always attach fullscreen button click/keyboard handlers (button is rendered in all modes).
+        $container.on('click', '.jzsa-grid-thumb-fs-btn', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            openGridPlayerFromThumb(this);
+        });
+        $container.on('keydown', '.jzsa-grid-thumb-fs-btn', function(e) {
+            if (e.key !== 'Enter' && e.key !== ' ' && e.keyCode !== 13 && e.keyCode !== 32) {
+                return;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            openGridPlayerFromThumb(this);
+        });
 
         jzsaDebug(
             '✅ Grid initialized:',
