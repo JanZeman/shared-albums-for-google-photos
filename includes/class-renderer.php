@@ -244,10 +244,6 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-full-screen-switch="%s"', esc_attr( $config['full-screen-switch'] ) );
 		}
 
-		if ( ! empty( $config['full-screen-navigation'] ) ) {
-			$attrs[] = sprintf( 'data-full-screen-navigation="%s"', esc_attr( $config['full-screen-navigation'] ) );
-		}
-
 		return implode( ' ', $attrs );
 	}
 
@@ -323,10 +319,6 @@ class JZSA_Renderer {
 
 		if ( ! empty( $config['full-screen-switch'] ) ) {
 			$attrs[] = sprintf( 'data-full-screen-switch="%s"', esc_attr( $config['full-screen-switch'] ) );
-		}
-
-		if ( ! empty( $config['full-screen-navigation'] ) ) {
-			$attrs[] = sprintf( 'data-full-screen-navigation="%s"', esc_attr( $config['full-screen-navigation'] ) );
 		}
 
 		if ( ! empty( $config['image-fit'] ) ) {

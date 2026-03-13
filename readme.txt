@@ -89,7 +89,6 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
     full-screen-autoplay="true"
     full-screen-autoplay-delay="3"
     full-screen-switch="single-click"
-    full-screen-navigation="single-click"
     show-title="true"
     show-counter="true"
     show-link-button="true"

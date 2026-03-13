@@ -527,51 +527,39 @@ body.jzsa-no-scroll {
     cursor: default;
 }
 
-/* Full screen navigation - cursor feedback and mobile tap highlight removal (only in fullscreen).
+/* Fullscreen navigation cursor feedback.
+   Left third = previous (w-resize), right two-thirds = next (e-resize via ::after).
    Each vendor prefix in its own rule to avoid browser invalidation. */
-.jzsa-album:fullscreen[data-full-screen-navigation="single-click"] .swiper-slide,
-.jzsa-album:fullscreen[data-full-screen-navigation="double-click"] .swiper-slide {
-    cursor: pointer;
+.jzsa-album:fullscreen .swiper-slide,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-slide {
+    cursor: w-resize;
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     user-select: none;
 }
-.jzsa-album:-webkit-full-screen[data-full-screen-navigation="single-click"] .swiper-slide,
-.jzsa-album:-webkit-full-screen[data-full-screen-navigation="double-click"] .swiper-slide {
-    cursor: pointer;
+.jzsa-album:-webkit-full-screen .swiper-slide {
+    cursor: w-resize;
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     user-select: none;
 }
 
-/* Left half cursor (previous) - only in fullscreen */
-.jzsa-album:fullscreen[data-full-screen-navigation="single-click"] .swiper-slide:hover,
-.jzsa-album:fullscreen[data-full-screen-navigation="double-click"] .swiper-slide:hover {
-    cursor: w-resize;
-}
-.jzsa-album:-webkit-full-screen[data-full-screen-navigation="single-click"] .swiper-slide:hover,
-.jzsa-album:-webkit-full-screen[data-full-screen-navigation="double-click"] .swiper-slide:hover {
-    cursor: w-resize;
-}
-
-/* Right half cursor (next) - using pseudo-element trick - only in fullscreen */
-.jzsa-album:fullscreen[data-full-screen-navigation="single-click"] .swiper-slide::after,
-.jzsa-album:fullscreen[data-full-screen-navigation="double-click"] .swiper-slide::after {
+.jzsa-album:fullscreen .swiper-slide::after,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-slide::after {
     content: '';
     position: absolute;
     top: 0;
     right: 0;
-    width: 50%;
+    width: 66.67%;
     height: 100%;
     cursor: e-resize;
 }
-.jzsa-album:-webkit-full-screen[data-full-screen-navigation="single-click"] .swiper-slide::after,
-.jzsa-album:-webkit-full-screen[data-full-screen-navigation="double-click"] .swiper-slide::after {
+.jzsa-album:-webkit-full-screen .swiper-slide::after {
     content: '';
     position: absolute;
     top: 0;
     right: 0;
-    width: 50%;
+    width: 66.67%;
     height: 100%;
     cursor: e-resize;
 }

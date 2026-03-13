@@ -82,7 +82,7 @@
 
     // Show gesture hints (only first few times entering fullscreen, global counter across all albums)
     // To reset for testing: localStorage.removeItem('jzsa-hints-counter')
-    function createHintSystem(galleryId, fullScreenSwitch, fullScreenNavigation) {
+    function createHintSystem(galleryId) {
         var HINTS_STORAGE_KEY = 'jzsa-hints-counter'; // Global counter for all albums
         var MAX_HINT_DISPLAYS = 2; // Maximum number of times to show hints
         var HINT_FADE_IN_DELAY = 100; // ms
@@ -101,27 +101,9 @@
                 // Increment counter
                 localStorage.setItem(HINTS_STORAGE_KEY, String(hintCount + 1));
 
-                // Build hint message - single-click first, then double-click
+                // Build hint message
                 var hints = [];
-
-                // Single-click hints
-                if (fullScreenSwitch === 'single-click') {
-                    hints.push('Click anywhere to exit full screen');
-                }
-                if (fullScreenNavigation === 'single-click') {
-                    hints.push('Click anywhere to navigate faster');
-                }
-
-                // Add a line break between the hints
-                hints.push('');
-
-                // Double-click hints
-                if (fullScreenSwitch === 'double-click') {
-                    hints.push('Double-click to exit full screen');
-                }
-                if (fullScreenNavigation === 'double-click') {
-                    hints.push('Double-click anywhere to navigate faster');
-                }
+                hints.push('Click to navigate \u00B7 Esc or button to exit');
 
                 if (hints.length === 0) {
                     return; // No hints to show
@@ -586,15 +568,6 @@
         }
     }
 
-    // Helper: Navigate based on click position
-    function navigateByPosition(swiper, clickX, containerWidth) {
-        if (clickX < containerWidth / 2) {
-            swiper.slidePrev();
-        } else {
-            swiper.slideNext();
-        }
-    }
-
     // Helper: Pause autoplay on user interaction
     function pauseAutoplayOnInteraction(swiper, params) {
         // Only pause if autoplay is currently running
@@ -918,50 +891,34 @@
             }
         }
 
-        // FULLSCREEN SWITCH HANDLERS (works both in and out of fullscreen)
+        // FULLSCREEN ENTRY HANDLERS (only enter fullscreen, never exit via gesture)
 		if (params.fullScreenSwitch === 'single-click') {
 			$container.on('click', function(e) {
-				if (!shouldIgnoreClick(e.target)) {
-					// Only toggle fullscreen if navigation is NOT also single-click in fullscreen
-					if (params.fullScreenNavigation !== 'single-click' || !isFullscreen()) {
-						e.preventDefault();
-
-						// If entering fullscreen, apply autoplay settings immediately (Android workaround)
-						if (!isFullscreen()) {
-							focusClickedSlide(e);
-							jzsaDebug('🔍 Single-click entering fullscreen');
-                            applyFullscreenAutoplaySettings(swiper, {
-                                fullScreenAutoplay: params.fullScreenAutoplay,
-                                fullScreenAutoplayDelay: params.fullScreenAutoplayDelay,
-                                autoplayPausedByInteraction: params.autoplayPausedByInteraction
-                            });
-                        }
-
-                        toggleFullscreen($container[0], params.showHintsOnFullscreen);
-                    }
+				if (!shouldIgnoreClick(e.target) && !isFullscreen()) {
+					e.preventDefault();
+					focusClickedSlide(e);
+					jzsaDebug('🔍 Single-click entering fullscreen');
+					applyFullscreenAutoplaySettings(swiper, {
+						fullScreenAutoplay: params.fullScreenAutoplay,
+						fullScreenAutoplayDelay: params.fullScreenAutoplayDelay,
+						autoplayPausedByInteraction: params.autoplayPausedByInteraction
+					});
+					toggleFullscreen($container[0], params.showHintsOnFullscreen);
                 }
             });
 		} else if (params.fullScreenSwitch === 'double-click') {
 			// Desktop double-click
 			$container.on('dblclick', function(e) {
-				if (!shouldIgnoreClick(e.target)) {
-					// Only toggle fullscreen if navigation is NOT also double-click in fullscreen
-					if (params.fullScreenNavigation !== 'double-click' || !isFullscreen()) {
-						e.preventDefault();
-
-						// If entering fullscreen, apply autoplay settings immediately (Android workaround)
-						if (!isFullscreen()) {
-							focusClickedSlide(e);
-							jzsaDebug('🔍 Double-click entering fullscreen');
-                            applyFullscreenAutoplaySettings(swiper, {
-                                fullScreenAutoplay: params.fullScreenAutoplay,
-                                fullScreenAutoplayDelay: params.fullScreenAutoplayDelay,
-                                autoplayPausedByInteraction: params.autoplayPausedByInteraction
-                            });
-                        }
-
-                        toggleFullscreen($container[0], params.showHintsOnFullscreen);
-                    }
+				if (!shouldIgnoreClick(e.target) && !isFullscreen()) {
+					e.preventDefault();
+					focusClickedSlide(e);
+					jzsaDebug('🔍 Double-click entering fullscreen');
+					applyFullscreenAutoplaySettings(swiper, {
+						fullScreenAutoplay: params.fullScreenAutoplay,
+						fullScreenAutoplayDelay: params.fullScreenAutoplayDelay,
+						autoplayPausedByInteraction: params.autoplayPausedByInteraction
+					});
+					toggleFullscreen($container[0], params.showHintsOnFullscreen);
                 }
             });
 
@@ -969,91 +926,48 @@
 			$container.on('touchend', function(e) {
 				if (!shouldIgnoreClick(e.target)) {
 					handleDoubleTap(e, function(evt) {
-						if (params.fullScreenNavigation !== 'double-click' || !isFullscreen()) {
-							// If entering fullscreen, apply autoplay settings immediately (Android workaround)
-							if (!isFullscreen()) {
-								focusClickedSlide(evt);
-								jzsaDebug('🔍 Double-tap entering fullscreen');
-                                applyFullscreenAutoplaySettings(swiper, {
-                                    fullScreenAutoplay: params.fullScreenAutoplay,
-                                    fullScreenAutoplayDelay: params.fullScreenAutoplayDelay,
-                                    autoplayPausedByInteraction: params.autoplayPausedByInteraction
-                                });
-                            }
-
-                            toggleFullscreen($container[0], params.showHintsOnFullscreen);
-                        }
+						if (!isFullscreen()) {
+							focusClickedSlide(evt);
+							jzsaDebug('🔍 Double-tap entering fullscreen');
+							applyFullscreenAutoplaySettings(swiper, {
+								fullScreenAutoplay: params.fullScreenAutoplay,
+								fullScreenAutoplayDelay: params.fullScreenAutoplayDelay,
+								autoplayPausedByInteraction: params.autoplayPausedByInteraction
+							});
+							toggleFullscreen($container[0], params.showHintsOnFullscreen);
+						}
                     });
                 }
             });
         }
-    }
 
-    // Helper: Setup navigation handlers
-    function setupNavigationHandlers(swiper, $container, fullScreenNavigation, fullscreenChangeParams, fullScreenSwitch) {
-        // NAVIGATION HANDLERS (only works in fullscreen)
-        if (fullScreenNavigation === 'single-click') {
-            // When fullscreen switch uses double-click, delay single-click navigation
-            // so the first click of a double-click doesn't trigger a spurious navigate.
-            var navClickTimer = null;
-            var NAV_CLICK_DELAY = fullScreenSwitch === 'double-click' ? 300 : 0;
+		// FULLSCREEN NAVIGATION: single click navigates forward in fullscreen (all modes)
+		$container.on('click', function(e) {
+			if (!shouldIgnoreClick(e.target) && isFullscreen()) {
+				e.preventDefault();
+				var containerWidth = $container.width();
+				var clickX = e.originalEvent ? e.originalEvent.clientX : e.clientX;
+				var containerLeft = $container[0].getBoundingClientRect().left;
+				var relativeX = clickX - containerLeft;
 
-            if (NAV_CLICK_DELAY > 0) {
-                $container.on('dblclick.jzsaNavGuard', function() {
-                    if (navClickTimer) {
-                        clearTimeout(navClickTimer);
-                        navClickTimer = null;
-                    }
-                });
-            }
-
-            $container.on('click', function(e) {
-                if (!shouldIgnoreClick(e.target) && isFullscreen()) {
-                    e.preventDefault();
-                    if (NAV_CLICK_DELAY > 0) {
-                        var evt = e;
-                        navClickTimer = setTimeout(function() {
-                            navClickTimer = null;
-                            pauseAutoplayOnInteraction(swiper, fullscreenChangeParams);
-                            var containerWidth = $container.width();
-                            var clickX = evt.pageX - $container.offset().left;
-                            navigateByPosition(swiper, clickX, containerWidth);
-                        }, NAV_CLICK_DELAY);
-                    } else {
-                        pauseAutoplayOnInteraction(swiper, fullscreenChangeParams);
-                        var containerWidth = $container.width();
-                        var clickX = e.pageX - $container.offset().left;
-                        navigateByPosition(swiper, clickX, containerWidth);
-                    }
-                }
-            });
-        } else if (fullScreenNavigation === 'double-click') {
-            // Desktop double-click
-            $container.on('dblclick', function(e) {
-                if (!shouldIgnoreClick(e.target) && isFullscreen()) {
-                    e.preventDefault();
-                    pauseAutoplayOnInteraction(swiper, fullscreenChangeParams);
-                    var containerWidth = $container.width();
-                    var clickX = e.pageX - $container.offset().left;
-                    navigateByPosition(swiper, clickX, containerWidth);
-                }
-            });
-
-            // Mobile double-tap
-            $container.on('touchend', function(e) {
-                if (!shouldIgnoreClick(e.target)) {
-                    handleDoubleTap(e, function(evt) {
-                        if (isFullscreen()) {
-                            pauseAutoplayOnInteraction(swiper, fullscreenChangeParams);
-                            var containerWidth = $container.width();
-                            var touch = evt.changedTouches ? evt.changedTouches[0] : evt;
-                            var clickX = touch.pageX - $container.offset().left;
-                            navigateByPosition(swiper, clickX, containerWidth);
-                        }
-                    });
-                }
-            });
-        }
+				if (relativeX < containerWidth / 3) {
+					jzsaDebug('🔍 Fullscreen click: navigate previous');
+					if (swiper.params.loop && typeof swiper.slideToLoop === 'function') {
+						swiper.slideToLoop(swiper.realIndex > 0 ? swiper.realIndex - 1 : swiper.slides.length - 1, 300);
+					} else if (swiper.activeIndex > 0) {
+						swiper.slideTo(swiper.activeIndex - 1, 300);
+					}
+				} else {
+					jzsaDebug('🔍 Fullscreen click: navigate next');
+					if (swiper.params.loop && typeof swiper.slideToLoop === 'function') {
+						var nextIndex = (swiper.realIndex + 1) % swiper.slides.length;
+						swiper.slideToLoop(nextIndex, 300);
+					} else if (swiper.activeIndex < swiper.slides.length - 1) {
+						swiper.slideTo(swiper.activeIndex + 1, 300);
+					}
+				}
+			}
+		});
     }
 
     // Helper: Setup progressive image loading
@@ -1576,7 +1490,6 @@
             // Display settings
             loop: true, // Always loop
             fullScreenSwitch: $container.attr('data-full-screen-switch') || 'single-click',
-            fullScreenNavigation: $container.attr('data-full-screen-navigation') || 'single-click',
             startAt: $container.attr('data-start-at') || 'random',
             showTitle: $container.attr('data-show-title') === 'true',
             showCounter: $container.attr('data-show-counter') === 'true',
@@ -1612,7 +1525,6 @@
         var autoplayInactivityTimeout = config.autoplayInactivityTimeout;
         var loop = config.loop;
         var fullScreenSwitch = config.fullScreenSwitch;
-        var fullScreenNavigation = config.fullScreenNavigation;
         var startAt = config.startAt;
         var showTitle = config.showTitle;
         var showCounter = config.showCounter;
@@ -1781,8 +1693,7 @@
                 SLIDES_DESKTOP: SLIDES_DESKTOP,
                 SPACING_DESKTOP: SPACING_DESKTOP,
                 BREAKPOINT_DESKTOP: BREAKPOINT_DESKTOP,
-                fullScreenSwitch: fullScreenSwitch,
-                fullScreenNavigation: fullScreenNavigation
+                fullScreenSwitch: fullScreenSwitch
             });
 
             // Initialize Swiper (pass the DOM element directly to avoid selector resolution issues)
@@ -1802,11 +1713,8 @@
                 console.log('⏸️  Autoplay stopped (only enabled in fullscreen mode)');
             }
 
-            // Create hint system for click/double-click gestures (only if at least one is enabled)
-            var showHintsOnFullscreen = null;
-            if (fullScreenSwitch !== 'button-only' || fullScreenNavigation !== 'buttons-only') {
-                showHintsOnFullscreen = createHintSystem(galleryId, fullScreenSwitch, fullScreenNavigation);
-            }
+            // Create hint system for fullscreen navigation guidance
+            var showHintsOnFullscreen = createHintSystem(galleryId);
 
             var autoplayPausedByInteraction = false;
 
@@ -1867,7 +1775,6 @@
             var fullscreenParams = {
                 mode: mode,
                 fullScreenSwitch: fullScreenSwitch,
-                fullScreenNavigation: fullScreenNavigation,
                 fullScreenAutoplay: fullScreenAutoplay,
                 fullScreenAutoplayDelay: fullScreenAutoplayDelay,
                 autoplayPausedByInteraction: autoplayPausedByInteraction,
@@ -2029,11 +1936,6 @@
                 };
             });
 
-            // ------------------------------------------------------------------------
-            // Navigation handlers (click/double-click to navigate in fullscreen)
-            // ------------------------------------------------------------------------
-
-            setupNavigationHandlers(swiper, $container, fullScreenNavigation, fullscreenChangeParams, fullScreenSwitch);
 
             // ------------------------------------------------------------------------
             // Carousel-to-player mode
@@ -2183,7 +2085,6 @@
             'data-full-screen-autoplay-delay',
             'data-autoplay-inactivity-timeout',
             'data-full-screen-switch',
-            'data-full-screen-navigation',
             'data-show-title',
             'data-show-counter',
             'data-album-title',

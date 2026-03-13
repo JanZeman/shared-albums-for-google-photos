@@ -352,7 +352,6 @@ class JZSA_Shared_Albums {
 			'image-fit'              => $this->parse_image_fit( $atts ),
 			'full-screen-image-fit'  => $this->parse_fullscreen_image_fit( $atts ),
 			'full-screen-switch'     => $this->parse_fullscreen_switch_mode( $atts ),
-			'full-screen-navigation' => $this->parse_fullscreen_navigation_mode( $atts ),
 			'show-title'             => $this->parse_bool( $atts, 'show-title', false ),
 			'show-counter'           => $this->parse_show_counter( $atts ),
 			'show-link-button'       => $this->parse_bool( $atts, 'show-link-button', false ),
@@ -692,31 +691,6 @@ class JZSA_Shared_Albums {
 
 		// Valid modes: 'single-click', 'double-click', 'button-only'
 		$valid_modes = array( 'single-click', 'double-click', 'button-only' );
-
-		if ( in_array( $mode, $valid_modes, true ) ) {
-			return $mode;
-		}
-
-		// Default fallback
-		return 'single-click';
-	}
-
-		/**
-	 * Parse full screen navigation mode attribute
-	 *
-	 * @param array $atts Attributes
-	 * @return string Full screen navigation mode: 'buttons-only', 'single-click', or 'double-click'
-	 */
-	private function parse_fullscreen_navigation_mode( $atts ) {
-		if ( ! isset( $atts['full-screen-navigation'] ) ) {
-			// Default to 'single-click'
-			return 'single-click';
-		}
-
-		$mode = strtolower( trim( $atts['full-screen-navigation'] ) );
-
-		// Valid modes: 'buttons-only', 'single-click', 'double-click'
-		$valid_modes = array( 'buttons-only', 'single-click', 'double-click' );
 
 		if ( in_array( $mode, $valid_modes, true ) ) {
 			return $mode;
