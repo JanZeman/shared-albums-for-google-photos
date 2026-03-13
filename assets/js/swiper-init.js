@@ -159,7 +159,7 @@
     // Time conversion constant (shared by all helpers and initializers)
     var MILLISECONDS_PER_SECOND = 1000; // Conversion factor from seconds to milliseconds
     // Loader UX: avoid flashing loader on quick responses.
-    var LOADER_SHOW_DELAY_MS = 500;
+    var LOADER_SHOW_DELAY_MS = 1000;
     var LOADER_MIN_VISIBLE_MS = 250;
 
     // Helper: Detect Android (for platform-specific workarounds)
@@ -1480,17 +1480,12 @@
                 config.effect = 'slide';
             }
 
-            // Disable zoom if double-click is used for fullscreen switch or navigation
-            // (to avoid conflicts with Swiper's default double-click zoom)
-            if (params.fullScreenSwitch === 'double-click' || params.fullScreenNavigation === 'double-click') {
-                config.zoom = false;
-            } else {
-                // Enable zoom for single photo viewing (pinch still works)
-                config.zoom = {
-                    maxRatio: params.ZOOM_MAX_RATIO,
-                    minRatio: params.ZOOM_MIN_RATIO,
-                };
-            }
+            // Enable pinch-to-zoom but block Swiper's double-click-to-zoom
+            // (conflicts with fullscreen switch/navigation gestures).
+            config.zoom = {
+                maxRatio: params.ZOOM_MAX_RATIO,
+                minRatio: params.ZOOM_MIN_RATIO,
+            };
         }
 
         return config;
@@ -1768,6 +1763,13 @@
             // Initialize Swiper (pass the DOM element directly to avoid selector resolution issues)
             var swiper = new Swiper($container[0], swiperConfig);
             swipers[galleryId] = swiper;
+
+            // Disable Swiper's double-click-to-zoom while keeping pinch-to-zoom.
+            // Override the toggle method so dblclick has no zoom effect,
+            // but pinch gestures (which use touch events) still work.
+            if (swiper.zoom && swiper.zoom.toggle) {
+                swiper.zoom.toggle = function() {};
+            }
 
             // If normal mode autoplay is disabled but fullscreen autoplay is enabled, stop autoplay initially
             if (!autoplay && fullScreenAutoplay && swiper.autoplay && swiper.autoplay.running) {
