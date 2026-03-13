@@ -460,8 +460,8 @@ class JZSA_Settings_Page {
 					</div>
 
 					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Double-Click to Enter Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Uses full-screen-switch="double-click" so a double-click on the album enters fullscreen instead of the default single-click. Once in fullscreen, click to navigate between photos. Use the Escape key or the fullscreen button to exit.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<h3><?php esc_html_e( 'Double-Click Fullscreen Toggle', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Uses full-screen-switch="double-click" so double-click (or double-tap) toggles fullscreen on and off. In fullscreen, single-click still navigates between photos, but double-click is reserved for toggling fullscreen only. Use the Escape key or the fullscreen button as alternatives.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
 						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" full-screen-switch="double-click"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
@@ -715,7 +715,7 @@ class JZSA_Settings_Page {
 							<tr>
 								<td><code>mode</code></td>
 								<td>Gallery mode:<br>
-									• "single": Single photo viewer with zoom support (pinch/double-click to zoom)<br>
+									• "single": Single photo viewer with zoom support (pinch on touch devices)<br>
 									• "carousel": Multiple photos visible at once (2 on mobile/tablet, 3 on desktop)<br>
 									• "carousel-to-single": Carousel preview (2 or 3 photos visible) that switches to a single photo viewer in fullscreen<br>
 									• "grid": Thumbnail grid with optional paging or scrolling via <code>grid-rows</code> and <code>grid-scroller</code>; click any thumbnail to open it in a fullscreen viewer</td>
@@ -835,7 +835,7 @@ class JZSA_Settings_Page {
 							</tr>
 							<tr>
 								<td><code>full-screen-switch</code></td>
-								<td>How to enter fullscreen: "single-click" (default), "double-click", or "button-only". Once in fullscreen, click navigates between photos. Exit via Escape key or fullscreen button.</td>
+								<td>How fullscreen is switched: "single-click" (default) enters fullscreen on click, "double-click" toggles fullscreen on/off, or "button-only" requires the fullscreen button. In fullscreen, single-click navigates between photos, while double-click mode reserves double-click for fullscreen toggle only.</td>
 								<td>single-click</td>
 							</tr>
 							<tr>

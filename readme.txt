@@ -26,11 +26,11 @@ Shared Albums for Google Photos (by JanZeman) allows you to easily display publi
 * **Responsive Design** - Works perfectly on desktop, tablet, and mobile devices
 * **Shortcode Playground** - Admin-only sandbox on the Settings page for experimenting with `[jzsa-album]` shortcodes and previews
 * **Touch Gestures** - Swipe navigation on touch devices
-* **Fullscreen Mode** - Click to view photos in fullscreen
 * **Play/Pause Control** - Fullscreen play/pause button with spacebar keyboard shortcut
-* **Click Navigation** - Optional click/double-click on left/right areas to navigate between photos
+* **Fullscreen Navigation** - In fullscreen, single-click/tap navigates previous/next photos
+* **Fullscreen Switch Modes** - `full-screen-switch` supports `single-click`, `double-click`, and `button-only`
 * **Dual-Mode Autoplay** - Separate autoplay settings for normal and fullscreen modes
-* **Zoom Support** - Pinch-to-zoom and double-click to zoom on photos
+* **Zoom Support** - Pinch-to-zoom on touch devices
 * **Keyboard Navigation** - Use arrow keys to navigate, spacebar to play/pause in fullscreen
 * **Progressive Loading** - Loads preview images first, then full-resolution for optimal performance
 * **Smart Preloading** - Automatically preloads adjacent slides for smooth navigation
@@ -222,7 +222,7 @@ The plugin provides clear feedback:
 * Fullscreen mode with dedicated button
 * Play/pause button in fullscreen with spacebar keyboard shortcut
 * Download button with server-side proxy (optional, disabled by default)
-* Zoom support (pinch and double-click)
+* Zoom support (pinch on touch devices)
 * Keyboard navigation (arrows to navigate, spacebar to play/pause in fullscreen)
 * Lazy loading for optimal performance
 * Progressive image loading with error recovery and placeholders
