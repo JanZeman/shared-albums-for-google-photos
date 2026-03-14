@@ -1086,22 +1086,6 @@
 
         }, true);
 
-        // Navigation cursor on video slides: mirror the 40-20-40 split cursors
-        // that photo slides get from CSS pseudo-elements.
-        $container.on('mousemove', '.jzsa-video-wrapper', function(e) {
-            if (!isFullscreen($container[0])) {
-                return;
-            }
-            var rect = $container[0].getBoundingClientRect();
-            var relX = (e.clientX - rect.left) / rect.width;
-            if (relX < 0.4) {
-                this.style.cursor = 'w-resize';
-            } else if (relX > 0.6) {
-                this.style.cursor = 'e-resize';
-            } else {
-                this.style.cursor = 'default';
-            }
-        });
 
         // Pause all videos in the gallery except the one in the active slide
         function pauseAllVideos(exceptSlide) {
