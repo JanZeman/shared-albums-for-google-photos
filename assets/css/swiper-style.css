@@ -1077,25 +1077,31 @@ body.jzsa-no-scroll {
     }
 }
 
-/* Single mode (desktop): hide primary controls until hover/focus, matching gallery UX. */
+/* Single & carousel mode (desktop): hide controls until hover/focus, matching gallery UX. */
 @media (hover: hover) and (pointer: fine) {
-    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-prev,
-    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-next,
-    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
-    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-play-pause {
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-prev,
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-next,
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-play-pause,
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-external-link,
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-download {
         opacity: 0;
         pointer-events: none;
         animation: none;
     }
 
-    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-prev,
-    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-next,
-    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
-    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-play-pause,
-    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-prev,
-    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-next,
-    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
-    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-play-pause {
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-prev,
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-next,
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-play-pause,
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-external-link,
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-download,
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-prev,
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-next,
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-play-pause,
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-external-link,
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-download {
         opacity: var(--jzsa-controls-visible-opacity);
         pointer-events: auto;
     }
