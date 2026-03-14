@@ -702,7 +702,7 @@ class JZSA_Settings_Page {
 						</tbody>
 					</table>
 
-					<h3><?php esc_html_e( 'Gallery Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<h3><?php esc_html_e( 'Core Parameters', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 					<table class="jzsa-settings-table">
 						<thead>
 							<tr>
@@ -719,6 +719,75 @@ class JZSA_Settings_Page {
 									• "carousel": Multiple photos visible at once (2 on mobile/tablet, 3 on desktop). Clicking a photo opens it in a single-photo fullscreen viewer<br>
 									• "gallery": Thumbnail gallery with optional paging or scrolling via <code>gallery-rows</code> and <code>gallery-scroll</code>; click any thumbnail to open it in a fullscreen viewer</td>
 								<td>gallery</td>
+							</tr>
+							<tr>
+								<td><code>max-photos-per-album</code></td>
+								<td>Maximum number of photos to display from the album (1–300). Google Photos typically returns up to 300 photos per album.</td>
+								<td>300</td>
+							</tr>
+							<tr>
+								<td><code>image-width</code></td>
+								<td>Full-resolution photo width to fetch from Google</td>
+								<td>1920</td>
+							</tr>
+							<tr>
+								<td><code>image-height</code></td>
+								<td>Full-resolution photo height to fetch from Google</td>
+								<td>1440</td>
+							</tr>
+						</tbody>
+					</table>
+
+					<h3><?php esc_html_e( 'Gallery Mode Options', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<p><?php esc_html_e( 'These parameters only apply when mode="gallery".', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<table class="jzsa-settings-table">
+						<thead>
+							<tr>
+								<th><?php esc_html_e( 'Parameter', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Description', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Default', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+								<tr>
+									<td><code>gallery-layout</code></td>
+									<td><?php esc_html_e( 'Gallery layout algorithm: "uniform" (equal-size cells) or "justified" (photos fill each row at their natural aspect ratio, like Google Photos)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+									<td>uniform</td>
+								</tr>
+								<tr>
+									<td><code>gallery-sizing-model</code></td>
+									<td><?php esc_html_e( 'Uniform gallery sizing model: "ratio" keeps a fixed tile ratio (default), while "fill" stretches row heights to fill an explicit control height when width/height and gallery-rows are used.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+									<td>ratio</td>
+								</tr>
+								<tr>
+									<td><code>gallery-columns</code></td>
+									<td><?php esc_html_e( 'Number of columns on desktop (uniform layout only)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+									<td>3</td>
+								</tr>
+							<tr>
+								<td><code>gallery-columns-tablet</code></td>
+								<td><?php esc_html_e( 'Number of columns on tablet screens ≤ 768 px (uniform layout only)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>2</td>
+							</tr>
+							<tr>
+								<td><code>gallery-columns-mobile</code></td>
+								<td><?php esc_html_e( 'Number of columns on mobile screens ≤ 480 px (uniform layout only)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>1</td>
+							</tr>
+							<tr>
+								<td><code>gallery-row-height</code></td>
+								<td><?php esc_html_e( 'Target row height in pixels for the justified layout (50–800)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>200</td>
+							</tr>
+							<tr>
+								<td><code>gallery-rows</code></td>
+								<td><?php esc_html_e( 'Number of visible gallery rows when row limiting is enabled. If more rows are available, gallery uses paging by default or scrolling when gallery-scroll="true". Use 0 to show all rows.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>0 (all rows)</td>
+							</tr>
+							<tr>
+								<td><code>gallery-scroll</code></td>
+								<td><?php esc_html_e( 'When set to "true" (and gallery-rows > 0), uses a single vertically scrollable gallery instead of page controls.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>false</td>
 							</tr>
 						</tbody>
 					</table>
@@ -753,29 +822,6 @@ class JZSA_Settings_Page {
 									<td>Height in pixels or "auto". In <code>mode="gallery"</code>, prefer <code>gallery-columns</code>/<code>gallery-rows</code>.</td>
 									<td>200</td>
 								</tr>
-						</tbody>
-					</table>
-
-					<h3><?php esc_html_e( 'Image Quality', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<table class="jzsa-settings-table">
-						<thead>
-							<tr>
-								<th>Parameter</th>
-								<th>Description</th>
-								<th>Default</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td><code>image-width</code></td>
-								<td>Full-resolution photo width to fetch from Google</td>
-								<td>1920</td>
-							</tr>
-							<tr>
-								<td><code>image-height</code></td>
-								<td>Full-resolution photo height to fetch from Google</td>
-								<td>1440</td>
-							</tr>
 						</tbody>
 					</table>
 
@@ -878,77 +924,6 @@ class JZSA_Settings_Page {
 						</tbody>
 					</table>
 
-					<h3><?php esc_html_e( 'Advanced', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<table class="jzsa-settings-table">
-						<thead>
-							<tr>
-								<th>Parameter</th>
-								<th>Description</th>
-								<th>Default</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td><code>max-photos-per-album</code></td>
-								<td>Maximum number of photos to display from the album (1–300). Google Photos typically returns up to 300 photos per album.</td>
-								<td>300</td>
-							</tr>
-						</tbody>
-					</table>
-
-					<h3><?php esc_html_e( 'Gallery Mode Options', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<p><?php esc_html_e( 'These parameters only apply when mode="gallery".', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<table class="jzsa-settings-table">
-						<thead>
-							<tr>
-								<th><?php esc_html_e( 'Parameter', 'janzeman-shared-albums-for-google-photos' ); ?></th>
-								<th><?php esc_html_e( 'Description', 'janzeman-shared-albums-for-google-photos' ); ?></th>
-								<th><?php esc_html_e( 'Default', 'janzeman-shared-albums-for-google-photos' ); ?></th>
-							</tr>
-						</thead>
-						<tbody>
-								<tr>
-									<td><code>gallery-layout</code></td>
-									<td><?php esc_html_e( 'Gallery layout algorithm: "uniform" (equal-size cells) or "justified" (photos fill each row at their natural aspect ratio, like Google Photos)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-									<td>uniform</td>
-								</tr>
-								<tr>
-									<td><code>gallery-sizing-model</code></td>
-									<td><?php esc_html_e( 'Uniform gallery sizing model: "ratio" keeps a fixed tile ratio (default), while "fill" stretches row heights to fill an explicit control height when width/height and gallery-rows are used.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-									<td>ratio</td>
-								</tr>
-								<tr>
-									<td><code>gallery-columns</code></td>
-									<td><?php esc_html_e( 'Number of columns on desktop (uniform layout only)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-									<td>3</td>
-								</tr>
-							<tr>
-								<td><code>gallery-columns-tablet</code></td>
-								<td><?php esc_html_e( 'Number of columns on tablet screens ≤ 768 px (uniform layout only)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td>2</td>
-							</tr>
-							<tr>
-								<td><code>gallery-columns-mobile</code></td>
-								<td><?php esc_html_e( 'Number of columns on mobile screens ≤ 480 px (uniform layout only)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td>1</td>
-							</tr>
-							<tr>
-								<td><code>gallery-row-height</code></td>
-								<td><?php esc_html_e( 'Target row height in pixels for the justified layout (50–800)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td>200</td>
-							</tr>
-							<tr>
-								<td><code>gallery-rows</code></td>
-								<td><?php esc_html_e( 'Number of visible gallery rows when row limiting is enabled. If more rows are available, gallery uses paging by default or scrolling when gallery-scroll="true". Use 0 to show all rows.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td>0 (all rows)</td>
-							</tr>
-							<tr>
-								<td><code>gallery-scroll</code></td>
-								<td><?php esc_html_e( 'When set to "true" (and gallery-rows > 0), uses a single vertically scrollable gallery instead of page controls.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td>false</td>
-							</tr>
-						</tbody>
-					</table>
 				</div>
 
 				<!-- Troubleshooting -->
