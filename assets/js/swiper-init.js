@@ -1548,7 +1548,7 @@
             autoplayInactivityTimeout: parseInt($container.attr('data-autoplay-inactivity-timeout')) || 30,
 
             // Display settings
-            loop: true, // Always loop
+            loop: allPhotos.length >= 4, // Loop requires enough slides for Swiper to work properly
             fullScreenSwitch:
                 $container.attr('data-full-screen-toggle') || 'single-click',
             startAt: $container.attr('data-start-at') || 'random',
