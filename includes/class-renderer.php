@@ -142,7 +142,9 @@ class JZSA_Renderer {
 			);
 		}
 
-		$html .= '<div class="swiper-button-fullscreen"></div>';
+		if ( empty( $config['full-screen-toggle'] ) || 'disabled' !== $config['full-screen-toggle'] ) {
+			$html .= '<div class="swiper-button-fullscreen"></div>';
+		}
 		$html .= '</div>';
 
 		return $html;

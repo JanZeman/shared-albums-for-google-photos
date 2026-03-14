@@ -671,7 +671,7 @@ class JZSA_Shared_Albums {
 	 * Parse full screen toggle mode attribute.
 	 *
 	 * @param array $atts Attributes
-	 * @return string Full screen toggle mode: 'single-click', 'double-click', or 'button-only'
+	 * @return string Full screen toggle mode: 'single-click', 'double-click', 'button-only', or 'disabled'
 	 */
 	private function parse_fullscreen_toggle_mode( $atts ) {
 		if ( ! isset( $atts['full-screen-toggle'] ) ) {
@@ -681,8 +681,8 @@ class JZSA_Shared_Albums {
 
 		$mode = strtolower( trim( (string) $atts['full-screen-toggle'] ) );
 
-		// Valid modes: 'single-click', 'double-click', 'button-only'
-		$valid_modes = array( 'single-click', 'double-click', 'button-only' );
+		// Valid modes: 'single-click', 'double-click', 'button-only', 'disabled'
+		$valid_modes = array( 'single-click', 'double-click', 'button-only', 'disabled' );
 
 		if ( in_array( $mode, $valid_modes, true ) ) {
 			return $mode;

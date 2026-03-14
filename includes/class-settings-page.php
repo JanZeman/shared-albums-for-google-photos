@@ -553,6 +553,21 @@ class JZSA_Settings_Page {
 					</div>
 
 					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Fullscreen Disabled', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Uses full-screen-toggle="disabled" to completely prevent fullscreen mode. No fullscreen button is shown and clicks do not enter fullscreen.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<div class="jzsa-code-block">
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" full-screen-toggle="disabled"]</code>
+						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					</div>
+					<div class="jzsa-preview-container jzsa-preview-container-fs-disabled">
+						<?php
+							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" full-screen-toggle="disabled"]' );
+						?>
+					</div>
+					</div>
+
+					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Show "Open in Google Photos" Button', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Enables the show-link-button parameter to display an external link button to the original album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
@@ -868,7 +883,7 @@ class JZSA_Settings_Page {
 							</tr>
 							<tr>
 								<td><code>full-screen-toggle</code></td>
-								<td>How fullscreen is toggled: "single-click" (default) enters fullscreen on click, "double-click" toggles fullscreen on/off, or "button-only" requires the fullscreen button. In fullscreen, single-click navigates between photos, while double-click mode reserves double-click for fullscreen toggle only.</td>
+								<td>How fullscreen is toggled: "single-click" (default) enters fullscreen on click, "double-click" toggles fullscreen on/off, "button-only" requires the fullscreen button, or "disabled" to prevent fullscreen entirely. In fullscreen, single-click navigates between photos, while double-click mode reserves double-click for fullscreen toggle only.</td>
 								<td>single-click</td>
 							</tr>
 							<tr>

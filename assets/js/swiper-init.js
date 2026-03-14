@@ -2259,7 +2259,7 @@
                     ' alt="Photo ' + (globalIndex + 1) + '"' +
                     ' draggable="false"' +
                     ' loading="lazy"' + tileStyleAttr + '>' +
-                    '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open photo ' + (globalIndex + 1) + ' in fullscreen"></div>' +
+                    (($container.attr('data-full-screen-toggle') !== 'disabled') ? '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open photo ' + (globalIndex + 1) + ' in fullscreen"></div>' : '') +
                 '</div>';
         });
 
@@ -2328,7 +2328,7 @@
                         ' draggable="false"' +
                         ' loading="lazy"' +
                         ' style="width:100%;height:100%;">' +
-                        '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open photo ' + (item.index + 1) + ' in fullscreen"></div>' +
+                        (($container.attr('data-full-screen-toggle') !== 'disabled') ? '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open photo ' + (item.index + 1) + ' in fullscreen"></div>' : '') +
                     '</div>';
             });
             html += '</div>';
@@ -3937,20 +3937,22 @@
             });
         }
 
-        // Always attach fullscreen button click/keyboard handlers (button is rendered in all modes).
-        $container.on('click', '.jzsa-gallery-thumb-fs-btn', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            openGalleryPlayerFromThumb(this);
-        });
-        $container.on('keydown', '.jzsa-gallery-thumb-fs-btn', function(e) {
-            if (e.key !== 'Enter' && e.key !== ' ' && e.keyCode !== 13 && e.keyCode !== 32) {
-                return;
-            }
-            e.preventDefault();
-            e.stopPropagation();
-            openGalleryPlayerFromThumb(this);
-        });
+        // Attach fullscreen button click/keyboard handlers (unless fullscreen is disabled).
+        if (fullScreenSwitch !== 'disabled') {
+            $container.on('click', '.jzsa-gallery-thumb-fs-btn', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                openGalleryPlayerFromThumb(this);
+            });
+            $container.on('keydown', '.jzsa-gallery-thumb-fs-btn', function(e) {
+                if (e.key !== 'Enter' && e.key !== ' ' && e.keyCode !== 13 && e.keyCode !== 32) {
+                    return;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                openGalleryPlayerFromThumb(this);
+            });
+        }
 
         jzsaDebug(
             '✅ Gallery initialized:',
