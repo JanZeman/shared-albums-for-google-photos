@@ -276,28 +276,42 @@
         }
     }
 
-    // Helper: Build slides HTML structure (for photo array)
+    // Helper: Build slides HTML structure (for photo/video array)
     function buildSlidesHtml(photos, options) {
         var config = options || {};
         var useLazyHints = !!config.lazyHints;
         var eagerIndex = typeof config.eagerIndex === 'number' ? config.eagerIndex : 0;
         var html = '';
         photos.forEach(function(photo, index) {
-            // Photo format: object with preview and full URLs
-            var previewUrl = photo.preview || photo.full;
-            var fullUrl = photo.full;
-            var loadingAttr = '';
-            if (useLazyHints) {
-                loadingAttr = ' loading="' + (index === eagerIndex ? 'eager' : 'lazy') + '"';
-            }
+            var isVideo = photo.type === 'video';
 
-            html += '<div class="swiper-slide">' +
-                '<div class="swiper-zoom-container">' +
-                '<img src="' + previewUrl + '" ' +
-                (previewUrl !== fullUrl ? 'data-full-src="' + fullUrl + '" ' : '') +
-                'alt="Photo" class="jzsa-progressive-image"' + loadingAttr + ' decoding="async" />' +
-                '</div>' +
-                '</div>';
+            if (isVideo) {
+                html += '<div class="swiper-slide jzsa-slide-video" data-media-type="video">' +
+                    '<div class="jzsa-video-wrapper">' +
+                    '<video' +
+                    ' src="' + photo.video + '"' +
+                    ' controls playsinline preload="metadata"' +
+                    ' class="jzsa-video-player"' +
+                    '></video>' +
+                    '</div>' +
+                    '</div>';
+            } else {
+                // Photo format: object with preview and full URLs
+                var previewUrl = photo.preview || photo.full;
+                var fullUrl = photo.full;
+                var loadingAttr = '';
+                if (useLazyHints) {
+                    loadingAttr = ' loading="' + (index === eagerIndex ? 'eager' : 'lazy') + '"';
+                }
+
+                html += '<div class="swiper-slide">' +
+                    '<div class="swiper-zoom-container">' +
+                    '<img src="' + previewUrl + '" ' +
+                    (previewUrl !== fullUrl ? 'data-full-src="' + fullUrl + '" ' : '') +
+                    'alt="Photo" class="jzsa-progressive-image"' + loadingAttr + ' decoding="async" />' +
+                    '</div>' +
+                    '</div>';
+            }
         });
         return html;
     }
@@ -920,6 +934,12 @@
 			// Single-click enters fullscreen (does not exit — exit via button/Escape)
 			$container.on('click', function(e) {
 				if (!shouldIgnoreClick(e.target) && !isFullscreen()) {
+					// Don't enter fullscreen when clicking on a video slide —
+					// let the native video controls work.
+					var $activeSlide = $(swiper.slides[swiper.activeIndex]);
+					if ($activeSlide.attr('data-media-type') === 'video') {
+						return;
+					}
 					e.preventDefault();
 					focusClickedSlide(e);
 					jzsaDebug('🔍 Single-click entering fullscreen');
@@ -999,11 +1019,29 @@
 
 		$container.on('click', function(e) {
 				if (!shouldIgnoreClick(e.target) && isFullscreen()) {
+					// On video slides, only block navigation for clicks on the
+					// actual <video> element; wrapper area clicks navigate normally.
+					var $activeSlide = $(swiper.slides[swiper.activeIndex]);
+					if ($activeSlide.attr('data-media-type') === 'video' && e.target.tagName === 'VIDEO') {
+						jzsaDebug('Video element click — skipping navigation');
+						return;
+					}
+
 					e.preventDefault();
 					var clickX = e.originalEvent ? e.originalEvent.clientX : e.clientX;
 					var containerRect = $container[0].getBoundingClientRect();
 					var relativeX = clickX - containerRect.left;
-					var direction = relativeX < containerRect.width / 2 ? 'prev' : 'next';
+					var navEdgeRatio = 0.4; // 40-20-40 split: outer 40% zones navigate, center 20% is dead zone
+					var leftEdge = containerRect.width * navEdgeRatio;
+					var rightEdge = containerRect.width * (1 - navEdgeRatio);
+					var direction;
+					if (relativeX < leftEdge) {
+						direction = 'prev';
+					} else if (relativeX > rightEdge) {
+						direction = 'next';
+					} else {
+						return; // Center dead zone — no navigation
+					}
 
 				if (NAV_CLICK_DELAY > 0) {
 					// Keep only one pending navigation click timer. Without this,
@@ -1030,6 +1068,116 @@
 				}
 			}
 		});
+    }
+
+    // Helper: Setup video playback handling for Swiper
+    function setupVideoHandling(swiper, $container, fullscreenChangeParams) {
+        var videoAutoplayPaused = false;
+
+        // Capture-phase listener: on video slides, only block clicks that land
+        // directly on the <video> element (to protect native controls). Clicks on
+        // the surrounding wrapper area pass through to normal navigation handlers.
+        $container[0].addEventListener('click', function(e) {
+            var $activeSlide = $(swiper.slides[swiper.activeIndex]);
+            if ($activeSlide.attr('data-media-type') !== 'video') {
+                return;
+            }
+
+            // Let clicks on Swiper UI controls pass through normally
+            if (shouldIgnoreClick(e.target)) {
+                return;
+            }
+
+            // Only block clicks on the actual video element
+            if (e.target.tagName === 'VIDEO') {
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+            }
+
+        }, true);
+
+        // Navigation cursor on video slides: mirror the 40-20-40 split cursors
+        // that photo slides get from CSS pseudo-elements.
+        $container.on('mousemove', '.jzsa-video-wrapper', function(e) {
+            if (!isFullscreen($container[0])) {
+                return;
+            }
+            var rect = $container[0].getBoundingClientRect();
+            var relX = (e.clientX - rect.left) / rect.width;
+            if (relX < 0.4) {
+                this.style.cursor = 'w-resize';
+            } else if (relX > 0.6) {
+                this.style.cursor = 'e-resize';
+            } else {
+                this.style.cursor = 'default';
+            }
+        });
+
+        // Pause all videos in the gallery except the one in the active slide
+        function pauseAllVideos(exceptSlide) {
+            $container.find('.jzsa-video-player').each(function() {
+                var videoEl = this;
+                if (exceptSlide && $(videoEl).closest('.swiper-slide')[0] === exceptSlide) {
+                    return;
+                }
+                if (!videoEl.paused) {
+                    videoEl.pause();
+                }
+            });
+        }
+
+        // When a video starts playing, pause slider autoplay
+        $container.on('play', '.jzsa-video-player', function() {
+            if (swiper.autoplay && swiper.autoplay.running) {
+                videoAutoplayPaused = true;
+                swiper.autoplay.stop();
+                jzsaDebug('⏸️ Autoplay paused for video playback');
+            }
+        });
+
+        // When a video ends, resume slider autoplay if we paused it
+        $container.on('ended', '.jzsa-video-player', function() {
+            if (videoAutoplayPaused) {
+                videoAutoplayPaused = false;
+                if (swiper.autoplay && !fullscreenChangeParams.autoplayPausedByInteraction) {
+                    swiper.autoplay.start();
+                    jzsaDebug('▶️ Autoplay resumed after video ended');
+                }
+            }
+        });
+
+        // When video is paused manually, allow autoplay to resume
+        $container.on('pause', '.jzsa-video-player', function() {
+            // Only clear our flag; don't auto-resume (user intentionally paused)
+            videoAutoplayPaused = false;
+        });
+
+        // Toggle class on container so CSS can disable nav overlays on video slides
+        function updateVideoActiveClass() {
+            var $activeSlide = $(swiper.slides[swiper.activeIndex]);
+            $container.toggleClass('jzsa-video-active', $activeSlide.attr('data-media-type') === 'video');
+        }
+
+        // Set initial state
+        updateVideoActiveClass();
+
+        // On slide change: pause videos on previous slide, prep video on new slide
+        swiper.on('slideChange', function() {
+            updateVideoActiveClass();
+            pauseAllVideos(null);
+            videoAutoplayPaused = false;
+
+            // Pause and reset all video slides
+            $container.find('.jzsa-slide-video').each(function() {
+                var $video = $(this).find('.jzsa-video-player');
+                var videoEl = $video[0];
+                if (videoEl && videoEl.src) {
+                    videoEl.pause();
+                    videoEl.currentTime = 0;
+                }
+            });
+        });
+
     }
 
     // Helper: Setup progressive image loading
@@ -2040,6 +2188,12 @@
 
             setupProgressiveImageLoading(swiper, $container);
 
+            // ------------------------------------------------------------------------
+            // Video playback handling
+            // ------------------------------------------------------------------------
+
+            setupVideoHandling(swiper, $container, fullscreenChangeParams);
+
             console.log('✅ Swiper initialized:', galleryId);
             console.log('  - Normal mode autoplay:', autoplay ? 'Enabled (delay: ' + autoplayDelay + 's)' : 'Disabled');
             console.log('  - Fullscreen mode autoplay:', fullScreenAutoplay ? 'Enabled (delay: ' + fullScreenAutoplayDelay + 's)' : 'Disabled');
@@ -2250,16 +2404,20 @@
             var photo = item.photo;
             var globalIndex = item.index;
             var src = photo.preview || photo.full;
+            var isVideo = photo.type === 'video';
+            var itemClass = 'jzsa-gallery-item' + (isVideo ? ' jzsa-gallery-item-video' : '');
+            var mediaLabel = isVideo ? 'video' : 'photo';
             html +=
-                '<div class="jzsa-gallery-item" data-index="' + globalIndex + '">' +
+                '<div class="' + itemClass + '" data-index="' + globalIndex + '">' +
                     '<img class="jzsa-gallery-thumb' + tileFillClass + '"' +
                     ' src="' + src + '"' +
                     (src !== photo.full ? ' data-full-src="' + photo.full + '"' : '') +
                     ' data-index="' + globalIndex + '"' +
-                    ' alt="Photo ' + (globalIndex + 1) + '"' +
+                    ' alt="' + mediaLabel.charAt(0).toUpperCase() + mediaLabel.slice(1) + ' ' + (globalIndex + 1) + '"' +
                     ' draggable="false"' +
                     ' loading="lazy"' + tileStyleAttr + '>' +
-                    (($container.attr('data-full-screen-toggle') !== 'disabled') ? '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open photo ' + (globalIndex + 1) + ' in fullscreen"></div>' : '') +
+                    (isVideo ? '<div class="jzsa-video-badge"><div class="jzsa-video-badge-icon"></div></div>' : '') +
+                    (($container.attr('data-full-screen-toggle') !== 'disabled') ? '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open ' + mediaLabel + ' ' + (globalIndex + 1) + ' in fullscreen"></div>' : '') +
                 '</div>';
         });
 
@@ -2318,17 +2476,21 @@
             row.forEach(function(item) {
                 var width = Math.round((item.ratio / totalRatio) * availableWidth);
                 var src   = item.photo.preview || item.photo.full;
+                var isVideo = item.photo.type === 'video';
+                var itemClass = 'jzsa-gallery-item' + (isVideo ? ' jzsa-gallery-item-video' : '');
+                var mediaLabel = isVideo ? 'video' : 'photo';
                 html +=
-                    '<div class="jzsa-gallery-item" data-index="' + item.index + '" style="width:' + width + 'px;height:' + targetHeight + 'px;">' +
+                    '<div class="' + itemClass + '" data-index="' + item.index + '" style="width:' + width + 'px;height:' + targetHeight + 'px;">' +
                         '<img class="jzsa-gallery-thumb jzsa-justified-thumb"' +
                         ' src="' + src + '"' +
                         (src !== item.photo.full ? ' data-full-src="' + item.photo.full + '"' : '') +
                         ' data-index="' + item.index + '"' +
-                        ' alt="Photo ' + (item.index + 1) + '"' +
+                        ' alt="' + mediaLabel.charAt(0).toUpperCase() + mediaLabel.slice(1) + ' ' + (item.index + 1) + '"' +
                         ' draggable="false"' +
                         ' loading="lazy"' +
                         ' style="width:100%;height:100%;">' +
-                        (($container.attr('data-full-screen-toggle') !== 'disabled') ? '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open photo ' + (item.index + 1) + ' in fullscreen"></div>' : '') +
+                        (isVideo ? '<div class="jzsa-video-badge"><div class="jzsa-video-badge-icon"></div></div>' : '') +
+                        (($container.attr('data-full-screen-toggle') !== 'disabled') ? '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open ' + mediaLabel + ' ' + (item.index + 1) + ' in fullscreen"></div>' : '') +
                     '</div>';
             });
             html += '</div>';

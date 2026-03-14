@@ -557,13 +557,15 @@ body.jzsa-no-scroll {
 }
 
 /* Fullscreen navigation cursor feedback on a non-animated surface.
-   Left half = previous (w-resize), right half = next (e-resize via ::after). */
+   40-20-40 split: outer 40% zones show prev/next cursors,
+   center 20% is a neutral dead zone (default cursor, pointer-events pass through). */
 .jzsa-album:fullscreen,
 .jzsa-album:-webkit-full-screen,
 .jzsa-album.jzsa-pseudo-fullscreen {
-    cursor: w-resize !important;
+    cursor: default !important;
 }
 
+/* Right 40% — next (e-resize) */
 .jzsa-album:fullscreen::after,
 .jzsa-album:-webkit-full-screen::after,
 .jzsa-album.jzsa-pseudo-fullscreen::after {
@@ -571,12 +573,14 @@ body.jzsa-no-scroll {
     position: absolute;
     top: 0;
     right: 0;
-    width: 50%;
+    width: 40%;
     height: 100%;
     cursor: e-resize !important;
     z-index: 2;
+    pointer-events: auto;
 }
 
+/* Left 40% — previous (w-resize) */
 .jzsa-album:fullscreen::before,
 .jzsa-album:-webkit-full-screen::before,
 .jzsa-album.jzsa-pseudo-fullscreen::before {
@@ -584,10 +588,11 @@ body.jzsa-no-scroll {
     position: absolute;
     top: 0;
     left: 0;
-    width: 50%;
+    width: 40%;
     height: 100%;
     cursor: w-resize !important;
     z-index: 2;
+    pointer-events: auto;
 }
 
 .jzsa-album:fullscreen .swiper-slide,
@@ -597,6 +602,19 @@ body.jzsa-no-scroll {
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     user-select: none;
+}
+
+/* On video slides: disable the navigation pseudo-element overlays so clicks
+   reach the video player controls directly.
+   The .jzsa-video-active class is toggled by JS on slideChange. */
+.jzsa-album.jzsa-video-active:fullscreen::before,
+.jzsa-album.jzsa-video-active:fullscreen::after,
+.jzsa-album.jzsa-video-active:-webkit-full-screen::before,
+.jzsa-album.jzsa-video-active:-webkit-full-screen::after,
+.jzsa-album.jzsa-video-active.jzsa-pseudo-fullscreen::before,
+.jzsa-album.jzsa-video-active.jzsa-pseudo-fullscreen::after {
+    pointer-events: none !important;
+    cursor: default !important;
 }
 
 /* Gallery loading overlay (shown until first image is ready) */
@@ -1144,4 +1162,70 @@ body.jzsa-no-scroll {
     left: -200vw;
     width: 100vw;
     height: 100vh;
+}
+
+/* ============================================================================
+   Video support
+   ============================================================================ */
+
+/* --- Video slide in Swiper (slider/carousel/fullscreen player) --- */
+
+.jzsa-slide-video .jzsa-video-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: green;
+    z-index: 11;
+}
+
+.jzsa-video-player {
+    max-width: 50%;
+    max-height: 50%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    outline: none;
+    position: relative;
+    z-index: 11;
+    border: 2px solid red;
+}
+
+/* --- Video badge on gallery thumbnails --- */
+
+.jzsa-gallery-item-video {
+    position: relative;
+}
+
+.jzsa-video-badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    pointer-events: none;
+    z-index: 2;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.jzsa-gallery-item-video:hover .jzsa-video-badge {
+    transform: translate(-50%, -50%) scale(1.1);
+    background: rgba(0, 0, 0, 0.75);
+}
+
+.jzsa-video-badge-icon {
+    position: absolute;
+    top: 50%;
+    left: 54%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 9px 0 9px 16px;
+    border-color: transparent transparent transparent #fff;
 }

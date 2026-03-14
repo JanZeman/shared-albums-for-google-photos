@@ -721,7 +721,11 @@ class JZSA_Shared_Albums {
 	/**
 	 * Prepare photo URLs with dimensions (including preview and full sizes).
 	 *
-	 * @param array $base_urls      Base photo URLs.
+	 * Accepts media items as either plain URL strings (images) or associative
+	 * arrays with 'url' and 'type' keys (for videos). This provides backward
+	 * compatibility with cached data that stores plain strings.
+	 *
+	 * @param array $base_items     Base media items (strings or arrays).
 	 * @param int   $full_width     Full image width.
 	 * @param int   $full_height    Full image height.
 	 * @param int   $preview_width  Preview image width (optional).
@@ -729,7 +733,7 @@ class JZSA_Shared_Albums {
 	 * @param int   $max_photos     Maximum number of photos to include from the album.
 	 * @return array Photo objects with preview and full URLs.
 	 */
-	private function prepare_photo_urls( $base_urls, $full_width, $full_height, $preview_width = null, $preview_height = null, $max_photos = self::DEFAULT_MAX_PHOTOS_PER_ALBUM ) {
+	private function prepare_photo_urls( $base_items, $full_width, $full_height, $preview_width = null, $preview_height = null, $max_photos = self::DEFAULT_MAX_PHOTOS_PER_ALBUM ) {
 		// Determine effective limit: requested per-album limit clamped to global MAX_PHOTOS.
 		$limit = intval( $max_photos );
 
@@ -741,10 +745,19 @@ class JZSA_Shared_Albums {
 			$limit = self::MAX_PHOTOS;
 		}
 
-		$base_urls = array_slice( $base_urls, 0, $limit );
+		$base_items = array_slice( $base_items, 0, $limit );
 
 		$photos = array();
-		foreach ( $base_urls as $base ) {
+		foreach ( $base_items as $item ) {
+			// Support both plain URL strings (backward compat) and object format.
+			if ( is_array( $item ) ) {
+				$base = $item['url'];
+				$type = isset( $item['type'] ) ? $item['type'] : 'image';
+			} else {
+				$base = $item;
+				$type = 'image';
+			}
+
 			$photo = array(
 				'full' => sprintf( '%s=w%d-h%d', $base, $full_width, $full_height ),
 			);
@@ -752,6 +765,12 @@ class JZSA_Shared_Albums {
 			// Add preview URL if dimensions provided.
 			if ( $preview_width && $preview_height ) {
 				$photo['preview'] = sprintf( '%s=w%d-h%d', $base, $preview_width, $preview_height );
+			}
+
+			// Add video-specific fields.
+			if ( 'video' === $type ) {
+				$photo['type']  = 'video';
+				$photo['video'] = $base . '=dv';
 			}
 
 			$photos[] = $photo;

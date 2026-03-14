@@ -217,48 +217,79 @@ class JZSA_Data_Provider {
 	}
 
 	/**
-	 * Extract photo base URLs from HTML content
-	 * Uses multiple extraction strategies for robustness
+	 * Extract media (photos and videos) base URLs from HTML content.
+	 * Uses multiple extraction strategies for robustness.
+	 *
+	 * Returns an array of media items. Each item is either a plain base URL
+	 * string (image) or an associative array with 'url' and 'type' keys when
+	 * the item is detected as a video.
 	 *
 	 * @param string $html HTML content
-	 * @return array Photo base URLs
+	 * @return array Media items (strings for images, arrays for videos)
 	 */
 	private function extract_photos( $html ) {
-		$photos = array();
+		$media  = array();
+		$is_primary = false;
 
-		// Primary strategy: Extract URLs followed by numeric dimensions
-		// Pattern matches: "https://url.com/photo=params",width,height
-		// We need to capture URLs that may already have parameters
-		if ( preg_match_all( '/\"(https?:\/\/[^\"]+)\"\s*,\s*\d+\s*,\s*\d+/i', $html, $matches ) ) {
-			$photos = $matches[1];
+		// Primary strategy: Extract URLs followed by numeric dimensions (with offsets for video detection)
+		if ( preg_match_all( '/\"(https?:\/\/[^\"]+)\"\s*,\s*\d+\s*,\s*\d+/i', $html, $matches, PREG_OFFSET_CAPTURE ) ) {
+			$is_primary = true;
+			$count      = count( $matches[1] );
+
+			for ( $i = 0; $i < $count; $i++ ) {
+				$url    = $matches[1][ $i ][0];
+				$offset = $matches[1][ $i ][1];
+
+				if ( false === strpos( $url, 'googleusercontent.com' ) ) {
+					continue;
+				}
+
+				$base = preg_replace( '/=[^&]*$/', '', $url );
+
+				// Detect video: check the text between this match and the next for video indicators.
+				if ( $i + 1 < $count ) {
+					$next_offset    = $matches[1][ $i + 1 ][1];
+					$context_length = min( $next_offset - $offset, 5000 );
+				} else {
+					$context_length = min( 5000, strlen( $html ) - $offset );
+				}
+				$context  = substr( $html, $offset, $context_length );
+				$is_video = ( false !== strpos( $context, 'video-downloads' )
+					|| false !== strpos( $context, '"VIDEO"' )
+					|| false !== strpos( $context, '"video/mp4"' ) );
+
+				if ( $is_video ) {
+					$media[] = array(
+						'url'  => $base,
+						'type' => 'video',
+					);
+				} else {
+					$media[] = $base;
+				}
+			}
 		}
 
 		// Fallback: Extract URLs in array format if primary strategy fails
-		if ( empty( $photos ) && preg_match_all( '/\[\"(https?:\/\/[^\"]+)\"\]/i', $html, $matches ) ) {
-			$photos = $matches[1];
+		if ( ! $is_primary && preg_match_all( '/\[\"(https?:\/\/[^\"]+)\"\]/i', $html, $matches ) ) {
+			foreach ( $matches[1] as $url ) {
+				if ( false === strpos( $url, 'googleusercontent.com' ) ) {
+					continue;
+				}
+				$media[] = preg_replace( '/=[^&]*$/', '', $url );
+			}
 		}
 
-		// Filter: Keep only valid Google user content URLs
-		$photos = array_filter(
-			$photos,
-			function( $url ) {
-				return false !== strpos( $url, 'googleusercontent.com' );
+		// Remove duplicates (keyed by base URL) and reindex
+		$seen   = array();
+		$unique = array();
+		foreach ( $media as $item ) {
+			$key = is_array( $item ) ? $item['url'] : $item;
+			if ( ! isset( $seen[ $key ] ) ) {
+				$seen[ $key ] = true;
+				$unique[]     = $item;
 			}
-		);
+		}
 
-		// Clean URLs: Remove any existing width/height parameters (=w123-h456 or similar)
-		// Google Photos URLs often have these appended, we need base URLs
-		$photos = array_map(
-			function( $url ) {
-				// Remove trailing parameters like =w800-h600 or =s1600 etc.
-				return preg_replace( '/=[^&]*$/', '', $url );
-			},
-			$photos
-		);
-
-		// Remove duplicates and reindex
-		$photos = array_unique( $photos );
-
-		return array_values( $photos );
+		return $unique;
 	}
 }
