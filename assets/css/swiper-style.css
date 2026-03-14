@@ -143,6 +143,11 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     background: var(--jzsa-controls-bg-hover);
 }
 
+.jzsa-album .swiper-button-next.swiper-button-disabled,
+.jzsa-album .swiper-button-prev.swiper-button-disabled {
+    display: none;
+}
+
 /* External link button */
 .jzsa-album .swiper-button-external-link {
     position: absolute;
