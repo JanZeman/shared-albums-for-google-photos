@@ -556,44 +556,12 @@ body.jzsa-no-scroll {
     transition: opacity 0.2s ease;
 }
 
-/* Fullscreen navigation cursor feedback on a non-animated surface.
-   Left half = previous (w-resize), right half = next (e-resize via ::after). */
-.jzsa-album:fullscreen,
-.jzsa-album:-webkit-full-screen,
-.jzsa-album.jzsa-pseudo-fullscreen {
-    cursor: w-resize !important;
-}
-
-.jzsa-album:fullscreen::after,
-.jzsa-album:-webkit-full-screen::after,
-.jzsa-album.jzsa-pseudo-fullscreen::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 50%;
-    height: 100%;
-    cursor: e-resize !important;
-    z-index: 2;
-}
-
-.jzsa-album:fullscreen::before,
-.jzsa-album:-webkit-full-screen::before,
-.jzsa-album.jzsa-pseudo-fullscreen::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 50%;
-    height: 100%;
-    cursor: w-resize !important;
-    z-index: 2;
-}
-
+/* Fullscreen slides: Swiper's own grab/grabbing cursor is used.
+   No pseudo-element overlays so drag/touch navigation works natively.
+   Click-to-navigate (50-50 split) is handled by JS. */
 .jzsa-album:fullscreen .swiper-slide,
 .jzsa-album:-webkit-full-screen .swiper-slide,
 .jzsa-album.jzsa-pseudo-fullscreen .swiper-slide {
-    cursor: inherit !important;
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     user-select: none;
