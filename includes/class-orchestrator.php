@@ -76,7 +76,7 @@ class JZSA_Shared_Albums {
 	 *
 	 * @var string
 	 */
-	const DEFAULT_AUTOPLAY_DELAY_RANGE = '4-12';
+	const DEFAULT_AUTOPLAY_DELAY_RANGE = '5';
 
 	/**
 	 * Default fullscreen autoplay delay (in seconds) - can be single value or range
@@ -429,7 +429,7 @@ class JZSA_Shared_Albums {
 	/**
 	 * Parse starting slide position.
 	 *
-	 * Parameter: start-at="random" (default) or a 1-based slide number.
+	 * Parameter: start-at="1" (default) or "random" or a 1-based slide number.
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string "random" or a numeric string >= 1
@@ -455,7 +455,7 @@ class JZSA_Shared_Albums {
 		}
 
 		// Default.
-		return 'random';
+		return '1';
 	}
 
 	/**
@@ -525,7 +525,7 @@ class JZSA_Shared_Albums {
 	 */
 	private function parse_color( $atts ) {
 		if ( ! isset( $atts['background-color'] ) ) {
-			return '#000000';
+			return 'transparent';
 		}
 
 		$color = $atts['background-color'];
@@ -538,7 +538,7 @@ class JZSA_Shared_Albums {
 			return $color;
 		}
 
-		return '#FFFFFF';
+		return 'transparent';
 	}
 
 	/**
