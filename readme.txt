@@ -88,7 +88,7 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
     autoplay-inactivity-timeout="60"
     start-at="1"
     full-screen-autoplay="true"
-    full-screen-autoplay-delay="3"
+    full-screen-autoplay-delay="5"
     full-screen-image-fit="fit"
     full-screen-toggle="single-click"
     show-title="true"

@@ -879,7 +879,7 @@ class JZSA_Settings_Page {
 							<tr>
 								<td><code>full-screen-autoplay-delay</code></td>
 								<td>Autoplay delay in fullscreen mode, in seconds, supports ranges like "3-5" or single values</td>
-								<td>3</td>
+								<td>5</td>
 							</tr>
 							<tr>
 								<td><code>full-screen-toggle</code></td>

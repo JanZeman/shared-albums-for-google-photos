@@ -83,7 +83,7 @@ class JZSA_Shared_Albums {
 	 *
 	 * @var string
 	 */
-	const DEFAULT_FULLSCREEN_AUTOPLAY_DELAY = '3';
+	const DEFAULT_FULLSCREEN_AUTOPLAY_DELAY = '5';
 
 	/**
 	 * Default autoplay inactivity timeout (in seconds) - time after which autoplay resumes after user interaction

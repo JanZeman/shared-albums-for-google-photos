@@ -1544,7 +1544,7 @@
             autoplay: $container.attr('data-autoplay') === 'true',
             autoplayDelay: parseInt($container.attr('data-autoplay-delay')) || DEFAULT_AUTOPLAY_DELAY_FALLBACK,
             fullScreenAutoplay: $container.attr('data-full-screen-autoplay') === 'true',
-            fullScreenAutoplayDelay: parseInt($container.attr('data-full-screen-autoplay-delay')) || 3,
+            fullScreenAutoplayDelay: parseInt($container.attr('data-full-screen-autoplay-delay')) || 5,
             autoplayInactivityTimeout: parseInt($container.attr('data-autoplay-inactivity-timeout')) || 30,
 
             // Display settings
