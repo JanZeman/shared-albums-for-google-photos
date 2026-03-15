@@ -334,12 +334,12 @@ class JZSA_Shared_Albums {
 			'image-width'     => isset( $atts['image-width'] ) ? intval( $atts['image-width'] ) : self::DEFAULT_IMAGE_WIDTH,
 			'image-height'    => isset( $atts['image-height'] ) ? intval( $atts['image-height'] ) : self::DEFAULT_IMAGE_HEIGHT,
 			// Autoplay (normal mode)
-			'autoplay'       => $this->parse_bool( $atts, 'autoplay', true ),
+			'autoplay'       => $this->parse_bool( $atts, 'autoplay', false ),
 			'autoplay-delay' => $this->parse_delay_range( isset( $atts['autoplay-delay'] ) ? $atts['autoplay-delay'] : self::DEFAULT_AUTOPLAY_DELAY_RANGE ),
 			'start-at'       => $this->parse_start_at( $atts ),
 
 			// Fullscreen autoplay (fullscreen mode only)
-			'full-screen-autoplay'       => $this->parse_bool( $atts, 'full-screen-autoplay', true ),
+			'full-screen-autoplay'       => $this->parse_bool( $atts, 'full-screen-autoplay', false ),
 			'full-screen-autoplay-delay' => $this->parse_delay_range( isset( $atts['full-screen-autoplay-delay'] ) ? $atts['full-screen-autoplay-delay'] : self::DEFAULT_FULLSCREEN_AUTOPLAY_DELAY ),
 
 			// Autoplay inactivity timeout
