@@ -1307,6 +1307,12 @@ body.jzsa-no-scroll {
     100% { opacity: 1; }
 }
 
+/* Video fully buffered — turn duration label green */
+.jzsa-video-duration--buffered {
+    background: #4CAF50;
+    transition: background 0.4s ease;
+}
+
 
 /* --- Video badge on gallery thumbnails --- */
 
