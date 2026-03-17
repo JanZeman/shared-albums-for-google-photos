@@ -2484,14 +2484,7 @@
 
                 if (isVideo) {
                     var videoSrc = item.photo.video || src;
-                    mediaHtml =
-                        '<video class="jzsa-gallery-thumb jzsa-gallery-video-thumb jzsa-justified-thumb"' +
-                        ' src="' + videoSrc + '"' +
-                        ' data-index="' + item.index + '"' +
-                        ' aria-label="Video ' + (item.index + 1) + '"' +
-                        ' draggable="false"' +
-                        ' controls playsinline preload="metadata"' +
-                        ' style="width:100%;height:100%;"></video>';
+                    mediaHtml = buildVideoHtml({ src: videoSrc });
                 } else {
                     mediaHtml =
                         '<img class="jzsa-gallery-thumb jzsa-justified-thumb"' +

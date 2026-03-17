@@ -1133,7 +1133,8 @@ body.jzsa-no-scroll {
 
 /* --- Video slide in Swiper (slider/carousel/fullscreen player) --- */
 
-.jzsa-slide-video .jzsa-video-wrapper {
+/* Video wrapper: shared across slider and gallery modes */
+.jzsa-video-wrapper {
     position: relative;
     width: 100%;
     height: 100%;
@@ -1141,20 +1142,55 @@ body.jzsa-no-scroll {
     align-items: center;
     justify-content: center;
     background: green;
+    padding: 16px;
+    box-sizing: border-box;
     z-index: 11;
 }
 
+/* In slider/carousel slides, wrapper fills the slide */
+.jzsa-slide-video .jzsa-video-wrapper {
+    overflow: hidden;
+}
+
 .jzsa-video-player {
-    max-width: 50%;
-    max-height: 50%;
-    width: auto;
-    height: auto;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
     outline: none;
     position: relative;
     z-index: 11;
     border: 2px solid red;
 }
+
+/* Gallery: video wrapper fills the grid cell */
+.jzsa-gallery-item-video .jzsa-video-wrapper {
+    overflow: hidden;
+}
+
+/* Uniform layout: inherit the aspect-ratio cell size */
+.jzsa-gallery-album[data-gallery-layout="uniform"] .jzsa-gallery-item-video .jzsa-video-wrapper {
+    aspect-ratio: 4 / 3;
+}
+
+/* Justified layout: fill the explicitly-sized item */
+.jzsa-gallery-album[data-gallery-layout="justified"] .jzsa-gallery-item-video {
+    overflow: hidden;
+}
+
+.jzsa-gallery-album[data-gallery-layout="justified"] .jzsa-gallery-item-video .jzsa-video-wrapper {
+    position: absolute;
+    inset: 0;
+}
+
+/* Gallery: video fills its wrapper, cropped to fit */
+.jzsa-gallery-item-video .jzsa-video-player {
+    max-width: 100%;
+    max-height: 100%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 
 /* --- Video badge on gallery thumbnails --- */
 
