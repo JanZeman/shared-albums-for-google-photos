@@ -1215,9 +1215,54 @@ body.jzsa-no-scroll {
     background: var(--jzsa-accent-color, #FF69B4) !important;
 }
 
-/* Plyr control bar accent */
+/* Plyr control bar accent + compact volume */
 .jzsa-video-wrapper .plyr {
     --plyr-color-main: var(--jzsa-accent-color, #FF69B4);
+    --plyr-range-fill-background: var(--jzsa-accent-color, #FF69B4);
+}
+
+/* Responsive Plyr controls — container query based */
+/* Tiny  (<100px): play + progress only                    */
+/* Narrow (100-199): + mute                                */
+/* Medium (200-299): + mute + time                         */
+/* Wide   (>=300):   + mute + time + volume slider         */
+
+.jzsa-video-wrapper {
+    container-type: inline-size;
+}
+
+.jzsa-video-wrapper .plyr .plyr__controls {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    gap: 4px;
+}
+
+.jzsa-video-wrapper .plyr__controls .plyr__progress__container {
+    flex: 1 1 40px;
+    min-width: 40px;
+}
+
+/* Tiny: hide mute, time, volume slider */
+@container (max-width: 99px) {
+    .jzsa-video-wrapper .plyr__volume,
+    .jzsa-video-wrapper .plyr__time {
+        display: none;
+    }
+}
+
+/* Narrow: hide time and volume slider, show mute */
+@container (min-width: 100px) and (max-width: 199px) {
+    .jzsa-video-wrapper .plyr__volume input[type="range"],
+    .jzsa-video-wrapper .plyr__time {
+        display: none;
+    }
+}
+
+/* Medium: hide volume slider, show mute + time */
+@container (min-width: 200px) and (max-width: 299px) {
+    .jzsa-video-wrapper .plyr__volume input[type="range"] {
+        display: none;
+    }
 }
 
 /* Duration label — positioned below the play-large button, centered */
