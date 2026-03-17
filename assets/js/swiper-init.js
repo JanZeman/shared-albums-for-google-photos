@@ -288,11 +288,16 @@
      */
     function buildVideoHtml(opts) {
         var src = opts.src || '';
+        var poster = opts.poster || '';
         var extraClass = opts.extraClass ? ' ' + opts.extraClass : '';
         var styleAttr = opts.style ? ' style="' + opts.style + '"' : '';
+        // DEBUG: hardcoded poster to verify poster attribute works
+        poster = 'https://placehold.co/600x400/orange/white?text=POSTER';
+        var posterAttr = poster ? ' poster="' + poster + '"' : '';
         return '<div class="jzsa-video-wrapper">' +
             '<video' +
             ' src="' + src + '"' +
+            posterAttr +
             ' controls playsinline preload="metadata"' +
             ' class="jzsa-video-player' + extraClass + '"' +
             styleAttr +
@@ -310,8 +315,9 @@
             var isVideo = photo.type === 'video';
 
             if (isVideo) {
+                var posterUrl = photo.preview || photo.full || '';
                 html += '<div class="swiper-slide jzsa-slide-video" data-media-type="video">' +
-                    buildVideoHtml({ src: photo.video }) +
+                    buildVideoHtml({ src: photo.video, poster: posterUrl }) +
                     '</div>';
             } else {
                 // Photo format: object with preview and full URLs
@@ -2403,7 +2409,7 @@
 
             if (isVideo) {
                 var videoSrc = photo.video || src;
-                mediaHtml = buildVideoHtml({ src: videoSrc });
+                mediaHtml = buildVideoHtml({ src: videoSrc, poster: src });
             } else {
                 mediaHtml =
                     '<img class="jzsa-gallery-thumb' + tileFillClass + '"' +
@@ -2484,7 +2490,7 @@
 
                 if (isVideo) {
                     var videoSrc = item.photo.video || src;
-                    mediaHtml = buildVideoHtml({ src: videoSrc });
+                    mediaHtml = buildVideoHtml({ src: videoSrc, poster: src });
                 } else {
                     mediaHtml =
                         '<img class="jzsa-gallery-thumb jzsa-justified-thumb"' +
@@ -2908,7 +2914,7 @@
         }
 
         function isGalleryVideoTarget(target) {
-            return $(target).closest('video.jzsa-gallery-video-thumb').length > 0;
+            return $(target).closest('.jzsa-gallery-item-video .jzsa-video-wrapper').length > 0;
         }
 
         $container.on('dragstart' + ns, '.jzsa-gallery-thumb', function(e) {
@@ -4093,7 +4099,7 @@
         }
 
         function isGalleryVideoInteractionTarget(targetEl) {
-            return $(targetEl).closest('video.jzsa-gallery-video-thumb').length > 0;
+            return $(targetEl).closest('.jzsa-gallery-item-video .jzsa-video-wrapper').length > 0;
         }
 
         if (fullScreenSwitch === 'single-click') {
