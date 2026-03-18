@@ -1210,9 +1210,10 @@ body.jzsa-no-scroll {
     z-index: 15;
 }
 
-/* Play-large button uses accent color */
+/* Play-large button uses accent color + slow fade out on click */
 .jzsa-video-wrapper .plyr__control--overlaid {
     background: var(--jzsa-accent-color, #FF69B4) !important;
+    transition: opacity 0.6s ease, visibility 0.6s ease !important;
 }
 
 /* Plyr control bar accent + compact volume */
