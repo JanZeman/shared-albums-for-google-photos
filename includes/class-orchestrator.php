@@ -371,7 +371,7 @@ class JZSA_Shared_Albums {
 			// Display
 			'mode'             => $this->parse_mode( $atts ),
 			'background-color' => $this->parse_color( $atts, 'background-color', 'transparent' ),
-			'accent-color'     => $this->parse_color( $atts, 'accent-color', '#FF69B4' ),
+			'accent-color'     => $this->parse_color_with_alias( $atts, 'video-accent-color', 'accent-color', '#00b2ff' ),
 			'image-fit'               => $this->parse_image_fit( $atts ),
 			'full-screen-image-fit'   => $this->parse_fullscreen_image_fit( $atts ),
 			'full-screen-toggle'      => $this->parse_fullscreen_toggle_mode( $atts ),
@@ -608,6 +608,19 @@ class JZSA_Shared_Albums {
 			return $color;
 		}
 
+		return $default;
+	}
+
+	/**
+	 * Parse color with backward-compatible alias.
+	 */
+	private function parse_color_with_alias( $atts, $key, $alias, $default ) {
+		if ( isset( $atts[ $key ] ) ) {
+			return $this->parse_color( $atts, $key, $default );
+		}
+		if ( isset( $atts[ $alias ] ) ) {
+			return $this->parse_color( $atts, $alias, $default );
+		}
 		return $default;
 	}
 

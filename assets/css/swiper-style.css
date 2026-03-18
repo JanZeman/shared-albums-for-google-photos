@@ -1257,7 +1257,7 @@ body.jzsa-no-scroll {
    native play triangle through. Instant hide (no transition) so it
    disappears in sync with the duration label. */
 .jzsa-video-wrapper .plyr__control--overlaid {
-    background: var(--jzsa-accent-color, #FF69B4) !important;
+    background: var(--jzsa-accent-color, #00b2ff) !important;
     opacity: 1;
     transition: none !important;
     transform: translate(-50%, -50%) scale(1.2);
@@ -1299,8 +1299,8 @@ body.jzsa-no-scroll {
 
 /* Plyr control bar accent + compact volume */
 .jzsa-video-wrapper .plyr {
-    --plyr-color-main: var(--jzsa-accent-color, #FF69B4);
-    --plyr-range-fill-background: var(--jzsa-accent-color, #FF69B4);
+    --plyr-color-main: var(--jzsa-accent-color, #00b2ff);
+    --plyr-range-fill-background: var(--jzsa-accent-color, #00b2ff);
 }
 
 /* Responsive Plyr controls — container query based */
@@ -1370,7 +1370,7 @@ body.jzsa-no-scroll {
     font-size: 12px;
     line-height: 1;
     color: #fff;
-    background: var(--jzsa-accent-color, #FF69B4);
+    background: var(--jzsa-accent-color, #00b2ff);
     padding: 4px 12px;
     border-radius: var(--jzsa-controls-pill-radius);
     white-space: nowrap;
@@ -1399,7 +1399,7 @@ body.jzsa-no-scroll {
 
 /* Video fully buffered — keep accent color (no visual change) */
 .jzsa-video-duration--buffered {
-    background: var(--jzsa-accent-color, #FF69B4);
+    background: var(--jzsa-accent-color, #00b2ff);
 }
 
 /* When Plyr is playing, always hide the duration label — mirrors Plyr's own

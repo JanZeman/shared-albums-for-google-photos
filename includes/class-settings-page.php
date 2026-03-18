@@ -958,6 +958,16 @@ class JZSA_Settings_Page {
 								<td><?php esc_html_e( 'Include videos from mixed albums: "true" or "false". Set to "false" to display only photos and filter out all video items.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>true</td>
 							</tr>
+							<tr>
+								<td><code>video-autohide-controls</code></td>
+								<td><?php esc_html_e( 'Auto-hide the video control bar after a few seconds of inactivity: "true" or "false". When enabled, controls reappear on hover or tap.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>false</td>
+							</tr>
+							<tr>
+								<td><code>video-accent-color</code></td>
+								<td><?php esc_html_e( 'Accent color for video play button, duration label, and control bar. Any valid CSS hex color (e.g. "#00b2ff", "#FF69B4").', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>#00b2ff</td>
+							</tr>
 						</tbody>
 					</table>
 
