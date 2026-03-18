@@ -298,7 +298,7 @@
             '<video' +
             ' src="' + src + '"' +
             posterAttr +
-            ' playsinline preload="none"' +
+            ' playsinline preload="none" disablepictureinpicture' +
             ' class="jzsa-video-player' + extraClass + '"' +
             styleAttr +
             '></video>' +
