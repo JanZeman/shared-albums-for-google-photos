@@ -379,6 +379,9 @@ class JZSA_Shared_Albums {
 			// Photo count
 			'max-photos-per-album'    => $this->parse_max_photos( $atts ),
 
+			// Video controls
+			'video-autohide-controls' => $this->parse_bool( $atts, 'video-autohide-controls', false ),
+
 			// Video support (experimental) — accept both 'show-videos' and 'show-video'
 			'show-videos'            => isset( $atts['show-video'] ) && ! isset( $atts['show-videos'] )
 				? $this->parse_bool( $atts, 'show-video', true )

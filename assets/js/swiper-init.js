@@ -316,6 +316,8 @@
             console.warn('⚠️ Plyr not loaded');
             return;
         }
+        var $album = $container.closest('.jzsa-album, .jzsa-gallery');
+        var autohide = $album.length ? $album.attr('data-video-autohide-controls') === 'true' : false;
         var videos = $container.find('video.jzsa-video-player');
         console.log('🎬 initPlyrInContainer: found', videos.length, 'videos');
         videos.each(function() {
@@ -327,7 +329,7 @@
                 iconUrl: (typeof jzsaAjax !== 'undefined' && jzsaAjax.plyrSvgUrl) || '',
                 controls: ['play-large', 'restart', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume'],
                 clickToPlay: true,
-                hideControls: true,
+                hideControls: autohide,
                 resetOnEnd: true,
                 invertTime: false,
                 disableContextMenu: false,
@@ -771,6 +773,7 @@
 
             // Add fullscreen class for CSS styling
             $(containerElement).addClass('jzsa-is-fullscreen');
+
 
             if (!params.browserPrefix) {
                 // Only log detailed debug info for standard API (avoid log spam)

@@ -200,6 +200,7 @@ class JZSA_Renderer {
 			'show-counter'         => 'data-show-counter',
 			'show-link-button'     => 'data-show-link-button',
 			'show-download-button' => 'data-show-download-button',
+			'video-autohide-controls' => 'data-video-autohide-controls',
 		);
 
 		foreach ( $boolean_attrs as $key => $attr_name ) {
@@ -319,6 +320,7 @@ class JZSA_Renderer {
 			'show-counter'         => 'data-show-counter',
 			'show-link-button'     => 'data-show-link-button',
 			'show-download-button' => 'data-show-download-button',
+			'video-autohide-controls' => 'data-video-autohide-controls',
 		);
 		foreach ( $player_booleans as $key => $attr_name ) {
 			if ( isset( $config[ $key ] ) ) {
