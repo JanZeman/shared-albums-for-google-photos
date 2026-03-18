@@ -1260,7 +1260,7 @@ body.jzsa-no-scroll {
     background: var(--jzsa-accent-color, #00b2ff) !important;
     opacity: 1;
     transition: none !important;
-    transform: translate(-50%, -50%) scale(1.2);
+    transform: translate(-50%, -50%) scale(var(--jzsa-play-scale, 1.2));
 }
 
 /* Play button loading state — override Plyr's own hide so the button stays
@@ -1289,12 +1289,31 @@ body.jzsa-no-scroll {
 }
 
 @keyframes jzsa-plyr-pulse {
-    0%, 100% { transform: translate(-50%, -50%) scale(1); }
-    50%      { transform: translate(-50%, -50%) scale(0.95); }
+    0%, 100% { transform: translate(-50%, -50%) scale(var(--jzsa-play-scale, 1.2)); }
+    50%      { transform: translate(-50%, -50%) scale(calc(var(--jzsa-play-scale, 1.2) * 0.8)); }
 }
 
 @keyframes jzsa-plyr-spin {
     to { transform: rotate(360deg); }
+}
+
+/* Play button scales proportionally with container width */
+@container (min-width: 500px) {
+    .jzsa-video-wrapper .plyr__control--overlaid {
+        --jzsa-play-scale: 1.8;
+    }
+}
+
+@container (min-width: 800px) {
+    .jzsa-video-wrapper .plyr__control--overlaid {
+        --jzsa-play-scale: 2.5;
+    }
+}
+
+@container (min-width: 1200px) {
+    .jzsa-video-wrapper .plyr__control--overlaid {
+        --jzsa-play-scale: 3.2;
+    }
 }
 
 /* Plyr control bar accent + compact volume */
@@ -1356,8 +1375,7 @@ body.jzsa-no-scroll {
    - Video slide, not playing: album controls visible, Plyr bar hidden, play button + duration shown
    - Video playing: album controls fade out, Plyr bar shown */
 .jzsa-album.jzsa-video-playing .swiper-pagination,
-.jzsa-album.jzsa-video-playing .swiper-button-play-pause,
-.jzsa-album.jzsa-video-playing .swiper-button-fullscreen {
+.jzsa-album.jzsa-video-playing .swiper-button-play-pause {
     opacity: 0 !important;
     pointer-events: none !important;
     transition: opacity 0.3s ease;

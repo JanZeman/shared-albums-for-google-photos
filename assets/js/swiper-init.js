@@ -399,7 +399,7 @@
             this._jzsaPlyr = new Plyr(this, {
                 iconUrl: (typeof jzsaAjax !== 'undefined' && jzsaAjax.plyrSvgUrl) || '',
                 controls: ['play-large', 'play', 'restart', 'progress', 'current-time', 'duration', 'mute', 'volume'],
-                clickToPlay: true,
+                clickToPlay: false,
                 hideControls: autohide,
                 resetOnEnd: true,
                 invertTime: false,
