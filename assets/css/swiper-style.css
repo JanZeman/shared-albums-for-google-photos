@@ -476,7 +476,7 @@ body.jzsa-no-scroll {
 .jzsa-album .swiper-pagination {
     background: var(--jzsa-controls-bg);
     color: #fff;
-    padding: 4px 16px;
+    padding: 4px 12px;
     border-radius: var(--jzsa-controls-pill-radius);
     display: inline-block;
     bottom: 10px;
@@ -485,7 +485,7 @@ body.jzsa-no-scroll {
     margin: 0 auto;
     max-width: max-content;
     width: auto;
-    font-size: 14px;
+    font-size: 12px;
     text-align: center;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     overflow: hidden;
@@ -1177,8 +1177,6 @@ body.jzsa-no-scroll {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: green;
-    padding: 16px;
     box-sizing: border-box;
     z-index: 11;
 }
@@ -1195,7 +1193,6 @@ body.jzsa-no-scroll {
     outline: none;
     position: relative;
     z-index: 11;
-    border: 2px solid red;
 }
 
 /* Gallery: video wrapper fills the grid cell */
@@ -1246,10 +1243,15 @@ body.jzsa-no-scroll {
     z-index: 15;
 }
 
-/* Play-large button uses accent color + slow fade out on click */
+/* Play-large button uses accent color + slow fade out on click + 20% larger.
+   Force full opacity so Plyr's default semi-transparent bg doesn't leak the
+   native play triangle through. Plyr hides the button via visibility:hidden
+   when playing, so this doesn't interfere with hide/show behaviour. */
 .jzsa-video-wrapper .plyr__control--overlaid {
     background: var(--jzsa-accent-color, #FF69B4) !important;
+    opacity: 1;
     transition: opacity 0.6s ease, visibility 0.6s ease !important;
+    transform: translate(-50%, -50%) scale(1.2);
 }
 
 /* Plyr control bar accent + compact volume */
@@ -1320,23 +1322,21 @@ body.jzsa-no-scroll {
 .jzsa-video-duration {
     position: absolute;
     left: 50%;
-    top: calc(50% + 30px);
+    top: calc(50% + 38px);
     transform: translateX(-50%);
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1;
     color: #fff;
     background: var(--jzsa-accent-color, #FF69B4);
-    padding: 3px 8px;
-    border-radius: 3px;
+    padding: 4px 12px;
+    border-radius: var(--jzsa-controls-pill-radius);
     white-space: nowrap;
     pointer-events: none;
-    min-width: 28px;
-    width: auto;
-    height: 11px;
     text-align: center;
     z-index: 16;
     box-sizing: content-box;
     opacity: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 /* Hidden while loading — completely invisible */
@@ -1354,10 +1354,9 @@ body.jzsa-no-scroll {
     100% { opacity: 1; }
 }
 
-/* Video fully buffered — turn duration label green */
+/* Video fully buffered — keep accent color (no visual change) */
 .jzsa-video-duration--buffered {
-    background: #4CAF50;
-    transition: background 0.4s ease;
+    background: var(--jzsa-accent-color, #FF69B4);
 }
 
 

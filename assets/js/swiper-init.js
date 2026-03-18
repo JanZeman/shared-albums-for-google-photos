@@ -291,8 +291,6 @@
         var poster = opts.poster || '';
         var extraClass = opts.extraClass ? ' ' + opts.extraClass : '';
         var styleAttr = opts.style ? ' style="' + opts.style + '"' : '';
-        // DEBUG: hardcoded poster to verify poster attribute works
-        poster = 'https://placehold.co/600x400/orange/white?text=POSTER';
         var posterAttr = poster ? ' poster="' + poster + '"' : '';
         return '<div class="jzsa-video-wrapper">' +
             '<video' +
