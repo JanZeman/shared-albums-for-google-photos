@@ -25,6 +25,18 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     position: relative; /* For loader overlay positioning */
 }
 
+/* Kill Android tap-highlight rectangle on all interactive elements */
+.jzsa-album button,
+.jzsa-album [role="button"],
+.jzsa-album a,
+.jzsa-album .swiper-slide,
+.jzsa-album .plyr__control,
+.jzsa-gallery-album button,
+.jzsa-gallery-album a,
+.jzsa-gallery-album .plyr__control {
+    -webkit-tap-highlight-color: transparent;
+}
+
 /* Initial gallery fade-in on load (content appears gradually). */
 .jzsa-album.jzsa-content-intro {
     opacity: 0;
@@ -135,7 +147,6 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
-    -webkit-tap-highlight-color: transparent;
     filter: opacity(var(--jzsa-nav-opacity));
     transition: filter 0.15s ease;
 }
@@ -288,7 +299,6 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     -webkit-appearance: none;
     padding: 0;
     margin: 0;
-    -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -586,7 +596,6 @@ body.jzsa-no-scroll {
 .jzsa-album:fullscreen .swiper-slide,
 .jzsa-album:-webkit-full-screen .swiper-slide,
 .jzsa-album.jzsa-pseudo-fullscreen .swiper-slide {
-    -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     user-select: none;
 }
@@ -1245,13 +1254,47 @@ body.jzsa-no-scroll {
 
 /* Play-large button uses accent color + slow fade out on click + 20% larger.
    Force full opacity so Plyr's default semi-transparent bg doesn't leak the
-   native play triangle through. Plyr hides the button via visibility:hidden
-   when playing, so this doesn't interfere with hide/show behaviour. */
+   native play triangle through. Instant hide (no transition) so it
+   disappears in sync with the duration label. */
 .jzsa-video-wrapper .plyr__control--overlaid {
     background: var(--jzsa-accent-color, #FF69B4) !important;
     opacity: 1;
-    transition: opacity 0.6s ease, visibility 0.6s ease !important;
+    transition: none !important;
     transform: translate(-50%, -50%) scale(1.2);
+}
+
+/* Play button loading state — override Plyr's own hide so the button stays
+   visible (covering the Google poster triangle) until actual playback. */
+.jzsa-video-wrapper .plyr__control--overlaid.jzsa-plyr-loading {
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: flex !important;
+    animation: jzsa-plyr-pulse 1s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.jzsa-video-wrapper .plyr__control--overlaid.jzsa-plyr-loading svg {
+    display: none;
+}
+
+.jzsa-video-wrapper .plyr__control--overlaid.jzsa-plyr-loading::after {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: jzsa-plyr-spin 0.8s linear infinite;
+}
+
+@keyframes jzsa-plyr-pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50%      { transform: translate(-50%, -50%) scale(0.95); }
+}
+
+@keyframes jzsa-plyr-spin {
+    to { transform: rotate(360deg); }
 }
 
 /* Plyr control bar accent + compact volume */

@@ -344,32 +344,60 @@
                 $plyrEl.append('<span class="jzsa-video-duration jzsa-video-duration--loading"></span>');
             }
             var $albumContainer = $(wrapper).closest('.jzsa-album, .jzsa-gallery-album');
-            console.log('🎬 Plyr album container found:', $albumContainer.length, $albumContainer.attr('id'));
-            this._jzsaPlyr.on('play', function() {
-                console.log('▶️ Video play — adding jzsa-video-playing');
+            var $playLarge = $(wrapper).find('.plyr__control--overlaid');
+            var $duration = $(wrapper).find('.jzsa-video-duration');
+
+            // Loading state: click → spinner, hide after first timeupdate + 500ms.
+            // timeupdate is the most reliable signal that frames are rendering.
+            var loadingTimeout = null;
+            var waitingForPlay = false;
+            var plyrRef = this._jzsaPlyr;
+            var videoEl = this;
+
+            function showPlaying() {
+                waitingForPlay = false;
+                if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null; }
+                $playLarge.removeClass('jzsa-plyr-loading');
                 plyrContainer.show();
-                $(wrapper).find('.jzsa-video-duration').hide();
+                $duration.hide();
                 $albumContainer.addClass('jzsa-video-playing');
                 // Pause all other videos on the page
-                var currentVideo = this;
                 document.querySelectorAll('video.jzsa-video-player').forEach(function(v) {
-                    if (v !== currentVideo && v._jzsaPlyr && v._jzsaPlyr.playing) {
+                    if (v !== videoEl && v._jzsaPlyr && v._jzsaPlyr.playing) {
                         v._jzsaPlyr.pause();
                     }
                 });
-            }.bind(this));
+            }
+
+            $playLarge.on('click', function() {
+                if (waitingForPlay) { return; }
+                waitingForPlay = true;
+                $playLarge.addClass('jzsa-plyr-loading');
+
+                // 30s timeout — give up if playback never starts
+                loadingTimeout = setTimeout(function() {
+                    waitingForPlay = false;
+                    $playLarge.removeClass('jzsa-plyr-loading');
+                    if (!plyrRef.playing) { plyrRef.stop(); }
+                }, 30000);
+            });
+
+            // timeupdate fires only when frames are actively rendering,
+            // so the poster is already replaced — safe to hide our overlay.
+            this._jzsaPlyr.on('timeupdate', function() {
+                if (!waitingForPlay) { return; }
+                showPlaying();
+            });
             this._jzsaPlyr.on('pause', function() {
                 plyrContainer.hide();
-                $(wrapper).find('.jzsa-video-duration').show();
+                $duration.show();
                 $albumContainer.removeClass('jzsa-video-playing');
             });
             this._jzsaPlyr.on('ended', function() {
                 plyrContainer.hide();
-                $(wrapper).find('.jzsa-video-duration').show();
+                $duration.show();
                 $albumContainer.removeClass('jzsa-video-playing');
             });
-            // DEBUG: turn wrapper blue to confirm Plyr initialized
-            if (wrapper) { wrapper.style.background = 'blue'; }
         });
     }
 
