@@ -346,7 +346,14 @@
             this._jzsaPlyr.on('play', function() {
                 plyrContainer.show();
                 $(wrapper).find('.jzsa-video-duration').hide();
-            });
+                // Pause all other videos on the page
+                var currentVideo = this;
+                document.querySelectorAll('video.jzsa-video-player').forEach(function(v) {
+                    if (v !== currentVideo && v._jzsaPlyr && v._jzsaPlyr.playing) {
+                        v._jzsaPlyr.pause();
+                    }
+                });
+            }.bind(this));
             this._jzsaPlyr.on('ended', function() {
                 plyrContainer.hide();
                 $(wrapper).find('.jzsa-video-duration').show();
