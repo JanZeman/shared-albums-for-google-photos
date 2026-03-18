@@ -128,6 +128,8 @@ class JZSA_Shared_Albums {
 		add_action( 'save_post', array( $this, 'clear_cache' ) );
 		add_action( 'wp_ajax_jzsa_download_image', array( $this, 'handle_download_image' ) );
 		add_action( 'wp_ajax_nopriv_jzsa_download_image', array( $this, 'handle_download_image' ) );
+		add_action( 'wp_ajax_jzsa_refresh_urls', array( $this, 'handle_refresh_urls' ) );
+		add_action( 'wp_ajax_nopriv_jzsa_refresh_urls', array( $this, 'handle_refresh_urls' ) );
 		add_action( 'wp_ajax_jzsa_shortcode_preview', array( $this, 'handle_shortcode_preview' ) );
 
 		// Also load front-end gallery assets on our settings page so the sample
@@ -209,6 +211,7 @@ class JZSA_Shared_Albums {
 		// Localize script for AJAX
 		$download_nonce = wp_create_nonce( 'jzsa_download_nonce' );
 		$preview_nonce  = wp_create_nonce( 'jzsa_shortcode_preview' );
+		$refresh_nonce  = wp_create_nonce( 'jzsa_refresh_urls' );
 
 		wp_localize_script(
 			'jzsa-init',
@@ -217,6 +220,7 @@ class JZSA_Shared_Albums {
 				'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
 				'downloadNonce'=> $download_nonce,
 				'previewNonce' => $preview_nonce,
+				'refreshNonce' => $refresh_nonce,
 				'plyrSvgUrl'   => plugins_url( 'assets/vendor/plyr/plyr.svg', $this->plugin_file ),
 			)
 		);
@@ -971,6 +975,57 @@ class JZSA_Shared_Albums {
 				'html' => $html,
 			)
 		);
+	}
+
+	/**
+	 * Handle AJAX request to refresh expired media URLs.
+	 *
+	 * Re-fetches the album page from Google Photos and returns fresh URLs
+	 * so the frontend can update stale video/image sources.
+	 */
+	public function handle_refresh_urls() {
+		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
+		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'jzsa_refresh_urls' ) ) {
+			wp_send_json_error( 'Invalid nonce' );
+			return;
+		}
+
+		$album_url = isset( $_POST['album_url'] ) ? esc_url_raw( wp_unslash( $_POST['album_url'] ) ) : '';
+		if ( empty( $album_url ) ) {
+			wp_send_json_error( 'Missing album URL' );
+			return;
+		}
+
+		// Force fresh fetch (bypass cache).
+		$result = $this->provider->fetch_album( $album_url );
+
+		if ( ! $result['success'] ) {
+			wp_send_json_error( $result['error'] );
+			return;
+		}
+
+		// Update the transient cache with fresh URLs.
+		$cache_key = $this->get_cache_key( $album_url );
+		set_transient(
+			$cache_key,
+			array(
+				'title'         => $result['data']['title'] ?? null,
+				'photos'        => $result['data']['photos'],
+				'is_deprecated' => $result['is_deprecated'],
+			),
+			self::CACHE_DURATION
+		);
+
+		// Prepare URLs with standard dimensions.
+		$photos = $this->prepare_photo_urls(
+			$result['data']['photos'],
+			self::DEFAULT_IMAGE_WIDTH,
+			self::DEFAULT_IMAGE_HEIGHT,
+			self::DEFAULT_PREVIEW_WIDTH,
+			self::DEFAULT_PREVIEW_HEIGHT
+		);
+
+		wp_send_json_success( array( 'photos' => $photos ) );
 	}
 
 	/**

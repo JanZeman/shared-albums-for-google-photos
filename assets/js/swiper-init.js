@@ -304,6 +304,79 @@
     }
 
     /**
+     * Re-fetch fresh media URLs from Google Photos when video URLs expire (HTTP 400).
+     * One in-flight request per album container; returns a promise.
+     */
+    var _refreshPromises = {};
+
+    function refreshAlbumUrls($albumContainer) {
+        // Try the container itself, then walk up to find data-album-url
+        // (e.g. gallery slideshow is a sibling of the gallery container).
+        var albumUrl = $albumContainer.attr('data-album-url') || '';
+        if (!albumUrl) {
+            var $parent = $albumContainer.closest('[data-album-url]');
+            if (!$parent.length) {
+                $parent = $albumContainer.siblings('[data-album-url]');
+            }
+            albumUrl = $parent.attr('data-album-url') || '';
+        }
+        if (!albumUrl || typeof jzsaAjax === 'undefined') {
+            console.warn('[jzsa-refresh] ❌ Cannot refresh — albumUrl:', albumUrl, 'jzsaAjax:', typeof jzsaAjax, 'container:', $albumContainer.attr('id'));
+            return $.Deferred().reject().promise();
+        }
+
+        // Deduplicate: if a refresh is already in flight for this album, reuse it.
+        var containerId = $albumContainer.attr('id') || albumUrl;
+        if (_refreshPromises[containerId]) {
+            return _refreshPromises[containerId];
+        }
+
+        console.log('[jzsa-refresh] 🔄 Fetching fresh URLs for', containerId);
+        var promise = $.ajax({
+            url: jzsaAjax.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'jzsa_refresh_urls',
+                nonce: jzsaAjax.refreshNonce,
+                album_url: albumUrl
+            }
+        }).then(function(response) {
+            delete _refreshPromises[containerId];
+            if (!response.success || !response.data || !response.data.photos) {
+                console.warn('[jzsa-refresh] ❌ Server returned no photos');
+                return $.Deferred().reject().promise();
+            }
+
+            var freshPhotos = response.data.photos;
+            var freshVideos = freshPhotos.filter(function(p) { return p.type === 'video'; });
+            console.log('[jzsa-refresh] ✅ Got', freshPhotos.length, 'photos (' + freshVideos.length + ' videos)');
+
+            // Update data attribute so future renders use fresh URLs.
+            $albumContainer.attr('data-all-photos', JSON.stringify(freshPhotos));
+
+            // Update all existing <video> elements with fresh URLs.
+            // Videos appear in DOM order matching the video entries in allPhotos.
+            $albumContainer.find('video.jzsa-video-player').each(function(idx) {
+                if (idx >= freshVideos.length) { return; }
+                console.log('[jzsa-refresh] 🔗 Updated video', idx, freshVideos[idx].video.substring(0, 80) + '…');
+                $(this).attr('src', freshVideos[idx].video);
+                if (freshVideos[idx].preview) {
+                    $(this).attr('poster', freshVideos[idx].preview);
+                }
+                this.load();
+            });
+
+            return freshPhotos;
+        }).fail(function() {
+            delete _refreshPromises[containerId];
+            console.error('[jzsa-refresh] ❌ AJAX request failed');
+        });
+
+        _refreshPromises[containerId] = promise;
+        return promise;
+    }
+
+    /**
      * Initialise Plyr on all uninitialised .jzsa-video-player elements
      * inside the given container.
      *
@@ -325,7 +398,7 @@
             var wrapper = $(this).closest('.jzsa-video-wrapper')[0];
             this._jzsaPlyr = new Plyr(this, {
                 iconUrl: (typeof jzsaAjax !== 'undefined' && jzsaAjax.plyrSvgUrl) || '',
-                controls: ['play-large', 'restart', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume'],
+                controls: ['play-large', 'play', 'restart', 'progress', 'current-time', 'duration', 'mute', 'volume'],
                 clickToPlay: true,
                 hideControls: autohide,
                 resetOnEnd: true,
@@ -382,11 +455,14 @@
                 }, 30000);
             });
 
-            // timeupdate fires only when frames are actively rendering,
-            // so the poster is already replaced — safe to hide our overlay.
+            // timeupdate fires when frames are actively rendering.
+            // Wait until currentTime > 0.1s to be sure a real frame has
+            // painted over the poster (and its baked-in triangle).
             this._jzsaPlyr.on('timeupdate', function() {
                 if (!waitingForPlay) { return; }
-                showPlaying();
+                if (plyrRef.currentTime > 0.1) {
+                    showPlaying();
+                }
             });
             this._jzsaPlyr.on('pause', function() {
                 plyrContainer.hide();
@@ -397,6 +473,27 @@
                 plyrContainer.hide();
                 $duration.show();
                 $albumContainer.removeClass('jzsa-video-playing');
+            });
+
+            // If the video URL has expired (HTTP 400), re-fetch fresh URLs
+            // from Google Photos and retry.
+            this._jzsaPlyr.on('error', function() {
+                console.warn('[jzsa-refresh] ⚠️ Video error — URL may have expired, refreshing…');
+
+                // Keep the loading spinner visible while we recover.
+                $playLarge.addClass('jzsa-plyr-loading');
+                waitingForPlay = true;
+
+                refreshAlbumUrls($albumContainer).then(function() {
+                    // Fresh URL loaded — auto-retry playback.
+                    console.log('[jzsa-refresh] ▶️ Auto-retrying playback');
+                    plyrRef.play();
+                }).fail(function() {
+                    // Recovery failed — reset to idle so user can retry manually.
+                    waitingForPlay = false;
+                    if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null; }
+                    $playLarge.removeClass('jzsa-plyr-loading');
+                });
             });
         });
     }

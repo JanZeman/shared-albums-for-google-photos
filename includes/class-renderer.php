@@ -250,6 +250,10 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-full-screen-toggle="%s"', esc_attr( $config['full-screen-toggle'] ) );
 		}
 
+		if ( ! empty( $config['album-url'] ) ) {
+			$attrs[] = sprintf( 'data-album-url="%s"', esc_url( $config['album-url'] ) );
+		}
+
 		return implode( ' ', $attrs );
 	}
 
