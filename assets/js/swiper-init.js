@@ -411,14 +411,8 @@
             if (plyrContainer.length) {
                 plyrContainer.hide();
             }
-            // Add duration label below the play-large button (starts as loading placeholder)
-            var $plyrEl = $(wrapper).find('.plyr');
-            if ($plyrEl.length && !$plyrEl.find('.jzsa-video-duration').length) {
-                $plyrEl.append('<span class="jzsa-video-duration jzsa-video-duration--loading"></span>');
-            }
             var $albumContainer = $(wrapper).closest('.jzsa-album, .jzsa-gallery-album');
             var $playLarge = $(wrapper).find('.plyr__control--overlaid');
-            var $duration = $(wrapper).find('.jzsa-video-duration');
 
             // Loading state: click → spinner, hide after first timeupdate + 500ms.
             // timeupdate is the most reliable signal that frames are rendering.
@@ -432,7 +426,6 @@
                 if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null; }
                 $playLarge.removeClass('jzsa-plyr-loading');
                 plyrContainer.show();
-                $duration.hide();
                 $albumContainer.addClass('jzsa-video-playing');
                 // Pause all other videos on the page
                 document.querySelectorAll('video.jzsa-video-player').forEach(function(v) {
@@ -466,12 +459,10 @@
             });
             this._jzsaPlyr.on('pause', function() {
                 plyrContainer.hide();
-                $duration.show();
                 $albumContainer.removeClass('jzsa-video-playing');
             });
             this._jzsaPlyr.on('ended', function() {
                 plyrContainer.hide();
-                $duration.show();
                 $albumContainer.removeClass('jzsa-video-playing');
             });
 
@@ -606,11 +597,6 @@
     }
 
     function fetchMetadata(videoEl, src, $wrapper, callback) {
-        // Skip if already has duration
-        if ($wrapper.find('.jzsa-video-duration--ready').length) {
-            callback();
-            return;
-        }
         var probe = document.createElement('video');
         probe.preload = 'metadata';
         var handled = false;
@@ -633,12 +619,6 @@
                         durationEl.text(durationText);
                     }
                 }
-                var $label = $wrapper.find('.jzsa-video-duration');
-                if ($label.length) {
-                    $label.text(durationText)
-                        .removeClass('jzsa-video-duration--loading')
-                        .addClass('jzsa-video-duration--ready');
-                }
             }
             cleanup();
             callback();
@@ -650,7 +630,7 @@
         probe.src = src;
     }
 
-    function bufferVideo(videoEl, _src, $wrapper, callback) {
+    function bufferVideo(videoEl, _src, _$wrapper, callback) {
         if (videoEl._jzsaBuffered) {
             callback();
             return;
@@ -667,20 +647,12 @@
             handled = true;
             media.removeEventListener('canplaythrough', onReady);
             videoEl._jzsaBuffered = true;
-            var $label = $wrapper.find('.jzsa-video-duration');
-            if ($label.length) {
-                $label.addClass('jzsa-video-duration--buffered');
-            }
             callback();
         }
 
         // If already buffered enough, skip
         if (media.readyState >= 4) { // HAVE_ENOUGH_DATA
             videoEl._jzsaBuffered = true;
-            var $label = $wrapper.find('.jzsa-video-duration');
-            if ($label.length) {
-                $label.addClass('jzsa-video-duration--buffered');
-            }
             callback();
             return;
         }

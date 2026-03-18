@@ -1381,53 +1381,6 @@ body.jzsa-no-scroll {
     transition: opacity 0.3s ease;
 }
 
-/* Duration label — positioned below the play-large button, centered */
-.jzsa-video-duration {
-    position: absolute;
-    left: 50%;
-    top: calc(50% + 38px);
-    transform: translateX(-50%);
-    font-size: 12px;
-    line-height: 1;
-    color: #fff;
-    background: var(--jzsa-accent-color, #00b2ff);
-    padding: 4px 12px;
-    border-radius: var(--jzsa-controls-pill-radius);
-    white-space: nowrap;
-    pointer-events: none;
-    text-align: center;
-    z-index: 16;
-    box-sizing: content-box;
-    opacity: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-
-/* Hidden while loading — completely invisible */
-.jzsa-video-duration--loading {
-    opacity: 0;
-}
-
-/* Fade in when duration arrives */
-.jzsa-video-duration--ready {
-    animation: jzsa-duration-fade-in 0.8s ease-out forwards;
-}
-
-@keyframes jzsa-duration-fade-in {
-    0%   { opacity: 0; }
-    100% { opacity: 1; }
-}
-
-/* Video fully buffered — keep accent color (no visual change) */
-.jzsa-video-duration--buffered {
-    background: var(--jzsa-accent-color, #00b2ff);
-}
-
-/* When Plyr is playing, always hide the duration label — mirrors Plyr's own
-   hide of .plyr__control--overlaid so the two never get out of sync. */
-.plyr--playing .jzsa-video-duration {
-    opacity: 0;
-    visibility: hidden;
-}
 
 
 /* --- Video badge on gallery thumbnails --- */
