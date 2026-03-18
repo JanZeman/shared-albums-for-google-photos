@@ -1320,33 +1320,35 @@ body.jzsa-no-scroll {
 }
 
 .jzsa-video-wrapper .plyr__controls .plyr__progress__container {
-    flex: 1 1 40px;
-    min-width: 40px;
+    flex: 1 1 0;
+    min-width: 0;
     pointer-events: none;
     opacity: 0.4;
     cursor: default;
 }
 
-/* Tiny: hide mute, time, volume slider */
-@container (max-width: 99px) {
-    .jzsa-video-wrapper .plyr__volume,
-    .jzsa-video-wrapper .plyr__time {
-        display: none;
+/* Mute button never hides — it acts as the right-side boundary
+   preventing the progress bar from overflowing. */
+
+/* All sizes: always hide volume slider, restart, time by default */
+.jzsa-video-wrapper .plyr__volume input[type="range"],
+.jzsa-video-wrapper .plyr__time,
+.jzsa-video-wrapper [data-plyr="restart"] {
+    display: none;
+}
+
+/* Medium (250px+): show restart + time */
+@container (min-width: 250px) {
+    .jzsa-video-wrapper .plyr__time,
+    .jzsa-video-wrapper [data-plyr="restart"] {
+        display: inline-flex;
     }
 }
 
-/* Narrow: hide time and volume slider, show mute */
-@container (min-width: 100px) and (max-width: 199px) {
-    .jzsa-video-wrapper .plyr__volume input[type="range"],
-    .jzsa-video-wrapper .plyr__time {
-        display: none;
-    }
-}
-
-/* Medium: hide volume slider, show mute + time */
-@container (min-width: 200px) and (max-width: 299px) {
+/* Wide (400px+): show everything */
+@container (min-width: 400px) {
     .jzsa-video-wrapper .plyr__volume input[type="range"] {
-        display: none;
+        display: block;
     }
 }
 
