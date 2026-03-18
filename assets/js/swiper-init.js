@@ -247,7 +247,7 @@
 
     // Helper: Check if click should be ignored (clicked on UI element)
     function shouldIgnoreClick(target) {
-        return $(target).closest('.swiper-button-next, .swiper-button-prev, .swiper-button-fullscreen, .swiper-button-external-link, .swiper-button-download, .swiper-button-play-pause, .swiper-pagination').length > 0;
+        return $(target).closest('.swiper-button-next, .swiper-button-prev, .swiper-button-fullscreen, .swiper-button-external-link, .swiper-button-download, .swiper-button-play-pause, .swiper-pagination, .plyr__controls, .plyr__control').length > 0;
     }
 
     // Helper: Read gallery mode data attributes.
@@ -325,7 +325,7 @@
             var wrapper = $(this).closest('.jzsa-video-wrapper')[0];
             this._jzsaPlyr = new Plyr(this, {
                 iconUrl: (typeof jzsaAjax !== 'undefined' && jzsaAjax.plyrSvgUrl) || '',
-                controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume'],
+                controls: ['play-large', 'restart', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume'],
                 clickToPlay: true,
                 hideControls: true,
                 resetOnEnd: true,
@@ -552,9 +552,9 @@
 
         media.addEventListener('canplaythrough', onReady, { once: true });
 
-        // Tell the real element to start buffering
+        // Tell the real element to start buffering (do NOT call .load() —
+        // it resets Plyr's internal state and breaks seeking)
         media.preload = 'auto';
-        media.load();
 
         // Timeout for very large videos — move on, don't block the queue
         setTimeout(function() {
@@ -1388,13 +1388,13 @@
                 return;
             }
 
-            // Let clicks on Swiper UI controls pass through normally
+            // Let clicks on Swiper UI controls and Plyr controls pass through
             if (shouldIgnoreClick(e.target)) {
                 return;
             }
 
-            // Only block clicks on the actual video element
-            if (e.target.tagName === 'VIDEO') {
+            // Only block clicks on the actual video element or Plyr's video wrapper
+            if (e.target.tagName === 'VIDEO' || $(e.target).closest('.plyr__video-wrapper').length > 0) {
                 e.stopPropagation();
                 e.stopImmediatePropagation();
             }
@@ -1850,6 +1850,8 @@
 
             // Touch
             grabCursor: true,
+            noSwiping: true,
+            noSwipingSelector: '.plyr__controls, .plyr__control',
 
             // Keyboard control
             keyboard: {

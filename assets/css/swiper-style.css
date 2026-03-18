@@ -1241,6 +1241,9 @@ body.jzsa-no-scroll {
 .jzsa-video-wrapper .plyr__controls .plyr__progress__container {
     flex: 1 1 40px;
     min-width: 40px;
+    pointer-events: none;
+    opacity: 0.4;
+    cursor: default;
 }
 
 /* Tiny: hide mute, time, volume slider */
