@@ -1550,7 +1550,7 @@
             // Display settings
             loop: allPhotos.length >= 4, // Loop requires enough slides for Swiper to work properly
             fullScreenSwitch:
-                $container.attr('data-full-screen-toggle') || 'single-click',
+                $container.attr('data-full-screen-toggle') || 'button-only',
             startAt: $container.attr('data-start-at') || 'random',
             showTitle: $container.attr('data-show-title') === 'true',
             showCounter: $container.attr('data-show-counter') === 'true',
@@ -3876,7 +3876,7 @@
         );
 
         var fullScreenSwitch =
-            $container.attr('data-full-screen-toggle') || 'single-click';
+            $container.attr('data-full-screen-toggle') || 'button-only';
 
         function openGalleryPlayerAtIndex(index) {
             var safeIndex = typeof index === 'number' && index >= 0 ? index : 0;
