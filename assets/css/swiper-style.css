@@ -1383,10 +1383,9 @@ body.jzsa-no-scroll {
 }
 
 /* Responsive Plyr controls — container query based */
-/* Tiny  (<100px): play + progress only                    */
-/* Narrow (100-199): + mute                                */
-/* Medium (200-299): + mute + time                         */
-/* Wide   (>=300):   + mute + time + volume slider         */
+/* Small  (<250px):  play + progress + mute         */
+/* Medium (250px+):  + restart + time               */
+/* Wide   (400px+):  + volume slider                */
 
 .jzsa-video-wrapper {
     container-type: inline-size;
