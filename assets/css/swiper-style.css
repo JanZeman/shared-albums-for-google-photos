@@ -1438,8 +1438,8 @@ body.jzsa-no-scroll {
 /* Responsive Plyr controls — container query based */
 /* Tiny   (<120px):  play + mute                    */
 /* Small  (120px+):  + progress                      */
-/* Medium (240px+):  + restart + time                */
-/* Wide   (360px+):  + volume slider                 */
+/* Medium (300px+):  + restart + time                */
+/* Wide   (400px+):  + volume slider                 */
 
 .jzsa-video-wrapper {
     container-type: inline-size;
@@ -1477,16 +1477,16 @@ body.jzsa-no-scroll {
     }
 }
 
-/* Medium (240px+): show restart + time */
-@container (min-width: 240px) {
+/* Medium (300px+): show restart + time */
+@container (min-width: 300px) {
     .jzsa-video-wrapper .plyr__time,
     .jzsa-video-wrapper [data-plyr="restart"] {
         display: inline-flex;
     }
 }
 
-/* Wide (360px+): show everything */
-@container (min-width: 360px) {
+/* Wide (400px+): show everything */
+@container (min-width: 400px) {
     .jzsa-video-wrapper .plyr__volume input[type="range"] {
         display: block;
     }
