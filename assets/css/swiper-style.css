@@ -1435,11 +1435,12 @@ body.jzsa-no-scroll {
     --plyr-range-fill-background: var(--jzsa-accent-color, #00b2ff);
 }
 
-/* Responsive Plyr controls — container query based */
-/* Tiny   (<120px):  play + mute                    */
-/* Small  (120px+):  + progress                      */
-/* Medium (300px+):  + restart + time                */
-/* Wide   (400px+):  + volume slider                 */
+/* Responsive Plyr controls          */
+/* PlayMute                          */
+/* PlayRestartMute                   */
+/* PlayRestartProgressMute           */
+/* PlayRestartProgressMuteVolume     */
+/* PlayRestartProgressTimeMuteVolume */
 
 .jzsa-video-wrapper {
     container-type: inline-size;
@@ -1462,7 +1463,7 @@ body.jzsa-no-scroll {
 /* Mute button never hides — it acts as the right-side boundary
    preventing the progress bar from overflowing. */
 
-/* Tiny default: hide progress + volume slider + restart + time */
+/* PlayMute default: hide restart + progress + volume slider + time */
 .jzsa-video-wrapper .plyr__controls .plyr__progress__container,
 .jzsa-video-wrapper .plyr__volume input[type="range"],
 .jzsa-video-wrapper .plyr__time,
@@ -1470,25 +1471,39 @@ body.jzsa-no-scroll {
     display: none;
 }
 
-/* Small (120px+): show progress */
-@container (min-width: 120px) {
+/* PlayRestartMute: show restart */
+@container (min-width: 130px) {
+    .jzsa-video-wrapper [data-plyr="restart"] {
+        display: inline-flex;
+        margin-right: auto;
+    }
+}
+
+/* PlayRestartProgressMute: show progress */
+@container (min-width: 160px) {
+    .jzsa-video-wrapper [data-plyr="restart"] {
+        margin-right: 0;
+    }
+
     .jzsa-video-wrapper .plyr__controls .plyr__progress__container {
         display: block;
     }
 }
 
-/* Medium (300px+): show restart + time */
-@container (min-width: 300px) {
-    .jzsa-video-wrapper .plyr__time,
-    .jzsa-video-wrapper [data-plyr="restart"] {
-        display: inline-flex;
+/* PlayRestartProgressMuteVolume: show volume slider */
+@container (min-width: 260px) {
+    .jzsa-video-wrapper .plyr__volume input[type="range"] {
+        display: block;
+        width: 70px;
+        min-width: 70px;
+        max-width: 70px;
     }
 }
 
-/* Wide (400px+): show everything */
-@container (min-width: 400px) {
-    .jzsa-video-wrapper .plyr__volume input[type="range"] {
-        display: block;
+/* PlayRestartProgressTimeMuteVolume: show time */
+@container (min-width: 360px) {
+    .jzsa-video-wrapper .plyr__time {
+        display: inline-flex;
     }
 }
 
