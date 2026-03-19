@@ -309,6 +309,10 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-slideshow-delay="%s"', esc_attr( $config['slideshow-delay'] ) );
 		}
 
+		if ( isset( $config['start-at'] ) && '' !== $config['start-at'] ) {
+			$attrs[] = sprintf( 'data-start-at="%s"', esc_attr( $config['start-at'] ) );
+		}
+
 		if ( ! empty( $config['album-url'] ) ) {
 			$attrs[] = sprintf( 'data-album-url="%s"', esc_url( $config['album-url'] ) );
 		}

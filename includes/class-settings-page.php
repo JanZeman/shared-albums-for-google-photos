@@ -899,7 +899,7 @@ class JZSA_Settings_Page {
 							<tr>
 								<td><code>full-screen-toggle</code></td>
 								<td>How fullscreen is toggled: "button-only" (default) requires the fullscreen button, "single-click" enters fullscreen on click, "double-click" toggles fullscreen on/off, or "disabled" to prevent fullscreen entirely. In fullscreen, single-click navigates between photos, while double-click mode reserves double-click for fullscreen toggle only.</td>
-								<td>single-click</td>
+								<td>button-only</td>
 							</tr>
 							<tr>
 								<td><code>full-screen-image-fit</code></td>
@@ -964,8 +964,8 @@ class JZSA_Settings_Page {
 								<td>false</td>
 							</tr>
 							<tr>
-								<td><code>video-accent-color</code></td>
-								<td><?php esc_html_e( 'Accent color for video play button, duration label, and control bar. Any valid CSS hex color (e.g. "#00b2ff", "#FF69B4").', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><code>accent-color</code></td>
+								<td><?php esc_html_e( 'Accent color for video play button and control bar. Any valid CSS hex color (e.g. "#00b2ff", "#FF69B4").', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>#00b2ff</td>
 							</tr>
 						</tbody>

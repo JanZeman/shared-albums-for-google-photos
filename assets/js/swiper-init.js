@@ -2112,7 +2112,7 @@
             loop: allPhotos.length >= 4, // Loop requires enough slides for Swiper to work properly
             fullScreenSwitch:
                 $container.attr('data-full-screen-toggle') || 'button-only',
-            startAt: $container.attr('data-start-at') || 'random',
+            startAt: $container.attr('data-start-at') || '1',
             showTitle: $container.attr('data-show-title') === 'true',
             showCounter: $container.attr('data-show-counter') === 'true',
             albumTitle: $container.attr('data-album-title') || '',
@@ -2709,7 +2709,7 @@
         $slideshow.attr('data-all-photos', $galleryContainer.attr('data-all-photos'));
         $slideshow.attr('data-total-count', $galleryContainer.attr('data-total-count'));
         $slideshow.attr('data-mode', 'slider');
-        $slideshow.attr('data-start-at', '1');
+        $slideshow.attr('data-start-at', $galleryContainer.attr('data-start-at') || '1');
         // Gallery has no inline slideshow — use fullscreen slideshow settings
         $slideshow.attr('data-slideshow', 'false');
 

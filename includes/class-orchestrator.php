@@ -356,22 +356,22 @@ class JZSA_Shared_Albums {
 			'height-explicit' => isset( $atts['height'] ),
 			'image-width'     => isset( $atts['image-width'] ) ? intval( $atts['image-width'] ) : self::DEFAULT_IMAGE_WIDTH,
 			'image-height'    => isset( $atts['image-height'] ) ? intval( $atts['image-height'] ) : self::DEFAULT_IMAGE_HEIGHT,
-			// Slideshow (normal mode) — supports legacy 'autoplay*' aliases
-			'slideshow'       => $this->parse_bool_with_alias( $atts, 'slideshow', 'autoplay', false ),
-			'slideshow-delay' => $this->parse_delay_range( $this->attr_with_alias( $atts, 'slideshow-delay', 'autoplay-delay', self::DEFAULT_SLIDESHOW_DELAY_RANGE ) ),
+			// Slideshow (normal mode)
+			'slideshow'       => $this->parse_bool( $atts, 'slideshow', false ),
+			'slideshow-delay' => $this->parse_delay_range( isset( $atts['slideshow-delay'] ) ? $atts['slideshow-delay'] : self::DEFAULT_SLIDESHOW_DELAY_RANGE ),
 			'start-at'       => $this->parse_start_at( $atts ),
 
 			// Fullscreen slideshow (fullscreen mode only)
-			'full-screen-slideshow'       => $this->parse_bool_with_alias( $atts, 'full-screen-slideshow', 'full-screen-autoplay', false ),
-			'full-screen-slideshow-delay' => $this->parse_delay_range( $this->attr_with_alias( $atts, 'full-screen-slideshow-delay', 'full-screen-autoplay-delay', self::DEFAULT_FULLSCREEN_SLIDESHOW_DELAY ) ),
+			'full-screen-slideshow'       => $this->parse_bool( $atts, 'full-screen-slideshow', false ),
+			'full-screen-slideshow-delay' => $this->parse_delay_range( isset( $atts['full-screen-slideshow-delay'] ) ? $atts['full-screen-slideshow-delay'] : self::DEFAULT_FULLSCREEN_SLIDESHOW_DELAY ),
 
 			// Slideshow inactivity timeout
-			'slideshow-inactivity-timeout' => intval( $this->attr_with_alias( $atts, 'slideshow-inactivity-timeout', 'autoplay-inactivity-timeout', self::DEFAULT_SLIDESHOW_INACTIVITY_TIMEOUT ) ),
+			'slideshow-inactivity-timeout' => intval( isset( $atts['slideshow-inactivity-timeout'] ) ? $atts['slideshow-inactivity-timeout'] : self::DEFAULT_SLIDESHOW_INACTIVITY_TIMEOUT ),
 
 			// Display
 			'mode'             => $this->parse_mode( $atts ),
 			'background-color' => $this->parse_color( $atts, 'background-color', 'transparent' ),
-			'accent-color'     => $this->parse_color_with_alias( $atts, 'video-accent-color', 'accent-color', '#00b2ff' ),
+			'accent-color'     => $this->parse_color( $atts, 'accent-color', '#00b2ff' ),
 			'image-fit'               => $this->parse_image_fit( $atts ),
 			'full-screen-image-fit'   => $this->parse_fullscreen_image_fit( $atts ),
 			'full-screen-toggle'      => $this->parse_fullscreen_toggle_mode( $atts ),
@@ -386,10 +386,8 @@ class JZSA_Shared_Albums {
 			// Video controls
 			'video-autohide-controls' => $this->parse_bool( $atts, 'video-autohide-controls', false ),
 
-			// Video support (experimental) — accept both 'show-videos' and 'show-video'
-			'show-videos'            => isset( $atts['show-video'] ) && ! isset( $atts['show-videos'] )
-				? $this->parse_bool( $atts, 'show-video', true )
-				: $this->parse_bool( $atts, 'show-videos', true ),
+			// Video support
+			'show-videos'            => $this->parse_bool( $atts, 'show-videos', true ),
 
 			// Gallery mode (thumbnail layout)
 			'gallery-layout'         => $this->parse_gallery_layout( $atts ),
@@ -442,43 +440,6 @@ class JZSA_Shared_Albums {
 		return 'true' === strtolower( $atts[ $key ] );
 	}
 
-	/**
-	 * Parse boolean attribute with a legacy alias fallback.
-	 *
-	 * @param array  $atts    Attributes.
-	 * @param string $key     Primary key.
-	 * @param string $alias   Legacy alias key.
-	 * @param bool   $default Default value.
-	 * @return bool
-	 */
-	private function parse_bool_with_alias( $atts, $key, $alias, $default ) {
-		if ( isset( $atts[ $key ] ) ) {
-			return $this->parse_bool( $atts, $key, $default );
-		}
-		if ( isset( $atts[ $alias ] ) ) {
-			return $this->parse_bool( $atts, $alias, $default );
-		}
-		return $default;
-	}
-
-	/**
-	 * Get an attribute value with a legacy alias fallback.
-	 *
-	 * @param array  $atts    Attributes.
-	 * @param string $key     Primary key.
-	 * @param string $alias   Legacy alias key.
-	 * @param mixed  $default Default value.
-	 * @return mixed
-	 */
-	private function attr_with_alias( $atts, $key, $alias, $default ) {
-		if ( isset( $atts[ $key ] ) ) {
-			return $atts[ $key ];
-		}
-		if ( isset( $atts[ $alias ] ) ) {
-			return $atts[ $alias ];
-		}
-		return $default;
-	}
 
 	/**
 	 * Parse counter visibility.
@@ -509,7 +470,7 @@ class JZSA_Shared_Albums {
 		if ( isset( $atts['start-at'] ) ) {
 			$value = strtolower( trim( (string) $atts['start-at'] ) );
 
-			if ( '' === $value || 'random' === $value ) {
+			if ( 'random' === $value ) {
 				return 'random';
 			}
 
@@ -520,8 +481,8 @@ class JZSA_Shared_Albums {
 				}
 			}
 
-			// Fallback to random on invalid input.
-			return 'random';
+			// Fallback to first slide on invalid input.
+			return '1';
 		}
 
 		// Default.
@@ -611,18 +572,6 @@ class JZSA_Shared_Albums {
 		return $default;
 	}
 
-	/**
-	 * Parse color with backward-compatible alias.
-	 */
-	private function parse_color_with_alias( $atts, $key, $alias, $default ) {
-		if ( isset( $atts[ $key ] ) ) {
-			return $this->parse_color( $atts, $key, $default );
-		}
-		if ( isset( $atts[ $alias ] ) ) {
-			return $this->parse_color( $atts, $alias, $default );
-		}
-		return $default;
-	}
 
 	/**
 	 * Parse mode attribute
