@@ -50,9 +50,9 @@ placeholder (`placehold.co`) for debug — to be replaced with real `photo.previ
 
 ---
 
-## Remaining Steps
+## Remaining Steps — All Complete
 
-### Step 10 — Background metadata preloading (Tier 1)
+### Step 10 — Background metadata preloading (Tier 1) ✅
 
 After page load + idle, asynchronously fetch metadata (duration, dimensions) for all
 videos on the page using a hidden `<video>` element. Update Plyr UI with duration as
@@ -60,7 +60,7 @@ results arrive. One video at a time to avoid network contention.
 
 Applies to: all modes (slider, carousel, gallery).
 
-### Step 11 — Adjacent video preloading for slider/carousel (Tier 2)
+### Step 11 — Adjacent video preloading for slider/carousel (Tier 2) ✅
 
 When a slide settles, fully preload videos on adjacent slides (next 1–2).
 Use `preload="auto"` or `fetch()` to prime the browser cache so playback is instant
@@ -71,38 +71,29 @@ Priority order:
 2. Adjacent slides (prev/next) — full preload after idle
 3. Everything else — metadata only (Tier 1)
 
-### Step 12 — Pause other videos on play
+### Step 12 — Pause other videos on play ✅
 
 Extract `pauseAllVideos()` from `setupVideoHandling()` into a standalone helper.
 Call it when any video starts playing (gallery or slider).
 Verify: playing one video pauses any other playing video across the page.
 
-### Step 13 — Gallery: pause videos on page change
+### Step 13 — Gallery: pause videos on page change ✅
 
 When gallery pagination changes (re-render), pause any playing video before destroying DOM.
-Verify: navigate gallery page while video plays → video stops, no orphan audio.
+Added pause loop at top of `renderCurrentGalleryPage()`.
 
-### Step 14 — Clean up dead CSS and classes
+### Step 14 — Clean up dead CSS and classes ✅
 
-Remove `jzsa-gallery-video-thumb` class and its CSS (replaced by shared structure).
-Remove any now-unused gallery-specific video CSS.
-Verify: no visual change, no console errors.
+Removed `jzsa-gallery-video-thumb` class and its CSS (replaced by shared structure).
 
-### Step 15 — Remove debug styling
+### Step 15 — Remove debug styling ✅
 
-Remove all temporary debug visuals (only after user confirms all behavior is correct):
-- Green background on `.jzsa-video-wrapper` (CSS)
-- Blue background applied via JS after Plyr init
-- Red 2px border on `.jzsa-video-player` (CSS)
-- Orange "POSTER" placeholder image in `buildVideoHtml()` (JS)
-- Hotpink background on `.plyr__control--overlaid` (CSS)
-- 16px padding on `.jzsa-video-wrapper` (CSS)
-- Console.log debug messages in `initPlyrInContainer()` (JS)
+All debug visuals removed. All `console.log/warn/error` calls commented out
+(except `jzsaDebug()` which is behind the `JZSA_DEBUG` flag).
 
-### Step 16 — Plyr accent color customization
+### Step 16 — Plyr accent color customization ✅
 
-Replace default Plyr blue with project-appropriate color via CSS custom property
-(`--plyr-color-main`).
+Plyr accent color set via `--plyr-color-main: var(--jzsa-accent-color, #00b2ff)`.
 
 ---
 

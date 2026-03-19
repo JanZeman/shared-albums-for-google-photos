@@ -127,4 +127,5 @@ This plugin is not affiliated with, endorsed by, or in any way officially connec
 ## Credits
 
 - Uses [Swiper](https://swiperjs.com/) - MIT License
+- Uses [Plyr](https://plyr.io/) - MIT License
 - Developed by [Jan Zeman](https://github.com/JanZeman)

@@ -240,6 +240,7 @@ The plugin provides clear feedback:
 == Credits ==
 
 * Uses [Swiper](https://swiperjs.com/) - MIT License
+* Uses [Plyr](https://plyr.io/) - MIT License
 * Developed by Jan Zeman
 
 == Privacy Policy ==

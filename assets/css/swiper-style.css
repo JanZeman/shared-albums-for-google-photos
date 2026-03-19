@@ -983,13 +983,6 @@ body.jzsa-no-scroll {
     opacity: 0.85;
 }
 
-.jzsa-gallery-video-thumb {
-    cursor: auto;
-}
-
-.jzsa-gallery-video-thumb:hover {
-    opacity: 1;
-}
 
 .jzsa-gallery-item {
     position: relative;

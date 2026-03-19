@@ -321,7 +321,7 @@
             albumUrl = $parent.attr('data-album-url') || '';
         }
         if (!albumUrl || typeof jzsaAjax === 'undefined') {
-            console.warn('[jzsa-refresh] ❌ Cannot refresh — albumUrl:', albumUrl, 'jzsaAjax:', typeof jzsaAjax, 'container:', $albumContainer.attr('id'));
+            // console.warn('[jzsa-refresh] ❌ Cannot refresh — albumUrl:', albumUrl, 'jzsaAjax:', typeof jzsaAjax, 'container:', $albumContainer.attr('id'));
             return $.Deferred().reject().promise();
         }
 
@@ -331,7 +331,7 @@
             return _refreshPromises[containerId];
         }
 
-        console.log('[jzsa-refresh] 🔄 Fetching fresh URLs for', containerId);
+        // console.log('[jzsa-refresh] 🔄 Fetching fresh URLs for', containerId);
         var promise = $.ajax({
             url: jzsaAjax.ajaxUrl,
             type: 'POST',
@@ -343,13 +343,13 @@
         }).then(function(response) {
             delete _refreshPromises[containerId];
             if (!response.success || !response.data || !response.data.photos) {
-                console.warn('[jzsa-refresh] ❌ Server returned no photos');
+                // console.warn('[jzsa-refresh] ❌ Server returned no photos');
                 return $.Deferred().reject().promise();
             }
 
             var freshPhotos = response.data.photos;
             var freshVideos = freshPhotos.filter(function(p) { return p.type === 'video'; });
-            console.log('[jzsa-refresh] ✅ Got', freshPhotos.length, 'photos (' + freshVideos.length + ' videos)');
+            // console.log('[jzsa-refresh] ✅ Got', freshPhotos.length, 'photos (' + freshVideos.length + ' videos)');
 
             // Update data attribute so future renders use fresh URLs.
             $albumContainer.attr('data-all-photos', JSON.stringify(freshPhotos));
@@ -358,7 +358,7 @@
             // Videos appear in DOM order matching the video entries in allPhotos.
             $albumContainer.find('video.jzsa-video-player').each(function(idx) {
                 if (idx >= freshVideos.length) { return; }
-                console.log('[jzsa-refresh] 🔗 Updated video', idx, freshVideos[idx].video.substring(0, 80) + '…');
+                // console.log('[jzsa-refresh] 🔗 Updated video', idx, freshVideos[idx].video.substring(0, 80) + '…');
                 $(this).attr('src', freshVideos[idx].video);
                 if (freshVideos[idx].preview) {
                     $(this).attr('poster', freshVideos[idx].preview);
@@ -369,7 +369,7 @@
             return freshPhotos;
         }).fail(function() {
             delete _refreshPromises[containerId];
-            console.error('[jzsa-refresh] ❌ AJAX request failed');
+            // console.error('[jzsa-refresh] ❌ AJAX request failed');
         });
 
         _refreshPromises[containerId] = promise;
@@ -384,13 +384,13 @@
      */
     function initPlyrInContainer($container) {
         if (typeof Plyr === 'undefined') {
-            console.warn('⚠️ Plyr not loaded');
+            // console.warn('⚠️ Plyr not loaded');
             return;
         }
         var $album = $container.closest('.jzsa-album, .jzsa-gallery');
         var autohide = $album.length ? $album.attr('data-video-autohide-controls') === 'true' : false;
         var videos = $container.find('video.jzsa-video-player');
-        console.log('🎬 initPlyrInContainer: found', videos.length, 'videos');
+        // console.log('🎬 initPlyrInContainer: found', videos.length, 'videos');
         videos.each(function() {
             if (this._jzsaPlyr) {
                 return;
@@ -469,7 +469,7 @@
             // If the video URL has expired (HTTP 400), re-fetch fresh URLs
             // from Google Photos and retry.
             this._jzsaPlyr.on('error', function() {
-                console.warn('[jzsa-refresh] ⚠️ Video error — URL may have expired, refreshing…');
+                // console.warn('[jzsa-refresh] ⚠️ Video error — URL may have expired, refreshing…');
 
                 // Keep the loading spinner visible while we recover.
                 $playLarge.addClass('jzsa-plyr-loading');
@@ -477,7 +477,7 @@
 
                 refreshAlbumUrls($albumContainer).then(function() {
                     // Fresh URL loaded — auto-retry playback.
-                    console.log('[jzsa-refresh] ▶️ Auto-retrying playback');
+                    // console.log('[jzsa-refresh] ▶️ Auto-retrying playback');
                     plyrRef.play();
                 }).fail(function() {
                     // Recovery failed — reset to idle so user can retry manually.
@@ -882,8 +882,8 @@
 
             if (!params.browserPrefix) {
                 // Only log detailed debug info for standard API (avoid log spam)
-                console.log('🔍 fullScreenSlideshow:', params.fullScreenSlideshow);
-                console.log('🔍 fullScreenSlideshowDelay:', params.fullScreenSlideshowDelay);
+                // console.log('🔍 fullScreenSlideshow:', params.fullScreenSlideshow);
+                // console.log('🔍 fullScreenSlideshowDelay:', params.fullScreenSlideshowDelay);
             }
 
             if (params.fullScreenSlideshow) {
@@ -1020,11 +1020,11 @@
                 }
                 // Start normal autoplay
                 swiper.autoplay.start();
-                console.log('▶️  Normal autoplay restored (delay: ' + params.slideshowDelay + 's' + logPrefix + ')');
+                // console.log('▶️  Normal autoplay restored (delay: ' + params.slideshowDelay + 's' + logPrefix + ')');
             } else if (swiper.autoplay && swiper.autoplay.running) {
                 // Stop autoplay if it was only enabled in fullscreen mode
                 swiper.autoplay.stop();
-                console.log('⏸️  Autoplay stopped (not enabled in normal mode' + logPrefix + ')');
+                // console.log('⏸️  Autoplay stopped (not enabled in normal mode' + logPrefix + ')');
             }
         }
     }
@@ -1140,7 +1140,7 @@
                     $downloadBtn.css('opacity', '1');
                 },
                 error: function(xhr, status, error) {
-                    console.error('Download failed:', error);
+                    // console.error('Download failed:', error);
 
                     // Fallback: Try direct link with download attribute
                     var link = document.createElement('a');
@@ -1738,7 +1738,7 @@
                     }
                     $img.addClass('jzsa-image-error');
                     $img.data('full-loaded', 'error');
-                    console.warn('Failed to load image:', fullSrc);
+                    // console.warn('Failed to load image:', fullSrc);
                     if (typeof onError === 'function') {
                         onError($img, fullSrc);
                     }
@@ -2083,7 +2083,7 @@
 
         // Guard: Swiper (especially with loop:true) crashes on empty containers
         if (!allPhotos.length) {
-            console.warn('[JZSA] No photos for gallery "' + galleryId + '", skipping Swiper init.');
+            // console.warn('[JZSA] No photos for gallery "' + galleryId + '", skipping Swiper init.');
             return null;
         }
         var totalCount = parseInt($container.attr('data-total-count')) || allPhotos.length;
@@ -2093,7 +2093,7 @@
         // everywhere else.
         if (isOldIosWebkit() && allPhotos.length > OLD_IOS_MAX_PHOTOS) {
             allPhotos = allPhotos.slice(0, OLD_IOS_MAX_PHOTOS);
-            console.log('[JZSA] Old iOS/WebKit detected – capping photos to', OLD_IOS_MAX_PHOTOS, 'out of', totalCount);
+            // console.log('[JZSA] Old iOS/WebKit detected – capping photos to', OLD_IOS_MAX_PHOTOS, 'out of', totalCount);
         }
 
         var config = {
@@ -2153,17 +2153,17 @@
         var albumTitle = config.albumTitle;
         var initialSlide = config.initialSlide;
 
-        console.log('📸 Initializing Swiper for gallery:', galleryId);
-        console.log('  - Mode:', mode);
-        console.log('  - Total photos:', totalCount);
-        console.log('  - Initial photos loaded:', allPhotos.length);
-        console.log('  - startAt setting:', startAt, '=> initial slide index (0-based):', initialSlide, '/', totalCount);
+        // console.log('📸 Initializing Swiper for gallery:', galleryId);
+        // console.log('  - Mode:', mode);
+        // console.log('  - Total photos:', totalCount);
+        // console.log('  - Initial photos loaded:', allPhotos.length);
+        // console.log('  - startAt setting:', startAt, '=> initial slide index (0-based):', initialSlide, '/', totalCount);
 
         // Debug: Log configuration values
-        console.log('🔍 Configuration debug:');
-        console.log('  - data-full-screen-slideshow-delay attribute:', $container.attr('data-full-screen-slideshow-delay'));
-        console.log('  - fullScreenSlideshowDelay parsed:', fullScreenSlideshowDelay);
-        console.log('  - fullScreenSlideshowDelay in ms:', fullScreenSlideshowDelay * MILLISECONDS_PER_SECOND);
+        // console.log('🔍 Configuration debug:');
+        // console.log('  - data-full-screen-slideshow-delay attribute:', $container.attr('data-full-screen-slideshow-delay'));
+        // console.log('  - fullScreenSlideshowDelay parsed:', fullScreenSlideshowDelay);
+        // console.log('  - fullScreenSlideshowDelay in ms:', fullScreenSlideshowDelay * MILLISECONDS_PER_SECOND);
 
         // Two-phase single bootstrap caused visible re-render flicker on some pages.
         // Keep slider mode one-pass for stable rendering.
@@ -2331,7 +2331,7 @@
             // If normal mode autoplay is disabled but fullscreen autoplay is enabled, stop autoplay initially
             if (!slideshow && fullScreenSlideshow && swiper.autoplay && swiper.autoplay.running) {
                 swiper.autoplay.stop();
-                console.log('⏸️  Autoplay stopped (only enabled in fullscreen mode)');
+                // console.log('⏸️  Autoplay stopped (only enabled in fullscreen mode)');
             }
 
             // Create hint system for fullscreen navigation guidance (not needed for button-only)
@@ -2556,7 +2556,7 @@
                 // Handle errors on the preview image
                 this.onerror = function() {
                     $img.addClass('jzsa-image-error');
-                    console.warn('Failed to load preview image:', $img.attr('src'));
+                    // console.warn('Failed to load preview image:', $img.attr('src'));
                 };
             });
 
@@ -2623,13 +2623,13 @@
                 });
             }
 
-            console.log('✅ Swiper initialized:', galleryId);
-            console.log('  - Normal mode slideshow:', slideshow ? 'Enabled (delay: ' + slideshowDelay + 's)' : 'Disabled');
-            console.log('  - Fullscreen mode autoplay:', fullScreenSlideshow ? 'Enabled (delay: ' + fullScreenSlideshowDelay + 's)' : 'Disabled');
-            console.log('  - Loop: Always enabled');
-            console.log('  - Zoom: Pinch-to-zoom on touch devices (double-click disabled)');
-            console.log('  - Fullscreen: ' + (fullScreenSwitch === 'button-only' ? 'Button only' : fullScreenSwitch === 'double-click' ? 'Double-click or button' : 'Click or button'));
-            console.log('  - Progressive loading: Preview → Full resolution');
+            // console.log('✅ Swiper initialized:', galleryId);
+            // console.log('  - Normal mode slideshow:', slideshow ? 'Enabled (delay: ' + slideshowDelay + 's)' : 'Disabled');
+            // console.log('  - Fullscreen mode autoplay:', fullScreenSlideshow ? 'Enabled (delay: ' + fullScreenSlideshowDelay + 's)' : 'Disabled');
+            // console.log('  - Loop: Always enabled');
+            // console.log('  - Zoom: Pinch-to-zoom on touch devices (double-click disabled)');
+            // console.log('  - Fullscreen: ' + (fullScreenSwitch === 'button-only' ? 'Button only' : fullScreenSwitch === 'double-click' ? 'Double-click or button' : 'Click or button'));
+            // console.log('  - Progressive loading: Preview → Full resolution');
 
             return swiper;
         }
@@ -4095,6 +4095,11 @@
         });
 
         function renderCurrentGalleryPage(options) {
+            // Pause any playing videos before re-rendering the page
+            $container.find('.jzsa-video-player').each(function() {
+                if (!this.paused) { this.pause(); }
+            });
+
             var renderOptions = options || {};
             var useScroller = galleryScroll && galleryRows > 0;
             var gap = 4;
@@ -4638,10 +4643,10 @@
     $(document).ready(function() {
         // Wait for Swiper library to load
         if (typeof Swiper !== 'undefined') {
-            console.log('✅ Swiper library found, initializing galleries...');
+            // console.log('✅ Swiper library found, initializing galleries...');
             initializeAllGalleries();
         } else {
-            console.error('❌ Swiper library not loaded!');
+            // console.error('❌ Swiper library not loaded!');
         }
     });
 
