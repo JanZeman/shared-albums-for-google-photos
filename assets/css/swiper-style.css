@@ -19,9 +19,10 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     --jzsa-controls-icon-size: 20px;
     --jzsa-controls-pill-radius: 20px;
     --jzsa-controls-square-radius: 4px;
-    --jzsa-nav-opacity: 0.6;
+    --jzsa-nav-opacity: 0.8;
     --jzsa-nav-opacity-hover: 0.9;
     --jzsa-nav-opacity-active: 1;
+    --jzsa-controls-fs-scale: 1.5;
     position: relative; /* For loader overlay positioning */
 }
 
@@ -151,6 +152,9 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     transition: filter 0.15s ease;
 }
 
+.jzsa-album .swiper-button-prev { left: 0; }
+.jzsa-album .swiper-button-next { right: 0; }
+
 .jzsa-album .swiper-button-next:after,
 .jzsa-album .swiper-button-prev:after {
     font-size: var(--jzsa-controls-icon-size);
@@ -174,31 +178,34 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 /* External link button */
 .jzsa-album .swiper-button-external-link {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    width: var(--jzsa-controls-square-size);
-    height: var(--jzsa-controls-square-size);
-    background: var(--jzsa-controls-bg);
-    border-radius: var(--jzsa-controls-square-radius);
+    top: 0;
+    left: 0;
+    width: var(--jzsa-controls-circle-size);
+    height: var(--jzsa-controls-circle-size);
+    background: transparent !important;
+    border-radius: 0;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
     cursor: pointer;
     z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    transition: background var(--jzsa-controls-bg-duration) var(--jzsa-controls-bg-easing),
-                opacity var(--jzsa-controls-fade-duration) var(--jzsa-controls-fade-easing);
+    filter: opacity(var(--jzsa-nav-opacity));
+    transition: filter 0.15s ease;
 }
 
 .jzsa-album .swiper-button-external-link:hover {
-    background: var(--jzsa-controls-bg-hover);
+    filter: opacity(var(--jzsa-nav-opacity-hover)) !important;
 }
 
 .jzsa-album .swiper-button-external-link:after {
     content: '';
     display: block;
-    width: var(--jzsa-controls-icon-size);
-    height: var(--jzsa-controls-icon-size);
+    width: 28px;
+    height: 28px;
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>');
     background-size: contain;
     background-repeat: no-repeat;
@@ -208,20 +215,22 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 /* Download button */
 .jzsa-album .swiper-button-download {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    width: var(--jzsa-controls-square-size);
-    height: var(--jzsa-controls-square-size);
-    background: var(--jzsa-controls-bg);
-    border: none;
-    border-radius: var(--jzsa-controls-square-radius);
+    top: 0;
+    left: 0;
+    width: var(--jzsa-controls-circle-size);
+    height: var(--jzsa-controls-circle-size);
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0;
+    outline: none !important;
+    box-shadow: none !important;
     cursor: pointer;
     z-index: 10;
     display: none;
     align-items: center;
     justify-content: center;
-    transition: background var(--jzsa-controls-bg-duration) var(--jzsa-controls-bg-easing),
-                opacity var(--jzsa-controls-fade-duration) var(--jzsa-controls-fade-easing);
+    filter: opacity(var(--jzsa-nav-opacity));
+    transition: filter 0.15s ease;
 }
 
 .jzsa-album[data-show-download-button="true"] .swiper-button-download {
@@ -230,18 +239,18 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 
 /* When both link and download buttons are visible, move download button to the right */
 .jzsa-album[data-show-link-button="true"][data-show-download-button="true"] .swiper-button-download {
-    left: 60px;
+    left: calc(var(--jzsa-controls-circle-size) + 10px);
 }
 
 .jzsa-album .swiper-button-download:hover {
-    background: var(--jzsa-controls-bg-hover);
+    filter: opacity(var(--jzsa-nav-opacity-hover)) !important;
 }
 
 .jzsa-album .swiper-button-download:after {
     content: '';
     display: block;
-    width: var(--jzsa-controls-icon-size);
-    height: var(--jzsa-controls-icon-size);
+    width: 28px;
+    height: 28px;
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>');
     background-size: contain;
     background-repeat: no-repeat;
@@ -389,30 +398,33 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 /* Fullscreen button */
 .jzsa-album .swiper-button-fullscreen {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    width: var(--jzsa-controls-square-size);
-    height: var(--jzsa-controls-square-size);
-    background: var(--jzsa-controls-bg);
-    border-radius: var(--jzsa-controls-square-radius);
+    top: 0;
+    right: 0;
+    width: var(--jzsa-controls-circle-size);
+    height: var(--jzsa-controls-circle-size);
+    background: transparent !important;
+    border-radius: 0;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
     cursor: pointer;
     z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background var(--jzsa-controls-bg-duration) var(--jzsa-controls-bg-easing),
-                opacity var(--jzsa-controls-fade-duration) var(--jzsa-controls-fade-easing);
+    filter: opacity(var(--jzsa-nav-opacity));
+    transition: filter 0.15s ease;
 }
 
 .jzsa-album .swiper-button-fullscreen:hover {
-    background: var(--jzsa-controls-bg-hover);
+    filter: opacity(var(--jzsa-nav-opacity-hover)) !important;
 }
 
 .jzsa-album .swiper-button-fullscreen:after {
     content: '';
     display: block;
-    width: var(--jzsa-controls-icon-size);
-    height: var(--jzsa-controls-icon-size);
+    width: 28px;
+    height: 28px;
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>');
     background-size: contain;
     background-repeat: no-repeat;
@@ -425,6 +437,59 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 }
 .jzsa-album:-webkit-full-screen .swiper-button-fullscreen:after {
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>');
+}
+
+/* Scale top controls up in fullscreen — each scales from its nearest corner */
+.jzsa-album:fullscreen .swiper-button-fullscreen,
+.jzsa-album:-webkit-full-screen .swiper-button-fullscreen,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-button-fullscreen {
+    transform: scale(var(--jzsa-controls-fs-scale));
+    transform-origin: top right;
+}
+
+.jzsa-album:fullscreen .swiper-button-external-link,
+.jzsa-album:-webkit-full-screen .swiper-button-external-link,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-button-external-link,
+.jzsa-album:fullscreen .swiper-button-download,
+.jzsa-album:-webkit-full-screen .swiper-button-download,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-button-download {
+    transform: scale(var(--jzsa-controls-fs-scale));
+    transform-origin: top left;
+}
+
+.jzsa-album:fullscreen .swiper-button-prev,
+.jzsa-album:-webkit-full-screen .swiper-button-prev,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-button-prev {
+    transform: scale(var(--jzsa-controls-fs-scale));
+    transform-origin: center left;
+}
+
+.jzsa-album:fullscreen .swiper-button-next,
+.jzsa-album:-webkit-full-screen .swiper-button-next,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-button-next {
+    transform: scale(var(--jzsa-controls-fs-scale));
+    transform-origin: center right;
+}
+
+.jzsa-album:fullscreen .swiper-button-play-pause,
+.jzsa-album:-webkit-full-screen .swiper-button-play-pause,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-button-play-pause {
+    transform: translateX(-50%) scale(var(--jzsa-controls-fs-scale));
+    transform-origin: bottom center;
+}
+
+.jzsa-album:fullscreen .swiper-pagination,
+.jzsa-album:-webkit-full-screen .swiper-pagination,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-pagination {
+    transform: scale(var(--jzsa-controls-fs-scale));
+    transform-origin: bottom center;
+}
+
+.jzsa-album:fullscreen .swiper-album-title,
+.jzsa-album:-webkit-full-screen .swiper-album-title,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-album-title {
+    transform: translateX(-50%) scale(var(--jzsa-controls-fs-scale));
+    transform-origin: top center;
 }
 
 /* Fullscreen mode styling */
@@ -1302,7 +1367,7 @@ body.jzsa-no-scroll {
 /* Play button scales proportionally with container width */
 @container (min-width: 500px) {
     .jzsa-video-wrapper .plyr__control--overlaid {
-        --jzsa-play-scale: 1.8;
+        --jzsa-play-scale: 2.0;
     }
 }
 
@@ -1314,7 +1379,7 @@ body.jzsa-no-scroll {
 
 @container (min-width: 1200px) {
     .jzsa-video-wrapper .plyr__control--overlaid {
-        --jzsa-play-scale: 4.0;
+        --jzsa-play-scale: 4.4;
     }
 }
 
