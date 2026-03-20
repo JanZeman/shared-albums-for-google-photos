@@ -2787,7 +2787,7 @@
 
         // Forward --gallery-bg-color CSS custom property for fullscreen background
         var bgColor = $galleryContainer.attr('data-background-color');
-        if (bgColor && bgColor !== 'transparent') {
+        if (bgColor) {
             $slideshow[0].style.setProperty('--gallery-bg-color', bgColor);
         }
         var controlsColor = $galleryContainer.attr('data-controls-color');
