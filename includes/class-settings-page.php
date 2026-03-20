@@ -71,10 +71,10 @@ class JZSA_Settings_Page {
 	public function render_settings_page() {
 		$video_sample_link = 'https://photos.google.com/share/AF1QipM-v19vtjd5NEiD6w40U7XqZoqwMUX4FyPr6p9U-9Ixjw2jy7oYFs7m7vgvvpm3PA?key=ZjhXZDNkc1ZrNmFvZ2tIOW16QXlGal94Y2g2cGJB';
 
-		$video_slider_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="slider" show-videos="true" max-entries-per-album="8" accent-color="#00B2FF"]';
-		$video_carousel_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="carousel" show-videos="true" max-entries-per-album="8" accent-color="#FF6B35" video-autohide-controls="true"]';
-		$video_gallery_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" show-videos="true" max-entries-per-album="12" gallery-layout="justified" gallery-row-height="180" accent-color="#00A878"]';
-		$video_photos_only_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="slider" show-videos="false" max-entries-per-album="8" accent-color="#7A5CFF"]';
+		$video_slider_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="slider" show-videos="true" max-entries-per-album="8" video-controls-color="#00B2FF"]';
+		$video_carousel_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="carousel" show-videos="true" max-entries-per-album="8" video-controls-color="#FF6B35" video-autohide-controls="true"]';
+		$video_gallery_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" show-videos="true" max-entries-per-album="12" gallery-layout="justified" gallery-row-height="180" video-controls-color="#00A878"]';
+		$video_photos_only_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="slider" show-videos="false" max-entries-per-album="8" video-controls-color="#7A5CFF"]';
 		?>
 		<div class="wrap jzsa-settings-wrap">
 			<h1>
@@ -1033,7 +1033,7 @@ class JZSA_Settings_Page {
 								<td>false</td>
 							</tr>
 							<tr>
-								<td><code>accent-color</code></td>
+								<td><code>video-controls-color</code></td>
 								<td><?php esc_html_e( 'Accent color for video play button and control bar. Any valid CSS hex color (e.g. "#00b2ff", "#FF69B4").', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>#00b2ff</td>
 							</tr>

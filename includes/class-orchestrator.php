@@ -368,11 +368,11 @@ class JZSA_Shared_Albums {
 			// Slideshow inactivity timeout
 			'slideshow-inactivity-timeout' => intval( isset( $atts['slideshow-inactivity-timeout'] ) ? $atts['slideshow-inactivity-timeout'] : self::DEFAULT_SLIDESHOW_INACTIVITY_TIMEOUT ),
 
-			// Display
-			'mode'             => $this->parse_mode( $atts ),
-			'background-color' => $this->parse_color( $atts, 'background-color', 'transparent' ),
-			'accent-color'     => $this->parse_color( $atts, 'accent-color', '#00b2ff' ),
-			'image-fit'               => $this->parse_image_fit( $atts ),
+				// Display
+				'mode'             => $this->parse_mode( $atts ),
+				'background-color' => $this->parse_color( $atts, 'background-color', 'transparent' ),
+				'video-controls-color' => $this->parse_color( $atts, 'video-controls-color', '#00b2ff' ),
+				'image-fit'               => $this->parse_image_fit( $atts ),
 			'full-screen-image-fit'   => $this->parse_fullscreen_image_fit( $atts ),
 			'full-screen-toggle'      => $this->parse_fullscreen_toggle_mode( $atts ),
 			'show-title'              => $this->parse_bool( $atts, 'show-title', false ),

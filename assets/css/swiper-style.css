@@ -1381,7 +1381,7 @@ body.jzsa-no-scroll {
    disappears in sync with the duration label. */
 .jzsa-video-wrapper .plyr__control--overlaid {
     --jzsa-play-scale: 1.25;
-    background: var(--jzsa-accent-color, #00b2ff) !important;
+    background: var(--jzsa-video-controls-color, #00b2ff) !important;
     opacity: 1;
     transition: none !important;
     transform: translate(-50%, -50%) scale(var(--jzsa-play-scale));
@@ -1442,8 +1442,8 @@ body.jzsa-no-scroll {
 
 /* Plyr control bar accent + compact volume */
 .jzsa-video-wrapper .plyr {
-    --plyr-color-main: var(--jzsa-accent-color, #00b2ff);
-    --plyr-range-fill-background: var(--jzsa-accent-color, #00b2ff);
+    --plyr-color-main: var(--jzsa-video-controls-color, #00b2ff);
+    --plyr-range-fill-background: var(--jzsa-video-controls-color, #00b2ff);
 }
 
 /* Responsive Plyr controls          */
