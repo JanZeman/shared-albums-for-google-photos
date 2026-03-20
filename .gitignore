@@ -176,8 +176,9 @@ wp-config.php
 *.tmp
 *.bak
 
-# Ignore Claude settings local file
-.claude/settings.local.json
+# Claude
+.claude/
+.agent/
 
 # Node
 node_modules/
