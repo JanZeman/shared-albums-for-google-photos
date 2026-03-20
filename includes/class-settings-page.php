@@ -470,16 +470,45 @@ class JZSA_Settings_Page {
 					</div>
 
 					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'High-Resolution Photos', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'This example shows how to request higher-resolution photos from Google Photos. Please switch to fullscreen mode to see the difference in image quality.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<h3><?php esc_html_e( 'High-Resolution Inline Photos', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Compare default resolution (left) with high-resolution source (right). Both use the same container size and image-fit="cover".', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" image-width="2560" image-height="1700"]</code>
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="400" height="480" image-fit="cover" slideshow="true" slideshow-delay="5" source-width="400" source-height="300"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-hires">
+					<div class="jzsa-code-block">
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="400" height="480" image-fit="cover" slideshow="true" slideshow-delay="5" source-width="1920" source-height="1440"]</code>
+						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					</div>
+					<div class="jzsa-preview-container jzsa-preview-container-hires-inline" style="display: flex; gap: 20px; justify-content: center;">
+						<div>
+							<p><strong><?php esc_html_e( 'Low (400×300)', 'janzeman-shared-albums-for-google-photos' ); ?></strong></p>
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="400" height="480" image-fit="cover" slideshow="true" slideshow-delay="5" source-width="400" source-height="300"]' );
+							?>
+						</div>
+						<div>
+							<p><strong><?php esc_html_e( 'High-Res (1920×1440)', 'janzeman-shared-albums-for-google-photos' ); ?></strong></p>
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="400" height="480" image-fit="cover" slideshow="true" slideshow-delay="5" source-width="1920" source-height="1440"]' );
+							?>
+						</div>
+					</div>
+					</div>
+
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'High-Resolution Fullscreen Photos', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Request extra-high-resolution photos for fullscreen mode. The default fullscreen resolution is 1920x1440. Increase for 4K displays.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<div class="jzsa-code-block">
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="800" height="600" fullscreen-source-width="2560" fullscreen-source-height="1700"]</code>
+						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					</div>
+					<div class="jzsa-preview-container jzsa-preview-container-hires-fullscreen">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" image-width="2560" image-height="1700"]' );
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="800" height="600" fullscreen-source-width="2560" fullscreen-source-height="1700"]' );
 						?>
 					</div>
 					</div>
@@ -518,13 +547,13 @@ class JZSA_Settings_Page {
 						<h3><?php esc_html_e( 'Faster Fullscreen Slideshow', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Uses fullscreen-slideshow-delay to advance photos more quickly in fullscreen slideshow mode.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" fullscreen-slideshow="true" fullscreen-slideshow-delay="2"]</code>
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" fullscreen-slideshow="true" fullscreen-slideshow-delay="5"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-fast-fullscreen">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" fullscreen-slideshow="true" fullscreen-slideshow-delay="2"]' );
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" fullscreen-slideshow="true" fullscreen-slideshow-delay="5"]' );
 						?>
 						</div>
 						</div>
@@ -845,13 +874,23 @@ class JZSA_Settings_Page {
 									<td>300</td>
 								</tr>
 							<tr>
-								<td><code>image-width</code></td>
-								<td>Full-resolution photo width to fetch from Google</td>
+								<td><code>source-width</code></td>
+								<td>Photo width to fetch from Google for inline mode</td>
+								<td>800</td>
+							</tr>
+							<tr>
+								<td><code>source-height</code></td>
+								<td>Photo height to fetch from Google for inline mode</td>
+								<td>600</td>
+							</tr>
+							<tr>
+								<td><code>fullscreen-source-width</code></td>
+								<td>Photo width to fetch from Google for fullscreen mode</td>
 								<td>1920</td>
 							</tr>
 							<tr>
-								<td><code>image-height</code></td>
-								<td>Full-resolution photo height to fetch from Google</td>
+								<td><code>fullscreen-source-height</code></td>
+								<td>Photo height to fetch from Google for fullscreen mode</td>
 								<td>1440</td>
 							</tr>
 						</tbody>

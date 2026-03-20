@@ -42,20 +42,20 @@ class JZSA_Shared_Albums {
 	const DEFAULT_HEIGHT = 300;
 
 	/**
-	 * Default full-resolution image dimensions (fetched from Google Photos)
+	 * Default source dimensions for inline mode (fetched from Google Photos)
 	 *
 	 * @var int
 	 */
-	const DEFAULT_IMAGE_WIDTH = 1920;
-	const DEFAULT_IMAGE_HEIGHT = 1440;
+	const DEFAULT_SOURCE_WIDTH = 800;
+	const DEFAULT_SOURCE_HEIGHT = 600;
 
 	/**
-	 * Default preview/thumbnail image dimensions (for progressive loading)
+	 * Default source dimensions for fullscreen mode (fetched from Google Photos)
 	 *
 	 * @var int
 	 */
-	const DEFAULT_PREVIEW_WIDTH = 800;
-	const DEFAULT_PREVIEW_HEIGHT = 600;
+	const DEFAULT_FULLSCREEN_SOURCE_WIDTH = 1920;
+	const DEFAULT_FULLSCREEN_SOURCE_HEIGHT = 1440;
 
 	/**
 	 * Maximum number of media entries to load from album (absolute upper bound).
@@ -283,10 +283,10 @@ class JZSA_Shared_Albums {
 			// Use cached data - merge with current config
 				$config['photos'] = $this->prepare_photo_urls(
 					$cached_data['photos'],
-					$config['image-width'],
-					$config['image-height'],
-					self::DEFAULT_PREVIEW_WIDTH,
-					self::DEFAULT_PREVIEW_HEIGHT,
+					$config['fullscreen-source-width'],
+					$config['fullscreen-source-height'],
+					$config['source-width'],
+					$config['source-height'],
 					$config['limit'],
 					$config['show-videos']
 				);
@@ -321,10 +321,10 @@ class JZSA_Shared_Albums {
 		// Prepare photos with dimensions and max count
 			$config['photos'] = $this->prepare_photo_urls(
 				$result['data']['photos'],
-				$config['image-width'],
-				$config['image-height'],
-				self::DEFAULT_PREVIEW_WIDTH,
-				self::DEFAULT_PREVIEW_HEIGHT,
+				$config['fullscreen-source-width'],
+				$config['fullscreen-source-height'],
+				$config['source-width'],
+				$config['source-height'],
 				$config['limit'],
 				$config['show-videos']
 			);
@@ -354,8 +354,10 @@ class JZSA_Shared_Albums {
 			// Track whether width/height were explicitly set in shortcode.
 			'width-explicit'  => isset( $atts['width'] ),
 			'height-explicit' => isset( $atts['height'] ),
-			'image-width'     => isset( $atts['image-width'] ) ? intval( $atts['image-width'] ) : self::DEFAULT_IMAGE_WIDTH,
-			'image-height'    => isset( $atts['image-height'] ) ? intval( $atts['image-height'] ) : self::DEFAULT_IMAGE_HEIGHT,
+			'source-width'              => isset( $atts['source-width'] ) ? intval( $atts['source-width'] ) : self::DEFAULT_SOURCE_WIDTH,
+			'source-height'             => isset( $atts['source-height'] ) ? intval( $atts['source-height'] ) : self::DEFAULT_SOURCE_HEIGHT,
+			'fullscreen-source-width'   => isset( $atts['fullscreen-source-width'] ) ? intval( $atts['fullscreen-source-width'] ) : self::DEFAULT_FULLSCREEN_SOURCE_WIDTH,
+			'fullscreen-source-height'  => isset( $atts['fullscreen-source-height'] ) ? intval( $atts['fullscreen-source-height'] ) : self::DEFAULT_FULLSCREEN_SOURCE_HEIGHT,
 			// Slideshow (normal mode)
 			'slideshow'       => $this->parse_bool( $atts, 'slideshow', false ),
 			'slideshow-delay' => $this->parse_delay_range( isset( $atts['slideshow-delay'] ) ? $atts['slideshow-delay'] : self::DEFAULT_SLIDESHOW_DELAY_RANGE ),
@@ -986,10 +988,10 @@ class JZSA_Shared_Albums {
 		// Prepare URLs with standard dimensions.
 		$photos = $this->prepare_photo_urls(
 			$result['data']['photos'],
-			self::DEFAULT_IMAGE_WIDTH,
-			self::DEFAULT_IMAGE_HEIGHT,
-			self::DEFAULT_PREVIEW_WIDTH,
-			self::DEFAULT_PREVIEW_HEIGHT
+			self::DEFAULT_FULLSCREEN_SOURCE_WIDTH,
+			self::DEFAULT_FULLSCREEN_SOURCE_HEIGHT,
+			self::DEFAULT_SOURCE_WIDTH,
+			self::DEFAULT_SOURCE_HEIGHT
 		);
 
 		wp_send_json_success( array( 'photos' => $photos ) );
