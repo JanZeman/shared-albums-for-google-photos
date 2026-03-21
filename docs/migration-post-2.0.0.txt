@@ -4,7 +4,7 @@ BODY:
 
 Hi everyone,
 
-Version 2.0.0 introduces breaking changes to shortcode parameter names, default values, and allowed values. I took the opportunity to clean up naming inconsistencies while the plugin is still young and the user base is small. <strong>This is a one-time cleanup — from 2.0.0 onward, all parameter names and values will remain stable and backward-compatible.</strong>
+Version 2.0.0 introduces new features like experimental video support and, based on user feedback, makes 'gallery' the default mode. I also took the liberty to clean up naming inconsistencies in shortcode parameter names, default values, and allowed values while the plugin is still young and the user base is small. <strong>This is a one-time cleanup — from 2.0.0 onward, all parameter names and values will remain stable and backward-compatible.</strong>
 
 If you are upgrading from 1.0.x, you will need to update your shortcodes. Below is a complete migration guide.
 
@@ -55,7 +55,7 @@ The following new parameters have been added:
 <li><code>controls-color</code> — color of slider/gallery UI controls</li>
 <li><code>video-controls-color</code> — color of video player controls</li>
 <li><code>show-navigation</code> — show/hide prev/next arrows (default true)</li>
-<li><code>show-videos</code> — include or exclude video entries (default true)</li>
+<li><code>show-videos</code> — include or exclude video entries (default false)</li>
 <li><code>video-controls-autohide</code> — auto-hide video controls (default false)</li>
 <li><code>interaction-lock</code> — lock all user interaction, useful for digital signage (default false)</li>
 <li><code>gallery-layout</code> — gallery thumbnail layout: "grid" or "justified" (default "grid")</li>

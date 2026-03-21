@@ -392,7 +392,7 @@ class JZSA_Shared_Albums {
 			'video-controls-autohide' => $this->parse_bool( $atts, 'video-controls-autohide', false ),
 
 			// Video support
-			'show-videos'            => $this->parse_bool( $atts, 'show-videos', true ),
+			'show-videos'            => $this->parse_bool( $atts, 'show-videos', false ),
 
 			// Gallery mode (thumbnail layout)
 			'gallery-layout'         => $this->parse_gallery_layout( $atts ),
