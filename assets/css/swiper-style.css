@@ -1477,6 +1477,12 @@ body.jzsa-no-scroll {
     cursor: default;
 }
 
+/* Progress is intentionally non-seekable, but volume must remain interactive. */
+.jzsa-video-wrapper .plyr__volume input[type="range"] {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
 /* Mute button never hides — it acts as the right-side boundary
    preventing the progress bar from overflowing. */
 
