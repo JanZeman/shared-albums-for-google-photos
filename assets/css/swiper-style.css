@@ -1394,11 +1394,14 @@ body.jzsa-no-scroll {
 }
 
 /* Duration badge on the video wrapper — independent of the player so it
-   survives player destroy/re-init cycles (e.g. fullscreen toggle). */
+   survives player destroy/re-init cycles (e.g. fullscreen toggle).
+   Hidden by default; shown only via jzsa-show-duration on the wrapper,
+   which JS sets when the big play button is in its default triangle state. */
 .jzsa-video-duration {
     --jzsa-play-scale: 1.5;
     --jzsa-play-btn-radius: 24px;
     --jzsa-duration-offset: 0.55;  /* fraction of radius from center to bottom edge */
+    display: none;
     position: absolute;
     left: 50%;
     top: 50%;
@@ -1413,10 +1416,8 @@ body.jzsa-no-scroll {
     pointer-events: none;
 }
 
-/* Hide duration badge while video is loading or playing */
-.jzsa-video-playing .jzsa-video-duration,
-.jzsa-video-wrapper.jzsa-video-loading .jzsa-video-duration {
-    display: none;
+.jzsa-video-wrapper.jzsa-show-duration > .jzsa-video-duration {
+    display: block;
 }
 
 /* Play button loading state — override Plyr's own hide so the button stays

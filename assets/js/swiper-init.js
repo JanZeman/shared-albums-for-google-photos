@@ -623,6 +623,8 @@
             var loadingTimeout = null;
             var stallWatchdogTimer = null;
             var playbackState = VIDEO_STATE_IDLE;
+            // Play button starts in default triangle state — allow duration badge to show.
+            $wrapper.addClass('jzsa-show-duration');
             var autoHealAttempts = 0;
             var healRunToken = 0;
             var plyrRef = this._jzsaPlyr;
@@ -638,6 +640,12 @@
 
             function setPlaybackState(nextState) {
                 playbackState = nextState;
+                // Duration label must only be visible when play button shows its default triangle.
+                if (nextState === VIDEO_STATE_IDLE && !$playLarge.hasClass('jzsa-plyr-error')) {
+                    $wrapper.addClass('jzsa-show-duration');
+                } else {
+                    $wrapper.removeClass('jzsa-show-duration');
+                }
             }
 
             function trace(eventName, extra) {
