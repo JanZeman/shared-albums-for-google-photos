@@ -811,6 +811,12 @@ class JZSA_Shared_Albums {
 			if ( 'video' === $type ) {
 				$photo['type']  = 'video';
 				$photo['video'] = $base . '=dv';
+				// Append -no to preview/full URLs for videos to suppress
+				// Google's baked-in play button overlay on the thumbnail.
+				if ( isset( $photo['preview'] ) ) {
+					$photo['preview'] .= '-no';
+				}
+				$photo['full'] .= '-no';
 			}
 
 			$photos[] = $photo;
