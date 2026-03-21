@@ -487,15 +487,32 @@
             // from Google Photos and retry.
             this._jzsaPlyr.on('error', function() {
                 // console.warn('[jzsa-refresh] ⚠️ Video error — URL may have expired, refreshing…');
-
-                // Keep the loading spinner visible while we recover.
-                $playLarge.addClass('jzsa-plyr-loading');
-                waitingForPlay = true;
+                // Only auto-retry playback when this specific video was actively
+                // being played (or waiting to start after a user click). Errors
+                // from background preloading must never auto-start hidden videos.
+                var shouldRetryPlayback = !!(waitingForPlay || plyrRef.playing);
+                if (shouldRetryPlayback) {
+                    $playLarge.addClass('jzsa-plyr-loading');
+                    waitingForPlay = true;
+                }
 
                 refreshAlbumUrls($albumContainer).then(function() {
-                    // Fresh URL loaded — auto-retry playback.
+                    if (!shouldRetryPlayback) {
+                        waitingForPlay = false;
+                        $playLarge.removeClass('jzsa-plyr-loading');
+                        return;
+                    }
+
+                    // Fresh URL loaded — auto-retry playback only for the
+                    // user-initiated video.
                     // console.log('[jzsa-refresh] ▶️ Auto-retrying playback');
-                    plyrRef.play();
+                    var playPromise = plyrRef.play();
+                    if (playPromise && typeof playPromise.catch === 'function') {
+                        playPromise.catch(function() {
+                            waitingForPlay = false;
+                            $playLarge.removeClass('jzsa-plyr-loading');
+                        });
+                    }
                 }).fail(function() {
                     // Recovery failed — reset to idle so user can retry manually.
                     waitingForPlay = false;
