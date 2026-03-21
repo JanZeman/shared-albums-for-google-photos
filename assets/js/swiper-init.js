@@ -372,7 +372,7 @@
             '<video' +
             ' src="' + src + '"' +
             posterAttr +
-            ' playsinline preload="none" disablepictureinpicture' +
+            ' playsinline preload="none" disablepictureinpicture referrerpolicy="no-referrer"' +
             ' class="jzsa-video-player' + extraClass + '"' +
             mediaIndexAttr +
             styleAttr +
@@ -971,6 +971,7 @@
             (function(videoSrc) {
                 var probe = document.createElement('video');
                 probe.preload = 'metadata';
+                probe.referrerPolicy = 'no-referrer';
                 var done = false;
 
                 function cleanup() {
