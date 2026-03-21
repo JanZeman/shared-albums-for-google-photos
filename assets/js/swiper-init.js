@@ -390,6 +390,7 @@
         var opts = options || {};
         var triggerVideoEl = opts.triggerVideoEl || null;
         var reason = opts.reason || 'unknown';
+        var forceTriggerReload = !!opts.forceTriggerReload;
         var freshVideos = freshPhotos.filter(function(p) { return p.type === 'video'; });
         var fallbackVideoCursor = 0;
         var triggerUpdated = false;
@@ -444,7 +445,7 @@
 
             // Only force reload for the video that is currently recovering,
             // and only when the URL actually changed.
-            if (isTrigger && srcChanged) {
+            if (isTrigger && (srcChanged || forceTriggerReload)) {
                 triggerUpdated = true;
                 videoEl.load();
             }
@@ -464,6 +465,9 @@
         var opts = options || {};
         var reason = opts.reason || 'unknown';
         var triggerVideoEl = opts.triggerVideoEl || null;
+        var forceNetwork = !!opts.forceNetwork;
+        var forceTriggerReload = !!opts.forceTriggerReload;
+        var shouldApply = typeof opts.shouldApply === 'function' ? opts.shouldApply : null;
 
         // Try the container itself, then walk up to find data-album-url
         // (e.g. gallery slideshow is a sibling of the gallery container).
@@ -487,17 +491,20 @@
 
         // Deduplicate network calls per album URL; each caller still applies
         // the fresh response to its own container.
-        if (_refreshPromises[albumUrl]) {
+        if (!forceNetwork && _refreshPromises[albumUrl]) {
             traceVideoHeal('refresh-reuse-inflight', {
                 reason: reason,
                 albumUrl: shortMediaUrl(albumUrl),
                 containerId: $albumContainer.attr('id') || ''
             });
             return _refreshPromises[albumUrl].then(function(freshPhotos) {
-                applyFreshMediaToContainer($albumContainer, freshPhotos, {
-                    reason: reason,
-                    triggerVideoEl: triggerVideoEl
-                });
+                if (!shouldApply || shouldApply()) {
+                    applyFreshMediaToContainer($albumContainer, freshPhotos, {
+                        reason: reason,
+                        triggerVideoEl: triggerVideoEl,
+                        forceTriggerReload: forceTriggerReload
+                    });
+                }
                 return freshPhotos;
             });
         }
@@ -509,13 +516,14 @@
             triggerMediaIndex: triggerVideoEl ? triggerVideoEl.getAttribute('data-jzsa-media-index') || null : null
         });
 
-        _refreshPromises[albumUrl] = $.ajax({
+        var refreshRequest = $.ajax({
             url: jzsaAjax.ajaxUrl,
             type: 'POST',
             data: {
                 action: 'jzsa_refresh_urls',
                 nonce: jzsaAjax.refreshNonce,
-                album_url: albumUrl
+                album_url: albumUrl,
+                force_refresh: forceNetwork ? 1 : 0
             }
         }).then(function(response) {
             if (!response.success || !response.data || !response.data.photos) {
@@ -543,14 +551,20 @@
                 error: errorThrown || ''
             });
         }).always(function() {
-            delete _refreshPromises[albumUrl];
+            if (_refreshPromises[albumUrl] === refreshRequest) {
+                delete _refreshPromises[albumUrl];
+            }
         });
+        _refreshPromises[albumUrl] = refreshRequest;
 
-        return _refreshPromises[albumUrl].then(function(freshPhotos) {
-            applyFreshMediaToContainer($albumContainer, freshPhotos, {
-                reason: reason,
-                triggerVideoEl: triggerVideoEl
-            });
+        return refreshRequest.then(function(freshPhotos) {
+            if (!shouldApply || shouldApply()) {
+                applyFreshMediaToContainer($albumContainer, freshPhotos, {
+                    reason: reason,
+                    triggerVideoEl: triggerVideoEl,
+                    forceTriggerReload: forceTriggerReload
+                });
+            }
             return freshPhotos;
         });
     }
@@ -594,24 +608,46 @@
             var $albumContainer = $wrapper.closest('.jzsa-album, .jzsa-gallery-album');
             var $playLarge = $wrapper.find('.plyr__control--overlaid');
 
-            // Loading state + auto-heal state machine.
+            // Loading state + auto-heal finite-state machine.
             var LOADING_TIMEOUT_MS = 30000;
             var STALL_WATCHDOG_MS = 5000;
             var MAX_AUTO_HEAL_ATTEMPTS = 2;
+            var HEAL_RETRY_DELAY_MS = 50;
+
+            var VIDEO_STATE_IDLE = 'idle';
+            var VIDEO_STATE_STARTING = 'starting';
+            var VIDEO_STATE_HEALING = 'healing';
+            var VIDEO_STATE_PLAYING = 'playing';
+            var VIDEO_STATE_FAILED = 'failed';
+
             var loadingTimeout = null;
             var stallWatchdogTimer = null;
-            var waitingForPlay = false;
-            var healingInProgress = false;
+            var playbackState = VIDEO_STATE_IDLE;
             var autoHealAttempts = 0;
+            var healRunToken = 0;
             var plyrRef = this._jzsaPlyr;
             var videoEl = this;
+
+            function isStartingState() {
+                return playbackState === VIDEO_STATE_STARTING || playbackState === VIDEO_STATE_HEALING;
+            }
+
+            function isPlaybackActive() {
+                return isStartingState() || playbackState === VIDEO_STATE_PLAYING;
+            }
+
+            function setPlaybackState(nextState) {
+                playbackState = nextState;
+            }
 
             function trace(eventName, extra) {
                 traceVideoHeal(eventName, $.extend({
                     containerId: $albumContainer.attr('id') || '',
                     mediaIndex: videoEl.getAttribute('data-jzsa-media-index') || null,
-                    waitingForPlay: waitingForPlay,
-                    playing: !!(plyrRef && plyrRef.playing),
+                    state: playbackState,
+                    waitingForPlay: isStartingState(),
+                    healingInProgress: playbackState === VIDEO_STATE_HEALING,
+                    playing: playbackState === VIDEO_STATE_PLAYING || !!(plyrRef && plyrRef.playing),
                     attempts: autoHealAttempts,
                     currentTime: (typeof videoEl.currentTime === 'number' ? videoEl.currentTime : null),
                     src: shortMediaUrl(videoEl.currentSrc || videoEl.getAttribute('src') || '')
@@ -637,13 +673,46 @@
                 clearStallWatchdog();
             }
 
+            function showLoadingUi() {
+                $playLarge.addClass('jzsa-plyr-loading');
+                $wrapper.addClass('jzsa-video-loading');
+            }
+
+            function clearLoadingUi() {
+                $playLarge.removeClass('jzsa-plyr-loading');
+                $wrapper.removeClass('jzsa-video-loading');
+            }
+
+            function armLoadingTimeout(source) {
+                clearLoadingTimeout();
+                if (!isStartingState()) {
+                    return;
+                }
+                loadingTimeout = setTimeout(function() {
+                    if (!isStartingState()) {
+                        return;
+                    }
+                    trace('loading-timeout', {
+                        source: source,
+                        timeoutMs: LOADING_TIMEOUT_MS,
+                        readyState: videoEl.readyState,
+                        networkState: videoEl.networkState
+                    });
+                    if (autoHealAttempts < MAX_AUTO_HEAL_ATTEMPTS) {
+                        runRecovery('loading-timeout', 'soft');
+                        return;
+                    }
+                    failPlayback('loading-timeout');
+                }, LOADING_TIMEOUT_MS);
+            }
+
             function armStallWatchdog(source) {
                 clearStallWatchdog();
-                if (!waitingForPlay) {
+                if (!isPlaybackActive()) {
                     return;
                 }
                 stallWatchdogTimer = setTimeout(function() {
-                    if (!waitingForPlay || (plyrRef && plyrRef.playing)) {
+                    if (!isPlaybackActive() || playbackState === VIDEO_STATE_PLAYING) {
                         return;
                     }
                     trace('stall-watchdog-fired', {
@@ -652,17 +721,16 @@
                         readyState: videoEl.readyState,
                         networkState: videoEl.networkState
                     });
-                    attemptAutoHeal('stall-watchdog');
+                    runRecovery('stall-watchdog', 'soft');
                 }, STALL_WATCHDOG_MS);
             }
 
             function failPlayback(reason, extra) {
-                waitingForPlay = false;
-                healingInProgress = false;
+                healRunToken++;
+                setPlaybackState(VIDEO_STATE_FAILED);
                 clearRecoveryTimers();
-                $playLarge.removeClass('jzsa-plyr-loading');
+                clearLoadingUi();
                 $playLarge.addClass('jzsa-plyr-error');
-                $wrapper.removeClass('jzsa-video-loading');
                 trace('playback-failed', $.extend({ reason: reason }, extra || {}));
                 if (!plyrRef.playing) {
                     videoEl._jzsaSuppressNextError = true;
@@ -670,40 +738,54 @@
                 }
             }
 
-            function attemptAutoHeal(reason) {
-                var shouldRetryPlayback = !!(waitingForPlay || plyrRef.playing);
-                if (!shouldRetryPlayback) {
-                    trace('heal-skip-not-active', { reason: reason });
+            function runRecovery(reason, mode) {
+                var isHard = mode === 'hard';
+
+                if (!isPlaybackActive()) {
+                    trace('heal-skip-not-active', { reason: reason, mode: mode });
                     return;
                 }
-                if (healingInProgress) {
-                    trace('heal-skip-inflight', { reason: reason });
+                if (playbackState === VIDEO_STATE_HEALING && !isHard) {
+                    trace('heal-skip-inflight', { reason: reason, mode: mode });
                     return;
+                }
+                if (isHard) {
+                    autoHealAttempts = 0;
                 }
                 if (autoHealAttempts >= MAX_AUTO_HEAL_ATTEMPTS) {
                     failPlayback('max-attempts-reached', { trigger: reason });
                     return;
                 }
 
-                healingInProgress = true;
+                var runToken = ++healRunToken;
                 autoHealAttempts++;
-                waitingForPlay = true;
-                $playLarge.addClass('jzsa-plyr-loading');
-                $wrapper.addClass('jzsa-video-loading');
-                trace('heal-start', { reason: reason, attempt: autoHealAttempts });
-
+                setPlaybackState(VIDEO_STATE_HEALING);
+                showLoadingUi();
+                trace('heal-start', { reason: reason, mode: mode, attempt: autoHealAttempts });
+                armLoadingTimeout('heal-start');
                 armStallWatchdog('heal-start');
 
                 refreshAlbumUrls($albumContainer, {
                     reason: 'auto-heal:' + reason,
-                    triggerVideoEl: videoEl
+                    triggerVideoEl: videoEl,
+                    forceNetwork: isHard,
+                    forceTriggerReload: isHard,
+                    shouldApply: function() {
+                        return runToken === healRunToken;
+                    }
                 }).then(function() {
+                    if (runToken !== healRunToken) {
+                        return;
+                    }
                     trace('heal-refresh-applied', { reason: reason, attempt: autoHealAttempts });
                     var playPromise;
                     try {
                         playPromise = plyrRef.play();
                     } catch (err) {
-                        healingInProgress = false;
+                        if (runToken !== healRunToken) {
+                            return;
+                        }
+                        setPlaybackState(VIDEO_STATE_STARTING);
                         trace('heal-play-rejected', {
                             reason: reason,
                             attempt: autoHealAttempts,
@@ -714,18 +796,29 @@
                             return;
                         }
                         setTimeout(function() {
-                            attemptAutoHeal('play-rejected');
-                        }, 50);
+                            if (runToken !== healRunToken) {
+                                return;
+                            }
+                            runRecovery('play-rejected', 'soft');
+                        }, HEAL_RETRY_DELAY_MS);
                         return;
                     }
+
                     armStallWatchdog('post-heal-play');
+
                     if (playPromise && typeof playPromise.then === 'function') {
                         playPromise.then(function() {
-                            if (healingInProgress) {
-                                healingInProgress = false;
+                            if (runToken !== healRunToken) {
+                                return;
+                            }
+                            if (playbackState === VIDEO_STATE_HEALING) {
+                                setPlaybackState(VIDEO_STATE_STARTING);
                             }
                         }).catch(function(err) {
-                            healingInProgress = false;
+                            if (runToken !== healRunToken) {
+                                return;
+                            }
+                            setPlaybackState(VIDEO_STATE_STARTING);
                             trace('heal-play-rejected', {
                                 reason: reason,
                                 attempt: autoHealAttempts,
@@ -736,40 +829,52 @@
                                 return;
                             }
                             setTimeout(function() {
-                                attemptAutoHeal('play-rejected');
-                            }, 50);
+                                if (runToken !== healRunToken) {
+                                    return;
+                                }
+                                runRecovery('play-rejected', 'soft');
+                            }, HEAL_RETRY_DELAY_MS);
                         });
                         return;
                     }
-                    // Some browsers do not return a play() promise; keep lock a
-                    // short while to avoid overlapping heal/load cycles.
+
+                    // Browsers without play() promise support.
                     setTimeout(function() {
-                        if (healingInProgress) {
-                            healingInProgress = false;
+                        if (runToken !== healRunToken) {
+                            return;
+                        }
+                        if (playbackState === VIDEO_STATE_HEALING) {
+                            setPlaybackState(VIDEO_STATE_STARTING);
                         }
                     }, 800);
                 }).fail(function() {
-                    healingInProgress = false;
+                    if (runToken !== healRunToken) {
+                        return;
+                    }
+                    setPlaybackState(VIDEO_STATE_STARTING);
                     trace('heal-refresh-failed', { reason: reason, attempt: autoHealAttempts });
                     if (autoHealAttempts >= MAX_AUTO_HEAL_ATTEMPTS) {
                         failPlayback('refresh-failed', { trigger: reason });
                         return;
                     }
                     setTimeout(function() {
-                        attemptAutoHeal('refresh-failed-retry');
+                        if (runToken !== healRunToken) {
+                            return;
+                        }
+                        runRecovery('refresh-failed-retry', 'soft');
                     }, 250);
                 });
             }
 
             // Expose a cancel function so other videos can abort our buffering
             videoEl._jzsaCancelLoading = function() {
-                if (!waitingForPlay) { return; }
+                if (!isStartingState()) { return; }
                 trace('cancel-loading');
-                waitingForPlay = false;
-                healingInProgress = false;
+                healRunToken++;
+                setPlaybackState(VIDEO_STATE_IDLE);
+                autoHealAttempts = 0;
                 clearRecoveryTimers();
-                $playLarge.removeClass('jzsa-plyr-loading');
-                $wrapper.removeClass('jzsa-video-loading');
+                clearLoadingUi();
                 videoEl._jzsaSuppressNextError = true;
                 plyrRef.stop();
             };
@@ -788,48 +893,35 @@
             }
 
             function showPlaying() {
-                waitingForPlay = false;
-                healingInProgress = false;
+                healRunToken++;
+                setPlaybackState(VIDEO_STATE_PLAYING);
                 autoHealAttempts = 0;
                 clearRecoveryTimers();
-                $playLarge.removeClass('jzsa-plyr-loading');
+                clearLoadingUi();
                 $playLarge.removeClass('jzsa-plyr-error');
-                $wrapper.removeClass('jzsa-video-loading');
                 plyrContainer.show();
                 $albumContainer.addClass('jzsa-video-playing');
                 trace('playback-confirmed');
             }
 
             $playLarge.on('click', function() {
-                if (waitingForPlay) {
-                    trace('play-click-ignored-waiting');
+                if (isStartingState()) {
+                    trace('play-click-hard-retry');
+                    runRecovery('user-click-hard-retry', 'hard');
+                    armLoadingTimeout('user-click-hard-retry');
                     return;
                 }
                 // Clear any previous error state
                 $playLarge.removeClass('jzsa-plyr-error');
                 // Stop all other videos immediately on click
                 pauseAllPageVideos();
-                waitingForPlay = true;
-                healingInProgress = false;
+                setPlaybackState(VIDEO_STATE_STARTING);
                 autoHealAttempts = 0;
-                $playLarge.addClass('jzsa-plyr-loading');
-                $wrapper.addClass('jzsa-video-loading');
+                showLoadingUi();
                 trace('play-click');
 
                 // 30s timeout — show error state if playback never starts
-                clearLoadingTimeout();
-                loadingTimeout = setTimeout(function() {
-                    trace('loading-timeout', {
-                        timeoutMs: LOADING_TIMEOUT_MS,
-                        readyState: videoEl.readyState,
-                        networkState: videoEl.networkState
-                    });
-                    if (autoHealAttempts < MAX_AUTO_HEAL_ATTEMPTS) {
-                        attemptAutoHeal('loading-timeout');
-                        return;
-                    }
-                    failPlayback('loading-timeout');
-                }, LOADING_TIMEOUT_MS);
+                armLoadingTimeout('initial-click');
 
                 armStallWatchdog('initial-click');
             });
@@ -838,19 +930,19 @@
             // Wait until currentTime > 0.1s to be sure a real frame has
             // painted over the poster (and its baked-in triangle).
             this._jzsaPlyr.on('playing', function() {
-                if (waitingForPlay || !$albumContainer.hasClass('jzsa-video-playing')) {
+                if (isStartingState() || !$albumContainer.hasClass('jzsa-video-playing')) {
                     showPlaying();
                 }
             });
             this._jzsaPlyr.on('timeupdate', function() {
-                if (!waitingForPlay) { return; }
+                if (!isStartingState()) { return; }
                 if (plyrRef.currentTime > 0.1) {
                     showPlaying();
                 }
             });
 
             videoEl.addEventListener('waiting', function() {
-                if (!waitingForPlay && !plyrRef.playing) {
+                if (!isPlaybackActive() && !plyrRef.playing) {
                     return;
                 }
                 trace('native-waiting', {
@@ -861,7 +953,7 @@
             });
 
             videoEl.addEventListener('stalled', function() {
-                if (!waitingForPlay && !plyrRef.playing) {
+                if (!isPlaybackActive() && !plyrRef.playing) {
                     return;
                 }
                 trace('native-stalled', {
@@ -872,17 +964,23 @@
             });
 
             this._jzsaPlyr.on('pause', function() {
+                healRunToken++;
+                setPlaybackState(VIDEO_STATE_IDLE);
+                autoHealAttempts = 0;
                 clearRecoveryTimers();
+                clearLoadingUi();
                 plyrContainer.hide();
-                $wrapper.removeClass('jzsa-video-loading');
                 $albumContainer.removeClass('jzsa-video-playing');
                 $albumContainer.trigger('jzsa:video-stopped');
                 trace('plyr-pause');
             });
             this._jzsaPlyr.on('ended', function() {
+                healRunToken++;
+                setPlaybackState(VIDEO_STATE_IDLE);
+                autoHealAttempts = 0;
                 clearRecoveryTimers();
+                clearLoadingUi();
                 plyrContainer.hide();
-                $wrapper.removeClass('jzsa-video-loading');
                 $albumContainer.removeClass('jzsa-video-playing');
                 $albumContainer.trigger('jzsa:video-stopped');
                 trace('plyr-ended');
@@ -908,12 +1006,15 @@
                     typeof videoEl.currentTime === 'number' &&
                     videoEl.currentTime > 0.1 &&
                     !videoEl.ended;
-                var shouldRecover = waitingForPlay || plyrRef.playing || healingInProgress || hadPlaybackProgress;
+                var shouldRecover = isStartingState() || playbackState === VIDEO_STATE_PLAYING || hadPlaybackProgress;
                 if (!shouldRecover) {
                     trace('plyr-error-ignored-inactive');
                     return;
                 }
-                attemptAutoHeal('plyr-error');
+                if (playbackState === VIDEO_STATE_IDLE && hadPlaybackProgress) {
+                    setPlaybackState(VIDEO_STATE_STARTING);
+                }
+                runRecovery('plyr-error', 'soft');
             });
         });
     }

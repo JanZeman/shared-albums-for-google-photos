@@ -1426,7 +1426,8 @@ body.jzsa-no-scroll {
     opacity: 1 !important;
     display: flex !important;
     animation: jzsa-plyr-pulse 1s ease-in-out infinite;
-    pointer-events: none;
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 .jzsa-video-wrapper .plyr__control--overlaid.jzsa-plyr-loading svg {
