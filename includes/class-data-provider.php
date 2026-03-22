@@ -145,25 +145,25 @@ class JZSA_Data_Provider {
 	/**
 	 * Extract album title from HTML
 	 *
-	 * Google Photos HTML contains the album title in the <title> tag, which is more reliable
-	 * than OG tags which may contain photo-specific dates.
+	 * Two sources are tried in order:
+	 * - Primary: <title> tag — contains the user's album name with a "- Google Photos" suffix.
+	 * - Secondary: og:title meta tag — contains Google-appended noise (dates, camera icons, etc.).
 	 *
 	 * @param string $html HTML content
 	 * @return string|null Album title or null
 	 */
 	private function extract_album_title( $html ) {
-		// Try to extract from <title> tag first (more reliable for album name)
+		// Primary source: <title> tag — contains only the user's album name
 		if ( preg_match( '/<title[^>]*>([^<]+)<\/title>/i', $html, $match ) ) {
 			$title = html_entity_decode( $match[1], ENT_QUOTES | ENT_HTML5, 'UTF-8' );
-			// <title> often has format: "Album Name - Google Photos"
-			$title = preg_replace( '/\s*-\s*Google Photos\s*$/i', '', $title );
-			$title = trim( $title );
+			$title = $this->clean_primary_album_title( $title );
 			if ( ! empty( $title ) ) {
-				return $this->clean_album_title( $title );
+				return $title;
 			}
 		}
 
-		// Fallback to og:title meta tag
+		// Secondary source: og:title meta tag — contains Google-appended noise
+		// (dates, camera icons, separators) so we clean it up aggressively
 		if ( preg_match( '/<\s*meta\s+property=["\']og:title["\']\s+content=["\']([^"\']+)["\']/i', $html, $match ) ) {
 			$title = $match[1];
 		} elseif ( preg_match( '/<\s*meta\s+content=["\']([^"\']+)["\']\s+property=["\']og:title["\']/i', $html, $match ) ) {
@@ -172,21 +172,34 @@ class JZSA_Data_Provider {
 			return null;
 		}
 
-		// Clean the title: remove dates, camera info, icons
-		return $this->clean_album_title( $title );
+		return $this->clean_secondary_album_title( $title );
 	}
 
 	/**
-	 * Clean album title by removing dates, camera icons, and metadata
+	 * Clean the primary album title (from <title> tag)
 	 *
-	 * Google Photos OG:title often contains photo-specific metadata like:
-	 * "Saturday, Jan 29, 2005" or "Album Name - Jan 29, 2005"
-	 * We need to extract just the album name portion.
+	 * Only removes the "- Google Photos" suffix that Google appends.
+	 * The rest of the title is the user's original album name and is preserved as-is.
 	 *
-	 * @param string $title Raw title from Open Graph tag
+	 * @param string $title Raw title from <title> tag
 	 * @return string Cleaned title
 	 */
-	private function clean_album_title( $title ) {
+	private function clean_primary_album_title( $title ) {
+		$title = preg_replace( '/\s*-\s*Google Photos\s*$/i', '', $title );
+		return trim( $title );
+	}
+
+	/**
+	 * Clean the secondary album title (from og:title meta tag)
+	 *
+	 * Google's og:title contains noise appended to the album name:
+	 * dates ("· Sunday, Mar 22"), camera icons (📸), camera models, etc.
+	 * We strip these aggressively since the user's original title is buried in there.
+	 *
+	 * @param string $title Raw title from og:title meta tag
+	 * @return string Cleaned title
+	 */
+	private function clean_secondary_album_title( $title ) {
 		// Remove emoji characters (camera icons, etc.)
 		$title = preg_replace( '/[\x{1F300}-\x{1F9FF}]/u', '', $title );
 
