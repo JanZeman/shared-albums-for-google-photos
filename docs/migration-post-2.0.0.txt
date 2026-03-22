@@ -80,5 +80,8 @@ For the full parameter reference with live examples, visit the plugin's <strong>
 
 I apologize for any inconvenience. These changes were necessary to establish clear, consistent, and industry-standard naming before the plugin grows further. Going forward, backward compatibility will be maintained in all future releases.
 
+I had to go myself through this small hassle on the site which I originally wrote the plugin for. In my case I had to add these 4 parameters:
+<code>[jzsa-album link="..." mode="slider" width="267" height="200" fullscreen-toggle="double-click"]</code>
+
 Best regards,
 Jan
