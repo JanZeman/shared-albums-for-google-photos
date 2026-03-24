@@ -271,8 +271,8 @@ class JZSA_Settings_Page {
 
 				<div class="jzsa-tool-row">
 					<div class="jzsa-tool-info">
-						<strong><?php esc_html_e( 'Clear Album Cache', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-						<p class="jzsa-help-text"><?php esc_html_e( 'Album data is cached for 24 hours to reduce server load. If you have modified any of your Google Photos albums and need to see the changes immediately, simply click this button.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<strong><?php esc_html_e( 'Album Cache', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+						<p class="jzsa-help-text"><?php esc_html_e( 'Album data is cached for 24 hours on your web server to reduce load. If you have modified any of your Google Photos albums and need to see the changes immediately, simply click the button below. For albums that are updated frequently (e.g. live events), use the cache-refresh shortcode parameter to automatically reduce the cache duration.', 'janzeman-shared-albums-for-google-photos' ); ?><br><span style="display:block;margin-top:6px"></span><em><?php esc_html_e( 'This clears the cached album data - not your browser or page cache. If you use a page caching plugin (WP Fastest Cache, WP Super Cache, etc.), consider excluding the pages with albums from page caching, or clear that cache separately.', 'janzeman-shared-albums-for-google-photos' ); ?></em></p>
 					</div>
 					<div class="jzsa-tool-action">
 						<button type="button" id="jzsa-clear-cache-btn" class="button button-secondary">
@@ -901,6 +901,11 @@ class JZSA_Settings_Page {
 									<td>Maximum number of album entries to display (photos and videos that remain after filters such as show-videos) from the album (1–300). Google Photos typically returns up to 300 entries per album.</td>
 									<td>300</td>
 								</tr>
+							<tr>
+								<td><code>cache-refresh</code></td>
+								<td>How often the album data is re-fetched from Google Photos, in hours. Useful for albums that are updated frequently (e.g. live event albums). Example: cache-refresh="1" to refresh every hour.</td>
+								<td>168 (7 days)</td>
+							</tr>
 							<tr>
 								<td><code>source-width</code></td>
 								<td>Photo width to fetch from Google for inline mode</td>

@@ -197,6 +197,9 @@ The plugin provides clear feedback:
 
 == Changelog ==
 
+= 2.0.3 =
+* New parameter: "cache-refresh"
+
 = 2.0.2 =
 * Clear Cache button added
 

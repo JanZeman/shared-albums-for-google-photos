@@ -10,7 +10,7 @@
  * - Stores only base photo URLs (without dimensions) in cache
  * - Tracks cache expiration separately in wp_options
  * - Allows same album to be reused across multiple posts
- * - Invalidates cache if CACHE_DURATION constant changes
+ * - Invalidates cache if cache-refresh interval changes
  *
  * @package JZSA_Shared_Albums
  */
@@ -27,11 +27,12 @@ class JZSA_Shared_Albums {
 
 
 	/**
-	 * Cache duration in seconds (24 hours)
+	 * Default cache refresh interval in hours (7 days).
+	 * Can be overridden per shortcode via the cache-refresh attribute.
 	 *
 	 * @var int
 	 */
-	const CACHE_DURATION = 86400;
+	const DEFAULT_CACHE_REFRESH = 168;
 
 	/**
 	 * Default gallery dimensions
@@ -269,14 +270,15 @@ class JZSA_Shared_Albums {
 		$config = $this->parse_shortcode_config( $atts, $album_url );
 
 		// Smart caching: Check cache and expiration tracking
-		$cache_key      = $this->get_cache_key( $album_url );
-		$expiry_key     = $this->get_expiration_key( $album_url );
-		$cached_data    = get_transient( $cache_key );
-		$stored_expiry  = get_option( $expiry_key, 0 );
-		$should_refresh = false;
+		$cache_key        = $this->get_cache_key( $album_url );
+		$expiry_key       = $this->get_expiration_key( $album_url );
+		$cached_data      = get_transient( $cache_key );
+		$stored_expiry    = get_option( $expiry_key, 0 );
+		$cache_duration   = $config['cache-refresh'] * 3600; // convert hours to seconds
+		$should_refresh   = false;
 
-		// Refresh if no cache OR if cache duration setting changed
-		if ( false === $cached_data || (int) $stored_expiry !== self::CACHE_DURATION ) {
+		// Refresh if no cache OR if cache-refresh interval changed
+		if ( false === $cached_data || (int) $stored_expiry !== $cache_duration ) {
 			$should_refresh = true;
 		}
 
@@ -313,11 +315,11 @@ class JZSA_Shared_Albums {
 				'photos'        => $result['data']['photos'], // Base URLs without dimensions
 				'is_deprecated' => $result['is_deprecated'],
 			),
-			self::CACHE_DURATION
+			$cache_duration
 		);
 
 		// Store expiration duration for tracking
-		update_option( $expiry_key, self::CACHE_DURATION, false );
+		update_option( $expiry_key, $cache_duration, false );
 
 		// Prepare photos with dimensions and max count
 			$config['photos'] = $this->prepare_photo_urls(
@@ -370,6 +372,9 @@ class JZSA_Shared_Albums {
 
 			// Slideshow inactivity timeout
 			'slideshow-inactivity-timeout' => intval( isset( $atts['slideshow-inactivity-timeout'] ) ? $atts['slideshow-inactivity-timeout'] : self::DEFAULT_SLIDESHOW_INACTIVITY_TIMEOUT ),
+
+			// Cache refresh interval in minutes (default: 1440 = 24 hours)
+			'cache-refresh' => $this->parse_cache_refresh( $atts ),
 
 				// Display
 				'mode'                 => $this->parse_mode( $atts ),
@@ -493,6 +498,24 @@ class JZSA_Shared_Albums {
 
 		// Default.
 		return '1';
+	}
+
+	/**
+	 * Parse cache-refresh attribute.
+	 * Returns the number of hours before the album data is re-fetched from Google Photos.
+	 * Defaults to DEFAULT_CACHE_REFRESH (168 hours = 7 days).
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return int Hours between cache refreshes.
+	 */
+	private function parse_cache_refresh( $atts ) {
+		if ( isset( $atts['cache-refresh'] ) ) {
+			$value = intval( $atts['cache-refresh'] );
+			if ( $value >= 1 ) {
+				return $value;
+			}
+		}
+		return self::DEFAULT_CACHE_REFRESH;
 	}
 
 	/**
@@ -1023,7 +1046,10 @@ class JZSA_Shared_Albums {
 		}
 
 		// Update the transient cache with fresh URLs.
-		$cache_key = $this->get_cache_key( $album_url );
+		// Use the stored expiry duration for this album so we respect its cache-refresh setting.
+		$cache_key     = $this->get_cache_key( $album_url );
+		$expiry_key    = $this->get_expiration_key( $album_url );
+		$cache_duration = (int) get_option( $expiry_key, self::DEFAULT_CACHE_REFRESH * 3600 );
 		set_transient(
 			$cache_key,
 			array(
@@ -1031,7 +1057,7 @@ class JZSA_Shared_Albums {
 				'photos'        => $result['data']['photos'],
 				'is_deprecated' => $result['is_deprecated'],
 			),
-			self::CACHE_DURATION
+			$cache_duration
 		);
 
 		// Prepare URLs with standard dimensions.
