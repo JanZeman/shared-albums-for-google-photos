@@ -197,6 +197,10 @@ The plugin provides clear feedback:
 
 == Changelog ==
 
+= 2.0.4 =
+* New feature: Mosaic thumbnail preview (mosaic="true") for slider and carousel modes
+* Mosaic feature inspired by Mateusz Starzak's fork (https://github.com/matiaspl)
+
 = 2.0.3 =
 * New parameter: "cache-refresh"
 

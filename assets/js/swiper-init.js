@@ -2735,7 +2735,12 @@
             showTitle: $container.attr('data-show-title') === 'true',
             showCounter: $container.attr('data-show-counter') === 'true',
             albumTitle: $container.attr('data-album-title') || '',
-            initialSlide: 0
+            initialSlide: 0,
+
+            // Mosaic settings
+            mosaic: $container.attr('data-mosaic') === 'true',
+            mosaicPosition: $container.attr('data-mosaic-position') || 'right',
+            mosaicCount: parseInt($container.attr('data-mosaic-count'), 10) || 0 // 0 = auto
         };
 
         // Safe default: show inline play/pause only when normal-mode slideshow is enabled.
@@ -2772,6 +2777,9 @@
         var showCounter = config.showCounter;
         var albumTitle = config.albumTitle;
         var initialSlide = config.initialSlide;
+        var mosaic = config.mosaic;
+        var mosaicPosition = config.mosaicPosition;
+        var mosaicCount = config.mosaicCount;
 
         // console.log('📸 Initializing Swiper for gallery:', galleryId);
         // console.log('  - Mode:', mode);
@@ -2817,6 +2825,156 @@
         }
 
         renderSwiperBootstrapSlides();
+
+        // --------------------------------------------------------------------
+        // Mosaic thumbnail strip
+        // --------------------------------------------------------------------
+
+        var mosaicSwiper = null;
+        var mosaicPageSize = 1;
+        if (mosaic) {
+            var $mosaicContainer = $('#' + galleryId + '-mosaic');
+            if ($mosaicContainer.length) {
+                var isVerticalMosaic = (mosaicPosition === 'left' || mosaicPosition === 'right');
+                if (isVerticalMosaic) {
+                    $mosaicContainer.addClass('jzsa-mosaic-vertical');
+                }
+                // Build thumb slides
+                var thumbSlidesHtml = '';
+                allPhotos.forEach(function(photo) {
+                    var thumbUrl = photo.thumb || photo.preview || photo.full;
+                    thumbSlidesHtml += '<div class="swiper-slide">' +
+                        '<span class="jzsa-mosaic-thumb-inner">' +
+                        '<img src="' + thumbUrl + '" alt="Thumb" loading="lazy" />' +
+                        '</span></div>';
+                });
+                $mosaicContainer.find('.swiper-wrapper').html(thumbSlidesHtml);
+
+                var mosaicGap = 8;
+                var MOSAIC_TARGET_THUMB_SIZE = 100; // px – ideal thumb size for auto-count
+
+                // Calculate how many thumbs fit in the available space.
+                function computeAutoMosaicCount() {
+                    var $wrapper = $mosaicContainer.parent();
+                    var mobile = window.innerWidth <= 480;
+                    var availableLength;
+                    if (mobile) {
+                        availableLength = $wrapper.width() || 400;
+                    } else if (mosaicPosition === 'left' || mosaicPosition === 'right') {
+                        var wrapperH = $wrapper.height();
+                        var albumH = $container.height();
+                        availableLength = (wrapperH > 0 ? wrapperH : albumH) || 300;
+                    } else {
+                        availableLength = $wrapper.width() || 400;
+                    }
+                    // How many thumbs of MOSAIC_TARGET_THUMB_SIZE fit?
+                    var fitCount = Math.floor((availableLength + mosaicGap) / (MOSAIC_TARGET_THUMB_SIZE + mosaicGap));
+                    return Math.max(1, fitCount);
+                }
+
+                function getEffectiveMosaicCount() {
+                    return mosaicCount > 0 ? mosaicCount : computeAutoMosaicCount();
+                }
+
+                function buildMosaicConfig(startSlide) {
+                    var mobile = window.innerWidth <= 480;
+                    var count = getEffectiveMosaicCount();
+                    var cfg = {
+                        spaceBetween: mosaicGap,
+                        freeMode: false,
+                        watchSlidesProgress: true,
+                        slideToClickedSlide: true,
+                        initialSlide: startSlide,
+                        watchOverflow: true,
+                        slidesPerView: count,
+                        slidesPerGroup: count
+                    };
+
+                    if (mobile) {
+                        cfg.direction = 'horizontal';
+                    } else if (mosaicPosition === 'left' || mosaicPosition === 'right') {
+                        cfg.direction = 'vertical';
+                    } else {
+                        cfg.direction = 'horizontal';
+                    }
+
+                    return cfg;
+                }
+
+                function resizeMosaic() {
+                    var mobile = window.innerWidth <= 480;
+                    if (mobile) {
+                        $mosaicContainer.css({ width: '', height: '' });
+                        return;
+                    }
+                    var $wrapper = $mosaicContainer.parent();
+                    var count = getEffectiveMosaicCount();
+                    var availableLength;
+                    if (mosaicPosition === 'left' || mosaicPosition === 'right') {
+                        var wrapperH = $wrapper.height();
+                        var albumH = $container.height();
+                        availableLength = (wrapperH > 0 ? wrapperH : albumH) || 300;
+                    } else {
+                        availableLength = $wrapper.width() || 400;
+                    }
+                    var thumbSize = (availableLength - (mosaicGap * (count - 1))) / count;
+                    thumbSize = Math.max(1, Math.floor(thumbSize));
+                    if (mosaicPosition === 'left' || mosaicPosition === 'right') {
+                        $mosaicContainer.css({ width: thumbSize + 'px', height: '' });
+                    } else {
+                        $mosaicContainer.css({ width: '', height: thumbSize + 'px' });
+                    }
+                    if (mosaicSwiper && !mosaicSwiper.destroyed) {
+                        mosaicSwiper.update();
+                    }
+                }
+
+                mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', buildMosaicConfig(initialSlide));
+                resizeMosaic();
+                mosaicPageSize = getEffectiveMosaicCount();
+
+                // Deferred layout pass to pick up correct dimensions after first paint.
+                var raf = window.requestAnimationFrame || function(cb) { window.setTimeout(cb, 16); };
+                raf(function() { raf(resizeMosaic); });
+
+                // Navigation arrows
+                if (!$mosaicContainer.find('.jzsa-mosaic-arrow-prev').length) {
+                    $mosaicContainer.append(
+                        '<button type="button" class="jzsa-mosaic-arrow jzsa-mosaic-arrow-prev swiper-button-prev" aria-label="Previous page"></button>' +
+                        '<button type="button" class="jzsa-mosaic-arrow jzsa-mosaic-arrow-next swiper-button-next" aria-label="Next page"></button>'
+                    );
+                    $mosaicContainer.on('click', '.jzsa-mosaic-arrow-prev', function(e) {
+                        e.preventDefault();
+                        if (mosaicSwiper && !mosaicSwiper.destroyed) { mosaicSwiper.slidePrev(); }
+                    });
+                    $mosaicContainer.on('click', '.jzsa-mosaic-arrow-next', function(e) {
+                        e.preventDefault();
+                        if (mosaicSwiper && !mosaicSwiper.destroyed) { mosaicSwiper.slideNext(); }
+                    });
+                }
+
+                // Resize observer for dynamic layout
+                if (typeof ResizeObserver !== 'undefined') {
+                    var wrapperEl = $mosaicContainer.parent()[0];
+                    if (wrapperEl) {
+                        var mosaicResizeObserver = new ResizeObserver(function() { resizeMosaic(); });
+                        mosaicResizeObserver.observe(wrapperEl);
+                    }
+                }
+
+                // Window resize: rebuild mosaic direction if orientation changes
+                $(window).on('resize.jzsaMosaic-' + galleryId, function() {
+                    if (!mosaicSwiper || mosaicSwiper.destroyed) { return; }
+                    resizeMosaic();
+                    var newCfg = buildMosaicConfig(0);
+                    if (mosaicSwiper.params.direction !== newCfg.direction) {
+                        var currentSlide = mosaicSwiper.activeIndex;
+                        mosaicSwiper.destroy(true, true);
+                        mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', buildMosaicConfig(currentSlide));
+                    }
+                });
+            }
+        }
 
         // --------------------------------------------------------------------
         // Loading overlay: show a subtle loader until the first image is ready
@@ -2944,9 +3102,26 @@
                 interactionLock: interactionLock
             });
 
+            // Add thumbs config if mosaic is enabled
+            if (mosaicSwiper) {
+                swiperConfig.thumbs = {
+                    swiper: mosaicSwiper
+                };
+            }
+
             // Initialize Swiper (pass the DOM element directly to avoid selector resolution issues)
             var swiper = new Swiper($container[0], swiperConfig);
             swipers[galleryId] = swiper;
+
+            // Sync mosaic with main gallery: scroll mosaic to keep active thumb visible
+            if (mosaicSwiper) {
+                swiper.on('slideChange', function() {
+                    if (mosaicSwiper && !mosaicSwiper.destroyed) {
+                        var pageStart = Math.floor(swiper.activeIndex / mosaicPageSize) * mosaicPageSize;
+                        mosaicSwiper.slideTo(pageStart);
+                    }
+                });
+            }
 
             // Recolor SVG icons when controls-color is customized
             var controlsColor = $container.attr('data-controls-color');

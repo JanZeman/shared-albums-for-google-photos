@@ -85,6 +85,10 @@ class JZSA_Settings_Page {
 		$video_gallery_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" show-videos="true" limit="12" gallery-layout="justified" gallery-row-height="180" video-controls-color="#00A878"]';
 		$video_photos_only_shortcode = '[jzsa-album link="' . $video_sample_link . '" show-videos="false" limit="6" video-controls-color="#7A5CFF"]';
 		$controls_custom_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" slideshow="true" show-link-button="true" show-download-button="true" controls-color="#FFD400"]';
+		$mosaic_sample_link        = 'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R';
+		$mosaic_bottom_shortcode   = '[jzsa-album link="' . $mosaic_sample_link . '" mode="slider" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="12"]';
+		$mosaic_right_shortcode    = '[jzsa-album link="' . $mosaic_sample_link . '" mode="slider" width="800" height="600" mosaic="true" mosaic-position="right"]';
+		$mosaic_carousel_shortcode = '[jzsa-album link="' . $mosaic_sample_link . '" mode="carousel" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="18"]';
 		?>
 		<div class="wrap jzsa-settings-wrap">
 			<h1>
@@ -784,6 +788,51 @@ class JZSA_Settings_Page {
 						</div>
 						</div>
 
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Mosaic Strip at the Bottom (Slider 800×600)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Slider with a horizontal thumbnail strip below the main photo. Click any thumbnail to jump to that photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
+							<code><?php echo esc_html( $mosaic_bottom_shortcode ); ?></code>
+							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+						<div class="jzsa-preview-container jzsa-preview-container-mosaic-bottom">
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( $mosaic_bottom_shortcode );
+							?>
+						</div>
+					</div>
+
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Mosaic Strip on the Right (Slider 800×600)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Slider with a vertical thumbnail strip on the right side. Great for landscape photos where the strip can use the full height.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
+							<code><?php echo esc_html( $mosaic_right_shortcode ); ?></code>
+							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+						<div class="jzsa-preview-container jzsa-preview-container-mosaic-right">
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( $mosaic_right_shortcode );
+							?>
+						</div>
+					</div>
+
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Mosaic Strip with Carousel', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Carousel mode with a thumbnail strip at the bottom. The carousel shows multiple photos at once; the mosaic strip provides an overview of the full album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
+							<code><?php echo esc_html( $mosaic_carousel_shortcode ); ?></code>
+							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+						<div class="jzsa-preview-container jzsa-preview-container-mosaic-carousel" style="height:auto;">
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( $mosaic_carousel_shortcode );
+							?>
+						</div>
+					</div>
+
 					</div>
 
 				<!-- Start Tutorial -->
@@ -1154,6 +1203,35 @@ class JZSA_Settings_Page {
 								<td><code>video-controls-color</code></td>
 								<td><?php esc_html_e( 'Accent color for video play button and control bar. Any valid CSS hex color (e.g. "#00b2ff", "#FF69B4").', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>#00b2ff</td>
+							</tr>
+						</tbody>
+					</table>
+
+					<h3><?php esc_html_e( 'Mosaic Thumbnail Strip', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<p><?php esc_html_e( 'Display a strip of thumbnail previews alongside the main slider or carousel. Works with mode="slider" and mode="carousel". The strip is synchronized with the main swiper — clicking a thumbnail jumps to that photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<table class="jzsa-settings-table">
+						<thead>
+							<tr>
+								<th><?php esc_html_e( 'Parameter', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Description', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Default', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><code>mosaic</code></td>
+								<td><?php esc_html_e( 'Enable the mosaic thumbnail strip: "true" or "false".', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>false</td>
+							</tr>
+							<tr>
+								<td><code>mosaic-position</code></td>
+								<td><?php esc_html_e( 'Position of the thumbnail strip relative to the main viewer: "top", "bottom", "left", or "right".', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>bottom</td>
+							</tr>
+							<tr>
+								<td><code>mosaic-count</code></td>
+								<td><?php esc_html_e( 'Number of thumbnails visible at once in the strip. Use an integer (e.g. "5") or "auto" to let the plugin calculate the best fit based on the available space.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>auto</td>
 							</tr>
 						</tbody>
 					</table>

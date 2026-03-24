@@ -19,8 +19,8 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     --jzsa-controls-icon-size: 20px;
     --jzsa-controls-pill-radius: 20px;
     --jzsa-controls-square-radius: 4px;
-    --jzsa-nav-opacity: 0.8;
-    --jzsa-nav-opacity-hover: 0.9;
+    --jzsa-nav-opacity: 1;
+    --jzsa-nav-opacity-hover: 1;
     --jzsa-nav-opacity-active: 1;
     --jzsa-controls-fs-scale: 1.25;
     --jzsa-controls-color: #ffffff;
@@ -134,8 +134,6 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
-    filter: opacity(var(--jzsa-nav-opacity));
-    transition: filter 0.15s ease;
 }
 
 .jzsa-album .swiper-button-prev { left: 0; }
@@ -175,6 +173,23 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
+    transition: transform 0.15s ease;
+}
+
+.jzsa-album .swiper-button-external-link:after,
+.jzsa-album .swiper-button-download:after,
+.jzsa-album .swiper-button-play-pause:after,
+.jzsa-album .swiper-button-fullscreen:after {
+    transition: transform 0.15s ease;
+}
+
+.jzsa-album .swiper-button-next:hover:after,
+.jzsa-album .swiper-button-prev:hover:after,
+.jzsa-album .swiper-button-play-pause:hover:after,
+.jzsa-album .swiper-button-fullscreen:hover:after,
+.jzsa-album .swiper-button-external-link:hover:after,
+.jzsa-album .swiper-button-download:hover:after {
+    transform: scale(1.1);
 }
 
 .jzsa-album .swiper-button-next:after {
@@ -185,15 +200,25 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 24'><path d='M10 2L2 12l8 10' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' paint-order='stroke fill'/><path d='M10 2L2 12l8 10' fill='none' stroke='%23000000' stroke-width='4.5' stroke-linecap='round' stroke-linejoin='round'/><path d='M10 2L2 12l8 10' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
 }
 
-.jzsa-album .swiper-button-next:hover,
-.jzsa-album .swiper-button-prev:hover {
-    filter: opacity(var(--jzsa-nav-opacity-hover)) !important;
+.jzsa-mosaic .swiper-button-next:after,
+.jzsa-mosaic .swiper-button-prev:after {
+    content: '' !important;
+    display: block;
+    width: 18px;
+    height: 18px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
-.jzsa-album .swiper-button-next:active,
-.jzsa-album .swiper-button-prev:active {
-    filter: opacity(var(--jzsa-nav-opacity-active)) !important;
+.jzsa-mosaic .swiper-button-next:after {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 24'><path d='M2 2l8 10-8 10' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' paint-order='stroke fill'/><path d='M2 2l8 10-8 10' fill='none' stroke='%23000000' stroke-width='4.5' stroke-linecap='round' stroke-linejoin='round'/><path d='M2 2l8 10-8 10' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
 }
+
+.jzsa-mosaic .swiper-button-prev:after {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 24'><path d='M10 2L2 12l8 10' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' paint-order='stroke fill'/><path d='M10 2L2 12l8 10' fill='none' stroke='%23000000' stroke-width='4.5' stroke-linecap='round' stroke-linejoin='round'/><path d='M10 2L2 12l8 10' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+}
+
 
 .jzsa-album .swiper-button-next.swiper-button-disabled,
 .jzsa-album .swiper-button-prev.swiper-button-disabled {
@@ -218,13 +243,8 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    filter: opacity(var(--jzsa-nav-opacity));
-    transition: filter 0.15s ease;
 }
 
-.jzsa-album .swiper-button-external-link:hover {
-    filter: opacity(var(--jzsa-nav-opacity-hover)) !important;
-}
 
 .jzsa-album .swiper-button-external-link:after {
     content: '';
@@ -254,8 +274,6 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     display: none;
     align-items: center;
     justify-content: center;
-    filter: opacity(var(--jzsa-nav-opacity));
-    transition: filter 0.15s ease;
 }
 
 .jzsa-album[data-show-download-button="true"] .swiper-button-download {
@@ -267,9 +285,6 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     left: calc(var(--jzsa-controls-circle-size) + 10px);
 }
 
-.jzsa-album .swiper-button-download:hover {
-    filter: opacity(var(--jzsa-nav-opacity-hover)) !important;
-}
 
 .jzsa-album .swiper-button-download:after {
     content: '';
@@ -329,8 +344,6 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     display: none;
     align-items: center;
     justify-content: center;
-    filter: opacity(var(--jzsa-nav-opacity));
-    transition: filter 0.15s ease;
     appearance: none;
     -webkit-appearance: none;
     padding: 0;
@@ -395,13 +408,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     }
 }
 
-.jzsa-album .swiper-button-play-pause:hover {
-    filter: opacity(var(--jzsa-nav-opacity-hover)) !important;
-}
 
-.jzsa-album .swiper-button-play-pause:active {
-    filter: opacity(var(--jzsa-nav-opacity-active)) !important;
-}
 
 
 /* Play icon (default — slideshow paused) */
@@ -438,13 +445,8 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     display: flex;
     align-items: center;
     justify-content: center;
-    filter: opacity(var(--jzsa-nav-opacity));
-    transition: filter 0.15s ease;
 }
 
-.jzsa-album .swiper-button-fullscreen:hover {
-    filter: opacity(var(--jzsa-nav-opacity-hover)) !important;
-}
 
 .jzsa-album .swiper-button-fullscreen:after {
     content: '';
@@ -843,12 +845,10 @@ body.jzsa-no-scroll {
     animation: jzsa-controls-fade-in-soft 1000ms ease-out both;
 }
 
-/* Nav arrows and play/pause use subtle opacity via filter (immune to Swiper's opacity control) */
 .jzsa-album.jzsa-loaded .swiper-button-prev,
 .jzsa-album.jzsa-loaded .swiper-button-next,
 .jzsa-album.jzsa-loaded .swiper-button-play-pause {
     animation: none;
-    filter: opacity(var(--jzsa-nav-opacity));
 }
 
 /* Gallery controls live in a sibling overlay shell; hide them while content is pending. */
@@ -1685,4 +1685,221 @@ body.jzsa-no-scroll {
     border-style: solid;
     border-width: 9px 0 9px 16px;
     border-color: transparent transparent transparent #fff;
+}
+
+/* ============================================================================
+   Mosaic (thumbnail strip alongside the main gallery)
+   ============================================================================ */
+
+/* Wrapper: flexbox layout for gallery + mosaic strip side by side */
+.jzsa-gallery-wrapper {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    height: 100%;
+}
+
+.jzsa-gallery-wrapper.jzsa-mosaic-left  { flex-direction: row-reverse; }
+.jzsa-gallery-wrapper.jzsa-mosaic-right { flex-direction: row; }
+.jzsa-gallery-wrapper.jzsa-mosaic-top   { flex-direction: column-reverse; }
+.jzsa-gallery-wrapper.jzsa-mosaic-bottom { flex-direction: column; }
+
+/* Main gallery fills remaining space */
+.jzsa-gallery-wrapper .jzsa-album {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+}
+
+/* Side rail: left/right placement */
+.jzsa-gallery-wrapper.jzsa-mosaic-left .jzsa-mosaic,
+.jzsa-gallery-wrapper.jzsa-mosaic-right .jzsa-mosaic {
+    width: var(--mosaic-width, 250px);
+    height: 100%;
+    max-height: 100%;
+    flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+}
+
+/* Horizontal strip: top/bottom placement */
+.jzsa-gallery-wrapper.jzsa-mosaic-top .jzsa-mosaic,
+.jzsa-gallery-wrapper.jzsa-mosaic-bottom .jzsa-mosaic {
+    width: 100%;
+    height: var(--mosaic-strip-height, 120px);
+    flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+}
+
+/* Thumbnail slides */
+.jzsa-mosaic .swiper-slide {
+    cursor: pointer;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    border-radius: 4px;
+    width: 100%;
+}
+
+/* Horizontal strip: height from padding-bottom trick (Swiper must not override) */
+.jzsa-mosaic:not(.jzsa-mosaic-vertical) .swiper-slide {
+    height: auto !important;
+}
+
+/* Inner wrapper forces square thumbnails via padding-bottom trick (horizontal mode) */
+.jzsa-mosaic .jzsa-mosaic-thumb-inner {
+    display: block;
+    width: 100%;
+    padding-bottom: 100%;
+    height: 0;
+    position: relative;
+    overflow: hidden;
+    border-radius: inherit;
+}
+
+/* Vertical mode: let Swiper control slide heights; thumb fills the slide */
+.jzsa-mosaic.jzsa-mosaic-vertical .jzsa-mosaic-thumb-inner {
+    padding-bottom: 0;
+    height: 100%;
+}
+
+.jzsa-mosaic .jzsa-mosaic-thumb-inner img {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.jzsa-mosaic .swiper-slide:hover {
+    opacity: 0.8;
+    transform: scale(1.02);
+}
+
+.jzsa-mosaic .swiper-slide-thumb-active {
+    opacity: 1;
+    outline: 3px solid var(--jzsa-controls-color, #0b57d0);
+    outline-offset: -3px;
+}
+
+/* Mosaic navigation arrows */
+.jzsa-mosaic .jzsa-mosaic-arrow {
+    position: absolute;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.3s;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--jzsa-controls-color, #fff);
+    --swiper-navigation-color: var(--jzsa-controls-color, #fff);
+    --swiper-navigation-size: 16px;
+}
+
+.jzsa-mosaic:hover .jzsa-mosaic-arrow {
+    opacity: 1;
+}
+
+.jzsa-mosaic .jzsa-mosaic-arrow:after {
+    transition: transform 0.15s ease;
+}
+
+.jzsa-mosaic:hover .jzsa-mosaic-arrow:hover:after {
+    transform: scale(1.1);
+}
+
+/* Vertical rail: combine rotation with scale on hover */
+.jzsa-gallery-wrapper.jzsa-mosaic-left .jzsa-mosaic-arrow-prev:hover::after,
+.jzsa-gallery-wrapper.jzsa-mosaic-right .jzsa-mosaic-arrow-prev:hover::after,
+.jzsa-gallery-wrapper.jzsa-mosaic-left .jzsa-mosaic-arrow-next:hover::after,
+.jzsa-gallery-wrapper.jzsa-mosaic-right .jzsa-mosaic-arrow-next:hover::after {
+    transform: rotate(90deg) scale(1.1);
+}
+
+/* Horizontal strip (top/bottom): full-height clickable zone flush to left/right edges */
+.jzsa-gallery-wrapper.jzsa-mosaic-top .jzsa-mosaic-arrow-prev,
+.jzsa-gallery-wrapper.jzsa-mosaic-bottom .jzsa-mosaic-arrow-prev {
+    top: 0 !important; bottom: 0 !important; height: 100% !important;
+    left: 0 !important; right: auto !important; width: 36px !important;
+    margin: 0 !important;
+    background: transparent !important;
+    transform: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.jzsa-gallery-wrapper.jzsa-mosaic-top .jzsa-mosaic-arrow-next,
+.jzsa-gallery-wrapper.jzsa-mosaic-bottom .jzsa-mosaic-arrow-next {
+    top: 0 !important; bottom: 0 !important; height: 100% !important;
+    right: 0 !important; left: auto !important; width: 36px !important;
+    margin: 0 !important;
+    background: transparent !important;
+    transform: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Vertical rail (left/right): full-width clickable zone flush to top/bottom edges */
+.jzsa-gallery-wrapper.jzsa-mosaic-left .jzsa-mosaic-arrow-prev,
+.jzsa-gallery-wrapper.jzsa-mosaic-right .jzsa-mosaic-arrow-prev {
+    left: 0 !important; right: 0 !important; width: 100% !important;
+    top: 0 !important; bottom: auto !important; height: 36px !important;
+    margin: 0 !important;
+    background: transparent !important;
+    transform: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.jzsa-gallery-wrapper.jzsa-mosaic-left .jzsa-mosaic-arrow-next,
+.jzsa-gallery-wrapper.jzsa-mosaic-right .jzsa-mosaic-arrow-next {
+    left: 0 !important; right: 0 !important; width: 100% !important;
+    bottom: 0 !important; top: auto !important; height: 36px !important;
+    margin: 0 !important;
+    background: transparent !important;
+    transform: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Rotate SVG icon for vertical rails */
+.jzsa-gallery-wrapper.jzsa-mosaic-left .jzsa-mosaic-arrow-prev::after,
+.jzsa-gallery-wrapper.jzsa-mosaic-right .jzsa-mosaic-arrow-prev::after {
+    transform: rotate(90deg);
+}
+
+.jzsa-gallery-wrapper.jzsa-mosaic-left .jzsa-mosaic-arrow-next::after,
+.jzsa-gallery-wrapper.jzsa-mosaic-right .jzsa-mosaic-arrow-next::after {
+    transform: rotate(90deg);
+}
+
+/* Responsive: collapse to horizontal strip on small screens */
+@media (max-width: 480px) {
+    .jzsa-gallery-wrapper {
+        flex-direction: column !important;
+    }
+
+    .jzsa-gallery-wrapper .jzsa-mosaic {
+        width: 100% !important;
+        height: 80px !important;
+    }
+
+    .jzsa-mosaic .jzsa-mosaic-arrow {
+        display: none !important;
+    }
 }

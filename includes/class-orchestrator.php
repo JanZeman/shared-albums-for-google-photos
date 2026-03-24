@@ -59,6 +59,14 @@ class JZSA_Shared_Albums {
 	const DEFAULT_FULLSCREEN_SOURCE_HEIGHT = 1440;
 
 	/**
+	 * Default thumbnail dimensions for mosaic (retina optimized)
+	 *
+	 * @var int
+	 */
+	const DEFAULT_THUMB_WIDTH = 400;
+	const DEFAULT_THUMB_HEIGHT = 400;
+
+	/**
 	 * Maximum number of media entries to load from album (absolute upper bound).
 	 *
 	 * @var int
@@ -409,6 +417,11 @@ class JZSA_Shared_Albums {
 			'gallery-row-height'     => $this->parse_gallery_row_height( $atts ),
 			'gallery-rows'           => $this->parse_gallery_rows( $atts ),
 			'gallery-scrollable'     => $this->parse_bool( $atts, 'gallery-scrollable', false ),
+
+			// Mosaic (thumbnail strip alongside the main gallery)
+			'mosaic'          => $this->parse_bool( $atts, 'mosaic', false ),
+			'mosaic-position' => $this->parse_mosaic_position( $atts ),
+			'mosaic-count'    => $this->parse_mosaic_count( $atts ),
 		);
 
 		return $config;
@@ -729,6 +742,48 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
+	 * Parse mosaic position attribute.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string 'top', 'bottom', 'left', or 'right'.
+	 */
+	private function parse_mosaic_position( $atts ) {
+		if ( ! isset( $atts['mosaic-position'] ) ) {
+			return 'bottom';
+		}
+
+		$value = strtolower( trim( (string) $atts['mosaic-position'] ) );
+
+		if ( in_array( $value, array( 'top', 'bottom', 'left', 'right' ), true ) ) {
+			return $value;
+		}
+
+		return 'right';
+	}
+
+	/**
+	 * Parse mosaic-count attribute.
+	 *
+	 * Accepts a positive integer or "auto" (rendered as 0 for JS to calculate).
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return int Mosaic count (0 means auto).
+	 */
+	private function parse_mosaic_count( $atts ) {
+		if ( ! isset( $atts['mosaic-count'] ) ) {
+			return 0; // Auto by default: JS will calculate from available space.
+		}
+
+		if ( 'auto' === strtolower( trim( (string) $atts['mosaic-count'] ) ) ) {
+			return 0;
+		}
+
+		$value = intval( $atts['mosaic-count'] );
+
+		return $value > 0 ? $value : 0;
+	}
+
+	/**
 	 * Parse fullscreen trigger mode attribute.
 	 *
 	 * @param array $atts Attributes
@@ -823,7 +878,8 @@ class JZSA_Shared_Albums {
 			}
 
 			$photo = array(
-				'full' => sprintf( '%s=w%d-h%d', $base, $full_width, $full_height ),
+				'full'  => sprintf( '%s=w%d-h%d', $base, $full_width, $full_height ),
+				'thumb' => sprintf( '%s=w%d-h%d-c', $base, self::DEFAULT_THUMB_WIDTH, self::DEFAULT_THUMB_HEIGHT ),
 			);
 
 			// Add preview URL if dimensions provided.

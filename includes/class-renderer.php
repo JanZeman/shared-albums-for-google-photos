@@ -33,6 +33,11 @@ class JZSA_Renderer {
 			$html .= $this->render_deprecation_notice();
 		}
 
+		// Warn admins if mosaic is used with an incompatible mode
+		if ( ! empty( $config['mosaic'] ) && 'gallery' === $config['mode'] && is_user_logged_in() && current_user_can( 'manage_options' ) ) {
+			$html .= $this->render_mosaic_mode_notice();
+		}
+
 		// Gallery mode: plain thumbnail gallery, no Swiper structure
 		if ( 'gallery' === $config['mode'] ) {
 			$html .= $this->build_thumbnail_gallery_container( $gallery_id, $config );
@@ -98,6 +103,23 @@ class JZSA_Renderer {
 	}
 
 	/**
+	 * Render mosaic mode compatibility warning (admins only)
+	 *
+	 * @return string HTML
+	 */
+	private function render_mosaic_mode_notice() {
+		return sprintf(
+			'<div class="jzsa-warning" style="border: 2px solid #f0ad4e; border-radius: 4px; padding: 12px; margin: 8px; background: #fff9e6; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif;">' .
+			'<p style="margin: 0 0 6px 0; color: #856404; font-size: 13px; font-weight: 600;">%s %s</p>' .
+			'<p style="margin: 0; color: #856404; font-size: 12px;">%s</p>' .
+			'</div>',
+			esc_html__( 'Warning (visible to administrators only):', 'janzeman-shared-albums-for-google-photos' ),
+			esc_html__( 'Mosaic Requires Slider or Carousel Mode', 'janzeman-shared-albums-for-google-photos' ),
+			esc_html__( 'The mosaic="true" parameter only works with mode="slider" or mode="carousel". It is ignored in the default gallery mode. Please add mode="slider" or mode="carousel" to your shortcode.', 'janzeman-shared-albums-for-google-photos' )
+		);
+	}
+
+	/**
 	 * Build gallery container HTML
 	 *
 	 * @param string $gallery_id Gallery ID
@@ -108,11 +130,25 @@ class JZSA_Renderer {
 		$styles = $this->build_container_styles( $config );
 		$attrs  = $this->build_data_attributes( $config );
 
-		$html = sprintf(
+		$mosaic_enabled = ! empty( $config['mosaic'] );
+		$mosaic_pos     = ! empty( $config['mosaic-position'] ) ? $config['mosaic-position'] : 'right';
+
+		$html = '';
+
+		// Mosaic wrapper: wraps both the main gallery and the thumbnail strip.
+		if ( $mosaic_enabled ) {
+			$html .= sprintf(
+				'<div class="jzsa-gallery-wrapper jzsa-mosaic-%s" style="%s">',
+				esc_attr( $mosaic_pos ),
+				esc_attr( $styles )
+			);
+		}
+
+		$html .= sprintf(
 			'<div id="%s" class="jzsa-album swiper jzsa-loader-pending jzsa-content-intro" %s style="%s">',
 			esc_attr( $gallery_id ),
 			$attrs,
-			esc_attr( $styles )
+			$mosaic_enabled ? '' : esc_attr( $styles )
 		);
 
 		$html .= '<div class="swiper-wrapper"></div>';
@@ -145,7 +181,18 @@ class JZSA_Renderer {
 		if ( empty( $config['fullscreen-toggle'] ) || 'disabled' !== $config['fullscreen-toggle'] ) {
 			$html .= '<div class="swiper-button-fullscreen"></div>';
 		}
-		$html .= '</div>';
+		$html .= '</div>'; // Close .jzsa-album
+
+		// Mosaic thumbnail strip (Swiper-powered, synced via thumbs module).
+		if ( $mosaic_enabled ) {
+			$html .= sprintf(
+				'<div class="jzsa-mosaic swiper" id="%s-mosaic">',
+				esc_attr( $gallery_id )
+			);
+			$html .= '<div class="swiper-wrapper"></div>';
+			$html .= '</div>';
+			$html .= '</div>'; // Close .jzsa-gallery-wrapper
+		}
 
 		return $html;
 	}
@@ -206,12 +253,22 @@ class JZSA_Renderer {
 			'show-link-button'        => 'data-show-link-button',
 			'show-download-button'    => 'data-show-download-button',
 			'video-controls-autohide' => 'data-video-controls-autohide',
+			'mosaic'                  => 'data-mosaic',
 		);
 
 		foreach ( $boolean_attrs as $key => $attr_name ) {
 			if ( isset( $config[ $key ] ) ) {
 				$attrs[] = sprintf( '%s="%s"', $attr_name, $config[ $key ] ? 'true' : 'false' );
 			}
+		}
+
+		// Mosaic attributes
+		if ( ! empty( $config['mosaic-position'] ) ) {
+			$attrs[] = sprintf( 'data-mosaic-position="%s"', esc_attr( $config['mosaic-position'] ) );
+		}
+
+		if ( isset( $config['mosaic-count'] ) ) {
+			$attrs[] = sprintf( 'data-mosaic-count="%d"', intval( $config['mosaic-count'] ) );
 		}
 
 		// Numeric/string attributes
