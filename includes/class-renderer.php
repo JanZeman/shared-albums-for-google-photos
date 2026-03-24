@@ -223,6 +223,9 @@ class JZSA_Renderer {
 		if ( ! empty( $config['video-controls-color'] ) ) {
 			$styles[] = '--jzsa-video-controls-color: ' . esc_attr( $config['video-controls-color'] );
 		}
+		if ( isset( $config['corner-radius'] ) ) {
+			$styles[] = '--jzsa-corner-radius: ' . intval( $config['corner-radius'] ) . 'px';
+		}
 
 		return implode( '; ', $styles );
 	}
@@ -361,6 +364,9 @@ class JZSA_Renderer {
 		$attrs[] = sprintf( 'data-gallery-row-height="%d"', $gallery_row_height );
 		$attrs[] = sprintf( 'data-gallery-rows="%d"', $gallery_rows );
 		$attrs[] = sprintf( 'data-gallery-scrollable="%s"', $gallery_scrollable ? 'true' : 'false' );
+		if ( isset( $config['gallery-gap'] ) ) {
+			$attrs[] = sprintf( 'data-gallery-gap="%d"', intval( $config['gallery-gap'] ) );
+		}
 
 		if ( ! empty( $config['width-explicit'] ) && isset( $config['width'] ) && $config['width'] !== 'auto' ) {
 			$attrs[] = sprintf( 'data-gallery-explicit-width="%d"', intval( $config['width'] ) );
@@ -447,6 +453,9 @@ class JZSA_Renderer {
 		}
 		if ( ! empty( $config['video-controls-color'] ) ) {
 			$styles[] = '--jzsa-video-controls-color: ' . esc_attr( $config['video-controls-color'] );
+		}
+		if ( isset( $config['corner-radius'] ) ) {
+			$styles[] = '--jzsa-corner-radius: ' . intval( $config['corner-radius'] ) . 'px';
 		}
 		if ( ! empty( $config['width-explicit'] ) && isset( $config['width'] ) && $config['width'] !== 'auto' ) {
 			$styles[] = 'width: ' . intval( $config['width'] ) . 'px';

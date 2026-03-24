@@ -3633,10 +3633,12 @@
         var columns       = parseInt(readGalleryAttr($container, 'columns'), 10) || 3;
         var columnsTablet = parseInt(readGalleryAttr($container, 'columns-tablet'), 10) || 2;
         var columnsMobile = parseInt(readGalleryAttr($container, 'columns-mobile'), 10) || 1;
-        // Pass column counts as CSS custom properties so the media queries pick them up
+        // Pass column counts and gap as CSS custom properties so the media queries pick them up
+        var galleryGap = parseInt(readGalleryAttr($container, 'gap'), 10) || 4;
         $container[0].style.setProperty('--jzsa-gallery-columns',        columns);
         $container[0].style.setProperty('--jzsa-gallery-columns-tablet', columnsTablet);
         $container[0].style.setProperty('--jzsa-gallery-columns-mobile', columnsMobile);
+        $container[0].style.setProperty('--jzsa-gallery-gap',            galleryGap + 'px');
         var allowThumbFullscreen =
             $container.attr('data-fullscreen-toggle') !== 'disabled' &&
             $container.attr('data-interaction-lock') !== 'true';
@@ -4610,7 +4612,7 @@
      */
     function getJustifiedLayoutData($container, allPhotos) {
         var targetHeight = parseInt(readGalleryAttr($container, 'row-height'), 10) || 200;
-        var gap = 4;
+        var gap = parseInt(readGalleryAttr($container, 'gap'), 10) || 4;
         var containerWidth = getGalleryContainerWidth($container);
 
         var photosWithRatios = allPhotos.map(function(photo, index) {
@@ -4933,7 +4935,7 @@
 
             var renderOptions = options || {};
             var useScroller = galleryScrollable && galleryRows > 0;
-            var gap = 4;
+            var gap = parseInt(readGalleryAttr($container, 'gap'), 10) || 4;
 
             if (layout === 'justified') {
                 var justified = getJustifiedLayoutData($container, allPhotos);
@@ -5134,7 +5136,7 @@
                             adjustedRowHeight = $adjustedThumb.length ? $adjustedThumb.outerHeight() : 0;
                         }
                         if (adjustedRowHeight && adjustedRowHeight > 0) {
-                            var adjustedVisibleHeight = (galleryRows * adjustedRowHeight) + ((galleryRows - 1) * gap) - 1;
+                            var adjustedVisibleHeight = (galleryRows * adjustedRowHeight) + ((galleryRows - 1) * gap) + 1;
                             setGalleryScrollableState($container, true, adjustedVisibleHeight);
                         }
                     } else {

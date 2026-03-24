@@ -88,6 +88,7 @@ class JZSA_Settings_Page {
 		$mosaic_sample_link        = 'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R';
 		$mosaic_bottom_shortcode   = '[jzsa-album link="' . $mosaic_sample_link . '" mode="slider" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="12"]';
 		$mosaic_right_shortcode    = '[jzsa-album link="' . $mosaic_sample_link . '" mode="slider" width="800" height="600" mosaic="true" mosaic-position="right"]';
+		$mosaic_rounded_shortcode  = '[jzsa-album link="' . $mosaic_sample_link . '" mode="slider" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="12" corner-radius="16"]';
 		$mosaic_carousel_shortcode = '[jzsa-album link="' . $mosaic_sample_link . '" mode="carousel" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="18"]';
 		?>
 		<div class="wrap jzsa-settings-wrap">
@@ -325,13 +326,13 @@ class JZSA_Settings_Page {
 						<h3><?php esc_html_e( 'Gallery Mode – Scrolling Instead of Paging', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Use gallery-scrollable="true" with gallery-rows to show a fixed-height, vertically scrollable gallery instead of page controls.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" gallery-rows="2" gallery-scrollable="true" limit="18"]</code>
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" gallery-rows="2" gallery-scrollable="true" corner-radius="12" gallery-gap="12" limit="18"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-gallery-scrollable" style="height:auto;">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" gallery-rows="2" gallery-scrollable="true" limit="18"]' );
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" gallery-rows="2" gallery-scrollable="true" corner-radius="12" gallery-gap="12" limit="18"]' );
 						?>
 					</div>
 					</div>
@@ -789,7 +790,7 @@ class JZSA_Settings_Page {
 						</div>
 
 					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Mosaic Strip at the Bottom (Slider 800×600)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<h3><?php esc_html_e( 'Mosaic Strip at the Bottom', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Slider with a horizontal thumbnail strip below the main photo. Click any thumbnail to jump to that photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $mosaic_bottom_shortcode ); ?></code>
@@ -804,7 +805,22 @@ class JZSA_Settings_Page {
 					</div>
 
 					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Mosaic Strip on the Right (Slider 800×600)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<h3><?php esc_html_e( 'Mosaic Strip With Rounded Corners', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Same as above with corner-radius="16" for rounded corners on the slider and thumbnail strip.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
+							<code><?php echo esc_html( $mosaic_rounded_shortcode ); ?></code>
+							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+						<div class="jzsa-preview-container jzsa-preview-container-mosaic-rounded">
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( $mosaic_rounded_shortcode );
+							?>
+						</div>
+					</div>
+
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Mosaic Strip on the Right', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Slider with a vertical thumbnail strip on the right side. Great for landscape photos where the strip can use the full height.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $mosaic_right_shortcode ); ?></code>
@@ -1028,6 +1044,11 @@ class JZSA_Settings_Page {
 								<td><?php esc_html_e( 'When set to "true" (and gallery-rows > 0), uses a single vertically scrollable gallery instead of page controls.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>false</td>
 							</tr>
+							<tr>
+								<td><code>gallery-gap</code></td>
+								<td><?php esc_html_e( 'Spacing between gallery thumbnails in pixels. Applies to both grid and justified layouts.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>4</td>
+							</tr>
 						</tbody>
 					</table>
 
@@ -1050,6 +1071,11 @@ class JZSA_Settings_Page {
 								<td><code>controls-color</code></td>
 								<td>Color for custom album controls (previous/next, fullscreen, link, download, play/pause). Any valid 6-digit hex color.</td>
 								<td>#ffffff</td>
+							</tr>
+							<tr>
+								<td><code>corner-radius</code></td>
+								<td><?php esc_html_e( 'Rounded corner radius in pixels. Applies to slider, carousel, gallery thumbnails, and mosaic strips. Use 0 for square corners. Disabled in fullscreen mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>0</td>
 							</tr>
 							<tr>
 								<td><code>image-fit</code></td>

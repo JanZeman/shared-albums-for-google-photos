@@ -5,6 +5,8 @@
 .jzsa-album {
     width: 100%;
     height: 100%;
+    margin-left: auto;
+    margin-right: auto;
     /* Use configurable background; fallback to black if not set */
 background-color: var(--gallery-bg-color, #FFFFFF);
     --jzsa-controls-visible-opacity: 0.8;
@@ -662,13 +664,29 @@ body.jzsa-no-scroll {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 4px;
+}
+
+/* Slider mode: round the container, not individual slides.
+   .swiper already has overflow:hidden, so border-radius on the container
+   clips all content — including mid-transition slides — to rounded corners. */
+.jzsa-album[data-mode="slider"] {
+    border-radius: var(--jzsa-corner-radius, 0);
+}
+
+/* Gallery mode thumbnails */
+.jzsa-album .jzsa-gallery-thumb {
+    border-radius: var(--jzsa-corner-radius, 0);
 }
 
 /* Carousel mode - adjust image sizing */
 .jzsa-album[data-mode="carousel"] .swiper-zoom-container {
     width: 100%;
     height: 100%;
+}
+/* Carousel: clip individual slides (multiple visible at once, each needs its own corners).
+   clip-path works on GPU-composited slides where overflow:hidden+border-radius does not. */
+.jzsa-album[data-mode="carousel"] .swiper-slide {
+    clip-path: inset(0 round var(--jzsa-corner-radius, 0px));
 }
 
 /* Carousel mode: slides are clickable and open fullscreen slideshow */
@@ -740,6 +758,14 @@ body.jzsa-no-scroll {
 .jzsa-album.jzsa-pseudo-fullscreen .swiper-slide {
     -webkit-touch-callout: none;
     user-select: none;
+}
+
+/* Fullscreen: disable corner-radius — edges meet the screen boundary. */
+.jzsa-album:fullscreen,
+.jzsa-album:-webkit-full-screen,
+.jzsa-album.jzsa-pseudo-fullscreen {
+    border-radius: 0 !important;
+    clip-path: none !important;
 }
 
 /* Gallery loading overlay (shown until first image is ready) */
@@ -978,7 +1004,7 @@ body.jzsa-no-scroll {
 .jzsa-gallery-album[data-gallery-layout="grid"] {
     display: grid;
     grid-template-columns: repeat(var(--jzsa-gallery-columns, 3), 1fr);
-    gap: 4px;
+    gap: var(--jzsa-gallery-gap, 4px);
     align-content: start;
 }
 
@@ -1023,8 +1049,8 @@ body.jzsa-no-scroll {
 /* Justified gallery layout */
 .jzsa-gallery-album[data-gallery-layout="justified"] .jzsa-justified-row {
     display: flex;
-    gap: 4px;
-    margin-bottom: 4px;
+    gap: var(--jzsa-gallery-gap, 4px);
+    margin-bottom: var(--jzsa-gallery-gap, 4px);
     overflow: hidden;
 }
 
@@ -1368,6 +1394,7 @@ body.jzsa-no-scroll {
 /* Gallery: video wrapper fills the grid cell */
 .jzsa-gallery-item-video .jzsa-video-wrapper {
     overflow: hidden;
+    border-radius: var(--jzsa-corner-radius, 0);
 }
 
 /* Uniform layout: inherit the aspect-ratio cell size */
@@ -1720,8 +1747,8 @@ body.jzsa-no-scroll {
     flex-shrink: 0;
     overflow: hidden;
     position: relative;
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 8px;
+    background: transparent;
+    border-radius: var(--jzsa-corner-radius, 0);
 }
 
 /* Horizontal strip: top/bottom placement */
@@ -1732,8 +1759,8 @@ body.jzsa-no-scroll {
     flex-shrink: 0;
     overflow: hidden;
     position: relative;
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 8px;
+    background: transparent;
+    border-radius: var(--jzsa-corner-radius, 0);
 }
 
 /* Thumbnail slides */
@@ -1742,7 +1769,7 @@ body.jzsa-no-scroll {
     opacity: 0.5;
     transition: all 0.3s ease;
     overflow: hidden;
-    border-radius: 4px;
+    border-radius: var(--jzsa-corner-radius, 0);
     width: 100%;
 }
 

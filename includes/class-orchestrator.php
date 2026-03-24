@@ -417,11 +417,15 @@ class JZSA_Shared_Albums {
 			'gallery-row-height'     => $this->parse_gallery_row_height( $atts ),
 			'gallery-rows'           => $this->parse_gallery_rows( $atts ),
 			'gallery-scrollable'     => $this->parse_bool( $atts, 'gallery-scrollable', false ),
+			'gallery-gap'            => $this->parse_gallery_gap( $atts ),
 
 			// Mosaic (thumbnail strip alongside the main gallery)
 			'mosaic'          => $this->parse_bool( $atts, 'mosaic', false ),
 			'mosaic-position' => $this->parse_mosaic_position( $atts ),
 			'mosaic-count'    => $this->parse_mosaic_count( $atts ),
+
+			// Visual style
+			'corner-radius'   => $this->parse_corner_radius( $atts ),
 		);
 
 		return $config;
@@ -781,6 +785,40 @@ class JZSA_Shared_Albums {
 		$value = intval( $atts['mosaic-count'] );
 
 		return $value > 0 ? $value : 0;
+	}
+
+	/**
+	 * Parse corner-radius attribute.
+	 *
+	 * Accepts a non-negative integer (pixels). 0 = square corners.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return int Corner radius in pixels.
+	 */
+	private function parse_corner_radius( $atts ) {
+		if ( ! isset( $atts['corner-radius'] ) ) {
+			return 0;
+		}
+
+		$value = intval( $atts['corner-radius'] );
+
+		return max( 0, $value );
+	}
+
+	/**
+	 * Parse gallery-gap attribute (pixels, 0–100).
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return int Gap in pixels.
+	 */
+	private function parse_gallery_gap( $atts ) {
+		if ( ! isset( $atts['gallery-gap'] ) ) {
+			return 4;
+		}
+
+		$value = intval( $atts['gallery-gap'] );
+
+		return ( $value >= 0 && $value <= 100 ) ? $value : 4;
 	}
 
 	/**
