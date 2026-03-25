@@ -370,12 +370,12 @@ class JZSA_Shared_Albums {
 			'fullscreen-source-width'   => isset( $atts['fullscreen-source-width'] ) ? intval( $atts['fullscreen-source-width'] ) : self::DEFAULT_FULLSCREEN_SOURCE_WIDTH,
 			'fullscreen-source-height'  => isset( $atts['fullscreen-source-height'] ) ? intval( $atts['fullscreen-source-height'] ) : self::DEFAULT_FULLSCREEN_SOURCE_HEIGHT,
 			// Slideshow (normal mode)
-			'slideshow'       => $this->parse_bool( $atts, 'slideshow', false ),
+			'slideshow'       => $this->parse_slideshow_mode( $atts, 'slideshow' ),
 			'slideshow-delay' => $this->parse_delay_range( isset( $atts['slideshow-delay'] ) ? $atts['slideshow-delay'] : self::DEFAULT_SLIDESHOW_DELAY_RANGE ),
 			'start-at'       => $this->parse_start_at( $atts ),
 
 			// Fullscreen slideshow (fullscreen mode only)
-			'fullscreen-slideshow'       => $this->parse_bool( $atts, 'fullscreen-slideshow', false ),
+			'fullscreen-slideshow'       => $this->parse_slideshow_mode( $atts, 'fullscreen-slideshow' ),
 			'fullscreen-slideshow-delay' => $this->parse_delay_range( isset( $atts['fullscreen-slideshow-delay'] ) ? $atts['fullscreen-slideshow-delay'] : self::DEFAULT_FULLSCREEN_SLIDESHOW_DELAY ),
 
 			// Slideshow autoresume timeout (backward compat: slideshow-inactivity-timeout)
@@ -476,6 +476,28 @@ class JZSA_Shared_Albums {
 		}
 
 		return 'true' === strtolower( $atts[ $key ] );
+	}
+
+	/**
+	 * Parse slideshow mode: 'auto', 'manual', or 'disabled'.
+	 * Backward compat: 'true' → 'auto', 'false' → 'disabled'.
+	 *
+	 * @param array  $atts Shortcode attributes.
+	 * @param string $key  Attribute key.
+	 * @return string 'auto', 'manual', or 'disabled'.
+	 */
+	private function parse_slideshow_mode( $atts, $key ) {
+		if ( ! isset( $atts[ $key ] ) ) {
+			return 'disabled';
+		}
+		$value = strtolower( trim( $atts[ $key ] ) );
+		if ( 'true' === $value || 'auto' === $value ) {
+			return 'auto';
+		}
+		if ( 'manual' === $value ) {
+			return 'manual';
+		}
+		return 'disabled';
 	}
 
 

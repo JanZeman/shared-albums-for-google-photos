@@ -1362,7 +1362,7 @@
     function applyFullscreenAutoplaySettings(swiper, params) {
         // Only run this workaround on Android devices where fullscreenchange events
         // are known to be unreliable.
-		if (!params.fullscreenSlideshow || !isAndroid()) {
+		if (params.fullscreenSlideshow === 'disabled' || !isAndroid()) {
 			return;
 		}
 
@@ -1385,7 +1385,7 @@
 
         // Start fullscreen autoplay after a short delay to ensure fullscreen is active
         setTimeout(function() {
-				if (!params.slideshowPausedByInteraction && swiper.autoplay) {
+				if (!params.slideshowPausedByInteraction && params.fullscreenSlideshow === 'auto' && swiper.autoplay) {
 					swiper.autoplay.start();
 					jzsaDebug('▶️  Fullscreen autoplay started immediately (delay: ' + params.fullscreenSlideshowDelay + 's)');
 				}
@@ -1396,7 +1396,7 @@
 			var fullscreenCheckTimeout = setTimeout(function() {
 				var nowFullscreen = isFullscreen();
 
-				if (nowFullscreen && params.fullscreenSlideshow) {
+				if (nowFullscreen && params.fullscreenSlideshow !== 'disabled') {
 					jzsaDebug('⚠️  Fullscreen change event did not fire - applying settings via fallback (Android workaround)');
 
                 // Ensure settings are applied
@@ -1410,7 +1410,7 @@
                     swiper.autoplay.delay = newDelay;
                 }
 
-					if (!params.slideshowPausedByInteraction) {
+					if (!params.slideshowPausedByInteraction && params.fullscreenSlideshow === 'auto') {
 						swiper.autoplay.start();
 						jzsaDebug('▶️  Fullscreen autoplay started via fallback (delay: ' + params.fullscreenSlideshowDelay + 's)');
 					}
@@ -1472,7 +1472,7 @@
                 // console.log('🔍 fullscreenSlideshowDelay:', params.fullscreenSlideshowDelay);
             }
 
-            if (params.fullscreenSlideshow) {
+            if (params.fullscreenSlideshow !== 'disabled') {
                 // Stop current autoplay if running
                 if (swiper.autoplay && swiper.autoplay.running) {
                     swiper.autoplay.stop();
@@ -1495,8 +1495,8 @@
 					jzsaDebug('🔍 swiper.autoplay.delay is now:', swiper.autoplay ? swiper.autoplay.delay : 'N/A');
 				}
 
-                // Start fullscreen autoplay if enabled and not paused by interaction
-				if (!params.slideshowPausedByInteraction) {
+                // Start fullscreen autoplay only in 'auto' mode
+				if (!params.slideshowPausedByInteraction && params.fullscreenSlideshow === 'auto') {
 					swiper.autoplay.start();
 					jzsaDebug('▶️  Fullscreen autoplay started (delay: ' + params.fullscreenSlideshowDelay + 's' + logPrefix + ')');
 				}
@@ -1607,7 +1607,7 @@
 
             params.slideshowPausedByInteraction = false;
 
-            if (params.slideshow) {
+            if (params.slideshow === 'auto') {
                 // Stop current autoplay if running
                 if (swiper.autoplay && swiper.autoplay.running) {
                     swiper.autoplay.stop();
@@ -1622,9 +1622,9 @@
                 swiper.autoplay.start();
                 // console.log('▶️  Normal autoplay restored (delay: ' + params.slideshowDelay + 's' + logPrefix + ')');
             } else if (swiper.autoplay && swiper.autoplay.running) {
-                // Stop autoplay if it was only enabled in fullscreen mode
+                // Stop autoplay if inline slideshow is not 'auto'
                 swiper.autoplay.stop();
-                // console.log('⏸️  Autoplay stopped (not enabled in normal mode' + logPrefix + ')');
+                // console.log('⏸️  Autoplay stopped (not auto in normal mode' + logPrefix + ')');
             }
         }
     }
@@ -2584,8 +2584,8 @@
             // Default: no zoom unless enabled per mode.
             zoom: false,
 
-            // Autoplay - enable if either normal mode or fullscreen mode has autoplay enabled
-            autoplay: (params.slideshow || params.fullscreenSlideshow) ? {
+            // Autoplay - enable module if either normal or fullscreen mode is not disabled
+            autoplay: (params.slideshow !== 'disabled' || params.fullscreenSlideshow !== 'disabled') ? {
                 delay: params.slideshowDelay * MILLISECONDS_PER_SECOND,
                 disableOnInteraction: false,
             } : false,
@@ -2735,10 +2735,10 @@
             allPhotos: allPhotos,
             totalCount: totalCount,
 
-            // Slideshow settings
-            slideshow: $container.attr('data-slideshow') === 'true',
+            // Slideshow settings ('auto', 'manual', or 'disabled')
+            slideshow: $container.attr('data-slideshow') || 'disabled',
             slideshowDelay: parseInt($container.attr('data-slideshow-delay')) || DEFAULT_SLIDESHOW_DELAY_FALLBACK,
-            fullscreenSlideshow: $container.attr('data-fullscreen-slideshow') === 'true',
+            fullscreenSlideshow: $container.attr('data-fullscreen-slideshow') || 'disabled',
             fullscreenSlideshowDelay: parseInt($container.attr('data-fullscreen-slideshow-delay')) || 5,
             slideshowAutoresumeTimeout: parseInt($container.attr('data-slideshow-autoresume-timeout')) || 30,
 
@@ -2763,7 +2763,7 @@
 
         // Safe default: show inline play/pause only when normal-mode slideshow is enabled.
         // Fullscreen controls are handled separately via .jzsa-is-fullscreen styling.
-        $container.toggleClass('jzsa-inline-slideshow-controls', !!config.slideshow);
+        $container.toggleClass('jzsa-inline-slideshow-controls', config.slideshow !== 'disabled');
 
         // Calculate initial slide based on startAt setting
         var startAtRaw = (config.startAt || 'random').toString().toLowerCase();
@@ -3154,10 +3154,11 @@
                 swiper.zoom.toggle = function() {};
             }
 
-            // If normal mode autoplay is disabled but fullscreen autoplay is enabled, stop autoplay initially
-            if (!slideshow && fullscreenSlideshow && swiper.autoplay && swiper.autoplay.running) {
+            // Stop autoplay initially if inline slideshow is not 'auto' (e.g. 'manual' or 'disabled',
+            // but fullscreen or manual mode still needs the autoplay module available)
+            if (slideshow !== 'auto' && swiper.autoplay && swiper.autoplay.running) {
                 swiper.autoplay.stop();
-                // console.log('⏸️  Autoplay stopped (only enabled in fullscreen mode)');
+                // console.log('⏸️  Autoplay stopped (not auto-start inline)');
             }
 
             // Create hint system for fullscreen navigation guidance (not needed for button-only)
@@ -3291,7 +3292,7 @@
 
                 // Defensive recovery: after fullscreen exit, ensure inline autoplay is
                 // actually advancing (some browsers can leave autoplay in paused/running state).
-                if (!slideshow || !swiper.autoplay || fullscreenChangeParams.slideshowPausedByInteraction) {
+                if (slideshow !== 'auto' || !swiper.autoplay || fullscreenChangeParams.slideshowPausedByInteraction) {
                     return;
                 }
 
@@ -3328,7 +3329,7 @@
                 }
             });
 
-            if (slideshow && hoverPauseSupported && swiper.autoplay && !interactionLock) {
+            if (slideshow !== 'disabled' && hoverPauseSupported && swiper.autoplay && !interactionLock) {
                 $container.on('mouseenter' + slideshowHoverNamespace, function() {
                     if (shouldBlockHoverPause()) {
                         return;
@@ -3528,7 +3529,7 @@
         $slideshow.attr('data-mode', 'slider');
         $slideshow.attr('data-start-at', $galleryContainer.attr('data-start-at') || '1');
         // Gallery has no inline slideshow — use fullscreen slideshow settings
-        $slideshow.attr('data-slideshow', 'false');
+        $slideshow.attr('data-slideshow', 'disabled');
 
         // Forward player-relevant settings from the gallery container
         var forwardAttrs = [
@@ -4738,7 +4739,8 @@
         var requestedGallerySizingModel = (readGalleryAttr($container, 'sizing') || 'ratio').toLowerCase();
         var gallerySizing = requestedGallerySizingModel === 'fill' ? 'fill' : 'ratio';
         var interactionLock = $container.attr('data-interaction-lock') === 'true';
-        var gallerySlideshowEnabled = $container.attr('data-slideshow') === 'true';
+        var gallerySlideshowMode = $container.attr('data-slideshow') || 'disabled';
+        var gallerySlideshowEnabled = gallerySlideshowMode !== 'disabled';
         var requestedGallerySlideshowDelay = parseInt($container.attr('data-slideshow-delay'), 10);
         var gallerySlideshowDelay = (!isNaN(requestedGallerySlideshowDelay) && requestedGallerySlideshowDelay > 0)
             ? requestedGallerySlideshowDelay
@@ -4759,7 +4761,7 @@
         var gallerySlideshowTimer = null;
         var galleryProgressCycleToken = 0;
         var gallerySlideshowPausedByHover = false;
-        var gallerySlideshowPausedByUser = false;
+        var gallerySlideshowPausedByUser = gallerySlideshowMode === 'manual';
         var slideshowId = null;
         var $slideshow = null;
         var galleryLoaderShownAt = 0;

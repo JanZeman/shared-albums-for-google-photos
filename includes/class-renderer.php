@@ -248,10 +248,16 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-total-count="%d"', count( $config['photos'] ) );
 		}
 
+		// Slideshow mode (string: auto / manual / disabled)
+		if ( isset( $config['slideshow'] ) ) {
+			$attrs[] = sprintf( 'data-slideshow="%s"', esc_attr( $config['slideshow'] ) );
+		}
+		if ( isset( $config['fullscreen-slideshow'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-slideshow="%s"', esc_attr( $config['fullscreen-slideshow'] ) );
+		}
+
 		// Gallery settings
 		$boolean_attrs = array(
-			'slideshow'               => 'data-slideshow',
-			'fullscreen-slideshow'    => 'data-fullscreen-slideshow',
 			'interaction-lock'        => 'data-interaction-lock',
 			'show-navigation'         => 'data-show-navigation',
 			'show-title'              => 'data-show-title',
@@ -390,7 +396,7 @@ class JZSA_Renderer {
 		}
 
 		if ( isset( $config['slideshow'] ) ) {
-			$attrs[] = sprintf( 'data-slideshow="%s"', $config['slideshow'] ? 'true' : 'false' );
+			$attrs[] = sprintf( 'data-slideshow="%s"', esc_attr( $config['slideshow'] ) );
 		}
 
 		if ( isset( $config['slideshow-delay'] ) ) {
@@ -409,9 +415,13 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-album-title="%s"', esc_attr( $config['album-title'] ) );
 		}
 
+		// Fullscreen slideshow mode (string: auto / manual / disabled)
+		if ( isset( $config['fullscreen-slideshow'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-slideshow="%s"', esc_attr( $config['fullscreen-slideshow'] ) );
+		}
+
 		// Fullscreen slideshow settings (gallery click opens fullscreen slideshow)
 		$slideshow_booleans = array(
-			'fullscreen-slideshow'    => 'data-fullscreen-slideshow',
 			'interaction-lock'        => 'data-interaction-lock',
 			'show-navigation'         => 'data-show-navigation',
 			'show-title'              => 'data-show-title',

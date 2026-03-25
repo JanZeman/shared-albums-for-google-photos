@@ -373,14 +373,19 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 }
 
 /* Show play/pause button in fullscreen only when a slideshow is enabled
-   (either fullscreen-slideshow or inline slideshow that carries into fullscreen). */
-.jzsa-album.jzsa-is-fullscreen[data-fullscreen-slideshow="true"] .swiper-button-play-pause,
-.jzsa-album.jzsa-is-fullscreen[data-slideshow="true"] .swiper-button-play-pause {
+   (either fullscreen-slideshow or inline slideshow that carries into fullscreen).
+   Both "auto" and "manual" modes show the button; "disabled" does not. */
+.jzsa-album.jzsa-is-fullscreen[data-fullscreen-slideshow="auto"] .swiper-button-play-pause,
+.jzsa-album.jzsa-is-fullscreen[data-fullscreen-slideshow="manual"] .swiper-button-play-pause,
+.jzsa-album.jzsa-is-fullscreen[data-slideshow="auto"] .swiper-button-play-pause,
+.jzsa-album.jzsa-is-fullscreen[data-slideshow="manual"] .swiper-button-play-pause {
     display: flex;
     bottom: 46px;
 }
-.jzsa-album.jzsa-is-fullscreen[data-fullscreen-slideshow="true"][data-show-counter="false"] .swiper-button-play-pause,
-.jzsa-album.jzsa-is-fullscreen[data-slideshow="true"][data-show-counter="false"] .swiper-button-play-pause {
+.jzsa-album.jzsa-is-fullscreen[data-fullscreen-slideshow="auto"][data-show-counter="false"] .swiper-button-play-pause,
+.jzsa-album.jzsa-is-fullscreen[data-fullscreen-slideshow="manual"][data-show-counter="false"] .swiper-button-play-pause,
+.jzsa-album.jzsa-is-fullscreen[data-slideshow="auto"][data-show-counter="false"] .swiper-button-play-pause,
+.jzsa-album.jzsa-is-fullscreen[data-slideshow="manual"][data-show-counter="false"] .swiper-button-play-pause {
     bottom: 7px;
 }
 
