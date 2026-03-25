@@ -3529,7 +3529,9 @@
             'data-fullscreen-image-fit',
             'data-background-color',
             'data-controls-color',
-            'data-video-controls-color'
+            'data-video-controls-color',
+            'data-show-download-button',
+            'data-show-link-button'
         ];
         for (var i = 0; i < forwardAttrs.length; i++) {
             var val = $galleryContainer.attr(forwardAttrs[i]);
@@ -3645,6 +3647,11 @@
         var allowThumbFullscreen =
             $container.attr('data-fullscreen-toggle') !== 'disabled' &&
             $container.attr('data-interaction-lock') !== 'true';
+        var showThumbLink = $container.attr('data-show-link-button') === 'true' &&
+            $container.attr('data-interaction-lock') !== 'true';
+        var showThumbDownload = $container.attr('data-show-download-button') === 'true' &&
+            $container.attr('data-interaction-lock') !== 'true';
+        var thumbAlbumUrl = $container.attr('data-album-url') || '';
 
         var html = '';
         pageItems.forEach(function(item) {
@@ -3670,10 +3677,21 @@
                     ' loading="lazy"' + tileStyleAttr + '>';
             }
 
+            var thumbOverlayBtns = '';
+            if (showThumbLink && thumbAlbumUrl) {
+                thumbOverlayBtns += '<a href="' + thumbAlbumUrl + '" target="_blank" rel="noopener noreferrer" class="jzsa-gallery-thumb-link-btn swiper-button-external-link" tabindex="0" aria-label="Open album in Google Photos"></a>';
+            }
+            if (showThumbDownload && !isVideo) {
+                thumbOverlayBtns += '<div class="jzsa-gallery-thumb-download-btn swiper-button-download" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Download ' + mediaLabel + ' ' + (globalIndex + 1) + '"></div>';
+            }
+            if (allowThumbFullscreen) {
+                thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open ' + mediaLabel + ' ' + (globalIndex + 1) + ' in fullscreen"></div>';
+            }
+
             html +=
                 '<div class="' + itemClass + '" data-index="' + globalIndex + '">' +
                     mediaHtml +
-                    (allowThumbFullscreen ? '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open ' + mediaLabel + ' ' + (globalIndex + 1) + ' in fullscreen"></div>' : '') +
+                    thumbOverlayBtns +
                 '</div>';
         });
 
@@ -3734,6 +3752,11 @@
         var allowThumbFullscreen =
             $container.attr('data-fullscreen-toggle') !== 'disabled' &&
             $container.attr('data-interaction-lock') !== 'true';
+        var showThumbLink = $container.attr('data-show-link-button') === 'true' &&
+            $container.attr('data-interaction-lock') !== 'true';
+        var showThumbDownload = $container.attr('data-show-download-button') === 'true' &&
+            $container.attr('data-interaction-lock') !== 'true';
+        var thumbAlbumUrl = $container.attr('data-album-url') || '';
         var html = '';
         rows.forEach(function(row) {
             var totalRatio    = row.reduce(function(sum, item) { return sum + item.ratio; }, 0);
@@ -3764,10 +3787,21 @@
                         ' style="width:100%;height:100%;">';
                 }
 
+                var thumbOverlayBtns = '';
+                if (showThumbLink && thumbAlbumUrl) {
+                    thumbOverlayBtns += '<a href="' + thumbAlbumUrl + '" target="_blank" rel="noopener noreferrer" class="jzsa-gallery-thumb-link-btn swiper-button-external-link" tabindex="0" aria-label="Open album in Google Photos"></a>';
+                }
+                if (showThumbDownload && !isVideo) {
+                    thumbOverlayBtns += '<div class="jzsa-gallery-thumb-download-btn swiper-button-download" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Download ' + mediaLabel + ' ' + (item.index + 1) + '"></div>';
+                }
+                if (allowThumbFullscreen) {
+                    thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open ' + mediaLabel + ' ' + (item.index + 1) + ' in fullscreen"></div>';
+                }
+
                 html +=
                     '<div class="' + itemClass + '" data-index="' + item.index + '" style="width:' + width + 'px;height:' + targetHeight + 'px;">' +
                         mediaHtml +
-                        (allowThumbFullscreen ? '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open ' + mediaLabel + ' ' + (item.index + 1) + ' in fullscreen"></div>' : '') +
+                        thumbOverlayBtns +
                     '</div>';
             });
             html += '</div>';
@@ -5463,6 +5497,63 @@
                 e.preventDefault();
                 e.stopPropagation();
                 openGalleryPlayerFromThumb(this);
+            });
+        }
+
+        // Attach download button click handler on gallery thumbnails.
+        if (!interactionLock) {
+            $container.on('click', '.jzsa-gallery-thumb-download-btn', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var index = getGalleryPhotoIndexFromElement(this);
+                var photo = allPhotos[index];
+                if (!photo) {
+                    return;
+                }
+
+                var imageUrl = photo.full || photo.preview;
+                if (!imageUrl) {
+                    return;
+                }
+
+                var filename = 'photo-' + (index + 1) + '.jpg';
+                var $btn = $(this);
+                $btn.css('opacity', '0.5');
+
+                $.ajax({
+                    url: jzsaAjax.ajaxUrl,
+                    type: 'POST',
+                    data: {
+                        action: 'jzsa_download_image',
+                        nonce: jzsaAjax.downloadNonce,
+                        image_url: imageUrl,
+                        filename: filename
+                    },
+                    xhrFields: { responseType: 'blob' },
+                    success: function(blob) {
+                        var url = window.URL.createObjectURL(blob);
+                        var link = document.createElement('a');
+                        link.href = url;
+                        link.download = filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(url);
+                        $btn.css('opacity', '');
+                    },
+                    error: function() {
+                        var link = document.createElement('a');
+                        link.href = imageUrl;
+                        link.download = filename;
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        $btn.css('opacity', '');
+                    }
+                });
             });
         }
 

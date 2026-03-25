@@ -1083,10 +1083,11 @@ body.jzsa-no-scroll {
     position: relative;
 }
 
-.jzsa-gallery-item .jzsa-gallery-thumb-fs-btn {
+.jzsa-gallery-item .jzsa-gallery-thumb-fs-btn,
+.jzsa-gallery-item .jzsa-gallery-thumb-link-btn,
+.jzsa-gallery-item .jzsa-gallery-thumb-download-btn {
     position: absolute;
     top: 0;
-    right: 0;
     z-index: 12;
     opacity: 0;
     pointer-events: none;
@@ -1094,14 +1095,41 @@ body.jzsa-no-scroll {
                 opacity var(--jzsa-controls-fade-duration) var(--jzsa-controls-fade-easing);
 }
 
+.jzsa-gallery-item .jzsa-gallery-thumb-fs-btn {
+    right: 0;
+}
+
+.jzsa-gallery-item .jzsa-gallery-thumb-link-btn {
+    left: 0;
+}
+
+.jzsa-gallery-item .jzsa-gallery-thumb-download-btn {
+    left: 0;
+}
+
+/* When both link and download buttons are on a thumbnail, offset the download button.
+   Extra specificity needed to override the slider-mode rule for .swiper-button-download. */
+.jzsa-gallery-album .jzsa-gallery-item .jzsa-gallery-thumb-link-btn + .jzsa-gallery-thumb-download-btn.swiper-button-download {
+    left: 32px;
+}
+
 .jzsa-gallery-album .jzsa-gallery-item:hover .jzsa-gallery-thumb-fs-btn,
-.jzsa-gallery-album .jzsa-gallery-item:focus-within .jzsa-gallery-thumb-fs-btn {
+.jzsa-gallery-album .jzsa-gallery-item:hover .jzsa-gallery-thumb-link-btn,
+.jzsa-gallery-album .jzsa-gallery-item:hover .jzsa-gallery-thumb-download-btn,
+.jzsa-gallery-album .jzsa-gallery-item:focus-within .jzsa-gallery-thumb-fs-btn,
+.jzsa-gallery-album .jzsa-gallery-item:focus-within .jzsa-gallery-thumb-link-btn,
+.jzsa-gallery-album .jzsa-gallery-item:focus-within .jzsa-gallery-thumb-download-btn {
     opacity: var(--jzsa-controls-visible-opacity);
     pointer-events: auto;
 }
 
 @media (hover: none) {
     .jzsa-gallery-album[data-fullscreen-toggle="button-only"] .jzsa-gallery-item .jzsa-gallery-thumb-fs-btn {
+        opacity: var(--jzsa-controls-visible-opacity);
+        pointer-events: auto;
+    }
+    .jzsa-gallery-album[data-show-link-button="true"] .jzsa-gallery-item .jzsa-gallery-thumb-link-btn,
+    .jzsa-gallery-album[data-show-download-button="true"] .jzsa-gallery-item .jzsa-gallery-thumb-download-btn {
         opacity: var(--jzsa-controls-visible-opacity);
         pointer-events: auto;
     }

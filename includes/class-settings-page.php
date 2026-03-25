@@ -85,6 +85,7 @@ class JZSA_Settings_Page {
 		$video_gallery_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" show-videos="true" limit="12" gallery-layout="justified" gallery-row-height="180" video-controls-color="#00A878" corner-radius="16" gallery-gap="8"]';
 		$video_photos_only_shortcode = '[jzsa-album link="' . $video_sample_link . '" show-videos="false" limit="6" video-controls-color="#7A5CFF" corner-radius="16" gallery-gap="8"]';
 		$controls_custom_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" slideshow="true" show-link-button="true" show-download-button="true" controls-color="#FFD400" corner-radius="16"]';
+		$download_gallery_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="gallery" show-download-button="true" show-link-button="true" width="800" limit="6" corner-radius="16"]';
 		$mosaic_sample_link        = 'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R';
 		$mosaic_bottom_shortcode   = '[jzsa-album link="' . $mosaic_sample_link . '" mode="slider" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="12" corner-radius="16"]';
 		$mosaic_right_shortcode    = '[jzsa-album link="' . $mosaic_sample_link . '" mode="slider" width="800" height="600" mosaic="true" mosaic-position="right" corner-radius="16"]';
@@ -430,7 +431,7 @@ class JZSA_Settings_Page {
 
 						<div class="jzsa-example">
 							<h3><?php esc_html_e( 'Interaction Lock (Controls and Navigation Disabled)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php esc_html_e( 'Uses interaction-lock="true" as a hard override for interactions: swipe/drag, keyboard navigation, click/tap navigation, and fullscreen entry are disabled. Counter and slideshow countdown stay visible.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php echo wp_kses( __( 'Uses interaction-lock="true" as a <strong>hard override</strong> for interactions: swipe/drag, keyboard navigation, click/tap navigation, and fullscreen entry are disabled. Notice that all navigation buttons are hidden despite the shortcode explicitly enabling them (show-link-button, show-download-button, fullscreen-toggle). Counter and slideshow countdown stay visible.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
 						<div class="jzsa-code-block">
 							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" fullscreen-toggle="click" show-link-button="true" show-download-button="true" slideshow="true" slideshow-delay="2" interaction-lock="true" corner-radius="16"]</code>
 							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
@@ -693,6 +694,21 @@ class JZSA_Settings_Page {
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" show-download-button="true" corner-radius="16"]' );
+						?>
+					</div>
+					</div>
+
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Show Link and Download Buttons - Gallery Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Gallery mode with link and download buttons on each thumbnail. Hover over a thumbnail to see the download and link buttons (top-left) appear alongside the fullscreen button (top-right).', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<div class="jzsa-code-block">
+						<code><?php echo esc_html( $download_gallery_shortcode ); ?></code>
+						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					</div>
+					<div class="jzsa-preview-container jzsa-preview-container-download-gallery">
+						<?php
+							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo do_shortcode( $download_gallery_shortcode );
 						?>
 					</div>
 					</div>
