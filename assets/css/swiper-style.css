@@ -536,15 +536,23 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     background-color: var(--gallery-bg-color, #FFFFFF);
 }
 
-/* Pseudo fullscreen styling for iPhone (CSS-based fallback) */
+/* Pseudo fullscreen styling for iPhone (CSS-based fallback).
+   Use dvh (dynamic viewport height) so the container respects the actual
+   visible area on iOS Safari, where 100vh extends behind the browser chrome
+   and would hide bottom-aligned controls (e.g. Plyr bar). */
 .jzsa-album.jzsa-pseudo-fullscreen {
     position: fixed;
-    inset: 0;
-    width: 100vw !important;
-    height: 100vh !important;
-    max-width: 100vw;
-    max-height: 100vh;
-background-color: var(--gallery-bg-color, #FFFFFF);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100% !important;
+    height: auto !important;
+    max-width: none;
+    max-height: none;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-sizing: border-box;
+    background-color: var(--gallery-bg-color, #FFFFFF);
     z-index: 9999;
 }
 
@@ -1386,7 +1394,7 @@ body.jzsa-no-scroll {
     position: fixed;
     left: -200vw;
     width: 100vw;
-    height: 100vh;
+    height: 100dvh;
 }
 
 /* ============================================================================
