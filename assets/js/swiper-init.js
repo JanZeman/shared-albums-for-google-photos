@@ -1,6 +1,7 @@
 /**
  * Swiper Gallery Initialization for Shared Albums for Google Photos (by JanZeman)
  */
+/* global Swiper */
 (function($) {
 'use strict';
 
@@ -252,9 +253,8 @@
     // Used for pseudo fullscreen fallback and for old-iOS layout workarounds.
     function isIosDevice() {
         var ua = window.navigator.userAgent || '';
-        var platform = window.navigator.platform || '';
         var isAppleMobile = /iPad|iPhone|iPod/i.test(ua);
-        var isTouchMac = platform === 'MacIntel' && window.navigator.maxTouchPoints > 1;
+        var isTouchMac = /Macintosh/i.test(ua) && window.navigator.maxTouchPoints > 1;
         return isAppleMobile || isTouchMac;
     }
 
@@ -1744,8 +1744,8 @@
                     $downloadBtn.attr('title', originalTitle);
                     $downloadBtn.css('opacity', '1');
                 },
-                error: function(xhr, status, error) {
-                    // console.error('Download failed:', error);
+                error: function(_xhr, _status, error) {
+                    console.error('Download failed:', error);
 
                     // Fallback: Try direct link with download attribute
                     var link = document.createElement('a');
@@ -1882,7 +1882,7 @@
     }
 
     // Helper: Setup play/pause button
-    function setupPlayPauseButton(swiper, $container, progressBar) {
+    function setupPlayPauseButton(swiper, $container) {
         var $playPauseBtn = $container.find('.swiper-button-play-pause');
 
         // Update button state based on autoplay status
@@ -2774,7 +2774,6 @@
         var loop = config.loop;
         var interactionLock = config.interactionLock;
         var fullscreenToggle = interactionLock ? 'disabled' : config.fullscreenToggle;
-        var startAt = config.startAt;
         var showTitle = config.showTitle;
         var showCounter = config.showCounter;
         var albumTitle = config.albumTitle;
@@ -3219,8 +3218,8 @@
 
             setupFullscreenButton(swiper, $container, fullscreenParams);
             setupDownloadButton(swiper, $container);
-            var progressBar = setupAutoplayProgress(swiper, $container);
-            var togglePlayPause = setupPlayPauseButton(swiper, $container, progressBar);
+            setupAutoplayProgress(swiper, $container);
+            var togglePlayPause = setupPlayPauseButton(swiper, $container);
             setupFullscreenSwitchHandlers(swiper, $container, fullscreenParams);
 
             // Desktop UX parity with gallery mode: pause inline autoplay while hovering
@@ -3307,7 +3306,7 @@
                 }
             );
             $container.off('jzsa:fullscreen-state' + slideshowHoverFullscreenNamespace);
-            $container.on('jzsa:fullscreen-state' + slideshowHoverFullscreenNamespace, function(e, isActive) {
+            $container.on('jzsa:fullscreen-state' + slideshowHoverFullscreenNamespace, function(_e, isActive) {
                 if (!isActive) {
                     handleHoverFullscreenExit();
                 }
