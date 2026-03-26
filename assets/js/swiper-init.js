@@ -5531,6 +5531,18 @@
                 e.preventDefault();
                 openGalleryPlayerFromThumb(this);
             });
+
+            // Video items: click anywhere except plyr controls opens fullscreen.
+            $container.on('click', '.jzsa-gallery-item-video', function(e) {
+                if ($container.data('jzsaGallerySuppressClick')) {
+                    return;
+                }
+                if (shouldIgnoreClick(e.target)) {
+                    return;
+                }
+                e.preventDefault();
+                openGalleryPlayerFromThumb(this);
+            });
         } else if (!interactionLock && fullscreenToggle === 'double-click') {
             $container.on('dblclick', '.jzsa-gallery-thumb', function(e) {
                 if (isGalleryVideoInteractionTarget(e.target)) {
@@ -5546,6 +5558,28 @@
                     return;
                 }
                 if (isGalleryVideoInteractionTarget(e.target)) {
+                    return;
+                }
+                handleDoubleTap(e, function() {
+                    openGalleryPlayerFromThumb(e.currentTarget || e.target);
+                });
+            });
+
+            // Video items: double-click anywhere except plyr controls opens fullscreen.
+            $container.on('dblclick', '.jzsa-gallery-item-video', function(e) {
+                if (shouldIgnoreClick(e.target)) {
+                    return;
+                }
+                e.preventDefault();
+                openGalleryPlayerFromThumb(this);
+            });
+
+            // Video items: mobile/touch double-tap fallback.
+            $container.on('touchend', '.jzsa-gallery-item-video', function(e) {
+                if ($container.data('jzsaGallerySuppressClick')) {
+                    return;
+                }
+                if (shouldIgnoreClick(e.target)) {
                     return;
                 }
                 handleDoubleTap(e, function() {

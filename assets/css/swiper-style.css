@@ -1759,8 +1759,14 @@ body.jzsa-no-scroll {
 
 /* --- Video badge on gallery thumbnails --- */
 
+/* Video items in gallery: pointer cursor to indicate fullscreen action.
+   Photos get this via .jzsa-gallery-thumb; video cells need it on the
+   outer item because there is no .jzsa-gallery-thumb inside them.
+   Drag pagination is disabled for video cells, so pointer stays even
+   inside a .jzsa-gallery-draggable gallery. */
 .jzsa-gallery-item-video {
     position: relative;
+    cursor: pointer;
 }
 
 .jzsa-video-badge {

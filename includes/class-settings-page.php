@@ -82,7 +82,8 @@ class JZSA_Settings_Page {
 
 		$video_slider_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="slider" show-videos="true" limit="8" video-controls-color="#00B2FF" corner-radius="16"]';
 		$video_carousel_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="carousel" show-videos="true" limit="8" video-controls-color="#FF6B35" video-controls-autohide="true" corner-radius="16"]';
-		$video_gallery_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" show-videos="true" limit="12" gallery-layout="justified" gallery-row-height="180" video-controls-color="#00A878" corner-radius="16" gallery-gap="8"]';
+		$video_gallery_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" show-videos="true" limit="6" width="800" gallery-layout="grid" video-controls-color="#00A878" corner-radius="16" gallery-gap="8"]';
+		$video_gallery_dblclick_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" show-videos="true" limit="6" width="800" gallery-layout="grid" fullscreen-toggle="double-click" video-controls-color="#7A5CFF" gallery-gap="8"]';
 		$video_photos_only_shortcode = '[jzsa-album link="' . $video_sample_link . '" show-videos="false" limit="6" video-controls-color="#7A5CFF" corner-radius="16" gallery-gap="8"]';
 		$controls_custom_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" slideshow="auto" show-link-button="true" show-download-button="true" controls-color="#FFD400" corner-radius="16"]';
 		$download_gallery_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="gallery" show-download-button="true" show-link-button="true" width="800" limit="6" corner-radius="16"]';
@@ -792,7 +793,7 @@ class JZSA_Settings_Page {
 						</div>
 
 						<div class="jzsa-example">
-							<h3><?php esc_html_e( 'Video in Carousel Mode (Orange Accent + Auto-Hide Controls)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<h3><?php esc_html_e( 'Video in Carousel (Auto-Hide Controls)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Demonstrates carousel mode with video controls auto-hiding after inactivity.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $video_carousel_shortcode ); ?></code>
@@ -807,7 +808,7 @@ class JZSA_Settings_Page {
 						</div>
 
 						<div class="jzsa-example">
-							<h3><?php esc_html_e( 'Video in Gallery Mode (Green Accent)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<h3><?php esc_html_e( 'Video in Gallery', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Demonstrates gallery mode with justified thumbnails and videos included.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $video_gallery_shortcode ); ?></code>
@@ -817,6 +818,21 @@ class JZSA_Settings_Page {
 							<?php
 								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								echo do_shortcode( $video_gallery_shortcode );
+							?>
+						</div>
+						</div>
+
+						<div class="jzsa-example">
+							<h3><?php esc_html_e( 'Video in Gallery (Double-click to Fullscreen)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php esc_html_e( 'Same gallery with double-click to enter and exit fullscreen. No corner radius, violet accent.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
+							<code><?php echo esc_html( $video_gallery_dblclick_shortcode ); ?></code>
+							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+						<div class="jzsa-preview-container jzsa-preview-container-video-gallery-dblclick">
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( $video_gallery_dblclick_shortcode );
 							?>
 						</div>
 						</div>
