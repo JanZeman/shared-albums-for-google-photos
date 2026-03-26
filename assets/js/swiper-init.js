@@ -2030,23 +2030,23 @@
 
         // FULLSCREEN SWITCH HANDLERS
 		if (params.fullscreenToggle === 'click') {
-			// Single-click enters fullscreen (does not exit — exit via button/Escape)
+			// Single-click toggles fullscreen (enter and exit)
 			$container.on('click', function(e) {
-				if (!shouldIgnoreClick(e.target) && !isFullscreen()) {
-					// Don't enter fullscreen when clicking on a video slide —
-					// let the native video controls work.
-					var $activeSlide = $(swiper.slides[swiper.activeIndex]);
-					if ($activeSlide.attr('data-media-type') === 'video') {
-						return;
-					}
+				if (!shouldIgnoreClick(e.target)) {
 					e.preventDefault();
-					focusClickedSlide(e);
-					jzsaDebug('🔍 Single-click entering fullscreen');
-					applyFullscreenAutoplaySettings(swiper, {
-						fullscreenSlideshow: params.fullscreenSlideshow,
-						fullscreenSlideshowDelay: params.fullscreenSlideshowDelay,
-						slideshowPausedByInteraction: params.slideshowPausedByInteraction
-					});
+
+					if (!isFullscreen()) {
+						focusClickedSlide(e);
+						jzsaDebug('🔍 Single-click entering fullscreen');
+						applyFullscreenAutoplaySettings(swiper, {
+							fullscreenSlideshow: params.fullscreenSlideshow,
+							fullscreenSlideshowDelay: params.fullscreenSlideshowDelay,
+							slideshowPausedByInteraction: params.slideshowPausedByInteraction
+						});
+					} else {
+						jzsaDebug('🔍 Single-click exiting fullscreen');
+					}
+
 					toggleFullscreen($container[0], params.showHintsOnFullscreen);
                 }
             });
@@ -2118,6 +2118,11 @@
 
 		$container.on('click', function(e) {
 				if (!shouldIgnoreClick(e.target) && isFullscreen()) {
+					// Single-click mode uses click to exit fullscreen, not navigate.
+					if (params.fullscreenToggle === 'click') {
+						return;
+					}
+
 					// Video slides: clickToPlay is disabled, so clicks on the
 					// video area are free for navigation (plyr controls are
 					// already filtered by shouldIgnoreClick above).
