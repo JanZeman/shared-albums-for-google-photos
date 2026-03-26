@@ -348,6 +348,12 @@
         document.documentElement.style.backgroundColor = fsBg;
         document.body.style.backgroundColor = fsBg;
 
+        // Apply fullscreen background to the gallery element itself.
+        // The CSS variable --gallery-bg-color may be 'transparent' for inline
+        // mode; override it so the fixed container is fully opaque.
+        $el.data('jzsa-pseudo-fs-original-bg', element.style.getPropertyValue('--gallery-bg-color'));
+        element.style.setProperty('--gallery-bg-color', fsBg);
+
         $el.addClass('jzsa-pseudo-fullscreen jzsa-is-fullscreen');
         $('html, body').addClass('jzsa-no-scroll');
         return true;
@@ -362,6 +368,17 @@
         // Restore page background
         document.documentElement.style.backgroundColor = _savedHtmlBg;
         document.body.style.backgroundColor = _savedBodyBg;
+
+        // Restore original --gallery-bg-color
+        var originalBg = $el.data('jzsa-pseudo-fs-original-bg');
+        if (originalBg !== undefined) {
+            if (originalBg) {
+                element.style.setProperty('--gallery-bg-color', originalBg);
+            } else {
+                element.style.removeProperty('--gallery-bg-color');
+            }
+            $el.removeData('jzsa-pseudo-fs-original-bg');
+        }
 
         $el.removeClass('jzsa-pseudo-fullscreen jzsa-is-fullscreen');
         $('html, body').removeClass('jzsa-no-scroll');
