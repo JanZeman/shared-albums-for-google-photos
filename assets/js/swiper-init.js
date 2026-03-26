@@ -203,7 +203,7 @@
     // Time conversion constant (shared by all helpers and initializers)
     var MILLISECONDS_PER_SECOND = 1000; // Conversion factor from seconds to milliseconds
     // Loader UX: avoid flashing loader on quick responses.
-    var LOADER_SHOW_DELAY_MS = 1000;
+    var LOADER_SHOW_DELAY_MS = 300;
     var LOADER_MIN_VISIBLE_MS = 250;
 
     // Helper: Run after the next paint cycle (double RAF) to avoid synchronous
@@ -1336,7 +1336,7 @@
 
     // Helper: Build loading overlay markup.
     function buildLoaderHtml(text) {
-        var label = text || 'Loading photos...';
+        var label = text || 'Loading content...';
         return '' +
             '<div class="jzsa-loader">' +
                 '<div class="jzsa-loader-inner">' +
@@ -2108,28 +2108,67 @@
 			});
 		}
 
-		// FULLSCREEN NAVIGATION CURSOR: show left/right chevron cursors in fullscreen
-		// to hint at click-to-navigate (button-only and double-click modes only).
-		// Set via inline style with !important to override Swiper's grabCursor.
+		// FULLSCREEN NAVIGATION CURSOR: left/right chevron cursors in fullscreen
+		// hint at click-to-navigate (button-only and double-click modes only).
+		// Uses a dynamic <style> element with a none→real two-frame kick to
+		// force the browser to repaint the cursor (browsers skip repainting
+		// when the cursor value is unchanged on a stationary mouse).
 		var CURSOR_PREV = 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\'%3E%3Cpath d=\'M20 8L12 16l8 8\' fill=\'none\' stroke=\'black\' stroke-width=\'4\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3Cpath d=\'M20 8L12 16l8 8\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E") 16 16, w-resize';
 		var CURSOR_NEXT = 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\'%3E%3Cpath d=\'M12 8l8 8-8 8\' fill=\'none\' stroke=\'black\' stroke-width=\'4\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3Cpath d=\'M12 8l8 8-8 8\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E") 16 16, e-resize';
 		var navCursorActive = false;
 
 		if (params.fullscreenToggle !== 'click' && params.fullscreenToggle !== 'disabled') {
-			var $wrapper = $container.find('.swiper-wrapper');
-			$container.on('mousemove', function(e) {
-				if (!isFullscreen()) {
+			var lastMouseX = -1;
+			var cursorStyleEl = document.createElement('style');
+			$container[0].appendChild(cursorStyleEl);
+			var containerId = $container.attr('id');
+			var cursorKickTimer = null;
+
+			function applyNavCursor() {
+				if (!isFullscreen() || lastMouseX < 0) {
 					if (navCursorActive) {
-						$wrapper[0].style.removeProperty('cursor');
+						cursorStyleEl.textContent = '';
 						navCursorActive = false;
 					}
 					return;
 				}
 				var rect = $container[0].getBoundingClientRect();
-				var isLeft = (e.clientX - rect.left) < rect.width / 2;
-				$wrapper[0].style.setProperty('cursor', isLeft ? CURSOR_PREV : CURSOR_NEXT, 'important');
+				var isLeft = (lastMouseX - rect.left) < rect.width / 2;
+				var cursor = isLeft ? CURSOR_PREV : CURSOR_NEXT;
+				// Two-frame kick: set 'none' first, then the real cursor on the
+				// next animation frame to force a browser cursor repaint.
+				cursorStyleEl.textContent =
+					'#' + containerId + ' .swiper-slide { cursor: none !important; }';
+				if (cursorKickTimer) cancelAnimationFrame(cursorKickTimer);
+				cursorKickTimer = requestAnimationFrame(function() {
+					cursorStyleEl.textContent =
+						'#' + containerId + ' .swiper-slide { cursor: ' + cursor + ' !important; }';
+				});
 				navCursorActive = true;
+			}
+
+			$container.on('mousemove', function(e) {
+				lastMouseX = e.clientX;
+				applyNavCursor();
 			});
+
+			// Guard: re-apply every 500ms while in fullscreen to catch any
+			// cursor resets caused by Swiper or browser re-layouts.
+			var cursorGuardInterval = null;
+			$(document).on('fullscreenchange webkitfullscreenchange', function() {
+				if (isFullscreen()) {
+					if (!cursorGuardInterval) {
+						cursorGuardInterval = setInterval(applyNavCursor, 500);
+					}
+				} else {
+					if (cursorGuardInterval) {
+						clearInterval(cursorGuardInterval);
+						cursorGuardInterval = null;
+					}
+				}
+				setTimeout(applyNavCursor, 50);
+			});
+			swiper.on('slideChangeTransitionEnd', applyNavCursor);
 		}
 
 		// FULLSCREEN NAVIGATION: single click navigates in fullscreen (all modes).
@@ -3089,7 +3128,7 @@
         // --------------------------------------------------------------------
 
         if ($container.find('.jzsa-loader').length === 0) {
-            $container.append(buildLoaderHtml('Loading photos...'));
+            $container.append(buildLoaderHtml('Loading content...'));
         }
         $container
             .removeClass('jzsa-loaded jzsa-loader-visible')
@@ -4809,7 +4848,7 @@
         var allPhotos     = allPhotosJson ? JSON.parse(allPhotosJson) : [];
 
         if ($container.find('.jzsa-loader').length === 0) {
-            $container.append(buildLoaderHtml('Loading photos...'));
+            $container.append(buildLoaderHtml('Loading content...'));
         }
         $container
             .addClass('jzsa-gallery-album')
