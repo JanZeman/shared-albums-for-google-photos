@@ -2108,6 +2108,30 @@
 			});
 		}
 
+		// FULLSCREEN NAVIGATION CURSOR: show left/right chevron cursors in fullscreen
+		// to hint at click-to-navigate (button-only and double-click modes only).
+		// Set via inline style with !important to override Swiper's grabCursor.
+		var CURSOR_PREV = 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\'%3E%3Cpath d=\'M20 8L12 16l8 8\' fill=\'none\' stroke=\'black\' stroke-width=\'4\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3Cpath d=\'M20 8L12 16l8 8\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E") 16 16, w-resize';
+		var CURSOR_NEXT = 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\'%3E%3Cpath d=\'M12 8l8 8-8 8\' fill=\'none\' stroke=\'black\' stroke-width=\'4\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3Cpath d=\'M12 8l8 8-8 8\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E") 16 16, e-resize';
+		var navCursorActive = false;
+
+		if (params.fullscreenToggle !== 'click' && params.fullscreenToggle !== 'disabled') {
+			var $wrapper = $container.find('.swiper-wrapper');
+			$container.on('mousemove', function(e) {
+				if (!isFullscreen()) {
+					if (navCursorActive) {
+						$wrapper[0].style.removeProperty('cursor');
+						navCursorActive = false;
+					}
+					return;
+				}
+				var rect = $container[0].getBoundingClientRect();
+				var isLeft = (e.clientX - rect.left) < rect.width / 2;
+				$wrapper[0].style.setProperty('cursor', isLeft ? CURSOR_PREV : CURSOR_NEXT, 'important');
+				navCursorActive = true;
+			});
+		}
+
 		// FULLSCREEN NAVIGATION: single click navigates in fullscreen (all modes).
 		// When fullscreenToggle is double-click, delay navigation so a double-click
 		// to exit fullscreen does not trigger a spurious navigate first.

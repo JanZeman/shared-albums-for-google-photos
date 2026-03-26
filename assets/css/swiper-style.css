@@ -800,9 +800,6 @@ body.jzsa-no-scroll {
     pointer-events: none !important;
 }
 
-/* Fullscreen slides: Swiper's own grab/grabbing cursor is used.
-   No pseudo-element overlays so drag/touch navigation works natively.
-   Click-to-navigate (50-50 split) is handled by JS. */
 .jzsa-album:fullscreen .swiper-slide,
 .jzsa-album:-webkit-full-screen .swiper-slide,
 .jzsa-album.jzsa-pseudo-fullscreen .swiper-slide {
