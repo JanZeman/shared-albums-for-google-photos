@@ -1575,7 +1575,7 @@ body.jzsa-no-scroll {
    visible (covering the Google poster triangle) until actual playback. */
 .jzsa-video-wrapper .plyr__control--overlaid.jzsa-plyr-loading {
     visibility: visible !important;
-    opacity: 1 !important;
+    opacity: 0.5 !important;
     display: flex !important;
     animation: jzsa-plyr-pulse 1s ease-in-out infinite;
     pointer-events: auto;
@@ -1620,6 +1620,21 @@ body.jzsa-no-scroll {
 
 @keyframes jzsa-plyr-spin {
     to { transform: rotate(360deg); }
+}
+
+/* During playback, keep the big play button in the DOM at near-zero opacity
+   so it stays clickable (toggles pause).  This prevents accidental fullscreen
+   exit when the user clicks the center area expecting to pause. */
+.jzsa-video-wrapper .plyr--playing .plyr__control--overlaid {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 0.01 !important;
+    pointer-events: auto !important;
+}
+
+/* Loading spinner takes priority over the near-invisible playing state. */
+.jzsa-video-wrapper .plyr--playing .plyr__control--overlaid.jzsa-plyr-loading {
+    opacity: 0.5 !important;
 }
 
 /* Error state — blue button stays, triangle turns red so user can retry */

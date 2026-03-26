@@ -669,6 +669,17 @@
             var $albumContainer = $wrapper.closest('.jzsa-album, .jzsa-gallery-album');
             var $playLarge = $wrapper.find('.plyr__control--overlaid');
 
+            // When the video is playing, intercept clicks on the overlaid
+            // button to pause instead of plyr's default (re-play).
+            // Capture phase ensures this fires before plyr's own handler.
+            $playLarge[0].addEventListener('click', function(e) {
+                if (plyrRef && plyrRef.playing) {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                    plyrRef.pause();
+                }
+            }, true);
+
             // Loading state + auto-heal finite-state machine.
             var LOADING_TIMEOUT_MS = 30000;
             var STALL_WATCHDOG_MS = 5000;

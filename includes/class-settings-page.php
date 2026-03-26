@@ -85,7 +85,7 @@ class JZSA_Settings_Page {
 		$video_gallery_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" show-videos="true" limit="6" width="800" gallery-layout="grid" video-controls-color="#00A878" corner-radius="16" gallery-gap="8"]';
 		$video_gallery_click_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" show-videos="true" limit="6" width="800" gallery-layout="grid" fullscreen-toggle="click" video-controls-color="#E0527E" gallery-gap="8" corner-radius="16"]';
 		$video_gallery_dblclick_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" show-videos="true" limit="6" width="800" gallery-layout="grid" fullscreen-toggle="double-click" video-controls-color="#7A5CFF" gallery-gap="8"]';
-		$video_photos_only_shortcode = '[jzsa-album link="' . $video_sample_link . '" show-videos="false" limit="6" video-controls-color="#7A5CFF" corner-radius="16" gallery-gap="8"]';
+		$video_photos_only_shortcode = '[jzsa-album link="' . $video_sample_link . '" show-videos="false" limit="6" fullscreen-toggle="double-click" video-controls-color="#7A5CFF" corner-radius="16" gallery-gap="8"]';
 		$controls_custom_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" slideshow="auto" show-link-button="true" show-download-button="true" controls-color="#FFD400" corner-radius="16"]';
 		$download_gallery_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="gallery" show-download-button="true" show-link-button="true" width="800" limit="6" corner-radius="16"]';
 		$mosaic_sample_link        = 'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R';
@@ -854,7 +854,7 @@ class JZSA_Settings_Page {
 						</div>
 
 						<div class="jzsa-example">
-							<h3><?php esc_html_e( 'Photos-Only Control Sample (Videos Disabled)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<h3><?php esc_html_e( 'Photos-Only Sample (Videos Disabled)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Uses show-videos="false" to filter out videos from the same mixed album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $video_photos_only_shortcode ); ?></code>
