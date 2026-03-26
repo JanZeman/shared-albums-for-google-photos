@@ -596,6 +596,12 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     box-sizing: border-box;
     background-color: var(--gallery-bg-color, #FFFFFF);
     z-index: 9999;
+    animation: jzsa-pseudo-fs-in 0.25s ease-out;
+}
+
+@keyframes jzsa-pseudo-fs-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 html.jzsa-no-scroll,

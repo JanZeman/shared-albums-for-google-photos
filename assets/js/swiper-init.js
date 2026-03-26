@@ -323,6 +323,10 @@
     }
 
     // Helper: Enter/exit pseudo fullscreen (CSS-driven fallback for iPhone)
+    // Paints page background black to blend with browser chrome (YouTube-like).
+    var _savedHtmlBg = '';
+    var _savedBodyBg = '';
+
     function enterPseudoFullscreen(element) {
         if (!element) {
             return false;
@@ -331,6 +335,19 @@
         if ($el.hasClass('jzsa-pseudo-fullscreen')) {
             return true;
         }
+
+        // Save scroll position for restoration on exit
+        $el.data('jzsa-scroll-y', window.scrollY || window.pageYOffset);
+
+        // Paint page background to match fullscreen so browser chrome blends in
+        _savedHtmlBg = document.documentElement.style.backgroundColor;
+        _savedBodyBg = document.body.style.backgroundColor;
+        var fsBgRaw = $el.attr('data-fullscreen-background-color') ||
+                      $el.attr('data-background-color') || '';
+        var fsBg = (fsBgRaw && fsBgRaw !== 'transparent') ? fsBgRaw : '#000';
+        document.documentElement.style.backgroundColor = fsBg;
+        document.body.style.backgroundColor = fsBg;
+
         $el.addClass('jzsa-pseudo-fullscreen jzsa-is-fullscreen');
         $('html, body').addClass('jzsa-no-scroll');
         return true;
@@ -340,8 +357,19 @@
         if (!element) {
             return;
         }
-        $(element).removeClass('jzsa-pseudo-fullscreen jzsa-is-fullscreen');
+        var $el = $(element);
+
+        // Restore page background
+        document.documentElement.style.backgroundColor = _savedHtmlBg;
+        document.body.style.backgroundColor = _savedBodyBg;
+
+        $el.removeClass('jzsa-pseudo-fullscreen jzsa-is-fullscreen');
         $('html, body').removeClass('jzsa-no-scroll');
+
+        // Restore scroll position
+        var savedY = $el.data('jzsa-scroll-y') || 0;
+        window.scrollTo(0, savedY);
+        $el.removeData('jzsa-scroll-y');
     }
 
     // Helper: Check if click should be ignored (clicked on UI element)
