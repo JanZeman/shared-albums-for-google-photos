@@ -81,12 +81,20 @@ class JZSA_Shared_Albums {
 	const DEFAULT_MAX_PHOTOS_PER_ALBUM = 300;
 
 	/**
-	 * Default large-download warning threshold for proxied downloads (MB).
-	 * Set to 0 to disable the warning/confirmation.
+	 * Hard maximum download size for proxied downloads (MB).
+	 * Set to 0 to disable the hard limit (not recommended).
 	 *
 	 * @var int
 	 */
-	const DEFAULT_MAX_DOWNLOAD_SIZE_MB = 256;
+	const MAX_DOWNLOAD_SIZE_MB = 512;
+
+	/**
+	 * Default large-download warning threshold for proxied downloads (MB).
+	 * Set to 0 to disable the warning/confirmation dialog.
+	 *
+	 * @var int
+	 */
+	const DEFAULT_DOWNLOAD_WARNING_SIZE_MB = 128;
 
 	/**
 	 * Default slideshow delay range (in seconds) - for normal mode
@@ -440,7 +448,7 @@ class JZSA_Shared_Albums {
 				'show-download-button' => $show_download_button,
 				'fullscreen-show-link-button'     => $fullscreen_show_link_button,
 				'fullscreen-show-download-button' => $fullscreen_show_download_button,
-				'download-max-size-mb' => $this->parse_download_max_size_mb( $atts ),
+				'download-size-warning' => $this->parse_download_warning_size_mb( $atts ),
 
 				// Entry count
 				'limit'                => $this->parse_limit( $atts ),
@@ -519,17 +527,32 @@ class JZSA_Shared_Albums {
 	 * Parse large-download warning threshold in MB for proxied downloads.
 	 * 0 disables the warning/confirmation.
 	 *
+	 * Accepts:
+	 * - download-size-warning (preferred)
+	 * - download-max-size-mb (deprecated alias, backward compatibility)
+	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return int Non-negative size in MB.
 	 */
-	private function parse_download_max_size_mb( $atts ) {
-		if ( ! isset( $atts['download-max-size-mb'] ) ) {
-			return self::DEFAULT_MAX_DOWNLOAD_SIZE_MB;
+	private function parse_download_warning_size_mb( $atts ) {
+		$raw_value = null;
+		if ( isset( $atts['download-size-warning'] ) ) {
+			$raw_value = $atts['download-size-warning'];
+		} elseif ( isset( $atts['download-max-size-mb'] ) ) {
+			$raw_value = $atts['download-max-size-mb'];
 		}
 
-		$value = intval( $atts['download-max-size-mb'] );
+		if ( null === $raw_value ) {
+			return self::DEFAULT_DOWNLOAD_WARNING_SIZE_MB;
+		}
+
+		$value = intval( $raw_value );
 		if ( $value < 0 ) {
-			return self::DEFAULT_MAX_DOWNLOAD_SIZE_MB;
+			return self::DEFAULT_DOWNLOAD_WARNING_SIZE_MB;
+		}
+
+		if ( self::MAX_DOWNLOAD_SIZE_MB > 0 && $value > self::MAX_DOWNLOAD_SIZE_MB ) {
+			return self::MAX_DOWNLOAD_SIZE_MB;
 		}
 
 		return $value;
@@ -1420,19 +1443,34 @@ class JZSA_Shared_Albums {
 			return;
 		}
 
-		// Large-download warning threshold.
-		$max_size_bytes = (int) apply_filters(
-			'jzsa_max_download_size',
-			self::DEFAULT_MAX_DOWNLOAD_SIZE_MB * 1024 * 1024
+		// Hard maximum size guard (server-side).
+		// Keeps backward compatibility with the existing filter name and adds a dedicated hard-limit filter.
+		$hard_max_size_bytes = (int) apply_filters(
+			'jzsa_max_download_hard_limit',
+			(int) apply_filters(
+				'jzsa_max_download_size',
+				self::MAX_DOWNLOAD_SIZE_MB * 1024 * 1024
+			)
 		);
 
-		// Allow per-gallery override coming from shortcode config rendered to data attrs.
-		// 0 disables the warning/confirmation threshold.
-		if ( isset( $_POST['max_size_bytes'] ) ) {
-			$requested_size = intval( wp_unslash( $_POST['max_size_bytes'] ) );
-			if ( $requested_size >= 0 ) {
-				$max_size_bytes = $requested_size;
+		// Per-gallery warning threshold (frontend confirmation), 0 = disabled.
+		$warning_size_bytes = self::DEFAULT_DOWNLOAD_WARNING_SIZE_MB * 1024 * 1024;
+		if ( isset( $_POST['warning_size_bytes'] ) ) {
+			$requested_warning_size = intval( wp_unslash( $_POST['warning_size_bytes'] ) );
+			if ( $requested_warning_size >= 0 ) {
+				$warning_size_bytes = $requested_warning_size;
 			}
+		} elseif ( isset( $_POST['max_size_bytes'] ) ) {
+			// Backward compatibility for old frontend payloads.
+			$requested_warning_size = intval( wp_unslash( $_POST['max_size_bytes'] ) );
+			if ( $requested_warning_size >= 0 ) {
+				$warning_size_bytes = $requested_warning_size;
+			}
+		}
+
+		// Warning threshold cannot exceed hard maximum when hard maximum is enabled.
+		if ( $hard_max_size_bytes > 0 && $warning_size_bytes > $hard_max_size_bytes ) {
+			$warning_size_bytes = $hard_max_size_bytes;
 		}
 
 		$allow_large_download = false;
@@ -1444,13 +1482,27 @@ class JZSA_Shared_Albums {
 		$content_length = wp_remote_retrieve_header( $response, 'content-length' );
 		$content_length = $content_length ? intval( $content_length ) : 0;
 
-		if ( $max_size_bytes > 0 && $content_length > $max_size_bytes && ! $allow_large_download ) {
+		if ( $hard_max_size_bytes > 0 && $content_length > $hard_max_size_bytes ) {
 			wp_send_json_error(
 				array(
-					'message' => __( 'This file is larger than the configured download size.', 'janzeman-shared-albums-for-google-photos' ),
+					'message' => __( 'This file exceeds the maximum allowed download size.', 'janzeman-shared-albums-for-google-photos' ),
+					'actual_size_bytes' => $content_length,
+					'hard_limit_bytes'  => $hard_max_size_bytes,
+					'exceeds_hard_download_limit' => true,
+				),
+				413
+			);
+			return;
+		}
+
+		if ( $warning_size_bytes > 0 && $content_length > $warning_size_bytes && ! $allow_large_download ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'This file is larger than the configured download warning threshold.', 'janzeman-shared-albums-for-google-photos' ),
 					'requires_large_download_confirmation' => true,
 					'actual_size_bytes' => $content_length,
-					'max_size_bytes'    => $max_size_bytes,
+					'max_size_bytes'    => $warning_size_bytes,
+					'warning_size_bytes' => $warning_size_bytes,
 				),
 				413
 			);
@@ -1462,13 +1514,27 @@ class JZSA_Shared_Albums {
 		$content_type = wp_remote_retrieve_header( $response, 'content-type' );
 
 		$actual_size_bytes = strlen( $media_data );
-		if ( $max_size_bytes > 0 && $actual_size_bytes > $max_size_bytes && ! $allow_large_download ) {
+		if ( $hard_max_size_bytes > 0 && $actual_size_bytes > $hard_max_size_bytes ) {
 			wp_send_json_error(
 				array(
-					'message' => __( 'This file is larger than the configured download size.', 'janzeman-shared-albums-for-google-photos' ),
+					'message' => __( 'This file exceeds the maximum allowed download size.', 'janzeman-shared-albums-for-google-photos' ),
+					'actual_size_bytes' => $actual_size_bytes,
+					'hard_limit_bytes'  => $hard_max_size_bytes,
+					'exceeds_hard_download_limit' => true,
+				),
+				413
+			);
+			return;
+		}
+
+		if ( $warning_size_bytes > 0 && $actual_size_bytes > $warning_size_bytes && ! $allow_large_download ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'This file is larger than the configured download warning threshold.', 'janzeman-shared-albums-for-google-photos' ),
 					'requires_large_download_confirmation' => true,
 					'actual_size_bytes' => $actual_size_bytes,
-					'max_size_bytes'    => $max_size_bytes,
+					'max_size_bytes'    => $warning_size_bytes,
+					'warning_size_bytes' => $warning_size_bytes,
 				),
 				413
 			);

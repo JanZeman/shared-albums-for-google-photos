@@ -447,14 +447,18 @@
         return value === 'true';
     }
 
-    // Helper: Parse per-gallery max download size from data attr (MB -> bytes).
-    // Returns null when not specified, 0 to disable the limit.
-    function getDownloadMaxSizeBytes($container) {
+    // Helper: Parse per-gallery download warning size from data attr (MB -> bytes).
+    // Returns null when not specified, 0 to disable warning.
+    function getDownloadWarningSizeBytes($container) {
         if (!$container || !$container.length) {
             return null;
         }
 
-        var rawValue = $container.attr('data-download-max-size-mb');
+        var rawValue = $container.attr('data-download-size-warning');
+        if (rawValue === undefined || rawValue === null || rawValue === '') {
+            // Backward compatibility with legacy attribute name.
+            rawValue = $container.attr('data-download-max-size-mb');
+        }
         if (rawValue === undefined || rawValue === null || rawValue === '') {
             return null;
         }
@@ -2001,7 +2005,9 @@
             if (raw.actual_size_bytes !== undefined && raw.actual_size_bytes !== null && !isNaN(parseInt(raw.actual_size_bytes, 10))) {
                 actualSizeBytes = parseInt(raw.actual_size_bytes, 10);
             }
-            if (raw.max_size_bytes !== undefined && raw.max_size_bytes !== null && !isNaN(parseInt(raw.max_size_bytes, 10))) {
+            if (raw.warning_size_bytes !== undefined && raw.warning_size_bytes !== null && !isNaN(parseInt(raw.warning_size_bytes, 10))) {
+                maxSizeBytes = parseInt(raw.warning_size_bytes, 10);
+            } else if (raw.max_size_bytes !== undefined && raw.max_size_bytes !== null && !isNaN(parseInt(raw.max_size_bytes, 10))) {
                 maxSizeBytes = parseInt(raw.max_size_bytes, 10);
             }
         }
@@ -2106,7 +2112,7 @@
         }
         details.push('Do you want to continue downloading this file?');
 
-        var baseMessage = errorData.message || 'This file is larger than the configured download size.';
+        var baseMessage = errorData.message || 'This file is larger than the configured download warning threshold.';
         return window.confirm(baseMessage + '\n\n' + details.join('\n'));
     }
 
@@ -2187,7 +2193,7 @@
         if ($downloadBtn.length === 0) {
             return; // Download button not enabled
         }
-        var downloadMaxSizeBytes = getDownloadMaxSizeBytes($container);
+        var downloadWarningSizeBytes = getDownloadWarningSizeBytes($container);
 
         function inferMediaTypeFromUrl(url) {
             if (!url) {
@@ -2290,8 +2296,10 @@
                     image_url: mediaUrl,
                     filename: filename
                 };
-                if (downloadMaxSizeBytes !== null) {
-                    requestData.max_size_bytes = downloadMaxSizeBytes;
+                if (downloadWarningSizeBytes !== null) {
+                    requestData.warning_size_bytes = downloadWarningSizeBytes;
+                    // Backward compatibility with older server versions.
+                    requestData.max_size_bytes = downloadWarningSizeBytes;
                 }
                 if (allowLargeDownload) {
                     requestData.allow_large_download = 'true';
@@ -4315,6 +4323,7 @@
             'data-show-link-button',
             'data-fullscreen-show-download-button',
             'data-fullscreen-show-link-button',
+            'data-download-size-warning',
             'data-download-max-size-mb'
         ];
         for (var i = 0; i < forwardAttrs.length; i++) {
@@ -5505,7 +5514,7 @@
         var requestedGallerySizingModel = (readGalleryAttr($container, 'sizing') || 'ratio').toLowerCase();
         var gallerySizing = requestedGallerySizingModel === 'fill' ? 'fill' : 'ratio';
         var interactionLock = $container.attr('data-interaction-lock') === 'true';
-        var galleryDownloadMaxSizeBytes = getDownloadMaxSizeBytes($container);
+        var galleryDownloadWarningSizeBytes = getDownloadWarningSizeBytes($container);
         var gallerySlideshowMode = $container.attr('data-slideshow') || 'disabled';
         var gallerySlideshowEnabled = gallerySlideshowMode !== 'disabled';
         var requestedGallerySlideshowDelay = parseInt($container.attr('data-slideshow-delay'), 10);
@@ -6426,8 +6435,10 @@
                         image_url: mediaUrl,
                         filename: filename
                     };
-                    if (galleryDownloadMaxSizeBytes !== null) {
-                        requestData.max_size_bytes = galleryDownloadMaxSizeBytes;
+                    if (galleryDownloadWarningSizeBytes !== null) {
+                        requestData.warning_size_bytes = galleryDownloadWarningSizeBytes;
+                        // Backward compatibility with older server versions.
+                        requestData.max_size_bytes = galleryDownloadWarningSizeBytes;
                     }
                     if (allowLargeDownload) {
                         requestData.allow_large_download = 'true';
