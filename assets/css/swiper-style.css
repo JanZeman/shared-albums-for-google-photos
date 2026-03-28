@@ -298,7 +298,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 
 /* Inline mode: when both link and download are visible, offset download button. */
 .jzsa-album:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-show-link-button="true"][data-show-download-button="true"] > .swiper-button-download {
-    left: calc(var(--jzsa-controls-circle-size) + 10px);
+    left: calc(var(--jzsa-controls-icon-size) + 18px);
 }
 
 /* Fullscreen mode: when both link and download are visible, offset download button. */
@@ -306,7 +306,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 .jzsa-album.jzsa-pseudo-fullscreen[data-fullscreen-show-link-button="true"][data-fullscreen-show-download-button="true"] > .swiper-button-download,
 .jzsa-album:fullscreen[data-fullscreen-show-link-button="true"][data-fullscreen-show-download-button="true"] > .swiper-button-download,
 .jzsa-album:-webkit-full-screen[data-fullscreen-show-link-button="true"][data-fullscreen-show-download-button="true"] > .swiper-button-download {
-    left: calc(var(--jzsa-controls-circle-size) + 10px);
+    left: calc(var(--jzsa-controls-icon-size) + 24px);
 }
 
 
@@ -803,7 +803,7 @@ body.jzsa-no-scroll {
 
 .jzsa-album[data-mode="carousel"] .swiper-slide .jzsa-carousel-slide-left-secondary {
     /* Keep download as a close visual neighbor of link (icon-level spacing). */
-    left: calc(var(--jzsa-controls-icon-size) + 8px);
+    left: calc(var(--jzsa-controls-icon-size) + 18px);
     right: auto;
 }
 
@@ -1251,7 +1251,7 @@ body.jzsa-no-scroll {
 /* When both link and download buttons are on a thumbnail, offset the download button.
    Extra specificity needed to override the slider-mode rule for .swiper-button-download. */
 .jzsa-gallery-album .jzsa-gallery-item .jzsa-gallery-thumb-link-btn + .jzsa-gallery-thumb-download-btn.swiper-button-download {
-    left: 32px;
+    left: calc(var(--jzsa-controls-icon-size) + 18px);
 }
 
 .jzsa-gallery-album .jzsa-gallery-item:hover .jzsa-gallery-thumb-fs-btn,
