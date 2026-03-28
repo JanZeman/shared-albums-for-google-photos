@@ -1418,7 +1418,7 @@
             var tileOverlayButtons = '';
             if (mode === 'carousel') {
                 var showTileLink = showCarouselTileLinkButtons && !!carouselAlbumUrl;
-                var showTileDownload = showCarouselTileDownloadButtons && !isVideo;
+                var showTileDownload = showCarouselTileDownloadButtons;
                 if (showCarouselTileFullscreenButtons) {
                     tileOverlayButtons +=
                         '<button class="swiper-button-fullscreen jzsa-gallery-thumb-fs-btn jzsa-carousel-slide-overlay-btn jzsa-carousel-slide-fs-btn" type="button" ' +
@@ -1429,10 +1429,12 @@
                         '<a href="' + carouselAlbumUrl + '" target="_blank" rel="noopener noreferrer" class="swiper-button-external-link jzsa-carousel-slide-overlay-btn jzsa-carousel-slide-link-btn jzsa-carousel-slide-left-primary" title="Open in Google Photos" aria-label="Open album in Google Photos"></a>';
                 }
                 if (showTileDownload) {
-                    var downloadUrl = photo.full || photo.preview || '';
+                    var downloadUrl = isVideo
+                        ? (photo.video || photo.full || photo.preview || '')
+                        : (photo.full || photo.preview || '');
                     var downloadPosClass = showTileLink ? 'jzsa-carousel-slide-left-secondary' : 'jzsa-carousel-slide-left-primary';
                     tileOverlayButtons +=
-                        '<button class="swiper-button-download jzsa-carousel-slide-overlay-btn jzsa-carousel-slide-download-btn ' + downloadPosClass + '" type="button" data-download-url="' + downloadUrl + '" data-download-index="' + (index + 1) + '" title="Download current image" aria-label="Download media ' + (index + 1) + '"></button>';
+                        '<button class="swiper-button-download jzsa-carousel-slide-overlay-btn jzsa-carousel-slide-download-btn ' + downloadPosClass + '" type="button" data-download-url="' + downloadUrl + '" data-download-type="' + (isVideo ? 'video' : 'photo') + '" data-download-index="' + (index + 1) + '" title="Download current media" aria-label="Download media ' + (index + 1) + '"></button>';
                 }
             }
 
@@ -1966,28 +1968,85 @@
             return; // Download button not enabled
         }
 
+        function inferMediaTypeFromUrl(url) {
+            if (!url) {
+                return 'photo';
+            }
+            var normalized = String(url).split('?')[0].toLowerCase();
+            if (
+                normalized.indexOf('video-downloads.googleusercontent.com') !== -1 ||
+                /\.(mp4|mov|m4v|webm|3gp)$/i.test(normalized)
+            ) {
+                return 'video';
+            }
+            return 'photo';
+        }
+
+        function resolveSlideDownloadData(slideEl) {
+            if (!slideEl) {
+                return null;
+            }
+            var $slide = $(slideEl);
+            var mediaType = $slide.attr('data-media-type') === 'video' ? 'video' : 'photo';
+            var mediaUrl = '';
+
+            if (mediaType === 'video') {
+                var $video = $slide.find('video.jzsa-video-player').first();
+                mediaUrl = $video.prop('currentSrc') || $video.attr('src') || '';
+            } else {
+                var $img = $slide.find('img').first();
+                mediaUrl = $img.attr('data-full-src') || $img.attr('src') || '';
+            }
+
+            if (!mediaUrl) {
+                return null;
+            }
+
+            return {
+                mediaUrl: mediaUrl,
+                mediaType: mediaType
+            };
+        }
+
+        function buildFilename(mediaType, downloadIndex) {
+            var currentIndex = typeof swiper.realIndex === 'number' ? swiper.realIndex : swiper.activeIndex;
+            var safeIndex = (!isNaN(downloadIndex) && downloadIndex > 0) ? downloadIndex : (currentIndex + 1);
+            var prefix = mediaType === 'video' ? 'video-' : 'photo-';
+            var extension = mediaType === 'video' ? '.mp4' : '.jpg';
+            return prefix + safeIndex + extension;
+        }
+
         $downloadBtn.on('click', function(e) {
             e.stopPropagation();
             var $clickedBtn = $(this);
-            var imageUrl = $clickedBtn.attr('data-download-url') || '';
+            var mediaUrl = $clickedBtn.attr('data-download-url') || '';
+            var mediaType = $clickedBtn.attr('data-download-type') || '';
             var downloadIndex = parseInt($clickedBtn.attr('data-download-index'), 10);
-            var filename = (!isNaN(downloadIndex) && downloadIndex > 0)
-                ? ('photo-' + downloadIndex + '.jpg')
-                : ('photo-' + (swiper.activeIndex + 1) + '.jpg');
 
-            if (!imageUrl) {
-                // Fallback for container-level download button.
-                var activeSlide = swiper.slides[swiper.activeIndex];
-                if (!activeSlide) {
-                    return;
-                }
-                var $img = $(activeSlide).find('img');
-                imageUrl = $img.attr('data-full-src') || $img.attr('src');
+            if (!mediaType) {
+                mediaType = $clickedBtn.closest('.swiper-slide').attr('data-media-type') === 'video' ? 'video' : '';
             }
 
-            if (!imageUrl) {
+            if (!mediaUrl) {
+                // Fallback for container-level download button: resolve from active slide.
+                var activeSlideData = resolveSlideDownloadData(swiper.slides[swiper.activeIndex]);
+                if (activeSlideData) {
+                    mediaUrl = activeSlideData.mediaUrl;
+                    if (!mediaType) {
+                        mediaType = activeSlideData.mediaType;
+                    }
+                }
+            }
+
+            if (!mediaUrl) {
                 return;
             }
+
+            if (!mediaType) {
+                mediaType = inferMediaTypeFromUrl(mediaUrl);
+            }
+
+            var filename = buildFilename(mediaType, downloadIndex);
 
             // Google Photos doesn't allow direct downloads due to CORS
             // We need to download via WordPress AJAX proxy
@@ -2003,7 +2062,8 @@
                 data: {
                     action: 'jzsa_download_image',
                     nonce: jzsaAjax.downloadNonce,
-                    image_url: imageUrl,
+                    media_url: mediaUrl,
+                    image_url: mediaUrl,
                     filename: filename
                 },
                 xhrFields: {
@@ -2029,7 +2089,7 @@
 
                     // Fallback: Try direct link with download attribute
                     var link = document.createElement('a');
-                    link.href = imageUrl;
+                    link.href = mediaUrl;
                     link.download = filename;
                     link.target = '_blank';
                     link.rel = 'noopener noreferrer';
@@ -3938,7 +3998,7 @@
             showDownload
         );
         if (showDownload || showFullscreenDownload) {
-            html += '<button class="swiper-button-download" title="Download current image"></button>';
+            html += '<button class="swiper-button-download" title="Download current media"></button>';
         }
 
         html += '<div class="swiper-button-fullscreen"></div>';
@@ -4144,8 +4204,8 @@
             if (showThumbLink && thumbAlbumUrl) {
                 thumbOverlayBtns += '<a href="' + thumbAlbumUrl + '" target="_blank" rel="noopener noreferrer" class="jzsa-gallery-thumb-link-btn swiper-button-external-link" tabindex="0" aria-label="Open album in Google Photos"></a>';
             }
-            if (showThumbDownload && !isVideo) {
-                thumbOverlayBtns += '<div class="jzsa-gallery-thumb-download-btn swiper-button-download" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Download ' + mediaLabel + ' ' + (globalIndex + 1) + '"></div>';
+            if (showThumbDownload) {
+                thumbOverlayBtns += '<div class="jzsa-gallery-thumb-download-btn swiper-button-download" role="button" tabindex="0" data-index="' + globalIndex + '" data-media-type="' + mediaLabel + '" aria-label="Download ' + mediaLabel + ' ' + (globalIndex + 1) + '"></div>';
             }
             if (allowThumbFullscreen) {
                 thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open ' + mediaLabel + ' ' + (globalIndex + 1) + ' in fullscreen"></div>';
@@ -4254,8 +4314,8 @@
                 if (showThumbLink && thumbAlbumUrl) {
                     thumbOverlayBtns += '<a href="' + thumbAlbumUrl + '" target="_blank" rel="noopener noreferrer" class="jzsa-gallery-thumb-link-btn swiper-button-external-link" tabindex="0" aria-label="Open album in Google Photos"></a>';
                 }
-                if (showThumbDownload && !isVideo) {
-                    thumbOverlayBtns += '<div class="jzsa-gallery-thumb-download-btn swiper-button-download" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Download ' + mediaLabel + ' ' + (item.index + 1) + '"></div>';
+                if (showThumbDownload) {
+                    thumbOverlayBtns += '<div class="jzsa-gallery-thumb-download-btn swiper-button-download" role="button" tabindex="0" data-index="' + item.index + '" data-media-type="' + mediaLabel + '" aria-label="Download ' + mediaLabel + ' ' + (item.index + 1) + '"></div>';
                 }
                 if (allowThumbFullscreen) {
                     thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open ' + mediaLabel + ' ' + (item.index + 1) + ' in fullscreen"></div>';
@@ -6076,12 +6136,15 @@
                     return;
                 }
 
-                var imageUrl = photo.full || photo.preview;
-                if (!imageUrl) {
+                var mediaType = photo.type === 'video' ? 'video' : 'photo';
+                var mediaUrl = mediaType === 'video'
+                    ? (photo.video || photo.full || photo.preview)
+                    : (photo.full || photo.preview);
+                if (!mediaUrl) {
                     return;
                 }
 
-                var filename = 'photo-' + (index + 1) + '.jpg';
+                var filename = (mediaType === 'video' ? 'video-' : 'photo-') + (index + 1) + (mediaType === 'video' ? '.mp4' : '.jpg');
                 var $btn = $(this);
                 $btn.css('opacity', '0.5');
 
@@ -6091,7 +6154,8 @@
                     data: {
                         action: 'jzsa_download_image',
                         nonce: jzsaAjax.downloadNonce,
-                        image_url: imageUrl,
+                        media_url: mediaUrl,
+                        image_url: mediaUrl,
                         filename: filename
                     },
                     xhrFields: { responseType: 'blob' },
@@ -6108,7 +6172,7 @@
                     },
                     error: function() {
                         var link = document.createElement('a');
-                        link.href = imageUrl;
+                        link.href = mediaUrl;
                         link.download = filename;
                         link.target = '_blank';
                         link.rel = 'noopener noreferrer';

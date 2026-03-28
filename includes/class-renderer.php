@@ -179,7 +179,7 @@ class JZSA_Renderer {
 		if ( $show_inline_download_button || $show_fullscreen_download_button ) {
 			$html .= sprintf(
 				'<button class="swiper-button-download" title="%s"></button>',
-				esc_attr__( 'Download current image', 'janzeman-shared-albums-for-google-photos' )
+				esc_attr__( 'Download current media', 'janzeman-shared-albums-for-google-photos' )
 			);
 		}
 
