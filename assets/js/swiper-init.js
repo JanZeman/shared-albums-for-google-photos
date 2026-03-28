@@ -447,6 +447,30 @@
         return value === 'true';
     }
 
+    // Helper: Parse per-gallery max download size from data attr (MB -> bytes).
+    // Returns null when not specified, 0 to disable the limit.
+    function getDownloadMaxSizeBytes($container) {
+        if (!$container || !$container.length) {
+            return null;
+        }
+
+        var rawValue = $container.attr('data-download-max-size-mb');
+        if (rawValue === undefined || rawValue === null || rawValue === '') {
+            return null;
+        }
+
+        var parsedMb = parseInt(rawValue, 10);
+        if (isNaN(parsedMb) || parsedMb < 0) {
+            return null;
+        }
+
+        if (parsedMb === 0) {
+            return 0;
+        }
+
+        return parsedMb * 1024 * 1024;
+    }
+
     // Helper: Parse slideshow autoresume data attribute.
     function parseSlideshowAutoresumeAttr(rawValue, fallbackValue) {
         var fallback = (fallbackValue === undefined || fallbackValue === null || fallbackValue === '') ? 30 : fallbackValue;
@@ -1961,12 +1985,209 @@
         });
     }
 
+    function normalizeDownloadErrorData(raw) {
+        var message = '';
+        var requiresLargeDownloadConfirmation = false;
+        var actualSizeBytes = 0;
+        var maxSizeBytes = 0;
+
+        if (typeof raw === 'string') {
+            message = raw;
+        } else if (raw && typeof raw === 'object') {
+            if (typeof raw.message === 'string') {
+                message = raw.message;
+            }
+            requiresLargeDownloadConfirmation = raw.requires_large_download_confirmation === true;
+            if (raw.actual_size_bytes !== undefined && raw.actual_size_bytes !== null && !isNaN(parseInt(raw.actual_size_bytes, 10))) {
+                actualSizeBytes = parseInt(raw.actual_size_bytes, 10);
+            }
+            if (raw.max_size_bytes !== undefined && raw.max_size_bytes !== null && !isNaN(parseInt(raw.max_size_bytes, 10))) {
+                maxSizeBytes = parseInt(raw.max_size_bytes, 10);
+            }
+        }
+
+        return {
+            message: message || 'Download failed. Please try again.',
+            requiresLargeDownloadConfirmation: requiresLargeDownloadConfirmation,
+            actualSizeBytes: actualSizeBytes,
+            maxSizeBytes: maxSizeBytes
+        };
+    }
+
+    function getAjaxErrorData(xhr) {
+        if (!xhr) {
+            return null;
+        }
+        if (xhr.responseJSON && xhr.responseJSON.success === false) {
+            return normalizeDownloadErrorData(xhr.responseJSON.data);
+        }
+        if (typeof xhr.responseText === 'string' && xhr.responseText) {
+            try {
+                var parsed = JSON.parse(xhr.responseText);
+                if (parsed && parsed.success === false) {
+                    return normalizeDownloadErrorData(parsed.data);
+                }
+            } catch (_ignore) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    var jzsaDownloadStatusTimer = null;
+
+    function showDownloadStatus(message, isError) {
+        if (!message || !document || !document.body) {
+            return;
+        }
+
+        var id = 'jzsa-download-status';
+        var node = document.getElementById(id);
+        if (!node) {
+            node = document.createElement('div');
+            node.id = id;
+            node.className = 'jzsa-download-status';
+            node.setAttribute('role', 'status');
+            node.setAttribute('aria-live', 'polite');
+            document.body.appendChild(node);
+        }
+
+        node.textContent = message;
+        node.classList.toggle('jzsa-download-status-error', !!isError);
+        node.classList.add('jzsa-download-status-visible');
+
+        if (jzsaDownloadStatusTimer) {
+            window.clearTimeout(jzsaDownloadStatusTimer);
+        }
+
+        jzsaDownloadStatusTimer = window.setTimeout(function() {
+            node.classList.remove('jzsa-download-status-visible');
+        }, isError ? 4200 : 1800);
+    }
+
+    function showDownloadErrorMessage(message) {
+        var text = message || 'Download failed. Please try again.';
+        if (window.console && typeof window.console.warn === 'function') {
+            window.console.warn('Download failed:', text);
+        }
+        showDownloadStatus(text, true);
+    }
+
+    function formatBytesForHumans(bytes) {
+        var value = parseInt(bytes, 10);
+        if (isNaN(value) || value <= 0) {
+            return '';
+        }
+
+        var units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        var unitIndex = 0;
+        var sizedValue = value;
+        while (sizedValue >= 1024 && unitIndex < units.length - 1) {
+            sizedValue = sizedValue / 1024;
+            unitIndex++;
+        }
+
+        var decimals = (sizedValue >= 10 || unitIndex === 0) ? 0 : 1;
+        return sizedValue.toFixed(decimals) + ' ' + units[unitIndex];
+    }
+
+    function confirmLargeDownload(errorData) {
+        if (typeof window.confirm !== 'function') {
+            return false;
+        }
+
+        var details = [];
+        var actual = formatBytesForHumans(errorData.actualSizeBytes);
+        var limit = formatBytesForHumans(errorData.maxSizeBytes);
+        if (actual && limit) {
+            details.push('File size: ' + actual + ' (configured limit: ' + limit + ').');
+        } else if (actual) {
+            details.push('File size: ' + actual + '.');
+        }
+        details.push('Do you want to continue downloading this file?');
+
+        var baseMessage = errorData.message || 'This file is larger than the configured download size.';
+        return window.confirm(baseMessage + '\n\n' + details.join('\n'));
+    }
+
+    function downloadBlobToFile(blob, filename) {
+        var url = window.URL.createObjectURL(blob);
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    }
+
+    function detectDownloadErrorFromBlob(blob, callback) {
+        if (typeof callback !== 'function') {
+            return;
+        }
+
+        if (!blob) {
+            callback(null);
+            return;
+        }
+
+        var blobType = (blob.type || '').toLowerCase();
+        var shouldInspectAsText =
+            blobType.indexOf('application/json') !== -1 ||
+            blobType.indexOf('text/') === 0 ||
+            (!blobType && blob.size > 0 && blob.size <= 4096);
+
+        if (!shouldInspectAsText) {
+            callback(null);
+            return;
+        }
+
+        function parseText(text) {
+            if (!text) {
+                callback(null);
+                return;
+            }
+            try {
+                var parsed = JSON.parse(text);
+                if (parsed && parsed.success === false) {
+                    callback(normalizeDownloadErrorData(parsed.data));
+                    return;
+                }
+            } catch (_ignore) {
+                // Not JSON payload from wp_send_json_error.
+            }
+            callback(null);
+        }
+
+        if (typeof blob.text === 'function') {
+            blob.text().then(parseText).catch(function() {
+                callback(null);
+            });
+            return;
+        }
+
+        if (typeof FileReader !== 'undefined') {
+            var reader = new FileReader();
+            reader.onload = function() {
+                parseText(String(reader.result || ''));
+            };
+            reader.onerror = function() {
+                callback(null);
+            };
+            reader.readAsText(blob);
+            return;
+        }
+
+        callback(null);
+    }
+
     // Helper: Setup download button
     function setupDownloadButton(swiper, $container) {
         var $downloadBtn = $container.find('.swiper-button-download');
         if ($downloadBtn.length === 0) {
             return; // Download button not enabled
         }
+        var downloadMaxSizeBytes = getDownloadMaxSizeBytes($container);
 
         function inferMediaTypeFromUrl(url) {
             if (!url) {
@@ -2050,58 +2271,99 @@
 
             // Google Photos doesn't allow direct downloads due to CORS
             // We need to download via WordPress AJAX proxy
-            // Show loading state
             var originalTitle = $clickedBtn.attr('title');
-            $clickedBtn.attr('title', 'Downloading...');
-            $clickedBtn.css('opacity', '0.5');
 
-            // Use WordPress AJAX to proxy the download
-            $.ajax({
-                url: jzsaAjax.ajaxUrl,
-                type: 'POST',
-                data: {
+            function restoreButtonState() {
+                $clickedBtn.attr('title', originalTitle);
+                $clickedBtn.css('opacity', '1');
+            }
+
+            function requestProxyDownload(allowLargeDownload) {
+                $clickedBtn.attr('title', 'Downloading...');
+                $clickedBtn.css('opacity', '0.5');
+                showDownloadStatus(allowLargeDownload ? 'Preparing large download...' : 'Preparing download...', false);
+
+                var requestData = {
                     action: 'jzsa_download_image',
                     nonce: jzsaAjax.downloadNonce,
                     media_url: mediaUrl,
                     image_url: mediaUrl,
                     filename: filename
-                },
-                xhrFields: {
-                    responseType: 'blob'
-                },
-                success: function(blob) {
-                    // Create download link from blob
-                    var url = window.URL.createObjectURL(blob);
-                    var link = document.createElement('a');
-                    link.href = url;
-                    link.download = filename;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    window.URL.revokeObjectURL(url);
-
-                    // Restore button state
-                    $clickedBtn.attr('title', originalTitle);
-                    $clickedBtn.css('opacity', '1');
-                },
-                error: function(_xhr, _status, error) {
-                    console.error('Download failed:', error);
-
-                    // Fallback: Try direct link with download attribute
-                    var link = document.createElement('a');
-                    link.href = mediaUrl;
-                    link.download = filename;
-                    link.target = '_blank';
-                    link.rel = 'noopener noreferrer';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-
-                    // Restore button state
-                    $clickedBtn.attr('title', originalTitle);
-                    $clickedBtn.css('opacity', '1');
+                };
+                if (downloadMaxSizeBytes !== null) {
+                    requestData.max_size_bytes = downloadMaxSizeBytes;
                 }
-            });
+                if (allowLargeDownload) {
+                    requestData.allow_large_download = 'true';
+                }
+
+                // Use WordPress AJAX to proxy the download
+                $.ajax({
+                    url: jzsaAjax.ajaxUrl,
+                    type: 'POST',
+                    data: requestData,
+                    xhrFields: {
+                        responseType: 'blob'
+                    },
+                    success: function(blob) {
+                        detectDownloadErrorFromBlob(blob, function(blobErrorData) {
+                            if (blobErrorData) {
+                                if (blobErrorData.requiresLargeDownloadConfirmation && !allowLargeDownload) {
+                                    restoreButtonState();
+                                    if (confirmLargeDownload(blobErrorData)) {
+                                        requestProxyDownload(true);
+                                    } else {
+                                        showDownloadStatus('Download canceled.', false);
+                                    }
+                                    return;
+                                }
+
+                                showDownloadErrorMessage(blobErrorData.message);
+                                restoreButtonState();
+                                return;
+                            }
+
+                            downloadBlobToFile(blob, filename);
+                            showDownloadStatus('Download started.', false);
+                            restoreButtonState();
+                        });
+                    },
+                    error: function(xhr, _status, error) {
+                        var ajaxErrorData = getAjaxErrorData(xhr);
+                        if (ajaxErrorData) {
+                            if (ajaxErrorData.requiresLargeDownloadConfirmation && !allowLargeDownload) {
+                                restoreButtonState();
+                                if (confirmLargeDownload(ajaxErrorData)) {
+                                    requestProxyDownload(true);
+                                } else {
+                                    showDownloadStatus('Download canceled.', false);
+                                }
+                                return;
+                            }
+
+                            showDownloadErrorMessage(ajaxErrorData.message);
+                            restoreButtonState();
+                            return;
+                        }
+
+                        console.error('Download failed:', error);
+
+                        // Fallback: Try direct link with download attribute
+                        var link = document.createElement('a');
+                        link.href = mediaUrl;
+                        link.download = filename;
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        showDownloadStatus('Opening direct download...', false);
+                        restoreButtonState();
+                    }
+                });
+            }
+
+            requestProxyDownload(false);
         });
     }
 
@@ -4052,7 +4314,8 @@
             'data-show-download-button',
             'data-show-link-button',
             'data-fullscreen-show-download-button',
-            'data-fullscreen-show-link-button'
+            'data-fullscreen-show-link-button',
+            'data-download-max-size-mb'
         ];
         for (var i = 0; i < forwardAttrs.length; i++) {
             var val = $galleryContainer.attr(forwardAttrs[i]);
@@ -5242,6 +5505,7 @@
         var requestedGallerySizingModel = (readGalleryAttr($container, 'sizing') || 'ratio').toLowerCase();
         var gallerySizing = requestedGallerySizingModel === 'fill' ? 'fill' : 'ratio';
         var interactionLock = $container.attr('data-interaction-lock') === 'true';
+        var galleryDownloadMaxSizeBytes = getDownloadMaxSizeBytes($container);
         var gallerySlideshowMode = $container.attr('data-slideshow') || 'disabled';
         var gallerySlideshowEnabled = gallerySlideshowMode !== 'disabled';
         var requestedGallerySlideshowDelay = parseInt($container.attr('data-slideshow-delay'), 10);
@@ -6146,42 +6410,88 @@
 
                 var filename = (mediaType === 'video' ? 'video-' : 'photo-') + (index + 1) + (mediaType === 'video' ? '.mp4' : '.jpg');
                 var $btn = $(this);
-                $btn.css('opacity', '0.5');
 
-                $.ajax({
-                    url: jzsaAjax.ajaxUrl,
-                    type: 'POST',
-                    data: {
+                function restoreThumbButtonState() {
+                    $btn.css('opacity', '');
+                }
+
+                function requestGalleryProxyDownload(allowLargeDownload) {
+                    $btn.css('opacity', '0.5');
+                    showDownloadStatus(allowLargeDownload ? 'Preparing large download...' : 'Preparing download...', false);
+
+                    var requestData = {
                         action: 'jzsa_download_image',
                         nonce: jzsaAjax.downloadNonce,
                         media_url: mediaUrl,
                         image_url: mediaUrl,
                         filename: filename
-                    },
-                    xhrFields: { responseType: 'blob' },
-                    success: function(blob) {
-                        var url = window.URL.createObjectURL(blob);
-                        var link = document.createElement('a');
-                        link.href = url;
-                        link.download = filename;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        window.URL.revokeObjectURL(url);
-                        $btn.css('opacity', '');
-                    },
-                    error: function() {
-                        var link = document.createElement('a');
-                        link.href = mediaUrl;
-                        link.download = filename;
-                        link.target = '_blank';
-                        link.rel = 'noopener noreferrer';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        $btn.css('opacity', '');
+                    };
+                    if (galleryDownloadMaxSizeBytes !== null) {
+                        requestData.max_size_bytes = galleryDownloadMaxSizeBytes;
                     }
-                });
+                    if (allowLargeDownload) {
+                        requestData.allow_large_download = 'true';
+                    }
+
+                    $.ajax({
+                        url: jzsaAjax.ajaxUrl,
+                        type: 'POST',
+                        data: requestData,
+                        xhrFields: { responseType: 'blob' },
+                        success: function(blob) {
+                            detectDownloadErrorFromBlob(blob, function(blobErrorData) {
+                                if (blobErrorData) {
+                                    if (blobErrorData.requiresLargeDownloadConfirmation && !allowLargeDownload) {
+                                        restoreThumbButtonState();
+                                        if (confirmLargeDownload(blobErrorData)) {
+                                            requestGalleryProxyDownload(true);
+                                        } else {
+                                            showDownloadStatus('Download canceled.', false);
+                                        }
+                                        return;
+                                    }
+
+                                    showDownloadErrorMessage(blobErrorData.message);
+                                    restoreThumbButtonState();
+                                    return;
+                                }
+                                downloadBlobToFile(blob, filename);
+                                showDownloadStatus('Download started.', false);
+                                restoreThumbButtonState();
+                            });
+                        },
+                        error: function(xhr) {
+                            var ajaxErrorData = getAjaxErrorData(xhr);
+                            if (ajaxErrorData) {
+                                if (ajaxErrorData.requiresLargeDownloadConfirmation && !allowLargeDownload) {
+                                    restoreThumbButtonState();
+                                    if (confirmLargeDownload(ajaxErrorData)) {
+                                        requestGalleryProxyDownload(true);
+                                    } else {
+                                        showDownloadStatus('Download canceled.', false);
+                                    }
+                                    return;
+                                }
+
+                                showDownloadErrorMessage(ajaxErrorData.message);
+                                restoreThumbButtonState();
+                                return;
+                            }
+                            var link = document.createElement('a');
+                            link.href = mediaUrl;
+                            link.download = filename;
+                            link.target = '_blank';
+                            link.rel = 'noopener noreferrer';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            showDownloadStatus('Opening direct download...', false);
+                            restoreThumbButtonState();
+                        }
+                    });
+                }
+
+                requestGalleryProxyDownload(false);
             });
         }
 

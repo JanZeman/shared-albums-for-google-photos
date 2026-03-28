@@ -81,6 +81,14 @@ class JZSA_Shared_Albums {
 	const DEFAULT_MAX_PHOTOS_PER_ALBUM = 300;
 
 	/**
+	 * Default large-download warning threshold for proxied downloads (MB).
+	 * Set to 0 to disable the warning/confirmation.
+	 *
+	 * @var int
+	 */
+	const DEFAULT_MAX_DOWNLOAD_SIZE_MB = 256;
+
+	/**
 	 * Default slideshow delay range (in seconds) - for normal mode
 	 *
 	 * @var string
@@ -432,6 +440,7 @@ class JZSA_Shared_Albums {
 				'show-download-button' => $show_download_button,
 				'fullscreen-show-link-button'     => $fullscreen_show_link_button,
 				'fullscreen-show-download-button' => $fullscreen_show_download_button,
+				'download-max-size-mb' => $this->parse_download_max_size_mb( $atts ),
 
 				// Entry count
 				'limit'                => $this->parse_limit( $atts ),
@@ -504,6 +513,26 @@ class JZSA_Shared_Albums {
 		}
 
 		return 'true' === strtolower( $atts[ $key ] );
+	}
+
+	/**
+	 * Parse large-download warning threshold in MB for proxied downloads.
+	 * 0 disables the warning/confirmation.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return int Non-negative size in MB.
+	 */
+	private function parse_download_max_size_mb( $atts ) {
+		if ( ! isset( $atts['download-max-size-mb'] ) ) {
+			return self::DEFAULT_MAX_DOWNLOAD_SIZE_MB;
+		}
+
+		$value = intval( $atts['download-max-size-mb'] );
+		if ( $value < 0 ) {
+			return self::DEFAULT_MAX_DOWNLOAD_SIZE_MB;
+		}
+
+		return $value;
 	}
 
 	/**
@@ -1317,7 +1346,12 @@ class JZSA_Shared_Albums {
 		// Verify nonce.
 		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
 		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'jzsa_download_nonce' ) ) {
-			wp_send_json_error( __( 'Invalid nonce', 'janzeman-shared-albums-for-google-photos' ) );
+			wp_send_json_error(
+				array(
+					'message' => __( 'Invalid nonce', 'janzeman-shared-albums-for-google-photos' ),
+				),
+				403
+			);
 			return;
 		}
 
@@ -1326,7 +1360,12 @@ class JZSA_Shared_Albums {
 		$posted_image_url = isset( $_POST['image_url'] ) ? wp_unslash( $_POST['image_url'] ) : '';
 		$raw_media_url    = ! empty( $posted_media_url ) ? $posted_media_url : $posted_image_url;
 		if ( empty( $raw_media_url ) ) {
-			wp_send_json_error( __( 'Missing media URL', 'janzeman-shared-albums-for-google-photos' ) );
+			wp_send_json_error(
+				array(
+					'message' => __( 'Missing media URL', 'janzeman-shared-albums-for-google-photos' ),
+				),
+				400
+			);
 			return;
 		}
 
@@ -1336,13 +1375,23 @@ class JZSA_Shared_Albums {
 		// Verify it's a Google Photos media URL.
 		$parsed_url = wp_parse_url( $media_url );
 		if ( empty( $parsed_url['scheme'] ) || 'https' !== $parsed_url['scheme'] || empty( $parsed_url['host'] ) ) {
-			wp_send_json_error( __( 'Invalid media URL', 'janzeman-shared-albums-for-google-photos' ) );
+			wp_send_json_error(
+				array(
+					'message' => __( 'Invalid media URL', 'janzeman-shared-albums-for-google-photos' ),
+				),
+				400
+			);
 			return;
 		}
 
 		$host = strtolower( $parsed_url['host'] );
 		if ( 'googleusercontent.com' !== $host && substr( $host, -strlen( '.googleusercontent.com' ) ) !== '.googleusercontent.com' ) {
-			wp_send_json_error( __( 'Invalid media URL', 'janzeman-shared-albums-for-google-photos' ) );
+			wp_send_json_error(
+				array(
+					'message' => __( 'Invalid media URL', 'janzeman-shared-albums-for-google-photos' ),
+				),
+				400
+			);
 			return;
 		}
 
@@ -1359,21 +1408,52 @@ class JZSA_Shared_Albums {
 
 		if ( is_wp_error( $response ) ) {
 			wp_send_json_error(
-				sprintf(
+				array(
 					/* translators: %s: error message returned from WordPress HTTP API */
-					__( 'Failed to fetch media: %s', 'janzeman-shared-albums-for-google-photos' ),
-					$response->get_error_message()
-				)
+					'message' => sprintf(
+						__( 'Failed to fetch media: %s', 'janzeman-shared-albums-for-google-photos' ),
+						$response->get_error_message()
+					),
+				),
+				502
 			);
 			return;
 		}
 
-		// Optional: guard against excessively large files.
-		$max_size_bytes = (int) apply_filters( 'jzsa_max_download_size', 50 * 1024 * 1024 ); // 50 MB default.
-		$content_length = wp_remote_retrieve_header( $response, 'content-length' );
+		// Large-download warning threshold.
+		$max_size_bytes = (int) apply_filters(
+			'jzsa_max_download_size',
+			self::DEFAULT_MAX_DOWNLOAD_SIZE_MB * 1024 * 1024
+		);
 
-		if ( $max_size_bytes > 0 && $content_length && (int) $content_length > $max_size_bytes ) {
-			wp_send_json_error( __( 'Media file is too large to download.', 'janzeman-shared-albums-for-google-photos' ) );
+		// Allow per-gallery override coming from shortcode config rendered to data attrs.
+		// 0 disables the warning/confirmation threshold.
+		if ( isset( $_POST['max_size_bytes'] ) ) {
+			$requested_size = intval( wp_unslash( $_POST['max_size_bytes'] ) );
+			if ( $requested_size >= 0 ) {
+				$max_size_bytes = $requested_size;
+			}
+		}
+
+		$allow_large_download = false;
+		if ( isset( $_POST['allow_large_download'] ) ) {
+			$allow_raw            = strtolower( sanitize_text_field( wp_unslash( $_POST['allow_large_download'] ) ) );
+			$allow_large_download = in_array( $allow_raw, array( '1', 'true', 'yes' ), true );
+		}
+
+		$content_length = wp_remote_retrieve_header( $response, 'content-length' );
+		$content_length = $content_length ? intval( $content_length ) : 0;
+
+		if ( $max_size_bytes > 0 && $content_length > $max_size_bytes && ! $allow_large_download ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'This file is larger than the configured download size.', 'janzeman-shared-albums-for-google-photos' ),
+					'requires_large_download_confirmation' => true,
+					'actual_size_bytes' => $content_length,
+					'max_size_bytes'    => $max_size_bytes,
+				),
+				413
+			);
 			return;
 		}
 
@@ -1381,13 +1461,27 @@ class JZSA_Shared_Albums {
 		$media_data   = wp_remote_retrieve_body( $response );
 		$content_type = wp_remote_retrieve_header( $response, 'content-type' );
 
-		if ( $max_size_bytes > 0 && ( ! $content_length ) && strlen( $media_data ) > $max_size_bytes ) {
-			wp_send_json_error( __( 'Media file is too large to download.', 'janzeman-shared-albums-for-google-photos' ) );
+		$actual_size_bytes = strlen( $media_data );
+		if ( $max_size_bytes > 0 && $actual_size_bytes > $max_size_bytes && ! $allow_large_download ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'This file is larger than the configured download size.', 'janzeman-shared-albums-for-google-photos' ),
+					'requires_large_download_confirmation' => true,
+					'actual_size_bytes' => $actual_size_bytes,
+					'max_size_bytes'    => $max_size_bytes,
+				),
+				413
+			);
 			return;
 		}
 
 		if ( empty( $media_data ) ) {
-			wp_send_json_error( __( 'Empty media data', 'janzeman-shared-albums-for-google-photos' ) );
+			wp_send_json_error(
+				array(
+					'message' => __( 'Empty media data', 'janzeman-shared-albums-for-google-photos' ),
+				),
+				502
+			);
 			return;
 		}
 

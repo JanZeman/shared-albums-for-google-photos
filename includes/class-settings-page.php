@@ -719,7 +719,7 @@ class JZSA_Settings_Page {
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Show Download Button', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Enables the show-download-button parameter to add a download button for the current photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<p><?php esc_html_e( 'Enables the show-download-button parameter to add a download button for the current media item (photo or video).', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
 						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" show-download-button="true"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
@@ -1078,11 +1078,6 @@ class JZSA_Settings_Page {
 									<td>300</td>
 								</tr>
 							<tr>
-								<td><code>cache-refresh</code></td>
-								<td>How often the album data is re-fetched from Google Photos, in hours. Useful for albums that are updated frequently (e.g. live event albums). Example: cache-refresh="1" to refresh every hour.</td>
-								<td>168 (7 days)</td>
-							</tr>
-							<tr>
 								<td><code>source-width</code></td>
 								<td>Photo width to fetch from Google for inline mode</td>
 								<td>800</td>
@@ -1240,11 +1235,6 @@ class JZSA_Settings_Page {
 							</thead>
 							<tbody>
 								<tr>
-									<td><code>interaction-lock</code></td>
-									<td>Master interaction lock: when "true", disables swipe/drag, keyboard navigation, click/tap photo navigation, gallery thumbnail fullscreen opening, and fullscreen entry gestures/buttons. Interactive controls are hidden; passive indicators like counter/progress can remain visible.</td>
-									<td>false</td>
-								</tr>
-								<tr>
 									<td><code>show-navigation</code></td>
 									<td>Show previous/next navigation arrows: "true" or "false"</td>
 									<td>true</td>
@@ -1268,6 +1258,34 @@ class JZSA_Settings_Page {
 									<td><code>show-download-button</code></td>
 									<td>Show download button in inline (non-fullscreen) view: "false" or "true"</td>
 									<td>false</td>
+								</tr>
+							</tbody>
+						</table>
+
+						<h3><?php esc_html_e( 'Other Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<table class="jzsa-settings-table">
+							<thead>
+								<tr>
+									<th>Parameter</th>
+									<th>Description</th>
+									<th>Default</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>cache-refresh</code></td>
+									<td>How often the album data is re-fetched from Google Photos, in hours. Useful for albums that are updated frequently (e.g. live event albums). Example: cache-refresh="1" to refresh every hour.</td>
+									<td>168 (7 days)</td>
+								</tr>
+								<tr>
+									<td><code>interaction-lock</code></td>
+									<td>Master interaction lock: when "true", disables swipe/drag, keyboard navigation, click/tap photo navigation, gallery thumbnail fullscreen opening, and fullscreen entry gestures/buttons. Interactive controls are hidden; passive indicators like counter/progress can remain visible.</td>
+									<td>false</td>
+								</tr>
+								<tr>
+									<td><code>download-max-size-mb</code></td>
+									<td>Large-download warning threshold (in MB) for proxied downloads (photo or video). If exceeded, the visitor gets a yes/no confirmation dialog before continuing. Set <code>0</code> to disable the warning.</td>
+									<td>256</td>
 								</tr>
 							</tbody>
 						</table>
@@ -1365,35 +1383,6 @@ class JZSA_Settings_Page {
 							</tbody>
 						</table>
 
-					<h3><?php esc_html_e( 'Video Support (Experimental)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<p><?php echo wp_kses( __( 'Albums containing videos will attempt to detect and play them using the native browser video player. Please notice: <strong>This is an experimental feature. The video playback experience might not be perfect under all conditions.</strong>', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
-					<table class="jzsa-settings-table">
-						<thead>
-							<tr>
-								<th><?php esc_html_e( 'Parameter', 'janzeman-shared-albums-for-google-photos' ); ?></th>
-								<th><?php esc_html_e( 'Description', 'janzeman-shared-albums-for-google-photos' ); ?></th>
-								<th><?php esc_html_e( 'Default', 'janzeman-shared-albums-for-google-photos' ); ?></th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td><code>show-videos</code></td>
-								<td><?php esc_html_e( 'Include videos from mixed albums: "true" or "false". Set to "false" to display only photos and filter out all video items.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td>false</td>
-							</tr>
-								<tr>
-									<td><code>video-controls-autohide</code></td>
-									<td><?php esc_html_e( 'Auto-hide the video control bar after a few seconds of inactivity in inline mode: "true" or "false". When enabled, controls reappear on hover or tap. Use fullscreen-video-controls-autohide to override this in fullscreen.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-									<td>false</td>
-								</tr>
-								<tr>
-									<td><code>video-controls-color</code></td>
-									<td><?php esc_html_e( 'Accent color for video play button and control bar in inline mode. Any valid CSS hex color (e.g. "#00b2ff", "#FF69B4"). Use fullscreen-video-controls-color to override this in fullscreen.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-									<td>#00b2ff</td>
-								</tr>
-						</tbody>
-					</table>
-
 					<h3><?php esc_html_e( 'Mosaic Thumbnail Strip', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 					<p><?php esc_html_e( 'Display a strip of thumbnail previews alongside the main slider or carousel. Works with mode="slider" and mode="carousel". The strip is synchronized with the main swiper — clicking a thumbnail jumps to that photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<table class="jzsa-settings-table">
@@ -1435,6 +1424,35 @@ class JZSA_Settings_Page {
 								<td><?php esc_html_e( 'Rounded corner radius in pixels for the mosaic strip and its thumbnails. When not set, inherits from corner-radius.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td><?php esc_html_e( 'corner-radius', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
+						</tbody>
+					</table>
+
+					<h3><?php esc_html_e( 'Video Support (Experimental)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<p><?php echo wp_kses( __( 'Albums containing videos will attempt to detect and play them using the native browser video player. Please notice: <strong>This is an experimental feature. The video playback experience might not be perfect under all conditions.</strong>', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
+					<table class="jzsa-settings-table">
+						<thead>
+							<tr>
+								<th><?php esc_html_e( 'Parameter', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Description', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Default', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><code>show-videos</code></td>
+								<td><?php esc_html_e( 'Include videos from mixed albums: "true" or "false". Set to "false" to display only photos and filter out all video items.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>false</td>
+							</tr>
+								<tr>
+									<td><code>video-controls-autohide</code></td>
+									<td><?php esc_html_e( 'Auto-hide the video control bar after a few seconds of inactivity in inline mode: "true" or "false". When enabled, controls reappear on hover or tap. Use fullscreen-video-controls-autohide to override this in fullscreen.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+									<td>false</td>
+								</tr>
+								<tr>
+									<td><code>video-controls-color</code></td>
+									<td><?php esc_html_e( 'Accent color for video play button and control bar in inline mode. Any valid CSS hex color (e.g. "#00b2ff", "#FF69B4"). Use fullscreen-video-controls-color to override this in fullscreen.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+									<td>#00b2ff</td>
+								</tr>
 						</tbody>
 					</table>
 

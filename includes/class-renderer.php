@@ -307,6 +307,10 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-slideshow-delay="%s"', esc_attr( $config['slideshow-delay'] ) );
 		}
 
+		if ( isset( $config['download-max-size-mb'] ) ) {
+			$attrs[] = sprintf( 'data-download-max-size-mb="%d"', intval( $config['download-max-size-mb'] ) );
+		}
+
 		if ( ! empty( $config['image-fit'] ) ) {
 			$attrs[] = sprintf( 'data-image-fit="%s"', esc_attr( $config['image-fit'] ) );
 		}
@@ -421,6 +425,10 @@ class JZSA_Renderer {
 
 		if ( isset( $config['slideshow-delay'] ) ) {
 			$attrs[] = sprintf( 'data-slideshow-delay="%s"', esc_attr( $config['slideshow-delay'] ) );
+		}
+
+		if ( isset( $config['download-max-size-mb'] ) ) {
+			$attrs[] = sprintf( 'data-download-max-size-mb="%d"', intval( $config['download-max-size-mb'] ) );
 		}
 
 		if ( isset( $config['start-at'] ) && '' !== $config['start-at'] ) {

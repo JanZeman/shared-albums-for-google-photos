@@ -1097,6 +1097,35 @@ body.jzsa-no-scroll {
     opacity: 1;
 }
 
+/* Global download status toast used for "preparing/download started" feedback. */
+.jzsa-download-status {
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%) translateY(10px);
+    background: rgba(16, 16, 16, 0.88);
+    color: #fff;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 13px;
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+    z-index: 99999;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.jzsa-download-status.jzsa-download-status-visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.jzsa-download-status.jzsa-download-status-error {
+    background: rgba(162, 24, 24, 0.92);
+}
+
 /* ============================================================================
    Gallery mode
    ============================================================================ */
