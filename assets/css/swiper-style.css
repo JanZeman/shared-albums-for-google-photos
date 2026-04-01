@@ -324,7 +324,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 /* Slideshow progress bar (only visible when slideshow is running) */
 .jzsa-album .swiper-slideshow-progress {
     position: absolute;
-    bottom: 4px;
+    bottom: 5px;
     left: 50%;
     transform: translateX(-50%);
     width: 39px;
@@ -355,7 +355,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 /* Play/Pause button */
 .jzsa-album .swiper-button-play-pause {
     position: absolute;
-    bottom: 28px;
+    bottom: 27px;
     left: 50%;
     transform: translateX(-50%);
     width: var(--jzsa-controls-circle-size);
@@ -668,6 +668,7 @@ body.jzsa-no-scroll {
     max-width: max-content;
     width: auto;
     font-size: 12px;
+    line-height: 1.3;
     text-align: center;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     overflow: hidden;
@@ -1124,16 +1125,7 @@ body.jzsa-no-scroll {
 .jzsa-info-bottom-right  { bottom: 12px; right: 12px; left: auto; }
 .jzsa-info-top-left      { top: 12px; left: 12px; bottom: auto; }
 .jzsa-info-top-right     { top: 12px; right: 12px; left: auto; bottom: auto; }
-.jzsa-info-top           { top: 12px; left: 50%; transform: translateX(-50%); bottom: auto; }
-.jzsa-info-secondary     { bottom: 4px; left: 50%; transform: translateX(-50%); max-width: 90%; text-align: center; }
-
-/* When secondary is shown, push pagination pill up to make room. */
-.jzsa-album:has(.jzsa-info-secondary) .swiper-pagination { bottom: 28px; }
-.jzsa-album:has(.jzsa-info-secondary).jzsa-is-fullscreen .swiper-pagination { bottom: 38px; }
-
-/* In fullscreen, leave room for the slideshow progress bar. */
-.jzsa-album.jzsa-is-fullscreen .jzsa-info-secondary,
-.jzsa-album:fullscreen .jzsa-info-secondary { bottom: 8px; }
+.jzsa-info-top-center           { top: 12px; left: 50%; transform: translateX(-50%); bottom: auto; }
 
 /* Compact variant for gallery thumbnails */
 .jzsa-gallery-item .jzsa-info-box {
@@ -1145,8 +1137,7 @@ body.jzsa-no-scroll {
 .jzsa-gallery-item .jzsa-info-bottom-right { bottom: 4px; right: 4px; }
 .jzsa-gallery-item .jzsa-info-top-left     { top: 4px; left: 4px; }
 .jzsa-gallery-item .jzsa-info-top-right    { top: 4px; right: 4px; }
-.jzsa-gallery-item .jzsa-info-top          { top: 4px; }
-.jzsa-gallery-item .jzsa-info-secondary    { bottom: 2px; }
+.jzsa-gallery-item .jzsa-info-top-center          { top: 4px; }
 
 /* Global download status toast used for "preparing/download started" feedback. */
 .jzsa-download-status {

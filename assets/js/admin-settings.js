@@ -44,6 +44,51 @@ function jzsaCopyToClipboard( button, text ) {
  * @param {HTMLElement} applyBtn         The Apply button (disabled during request).
  * @param {HTMLElement} previewContainer The container to update with the rendered HTML.
  */
+/**
+ * Highlight {token} placeholders in red inside an editable code element.
+ * Preserves cursor position across innerHTML replacements.
+ */
+function jzsaHighlightTokens( codeEl ) {
+	var text = codeEl.textContent || '';
+	var escaped = text.replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' );
+	var highlighted = escaped.replace( /(\{[a-z_-]+\})/g, '<span class="jzsa-token">$1</span>' );
+	if ( highlighted === escaped ) {
+		return; // No tokens, skip innerHTML update.
+	}
+
+	// Save cursor offset.
+	var sel = window.getSelection();
+	var offset = 0;
+	if ( sel && sel.rangeCount ) {
+		var range = sel.getRangeAt( 0 );
+		var pre = range.cloneRange();
+		pre.selectNodeContents( codeEl );
+		pre.setEnd( range.endContainer, range.endOffset );
+		offset = pre.toString().length;
+	}
+
+	codeEl.innerHTML = highlighted;
+
+	// Restore cursor.
+	try {
+		var walker = document.createTreeWalker( codeEl, NodeFilter.SHOW_TEXT, null, false );
+		var charCount = 0;
+		var node;
+		while ( ( node = walker.nextNode() ) ) {
+			var len = node.textContent.length;
+			if ( charCount + len >= offset ) {
+				var r = document.createRange();
+				r.setStart( node, offset - charCount );
+				r.collapse( true );
+				sel.removeAllRanges();
+				sel.addRange( r );
+				break;
+			}
+			charCount += len;
+		}
+	} catch ( e ) { /* ignore */ }
+}
+
 function jzsaApplyPreview( codeEl, applyBtn, previewContainer ) {
 	var shortcode = ( codeEl.textContent || '' ).trim();
 	if ( ! shortcode ) {
@@ -167,12 +212,16 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			return;
 		}
 
-		// Enable/disable Apply+Revert when content changes.
+		// Enable/disable Apply+Revert when content changes; highlight tokens.
 		codeEl.addEventListener( 'input', function () {
 			var changed = ( codeEl.textContent || '' ) !== originalText;
 			applyBtn.disabled = ! changed;
 			revertBtn.disabled = ! changed;
+			jzsaHighlightTokens( codeEl );
 		} );
+
+		// Highlight tokens on initial load.
+		jzsaHighlightTokens( codeEl );
 
 		// Revert with green flash.
 		revertBtn.addEventListener( 'click', function () {
@@ -294,7 +343,10 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			var changed = ( pgCode.textContent || '' ) !== playgroundOriginal;
 			pgApply.disabled = ! changed;
 			pgRevert.disabled = ! changed;
+			jzsaHighlightTokens( pgCode );
 		} );
+
+		jzsaHighlightTokens( pgCode );
 
 		pgRevert.addEventListener( 'click', function () {
 			pgCode.textContent = playgroundOriginal;

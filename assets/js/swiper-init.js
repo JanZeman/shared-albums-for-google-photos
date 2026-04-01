@@ -1461,11 +1461,13 @@
     // Info box system — resolve {token} format strings per photo
     // ========================================================================
 
+    // Clockwise from bottom-center (excluding bottom-center which is the pagination pill).
     var INFO_BOX_NAMES = [
-        'info-secondary',
-        'info-bottom-left', 'info-bottom-right',
-        'info-top-left', 'info-top-right',
-        'info-top'
+        'info-bottom-left',
+        'info-top-left',
+        'info-top-center',
+        'info-top-right',
+        'info-bottom-right'
     ];
 
     /**
@@ -1838,17 +1840,10 @@
             var altText = photo.filename
                 ? photo.filename.replace(/\.[^.]+$/, '')
                 : 'Photo';
-
-            // Info box overlays (resolved per-photo from format strings).
-            var slideZoneHtml = config.zoneFormats
-                ? buildInfoZoneHtml(photo, config.zoneFormats.inline, config.zoneFormats.fullscreen)
-                : '';
-
             if (isVideo) {
                 var posterUrl = photo.preview || photo.full || '';
                 html += '<div class="swiper-slide jzsa-slide-video" data-media-type="video">' +
                     buildVideoHtml({ src: photo.video, poster: posterUrl, mediaIndex: index }) +
-                    slideZoneHtml +
                     tileOverlayButtons +
                     '</div>';
             } else {
@@ -1865,7 +1860,6 @@
                     '<img src="' + previewUrl + '" ' +
                     (previewUrl !== fullUrl ? 'data-full-src="' + fullUrl + '" ' : '') +
                     'alt="' + escapeHtml(altText) + '" class="jzsa-progressive-image"' + loadingAttr + ' decoding="async" />' +
-                    slideZoneHtml +
                     '</div>' +
                     tileOverlayButtons +
                     '</div>';
@@ -1963,13 +1957,6 @@
         }
 
         applyVideoControlsAutohideSetting($container, videoControlsAutohide);
-
-        // Swap info box text between inline and fullscreen resolved content.
-        var zoneAttrKey = useFullscreen ? 'data-fullscreen' : 'data-inline';
-        $container.find('.jzsa-info-box').each(function() {
-            var text = $(this).attr(zoneAttrKey) || '';
-            this.textContent = text;
-        });
 
         params.slideshowAutoresume = useFullscreen ? params.fullscreenSlideshowAutoresume : params.inlineSlideshowAutoresume;
 
@@ -3605,7 +3592,8 @@
                 prevEl: '#' + params.galleryId + ' .swiper-button-prev',
             },
 
-        // Pagination always lives at the bottom; content depends on title/counter settings.
+        // Pagination: driven by info-bottom-center format string.
+        // Supports {counter}, {title}, and all per-photo tokens.
         pagination: (function() {
             var base = {
                 el: '#' + params.galleryId + ' .swiper-pagination'
@@ -3614,54 +3602,60 @@
             base.type = 'custom';
             base.renderCustom = function(swiper, current, total) {
                 var $swiperEl = $(swiper.el);
-                var showTitle = readBooleanDataAttr($swiperEl, 'data-show-title', params.showTitle);
-                var showCounter = readBooleanDataAttr($swiperEl, 'data-show-counter', params.showCounter);
-                var albumTitle = $swiperEl.attr('data-album-title') || params.albumTitle;
-                var hasTitle = !!(showTitle && albumTitle);
-                var parts = [];
+                var isFs = $swiperEl.hasClass('jzsa-is-fullscreen') || $swiperEl.hasClass('jzsa-pseudo-fullscreen');
+                var format = isFs
+                    ? ($swiperEl.attr('data-fullscreen-info-bottom-center') || $swiperEl.attr('data-info-bottom-center') || '')
+                    : ($swiperEl.attr('data-info-bottom-center') || '');
 
-                if (hasTitle) {
-                    parts.push(albumTitle);
+                if (!format) {
+                    $swiperEl.find('.swiper-pagination').hide();
+                    return '';
                 }
 
-                if (showCounter) {
-                    // In carousel mode, show
-                    // all currently visible photo indices, e.g. "4-6 / 41".
-                    if (params.mode === 'carousel') {
-                        var slidesPerView = swiper.params.slidesPerView || 1;
-                        var realIndex = (typeof swiper.realIndex === 'number') ? swiper.realIndex : (current - 1);
-                        var visible = [];
-                        var maxVisible = Math.min(slidesPerView, total);
-
-                        for (var i = 0; i < maxVisible; i++) {
-                            var idx = realIndex + i;
-                            if (idx >= total) {
-                                if (swiper.params.loop) {
-                                    idx = idx % total;
-                                } else {
-                                    break;
-                                }
-                            }
-                            visible.push(idx + 1); // 1-based for humans
+                // Build {counter} text.
+                var counterText = '';
+                if (params.mode === 'carousel') {
+                    var slidesPerView = swiper.params.slidesPerView || 1;
+                    var realIndex = (typeof swiper.realIndex === 'number') ? swiper.realIndex : (current - 1);
+                    var visible = [];
+                    var maxVisible = Math.min(slidesPerView, total);
+                    for (var i = 0; i < maxVisible; i++) {
+                        var idx = realIndex + i;
+                        if (idx >= total) {
+                            idx = swiper.params.loop ? idx % total : -1;
                         }
-
-                        if (visible.length === 0) {
-                            // Fallback: show current index if something went wrong
-                            parts.push(current + ' / ' + total);
-                        } else if (visible.length === 1) {
-                            parts.push(visible[0] + ' / ' + total);
-                        } else {
-                            parts.push(visible[0] + '-' + visible[visible.length - 1] + ' / ' + total);
+                        if (idx >= 0) {
+                            visible.push(idx + 1);
                         }
-                    } else {
-                        // Player mode (single slide): keep classic "current / total".
-                        parts.push(current + ' / ' + total);
                     }
+                    if (visible.length <= 1) {
+                        counterText = (visible[0] || current) + ' / ' + total;
+                    } else {
+                        counterText = visible[0] + '-' + visible[visible.length - 1] + ' / ' + total;
+                    }
+                } else {
+                    counterText = current + ' / ' + total;
                 }
 
-                var result = parts.join(':   ');
-                $(swiper.el).find('.swiper-pagination').toggle(result !== '');
-                return result;
+                // Resolve format string with {counter}, {title}, and per-photo tokens.
+                var albumTitle = $swiperEl.attr('data-album-title') || '';
+                var photoIndex = (typeof swiper.realIndex === 'number') ? swiper.realIndex : (current - 1);
+                var photosJson = $swiperEl.attr('data-all-photos');
+                var photo = {};
+                if (photosJson) {
+                    try { photo = JSON.parse(photosJson)[photoIndex] || {}; } catch (e) {}
+                }
+
+                // Inject {counter} and {title} into the format before resolveInfoTokens.
+                var text = format
+                    .replace(/\{counter\}/g, counterText)
+                    .replace(/\{album-title\}/g, albumTitle);
+
+                // Resolve remaining per-photo tokens.
+                text = resolveInfoTokens(text, photo);
+
+                $swiperEl.find('.swiper-pagination').toggle(text !== '');
+                return text;
             };
 
             return base;
@@ -3969,8 +3963,7 @@
             showCarouselTileDownloadButtons: showCarouselTileDownloadButtons,
             carouselAlbumUrl: albumUrl,
             lazyHints: shouldUseLazyHints,
-            eagerIndex: initialSlide,
-            zoneFormats: zoneFormats
+            eagerIndex: initialSlide
         };
 
         function renderSwiperBootstrapSlides() {
@@ -4297,6 +4290,45 @@
             // Pinch zoom remains available on touch devices via config.zoom.
             if (swiper.zoom && swiper.zoom.toggle) {
                 swiper.zoom.toggle = function() {};
+            }
+
+            // All info boxes: rendered at container level (like pagination).
+            // Updated on every slide change so they don't animate with slides.
+            var allBoxNames = INFO_BOX_NAMES;
+            var containerBoxes = [];
+            for (var bi = 0; bi < allBoxNames.length; bi++) {
+                var boxName = allBoxNames[bi];
+                var boxFmt = $container.attr('data-' + boxName) || '';
+                var boxFsFmt = $container.attr('data-fullscreen-' + boxName) || boxFmt;
+                if (!boxFmt && !boxFsFmt) {
+                    continue;
+                }
+                var $box = $('<div class="jzsa-info-box jzsa-' + boxName + '"></div>');
+                $container.append($box);
+                containerBoxes.push({ $el: $box, fmt: boxFmt, fsFmt: boxFsFmt });
+            }
+
+            if (containerBoxes.length) {
+                function updateAllInfoBoxes() {
+                    var isFs = $container.hasClass('jzsa-is-fullscreen') || $container.hasClass('jzsa-pseudo-fullscreen');
+                    var photoIndex = (typeof swiper.realIndex === 'number') ? swiper.realIndex : swiper.activeIndex;
+                    var photosJson = $container.attr('data-all-photos');
+                    var photo = {};
+                    if (photosJson) {
+                        try { photo = JSON.parse(photosJson)[photoIndex] || {}; } catch (e) {}
+                    }
+                    for (var j = 0; j < containerBoxes.length; j++) {
+                        var cb = containerBoxes[j];
+                        var fmt = isFs ? cb.fsFmt : cb.fmt;
+                        var text = resolveInfoTokens(fmt, photo);
+                        cb.$el.text(text).toggle(text !== '');
+                    }
+                }
+
+                updateAllInfoBoxes();
+                swiper.on('slideChange', updateAllInfoBoxes);
+                swiper.on('slideChangeTransitionEnd', updateAllInfoBoxes);
+                $container.on('jzsa:fullscreen-state', updateAllInfoBoxes);
             }
 
             // Stop autoplay initially if inline slideshow is not 'auto' (e.g. 'manual' or 'disabled',
@@ -4804,8 +4836,8 @@
             'data-fullscreen-info-top-right',
             'data-info-top',
             'data-fullscreen-info-top',
-            'data-info-secondary',
-            'data-fullscreen-info-secondary'
+            'data-info-bottom-center',
+            'data-fullscreen-info-bottom-center'
         ];
         for (var i = 0; i < forwardAttrs.length; i++) {
             var val = $galleryContainer.attr(forwardAttrs[i]);

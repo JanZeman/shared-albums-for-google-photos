@@ -571,13 +571,13 @@ class JZSA_Settings_Page {
 						<h3><?php esc_html_e( 'Manual Slideshow', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'The play/pause button is shown but the slideshow does not start automatically. The user must press play to begin auto-advancing.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" slideshow="manual" fullscreen-slideshow="manual"]</code>
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" slideshow="auto" slideshow-delay="15" fullscreen-slideshow="auto" slideshow-delay="15"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-manual-slideshow">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" slideshow="manual" fullscreen-slideshow="manual"]' );
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" slideshow="auto" slideshow-delay="15" fullscreen-slideshow="auto" slideshow-delay="15"]' );
 						?>
 					</div>
 					</div>
@@ -1074,7 +1074,7 @@ class JZSA_Settings_Page {
 							</tr>
 								<tr>
 									<td><code>limit</code></td>
-									<td>Maximum number of album entries to display (photos and videos that remain after filters such as show-videos) from the album (1–300). Google Photos typically returns up to 300 entries per album.</td>
+									<td>Maximum number of album entries to display (photos and videos that remain after filters such as show-videos) from the album (1–300). Google Photos typically returns up to 300 entries per album. Note: infinite looping (swiping from the last photo back to the first) requires at least 4 entries.</td>
 									<td>300</td>
 								</tr>
 							<tr>
@@ -1240,16 +1240,6 @@ class JZSA_Settings_Page {
 									<td>true</td>
 								</tr>
 								<tr>
-									<td><code>show-title</code></td>
-									<td>Display album title: "false" or "true"</td>
-									<td>false</td>
-								</tr>
-								<tr>
-									<td><code>show-counter</code></td>
-									<td>Show the photo counter (e.g., "4 / 50" or "Trip to Bali: 4 / 50"): "true" or "false"</td>
-									<td>true</td>
-								</tr>
-								<tr>
 									<td><code>show-link-button</code></td>
 									<td>Show external link button in inline (non-fullscreen) view: "false" or "true"</td>
 									<td>false</td>
@@ -1273,12 +1263,12 @@ class JZSA_Settings_Page {
 								</tr>
 							</thead>
 							<tbody>
-								<tr><td><code>info-secondary</code></td><td><?php esc_html_e( 'Bottom center, below pagination', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+								<tr><td><code>info-bottom-center</code></td><td><?php esc_html_e( 'Bottom center — the pagination pill. Supports {counter} and {album-title} tokens.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><code>{counter}</code></td></tr>
 								<tr><td><code>info-bottom-left</code></td><td><?php esc_html_e( 'Bottom left corner', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
-								<tr><td><code>info-bottom-right</code></td><td><?php esc_html_e( 'Bottom right corner', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 								<tr><td><code>info-top-left</code></td><td><?php esc_html_e( 'Top left corner', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+								<tr><td><code>info-top-center</code></td><td><?php esc_html_e( 'Top center', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 								<tr><td><code>info-top-right</code></td><td><?php esc_html_e( 'Top right corner', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
-								<tr><td><code>info-top</code></td><td><?php esc_html_e( 'Top center', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+								<tr><td><code>info-bottom-right</code></td><td><?php esc_html_e( 'Bottom right corner', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 						</table>
 
 						<h3><?php esc_html_e( 'Fullscreen Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
@@ -1332,16 +1322,6 @@ class JZSA_Settings_Page {
 									<td>inherits show-navigation</td>
 								</tr>
 								<tr>
-									<td><code>fullscreen-show-title</code></td>
-									<td>Display album title in fullscreen: "false" or "true". Defaults to <code>show-title</code> when omitted.</td>
-									<td>inherits show-title</td>
-								</tr>
-								<tr>
-									<td><code>fullscreen-show-counter</code></td>
-									<td>Show photo counter in fullscreen: "true" or "false". Defaults to <code>show-counter</code> when omitted.</td>
-									<td>inherits show-counter</td>
-								</tr>
-								<tr>
 									<td><code>fullscreen-controls-color</code></td>
 									<td>Color for custom album controls in fullscreen view. Any valid 6-digit hex color. Defaults to <code>controls-color</code> when omitted.</td>
 									<td>inherits controls-color</td>
@@ -1371,12 +1351,12 @@ class JZSA_Settings_Page {
 									<td>Show download button in fullscreen view: "false" or "true". Defaults to <code>show-download-button</code> when omitted.</td>
 									<td>inherits show-download-button</td>
 								</tr>
-								<tr><td><code>fullscreen-info-secondary</code></td><td><?php esc_html_e( 'Info box: bottom center (below pagination) in fullscreen. Inherits from info-secondary when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-secondary', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
+								<tr><td><code>fullscreen-info-bottom-center</code></td><td><?php esc_html_e( 'Pagination pill in fullscreen. Inherits from info-bottom-center when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-bottom-center', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
 								<tr><td><code>fullscreen-info-bottom-left</code></td><td><?php esc_html_e( 'Info box: bottom left in fullscreen. Inherits from info-bottom-left when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-bottom-left', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
-								<tr><td><code>fullscreen-info-bottom-right</code></td><td><?php esc_html_e( 'Info box: bottom right in fullscreen. Inherits from info-bottom-right when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-bottom-right', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
 								<tr><td><code>fullscreen-info-top-left</code></td><td><?php esc_html_e( 'Info box: top left in fullscreen. Inherits from info-top-left when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-top-left', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
+								<tr><td><code>fullscreen-info-top-center</code></td><td><?php esc_html_e( 'Info box: top center in fullscreen. Inherits from info-top-center when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-top-center', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
 								<tr><td><code>fullscreen-info-top-right</code></td><td><?php esc_html_e( 'Info box: top right in fullscreen. Inherits from info-top-right when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-top-right', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
-								<tr><td><code>fullscreen-info-top</code></td><td><?php esc_html_e( 'Info box: top center in fullscreen. Inherits from info-top when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-top', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
+								<tr><td><code>fullscreen-info-bottom-right</code></td><td><?php esc_html_e( 'Info box: bottom right in fullscreen. Inherits from info-bottom-right when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-bottom-right', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
 						</table>
 
 					<h3><?php esc_html_e( 'Mosaic Thumbnail Strip', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
@@ -1487,12 +1467,12 @@ class JZSA_Settings_Page {
 					<h2><?php esc_html_e( 'Photo Info Overlay', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 
 					<h3><?php esc_html_e( 'Info Boxes', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<p><?php esc_html_e( 'Each photo slide (or gallery thumbnail) can display up to six info boxes at fixed positions. You control what goes in each box by assigning a text string — either plain text or a format string with {token} placeholders that resolve to per-photo metadata. Boxes with empty strings are hidden.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<p><?php esc_html_e( 'Each photo slide (or gallery thumbnail) can display up to five info boxes at fixed positions. You control what goes in each box by assigning a text string — either plain text or a format string with {token} placeholders that resolve to per-photo metadata. Boxes with empty strings are hidden.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
-					<p><?php esc_html_e( 'The live preview below shows all six info boxes with descriptive labels so you can see where each box appears:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<p><?php esc_html_e( 'The live preview below shows all five info boxes with descriptive labels so you can see where each box appears:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
 					<?php
-						$info_boxes_demo_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="400" height="300" limit="3" start-at="1" slideshow="disabled" info-secondary="Secondary (below pagination)" info-bottom-left="Bottom-left" info-bottom-right="Bottom-right" info-top-left="Top-left" info-top-right="Top-right" info-top="Top center"]';
+						$info_boxes_demo_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" width="400" height="300" limit="7" start-at="1" slideshow="auto" slideshow-delay="15" info-bottom-center="Primary: {counter}" info-bottom-left="Bottom-left" info-bottom-right="Bottom-right" info-top-left="Top-left" info-top-right="Top-right" info-top-center="Top-center"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $info_boxes_demo_shortcode ); ?></code>
@@ -1520,6 +1500,18 @@ class JZSA_Settings_Page {
 							</tr>
 						</thead>
 						<tbody>
+							<tr>
+								<td><code>{counter}</code></td>
+								<td><?php esc_html_e( 'Slide counter (e.g. "3 / 41"). Only works in info-bottom-center.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>3 / 41</td>
+								<td>✅ <?php esc_html_e( 'Always available (info-bottom-center only)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{album-title}</code></td>
+								<td><?php esc_html_e( 'Album title. Only works in info-bottom-center.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>Trip to Bali</td>
+								<td>✅ <?php esc_html_e( 'Always available (info-bottom-center only)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
 							<tr>
 								<td><code>{date}</code></td>
 								<td><?php esc_html_e( 'Photo date, formatted in the visitor\'s browser locale', 'janzeman-shared-albums-for-google-photos' ); ?></td>

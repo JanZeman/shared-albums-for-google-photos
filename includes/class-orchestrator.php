@@ -508,14 +508,28 @@ class JZSA_Shared_Albums {
 			? $this->parse_bool( $atts, 'fullscreen-show-name', false )
 			: $show_name_compat;
 
+		// info-bottom-center backward compat: derive from show-counter / show-title when not set.
+		$show_counter_compat = $this->parse_bool( $atts, 'show-counter', true );
+		$show_title_compat   = $this->parse_bool( $atts, 'show-title', false );
+		$primary_default     = '';
+		if ( $show_title_compat && $show_counter_compat ) {
+			$primary_default = '{album-title}: {counter}';
+		} elseif ( $show_title_compat ) {
+			$primary_default = '{album-title}';
+		} elseif ( $show_counter_compat ) {
+			$primary_default = '{counter}';
+		}
+
+		$pri = $this->parse_info_box( $atts, 'info-bottom-center', $primary_default );
 		$bl  = $this->parse_info_box( $atts, 'info-bottom-left',  $show_name_compat    ? '{name}' : '' );
 		$br  = $this->parse_info_box( $atts, 'info-bottom-right', '' );
 		$tl  = $this->parse_info_box( $atts, 'info-top-left',     '' );
 		$tr  = $this->parse_info_box( $atts, 'info-top-right',    '' );
-		$top = $this->parse_info_box( $atts, 'info-top',          '' );
-		$sec = $this->parse_info_box( $atts, 'info-secondary',    '' );
+		$top = $this->parse_info_box( $atts, 'info-top-center',          '' );
 
 		return array(
+			'info-bottom-center'                  => $pri,
+			'fullscreen-info-bottom-center'       => $this->parse_info_box( $atts, 'fullscreen-info-bottom-center', $pri ),
 			'info-bottom-left'              => $bl,
 			'fullscreen-info-bottom-left'   => isset( $atts['fullscreen-info-bottom-left'] )
 				? $this->parse_info_box( $atts, 'fullscreen-info-bottom-left', '' )
@@ -526,10 +540,8 @@ class JZSA_Shared_Albums {
 			'fullscreen-info-top-left'      => $this->parse_info_box( $atts, 'fullscreen-info-top-left', $tl ),
 			'info-top-right'                => $tr,
 			'fullscreen-info-top-right'     => $this->parse_info_box( $atts, 'fullscreen-info-top-right', $tr ),
-			'info-top'                      => $top,
-			'fullscreen-info-top'           => $this->parse_info_box( $atts, 'fullscreen-info-top', $top ),
-			'info-secondary'                => $sec,
-			'fullscreen-info-secondary'     => $this->parse_info_box( $atts, 'fullscreen-info-secondary', $sec ),
+			'info-top-center'                      => $top,
+			'fullscreen-info-top-center'           => $this->parse_info_box( $atts, 'fullscreen-info-top-center', $top ),
 		);
 	}
 
@@ -626,7 +638,7 @@ class JZSA_Shared_Albums {
 		if ( 'true' === $value || 'auto' === $value ) {
 			return 'auto';
 		}
-		if ( 'manual' === $value ) {
+		if ( 'manual' === $value || 'enabled' === $value ) {
 			return 'manual';
 		}
 		return 'disabled';

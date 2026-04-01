@@ -287,12 +287,12 @@ class JZSA_Renderer {
 
 		// Info box format strings (only emit non-empty).
 		$info_boxes = array(
+			'info-bottom-center', 'fullscreen-info-bottom-center',
 			'info-bottom-left', 'fullscreen-info-bottom-left',
 			'info-bottom-right', 'fullscreen-info-bottom-right',
 			'info-top-left', 'fullscreen-info-top-left',
 			'info-top-right', 'fullscreen-info-top-right',
-			'info-top', 'fullscreen-info-top',
-			'info-secondary', 'fullscreen-info-secondary',
+			'info-top-center', 'fullscreen-info-top-center',
 		);
 		foreach ( $info_boxes as $box_key ) {
 			if ( ! empty( $config[ $box_key ] ) ) {
@@ -489,12 +489,12 @@ class JZSA_Renderer {
 
 		// Info box format strings (only emit non-empty).
 		$gallery_info_boxes = array(
+			'info-bottom-center', 'fullscreen-info-bottom-center',
 			'info-bottom-left', 'fullscreen-info-bottom-left',
 			'info-bottom-right', 'fullscreen-info-bottom-right',
 			'info-top-left', 'fullscreen-info-top-left',
 			'info-top-right', 'fullscreen-info-top-right',
-			'info-top', 'fullscreen-info-top',
-			'info-secondary', 'fullscreen-info-secondary',
+			'info-top-center', 'fullscreen-info-top-center',
 		);
 		foreach ( $gallery_info_boxes as $box_key ) {
 			if ( ! empty( $config[ $box_key ] ) ) {

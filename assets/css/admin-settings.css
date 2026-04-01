@@ -283,6 +283,11 @@
     box-shadow: inset 0 0 0 2px rgba(34, 113, 177, 0.3);
 }
 
+/* Token highlighting inside editable code blocks */
+.jzsa-editable-code .jzsa-token {
+    color: #d63638;
+}
+
 /* Legacy .jzsa-copy-btn kept for backward compat but hidden when new layout is used */
 .jzsa-code-block .jzsa-copy-btn { display: none; }
 .jzsa-code-block .jzsa-inline-playground-btns { display: none; }
