@@ -111,7 +111,7 @@ class JZSA_Settings_Page {
 									<?php esc_html_e( 'What This Plugin Does – and What It Doesn\'t', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</strong>
 						<p style="margin: 16px 0 0 0;">
-							<?php esc_html_e( 'This plugin renders one Google Photos album per shortcode. It does not provide any layout mechanism for multiple albums. One [jzsa-album] shortcode will always render only one given album. To display many albums together, build your own layout with one shortcode per album — for example using columns, the Query Loop block, or any page builder of your choice.', 'janzeman-shared-albums-for-google-photos' ); ?>
+							<?php esc_html_e( 'This plugin renders one Google Photos album per shortcode. It does not provide any layout mechanism for multiple albums. One [jzsa-album] shortcode will always render only one given album. To display many albums together, build your own layout with one shortcode per album - for example using columns, the Query Loop block, or any page builder of your choice.', 'janzeman-shared-albums-for-google-photos' ); ?>
 						</p>
 						<div class="jzsa-purpose-diagram-wrapper">
 							<svg class="jzsa-purpose-diagram" viewBox="0 0 360 121" role="img" aria-labelledby="jzsa-purpose-diagram-title jzsa-purpose-diagram-desc">
@@ -584,7 +584,7 @@ class JZSA_Settings_Page {
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Slideshow with Autostart and Autoresume', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'When the slideshow is running and you swipe or click to navigate manually, the slideshow is interrupted and pauses. After 20 seconds of inactivity it resumes automatically. Try it: let the slideshow advance, then swipe manually and wait. Note: if you stop the slideshow via the pause button, it stays stopped — autoresume only applies to interruptions by manual navigation.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<p><?php esc_html_e( 'When the slideshow is running and you swipe or click to navigate manually, the slideshow is interrupted and pauses. After 20 seconds of inactivity it resumes automatically. Try it: let the slideshow advance, then swipe manually and wait. Note: if you stop the slideshow via the pause button, it stays stopped - autoresume only applies to interruptions by manual navigation.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
 						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" slideshow="auto" fullscreen-slideshow="auto" slideshow-autoresume="20"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
@@ -659,7 +659,7 @@ class JZSA_Settings_Page {
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Single-Click Fullscreen Toggle', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php echo wp_kses( __( 'Uses fullscreen-toggle="click" so clicking anywhere on the slider enters fullscreen. Trade-off: single-click can no longer navigate between photos in fullscreen — use the arrow buttons or keyboard instead. Exit via the Escape key or the fullscreen button. For a less accidental shortcut that preserves click navigation, <strong>consider double-click instead</strong>.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
+						<p><?php echo wp_kses( __( 'Uses fullscreen-toggle="click" so clicking anywhere on the slider enters fullscreen. Trade-off: single-click can no longer navigate between photos in fullscreen - use the arrow buttons or keyboard instead. Exit via the Escape key or the fullscreen button. For a less accidental shortcut that preserves click navigation, <strong>consider double-click instead</strong>.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
 					<div class="jzsa-code-block">
 						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" fullscreen-toggle="click"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
@@ -842,7 +842,7 @@ class JZSA_Settings_Page {
 
 						<div class="jzsa-example">
 							<h3><?php esc_html_e( 'Video in Gallery (Single-click to Fullscreen)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php echo wp_kses( __( 'Single-click on any thumbnail opens fullscreen. Trade-off: click can no longer navigate between items in fullscreen — use the arrow buttons instead. <strong>Consider double-click instead</strong> to keep click navigation available.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
+							<p><?php echo wp_kses( __( 'Single-click on any thumbnail opens fullscreen. Trade-off: click can no longer navigate between items in fullscreen - use the arrow buttons instead. <strong>Consider double-click instead</strong> to keep click navigation available.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $video_gallery_click_shortcode ); ?></code>
 							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
@@ -1203,7 +1203,7 @@ class JZSA_Settings_Page {
 						<tbody>
 							<tr>
 								<td><code>slideshow</code></td>
-								<td>Slideshow mode: "auto" — slides advance automatically and the play/pause button is shown. "manual" — the play/pause button is shown but slides do not advance until the user presses play. "disabled" — no slideshow, no button. In <code>mode="gallery"</code> with pagination, this advances gallery pages automatically.</td>
+								<td>Slideshow mode: "auto" - slides advance automatically and the play/pause button is shown. "manual" - the play/pause button is shown but slides do not advance until the user presses play. "disabled" - no slideshow, no button. In <code>mode="gallery"</code> with pagination, this advances gallery pages automatically.</td>
 								<td>disabled</td>
 							</tr>
 							<tr>
@@ -1213,7 +1213,7 @@ class JZSA_Settings_Page {
 							</tr>
 								<tr>
 									<td><code>slideshow-autoresume</code></td>
-									<td>When a user swipes or clicks to navigate forward or backward manually, the slideshow is interrupted. This is the number of seconds of inactivity after which the interrupted slideshow resumes and advances automatically. Set to "disabled" to turn off autoresume — the slideshow stays interrupted until the user presses play. Does not apply when the user pauses the slideshow via the pause button — that stays paused until manually resumed. This sets inline behavior; use <code>fullscreen-slideshow-autoresume</code> to override in fullscreen.</td>
+									<td>When a user swipes or clicks to navigate forward or backward manually, the slideshow is interrupted. This is the number of seconds of inactivity after which the interrupted slideshow resumes and advances automatically. Set to "disabled" to turn off autoresume - the slideshow stays interrupted until the user presses play. Does not apply when the user pauses the slideshow via the pause button - that stays paused until manually resumed. This sets inline behavior; use <code>fullscreen-slideshow-autoresume</code> to override in fullscreen.</td>
 									<td>30</td>
 								</tr>
 							<tr>
@@ -1294,7 +1294,7 @@ class JZSA_Settings_Page {
 								</tr>
 								<tr>
 									<td><code>fullscreen-toggle</code></td>
-									<td>How fullscreen is toggled: "button-only" (default) requires the fullscreen button, "click" enters fullscreen on a single click, "double-click" toggles fullscreen on double-click, or "disabled" to prevent fullscreen entirely. Note: "click" disables single-click navigation in fullscreen mode, so mouse users lose the ability to click left/right to browse. <strong>"double-click" is recommended</strong> — it keeps single-click navigation in fullscreen while still offering a gesture shortcut to enter and exit.</td>
+									<td>How fullscreen is toggled: "button-only" (default) requires the fullscreen button, "click" enters fullscreen on a single click, "double-click" toggles fullscreen on double-click, or "disabled" to prevent fullscreen entirely. Note: "click" disables single-click navigation in fullscreen mode, so mouse users lose the ability to click left/right to browse. <strong>"double-click" is recommended</strong> - it keeps single-click navigation in fullscreen while still offering a gesture shortcut to enter and exit.</td>
 									<td>button-only</td>
 								</tr>
 								<tr>
@@ -1356,7 +1356,7 @@ class JZSA_Settings_Page {
 						</table>
 
 					<h3><?php esc_html_e( 'Mosaic Thumbnail Strip', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<p><?php esc_html_e( 'Display a strip of thumbnail previews alongside the main slider or carousel. Works with mode="slider" and mode="carousel". The strip is synchronized with the main swiper — clicking a thumbnail jumps to that photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<p><?php esc_html_e( 'Display a strip of thumbnail previews alongside the main slider or carousel. Works with mode="slider" and mode="carousel". The strip is synchronized with the main swiper - clicking a thumbnail jumps to that photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<table class="jzsa-settings-table">
 						<thead>
 							<tr>
@@ -1452,6 +1452,170 @@ class JZSA_Settings_Page {
 								<td><code>download-size-warning</code></td>
 								<td>Large-download warning threshold (in MB) for proxied downloads (photo or video). If exceeded, the visitor gets a yes/no confirmation dialog before continuing. Set <code>0</code> to disable the warning. Hard server limit: 512 MB.</td>
 								<td>128</td>
+							</tr>
+						</tbody>
+					</table>
+
+				</div>
+
+				<!-- Photo Info Overlay -->
+				<div class="jzsa-section jzsa-photo-info-section">
+					<h2><?php esc_html_e( 'Photo Info Overlay', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+
+					<p class="jzsa-intro">
+						<?php esc_html_e( 'The photo info overlay lets you display per-photo metadata directly on the slide or gallery thumbnail - filename, date, camera, EXIF settings, and more. You control exactly what is shown by writing a format string with tokens. Everything is extracted from the album HTML that the plugin already fetches: no extra HTTP requests are needed.', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</p>
+
+					<h3><?php esc_html_e( 'Available Tokens', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<p><?php esc_html_e( 'Use these tokens in the photo-info format string. Tokens that cannot be resolved (no data available) are silently removed together with any surrounding separator characters.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+
+					<table class="jzsa-settings-table">
+						<thead>
+							<tr>
+								<th><?php esc_html_e( 'Token', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'What it shows', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Example', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Availability', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><code>{date}</code></td>
+								<td><?php esc_html_e( 'Photo date, formatted in the visitor\'s browser locale', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>Apr 3, 2024</td>
+								<td>✅ <?php esc_html_e( 'Always available', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{filename}</code></td>
+								<td><?php esc_html_e( 'Original filename as stored in Google Photos', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>IMG_4095.JPG</td>
+								<td>⚠️ <?php esc_html_e( 'Rare — Google strips filenames from most shared albums', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{name}</code></td>
+								<td><?php esc_html_e( 'Filename without extension', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>IMG_4095</td>
+								<td>⚠️ <?php esc_html_e( 'Rare — same as {filename}', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{author}</code></td>
+								<td><?php esc_html_e( 'Display name of the photo contributor', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>John Doe</td>
+								<td>⚠️ <?php esc_html_e( 'Multi-contributor albums only', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{camera}</code></td>
+								<td><?php esc_html_e( 'Camera make and model', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>Canon EOS 5D</td>
+								<td>❌ <?php esc_html_e( 'EXIF — stripped by Google on most albums', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{aperture}</code></td>
+								<td><?php esc_html_e( 'Lens aperture (f-number)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>ƒ/2.8</td>
+								<td>❌ <?php esc_html_e( 'EXIF — stripped by Google on most albums', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{shutter}</code></td>
+								<td><?php esc_html_e( 'Shutter speed', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>1/500s</td>
+								<td>❌ <?php esc_html_e( 'EXIF — stripped by Google on most albums', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{focal}</code></td>
+								<td><?php esc_html_e( 'Focal length', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>100mm</td>
+								<td>❌ <?php esc_html_e( 'EXIF — stripped by Google on most albums', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{iso}</code></td>
+								<td><?php esc_html_e( 'ISO sensitivity', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>ISO400</td>
+								<td>❌ <?php esc_html_e( 'EXIF — stripped by Google on most albums', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{dimensions}</code></td>
+								<td><?php esc_html_e( 'Photo resolution in pixels', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>6000 × 4000</td>
+								<td>🚧 <?php esc_html_e( 'Not yet implemented', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{megapixels}</code></td>
+								<td><?php esc_html_e( 'Resolution in megapixels (derived from dimensions)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>24.2 Mpix</td>
+								<td>🚧 <?php esc_html_e( 'Not yet implemented', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{filesize}</code></td>
+								<td><?php esc_html_e( 'File size of the original photo', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>7.0 MB</td>
+								<td>🚧 <?php esc_html_e( 'Not yet implemented', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+						</tbody>
+					</table>
+
+					<div class="jzsa-attention-box" style="margin-top: 16px;">
+						<strong><?php esc_html_e( 'Note on EXIF tokens', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+						<p style="margin: 8px 0 0 0;"><?php esc_html_e( 'Google Photos strips EXIF data from shared album pages for most albums. The tokens {camera}, {aperture}, {shutter}, {focal}, and {iso} will silently produce no output in that case - they do not cause an error. If your album does include EXIF in its shared page (some albums do), these tokens will work automatically. There is no way to force Google to include EXIF if it has been stripped.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					</div>
+
+					<h3 style="margin-top: 28px;"><?php esc_html_e( 'Shortcode Parameters', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<table class="jzsa-settings-table">
+						<thead>
+							<tr>
+								<th><?php esc_html_e( 'Parameter', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Description', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Default', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><code>photo-info</code></td>
+								<td><?php esc_html_e( 'Format string controlling what is shown in the photo info overlay in inline mode. Use the tokens from the table above. Set to empty string or omit to disable the overlay. Use fullscreen-photo-info to override this in fullscreen.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td>
+							</tr>
+							<tr>
+								<td><code>fullscreen-photo-info</code></td>
+								<td><?php esc_html_e( 'Format string for fullscreen mode. If omitted, inherits from photo-info.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><em><?php esc_html_e( 'inherits photo-info', 'janzeman-shared-albums-for-google-photos' ); ?></em></td>
+							</tr>
+						</tbody>
+					</table>
+
+					<div class="jzsa-attention-box" style="margin-top: 16px;">
+						<strong><?php esc_html_e( 'Data transfer note', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+						<p style="margin: 8px 0 0 0;"><?php esc_html_e( 'Enabling photo-info adds per-photo metadata to the page HTML (approximately 90 bytes per photo). For a large album of 200 photos this adds around 18 KB per page load. This is unlikely to be noticeable in practice, but worth keeping in mind for very large albums or high-traffic pages.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					</div>
+
+					<h3 style="margin-top: 28px;"><?php esc_html_e( 'Example Format Strings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<table class="jzsa-settings-table">
+						<thead>
+							<tr>
+								<th><?php esc_html_e( 'Format string', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Example output', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Notes', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><code>{name}</code></td>
+								<td>IMG_4095</td>
+								<td><?php esc_html_e( 'Minimal - just the filename.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{name} · {date}</code></td>
+								<td>IMG_4095 · Apr 3, 2024</td>
+								<td><?php esc_html_e( 'Name and date. Separator is dropped if either token is empty.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{camera} · {aperture} {shutter} {focal} {iso}</code></td>
+								<td>Canon EOS 5D Mark II · ƒ/2.8 1/500s 100mm ISO400</td>
+								<td><?php esc_html_e( 'Full EXIF line. All tokens silently omitted if EXIF is unavailable.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{name} · {dimensions} · {filesize}</code></td>
+								<td>IMG_4095 · 6000 × 4000 · 7.0 MB</td>
+								<td><?php esc_html_e( 'Technical details without EXIF dependency.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
 						</tbody>
 					</table>

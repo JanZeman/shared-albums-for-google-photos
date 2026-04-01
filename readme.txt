@@ -99,7 +99,7 @@ Tip: `full-screen-image-fit` defaults to `fit`, which preserves the full photo (
 
 = Shortcode Parameters =
 
-The only required parameter is **link** — the Google Photos share URL.
+The only required parameter is **link** - the Google Photos share URL.
 
 All other parameters are optional and control appearance, slideshow, fullscreen behavior, display options, gallery mode, and gallery layout.
 

@@ -37,7 +37,7 @@ git add -A && git commit -m "X.Y.Z"
 ./release.sh X.Y.Z
 ```
 
-To **only build the ZIP** (no git tag, no SVN sync — useful for local testing):
+To **only build the ZIP** (no git tag, no SVN sync - useful for local testing):
 
 ```bash
 ./release.sh --zip-only X.Y.Z
@@ -46,7 +46,7 @@ To **only build the ZIP** (no git tag, no SVN sync — useful for local testing)
 The full release script will:
 
 1. **Validate** that the requested version matches all versioned files
-2. **Check git state** — must be on `main` with a clean working tree
+2. **Check git state** - must be on `main` with a clean working tree
 3. **Create and push a git tag** (e.g., `1.0.7`) to origin
 4. **Build a ZIP** at `release/janzeman-shared-albums-for-google-photos-X.Y.Z.zip`
 5. **Sync to SVN trunk** (if the SVN working copy exists)
@@ -69,8 +69,8 @@ This creates a sparse checkout with only `trunk` and `tags` (skipping `assets` a
 
 ## Troubleshooting
 
-- **"Version in main plugin file is X but you requested Y"** — you forgot to bump one of the three files in step 1.
-- **"git working tree is not clean"** — commit or stash changes first.
-- **"should be run from main/master"** — switch to the main branch.
-- **SVN commit fails** — check your SVN credentials. WordPress.org SVN uses your wp.org username and password.
-- **SVN trunk not found** — run the one-time SVN setup above.
+- **"Version in main plugin file is X but you requested Y"** - you forgot to bump one of the three files in step 1.
+- **"git working tree is not clean"** - commit or stash changes first.
+- **"should be run from main/master"** - switch to the main branch.
+- **SVN commit fails** - check your SVN credentials. WordPress.org SVN uses your wp.org username and password.
+- **SVN trunk not found** - run the one-time SVN setup above.
