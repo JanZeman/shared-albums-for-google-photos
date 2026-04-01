@@ -481,6 +481,12 @@ class JZSA_Shared_Albums {
 			// Visual style
 			'corner-radius'        => $this->parse_corner_radius( $atts ),
 			'mosaic-corner-radius' => $this->parse_mosaic_corner_radius( $atts ),
+
+			// Photo metadata overlays
+			'show-name'            => $this->parse_bool( $atts, 'show-name', false ),
+			'fullscreen-show-name' => isset( $atts['fullscreen-show-name'] )
+				? $this->parse_bool( $atts, 'fullscreen-show-name', false )
+				: $this->parse_bool( $atts, 'show-name', false ),
 		);
 
 		return $config;
@@ -1117,6 +1123,15 @@ class JZSA_Shared_Albums {
 					$photo['preview'] .= '-no';
 				}
 				$photo['full'] .= '-no';
+			}
+
+			// Pass through Wave 1 metadata fields (all zero-cost, extracted from album HTML).
+			if ( is_array( $item ) ) {
+				foreach ( array( 'filename', 'timestamp', 'camera', 'exif', 'author' ) as $meta_key ) {
+					if ( isset( $item[ $meta_key ] ) ) {
+						$photo[ $meta_key ] = $item[ $meta_key ];
+					}
+				}
 			}
 
 			$photos[] = $photo;

@@ -277,6 +277,8 @@ class JZSA_Renderer {
 			'video-controls-autohide' => 'data-video-controls-autohide',
 			'fullscreen-video-controls-autohide' => 'data-fullscreen-video-controls-autohide',
 			'mosaic'                  => 'data-mosaic',
+			'show-name'               => 'data-show-name',
+			'fullscreen-show-name'    => 'data-fullscreen-show-name',
 		);
 
 		foreach ( $boolean_attrs as $key => $attr_name ) {
@@ -465,6 +467,8 @@ class JZSA_Renderer {
 			'fullscreen-show-download-button' => 'data-fullscreen-show-download-button',
 			'video-controls-autohide' => 'data-video-controls-autohide',
 			'fullscreen-video-controls-autohide' => 'data-fullscreen-video-controls-autohide',
+			'show-name'               => 'data-show-name',
+			'fullscreen-show-name'    => 'data-fullscreen-show-name',
 		);
 		foreach ( $slideshow_booleans as $key => $attr_name ) {
 			if ( isset( $config[ $key ] ) ) {

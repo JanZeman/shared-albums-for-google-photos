@@ -1426,6 +1426,37 @@
         });
     }
 
+    // Helper: Format a timestamp (ms since epoch) as a short locale date string.
+    function formatPhotoDate(timestampMs) {
+        if (!timestampMs) {
+            return '';
+        }
+        try {
+            var d = new Date(parseInt(timestampMs, 10));
+            if (isNaN(d.getTime())) {
+                return '';
+            }
+            return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+        } catch (e) {
+            return '';
+        }
+    }
+
+    // Helper: Escape HTML for safe attribute/content insertion.
+    function escapeHtml(text) {
+        if (!text) {
+            return '';
+        }
+        var map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
     // Helper: Build slides HTML structure (for photo/video array)
     function buildSlidesHtml(photos, options) {
         var config = options || {};
@@ -1462,6 +1493,16 @@
                 }
             }
 
+            // Build display label: filename (extension stripped) → date fallback → generic.
+            var nameLabel = '';
+            var altText = 'Photo';
+            if (photo.filename) {
+                nameLabel = photo.filename.replace(/\.[^.]+$/, '');
+                altText = nameLabel;
+            } else if (photo.timestamp) {
+                nameLabel = formatPhotoDate(photo.timestamp);
+            }
+
             if (isVideo) {
                 var posterUrl = photo.preview || photo.full || '';
                 html += '<div class="swiper-slide jzsa-slide-video" data-media-type="video">' +
@@ -1477,12 +1518,19 @@
                     loadingAttr = ' loading="' + (index === eagerIndex ? 'eager' : 'lazy') + '" decoding="async"';
                 }
 
+                // Name overlay: rendered when show-name is enabled and a label exists
+                // (filename or date fallback). Hidden by default; CSS toggles visibility.
+                var nameOverlay = nameLabel
+                    ? '<div class="jzsa-photo-name">' + escapeHtml(nameLabel) + '</div>'
+                    : '';
+
                 html += '<div class="swiper-slide">' +
                     '<div class="swiper-zoom-container">' +
                     '<img src="' + previewUrl + '" ' +
                     (previewUrl !== fullUrl ? 'data-full-src="' + fullUrl + '" ' : '') +
-                    'alt="Photo" class="jzsa-progressive-image"' + loadingAttr + ' decoding="async" />' +
+                    'alt="' + escapeHtml(altText) + '" class="jzsa-progressive-image"' + loadingAttr + ' decoding="async" />' +
                     '</div>' +
+                    nameOverlay +
                     tileOverlayButtons +
                     '</div>';
             }
@@ -2231,6 +2279,11 @@
 
         function buildFilename(mediaType, downloadIndex) {
             var currentIndex = typeof swiper.realIndex === 'number' ? swiper.realIndex : swiper.activeIndex;
+            // Use original filename from Google Photos when available.
+            var photo = allPhotos[currentIndex];
+            if (photo && photo.filename) {
+                return photo.filename;
+            }
             var safeIndex = (!isNaN(downloadIndex) && downloadIndex > 0) ? downloadIndex : (currentIndex + 1);
             var prefix = mediaType === 'video' ? 'video-' : 'photo-';
             var extension = mediaType === 'video' ? '.mp4' : '.jpg';
@@ -4553,9 +4606,21 @@
                 thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open ' + mediaLabel + ' ' + (globalIndex + 1) + ' in fullscreen"></div>';
             }
 
+            // Name overlay for gallery thumbnails (date fallback when no filename).
+            var thumbNameLabel = '';
+            if (photo.filename) {
+                thumbNameLabel = photo.filename.replace(/\.[^.]+$/, '');
+            } else if (photo.timestamp) {
+                thumbNameLabel = formatPhotoDate(photo.timestamp);
+            }
+            var thumbNameOverlay = thumbNameLabel
+                ? '<div class="jzsa-photo-name">' + escapeHtml(thumbNameLabel) + '</div>'
+                : '';
+
             html +=
                 '<div class="' + itemClass + '" data-index="' + globalIndex + '">' +
                     mediaHtml +
+                    thumbNameOverlay +
                     thumbOverlayBtns +
                 '</div>';
         });
@@ -4663,9 +4728,21 @@
                     thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open ' + mediaLabel + ' ' + (item.index + 1) + ' in fullscreen"></div>';
                 }
 
+                // Name overlay for justified thumbnails.
+                var justifiedNameLabel = '';
+                if (item.photo.filename) {
+                    justifiedNameLabel = item.photo.filename.replace(/\.[^.]+$/, '');
+                } else if (item.photo.timestamp) {
+                    justifiedNameLabel = formatPhotoDate(item.photo.timestamp);
+                }
+                var justifiedNameOverlay = justifiedNameLabel
+                    ? '<div class="jzsa-photo-name">' + escapeHtml(justifiedNameLabel) + '</div>'
+                    : '';
+
                 html +=
                     '<div class="' + itemClass + '" data-index="' + item.index + '" style="width:' + width + 'px;height:' + targetHeight + 'px;">' +
                         mediaHtml +
+                        justifiedNameOverlay +
                         thumbOverlayBtns +
                     '</div>';
             });

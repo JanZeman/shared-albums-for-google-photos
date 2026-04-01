@@ -1097,6 +1097,60 @@ body.jzsa-no-scroll {
     opacity: 1;
 }
 
+/* Photo name overlay — shown when show-name / fullscreen-show-name is enabled.
+   Hidden by default; visible only via data-show-name="true" selectors.
+   Works across all modes: slider, carousel, gallery thumbnails, gallery slideshow. */
+.jzsa-photo-name {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.3;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    pointer-events: none;
+    z-index: 10;
+    max-width: 70%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Compact variant for gallery thumbnails */
+.jzsa-gallery-item .jzsa-photo-name {
+    bottom: 4px;
+    left: 4px;
+    font-size: 11px;
+    padding: 2px 6px;
+    max-width: 85%;
+}
+
+/* Show name in inline mode when data-show-name="true" — all container types */
+[data-show-name="true"] .jzsa-photo-name {
+    opacity: 1;
+}
+
+/* Hide name in inline mode when data-show-name="false" */
+[data-show-name="false"] .jzsa-photo-name {
+    opacity: 0;
+}
+
+/* In fullscreen: override based on fullscreen-show-name */
+.jzsa-is-fullscreen[data-fullscreen-show-name="true"] .jzsa-photo-name,
+:fullscreen[data-fullscreen-show-name="true"] .jzsa-photo-name {
+    opacity: 1;
+}
+
+.jzsa-is-fullscreen[data-fullscreen-show-name="false"] .jzsa-photo-name,
+:fullscreen[data-fullscreen-show-name="false"] .jzsa-photo-name {
+    opacity: 0;
+}
+
 /* Global download status toast used for "preparing/download started" feedback. */
 .jzsa-download-status {
     position: fixed;

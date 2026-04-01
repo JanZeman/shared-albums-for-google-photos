@@ -237,12 +237,18 @@ class JZSA_Data_Provider {
 	 * string (image) or an associative array with 'url' and 'type' keys when
 	 * the item is detected as a video.
 	 *
+	 * After URL extraction (Stage 1), metadata stages run as purely additive
+	 * parallel passes. If every metadata pass fails, Stage 1 output is
+	 * unaffected and albums still render correctly.
+	 *
 	 * @param string $html HTML content
 	 * @return array Media items (strings for images, arrays for videos)
 	 */
 	private function extract_photos( $html ) {
 		$media  = array();
 		$is_primary = false;
+
+		// ── Stage 1: Primary URL extraction — NO CHANGE ───────────────────
 
 		// Primary strategy: Extract URLs followed by numeric dimensions (with offsets for video detection)
 		if ( preg_match_all( '/\"(https?:\/\/[^\"]+)\"\s*,\s*\d+\s*,\s*\d+/i', $html, $matches, PREG_OFFSET_CAPTURE ) ) {
@@ -309,6 +315,275 @@ class JZSA_Data_Provider {
 			}
 		}
 
+		// ── Stage 0 + 2a/2b/2c: Metadata enrichment (purely additive) ────
+		// If this entire block fails, $unique is returned as-is — identical
+		// to previous behaviour.
+		if ( $is_primary ) {
+			$unique = $this->enrich_with_metadata( $html, $unique );
+		}
+
 		return $unique;
+	}
+
+	/**
+	 * Enrich extracted media items with metadata from the album HTML.
+	 *
+	 * Runs as a purely additive pass after Stage 1 URL extraction.
+	 * Plain string items are promoted to arrays; existing array items
+	 * gain new keys. If no metadata is found, items pass through unchanged.
+	 *
+	 * @param string $html   Full HTML content.
+	 * @param array  $items  Media items from Stage 1.
+	 * @return array Enriched media items.
+	 */
+	private function enrich_with_metadata( $html, $items ) {
+		// Stage 0: Build url → id + timestamp lookup map.
+		$url_meta = array(); // base_url → [ 'id' => ..., 'timestamp' => ..., ]
+		if ( preg_match_all(
+			'/\["(AF1Qip[^"]+)"\s*,\s*\["(https?:\/\/[^"]+googleusercontent\.com[^"]+)".*?\]\s*,\s*(\d{10,13})\s*,\s*"[^"]*"\s*,\s*(\d+)/is',
+			$html,
+			$id_matches
+		) ) {
+			foreach ( $id_matches[1] as $i => $id ) {
+				$raw_url  = $id_matches[2][ $i ];
+				$base_url = preg_replace( '/=[^&]*$/', '', $raw_url );
+				if ( ! isset( $url_meta[ $base_url ] ) ) {
+					$url_meta[ $base_url ] = array(
+						'id'        => $id,
+						'timestamp' => (int) $id_matches[3][ $i ],
+						'tz_offset' => (int) $id_matches[4][ $i ],
+					);
+				}
+			}
+		}
+
+		// If Stage 0 found nothing, return items unchanged.
+		if ( empty( $url_meta ) ) {
+			return $items;
+		}
+
+		// Stage 2c: EXIF extraction (one pass over full HTML).
+		// Usually matches nothing on shared album pages, but is safe and additive.
+		$exif_map = array(); // id → [ 'camera' => ..., 'exif' => ... ]
+		if ( preg_match_all(
+			'/\["(AF1Qip[^"]+)".*?\[(\d+)\s*,\s*(\d+)\s*,\s*1\s*,\s*null\s*,\s*\["([^"]+)"\s*,\s*"([^"]+)"\s*,\s*(?:"[^"]*"|null)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*(\d+)\s*,\s*([\d.]+)/is',
+			$html,
+			$exif_matches
+		) ) {
+			foreach ( $exif_matches[1] as $i => $id ) {
+				$make    = $exif_matches[4][ $i ];
+				$model   = $exif_matches[5][ $i ];
+				$focal   = $exif_matches[6][ $i ];
+				$aperture = $exif_matches[7][ $i ];
+				$iso     = (int) $exif_matches[8][ $i ];
+				$shutter = (float) $exif_matches[9][ $i ];
+
+				$shutter_display = $shutter < 1 && $shutter > 0
+					? '1/' . round( 1 / $shutter )
+					: round( $shutter, 1 ) . 's';
+
+				$exif_map[ $id ] = array(
+					'camera' => trim( $make . ' ' . $model ),
+					'exif'   => sprintf( 'ƒ/%s • %s • %smm • ISO%d', $aperture, $shutter_display, $focal, $iso ),
+				);
+			}
+		}
+
+		// Stage 2d: Owner/author extraction (two passes over full HTML).
+		// Pass 1: photo_id → owner_id.
+		$photo_owner_map = array(); // photo_id → owner_id
+		if ( preg_match_all(
+			'/\["(AF1Qip[^"]+)".*?\["(AF1QipNY[^"]+)"\]/is',
+			$html,
+			$owner_ref_matches
+		) ) {
+			foreach ( $owner_ref_matches[1] as $i => $photo_id ) {
+				if ( ! isset( $photo_owner_map[ $photo_id ] ) ) {
+					$photo_owner_map[ $photo_id ] = $owner_ref_matches[2][ $i ];
+				}
+			}
+		}
+
+		// Pass 2: owner_id → display name.
+		$owner_names = array(); // owner_id → name
+		if ( ! empty( $photo_owner_map ) && preg_match_all(
+			'/\["(AF1QipNY[^"]+)"\s*,\s*"[^"]+"\s*,\s*null\s*,\s*null\s*,\s*null\s*,\s*\["[^"]+"\s*,\s*"[^"]+"\]\s*,\s*null\s*,\s*null\s*,\s*null\s*,\s*null\s*,\s*null\s*,\s*\["([^"]+)"/i',
+			$html,
+			$name_matches
+		) ) {
+			foreach ( $name_matches[1] as $i => $owner_id ) {
+				if ( ! isset( $owner_names[ $owner_id ] ) ) {
+					$owner_names[ $owner_id ] = $name_matches[2][ $i ];
+				}
+			}
+		}
+
+		// Merge metadata into items.
+		foreach ( $items as &$item ) {
+			$base_url = is_array( $item ) ? $item['url'] : $item;
+			if ( ! isset( $url_meta[ $base_url ] ) ) {
+				continue;
+			}
+
+			$meta = $url_meta[ $base_url ];
+
+			// Promote plain string items to arrays.
+			if ( ! is_array( $item ) ) {
+				$item = array( 'url' => $item );
+			}
+
+			// Stage 2b: Timestamp (always present).
+			$item['timestamp'] = $meta['timestamp'];
+
+			// Stage 2a: Filename extraction (windowed search per media ID).
+			$filename = $this->extract_filename_for_media_id( $html, $meta['id'] );
+			if ( '' !== $filename ) {
+				$item['filename'] = $filename;
+			}
+
+			// Stage 2c: EXIF (from the pass above).
+			if ( isset( $exif_map[ $meta['id'] ] ) ) {
+				$item['camera'] = $exif_map[ $meta['id'] ]['camera'];
+				$item['exif']   = $exif_map[ $meta['id'] ]['exif'];
+			}
+
+			// Stage 2d: Owner/author (pure display name, no prefix).
+			if ( isset( $photo_owner_map[ $meta['id'] ] ) ) {
+				$owner_id = $photo_owner_map[ $meta['id'] ];
+				if ( isset( $owner_names[ $owner_id ] ) ) {
+					$item['author'] = $owner_names[ $owner_id ];
+				}
+			}
+		}
+		unset( $item );
+
+		return $items;
+	}
+
+	/**
+	 * Check whether a string looks like an original image/video filename.
+	 *
+	 * @param string $fn Candidate filename.
+	 * @return bool
+	 */
+	private function is_plausible_original_filename( $fn ) {
+		if ( '' === $fn || strlen( $fn ) > 220 ) {
+			return false;
+		}
+		if ( preg_match( '/https?:\/\//i', $fn ) || false !== strpos( $fn, '//' ) ) {
+			return false;
+		}
+		if ( preg_match( '#[\/\\\\]#', $fn ) ) {
+			return false;
+		}
+		return (bool) preg_match( '/\.(?:jpe?g|png|heic|webp|mp4|mov|avi|mkv)$/iu', $fn );
+	}
+
+	/**
+	 * Score a filename candidate — higher is more likely to be the real filename.
+	 *
+	 * @param string $fn Candidate filename.
+	 * @return int Score.
+	 */
+	private function score_filename_candidate( $fn ) {
+		$score = 1 + min( 15, (int) ( strlen( $fn ) / 12 ) );
+		if ( preg_match( '/^[A-Za-z]{3,}\d{4}-\d{2}-\d{2}/', $fn ) ) {
+			$score += 45;
+		}
+		if ( preg_match( '/^\w+\d{4}-\d{2}-\d{2}_/', $fn ) ) {
+			$score += 40;
+		}
+		if ( false !== strpos( $fn, '_' ) ) {
+			$score += 22;
+		}
+		if ( preg_match( '/^(DSC|IMG|DJI_|PXL_|Photo_|SAM_|_MG|VID_|MOV_)/i', $fn ) ) {
+			$score += 18;
+		}
+		return $score;
+	}
+
+	/**
+	 * Extract the original filename for a media ID from the album HTML.
+	 *
+	 * Searches a ~35 KB window around the media ID for filename candidates.
+	 * Three-level fallback: known protobuf key, any numeric key with a
+	 * plausible value, quoted filename strings.
+	 *
+	 * @param string $html     Full HTML content.
+	 * @param string $media_id AF1Qip… media ID.
+	 * @return string Filename or empty string.
+	 */
+	private function extract_filename_for_media_id( $html, $media_id ) {
+		if ( '' === $media_id ) {
+			return '';
+		}
+
+		$needle = '["' . $media_id . '"';
+		$pos    = strpos( $html, $needle );
+		if ( false === $pos ) {
+			$needle = '"' . $media_id . '"';
+			$pos    = strpos( $html, $needle );
+			if ( false === $pos ) {
+				return '';
+			}
+		}
+		$chunk = substr( $html, $pos, 35000 );
+
+		// Method 1: Known historical protobuf key 101428965.
+		if ( preg_match( '/"101428965"\s*:\s*\[\s*(?:\d+|null)\s*,\s*"([^"]+)"/', $chunk, $m ) ) {
+			if ( $this->is_plausible_original_filename( $m[1] ) ) {
+				return $m[1];
+			}
+		}
+
+		// Method 2: Any numeric protobuf key with a plausible filename value.
+		if ( preg_match_all(
+			'/"(\d{5,12})"\s*:\s*\[\s*(?:\d+|null)\s*,\s*"([^"]*\.(?:jpg|jpeg|png|heic|webp|mp4|mov))"\]/iu',
+			$chunk,
+			$all,
+			PREG_SET_ORDER
+		) ) {
+			$best       = '';
+			$best_score = 0;
+			foreach ( $all as $row ) {
+				if ( ! $this->is_plausible_original_filename( $row[2] ) ) {
+					continue;
+				}
+				$score = $this->score_filename_candidate( $row[2] );
+				if ( $score > $best_score ) {
+					$best_score = $score;
+					$best       = $row[2];
+				}
+			}
+			if ( '' !== $best ) {
+				return $best;
+			}
+		}
+
+		// Method 3: Last resort — quoted *.ext strings with a high score.
+		if ( preg_match_all(
+			'/"([A-Za-z0-9][^"]{0,180}\.(?:jpg|jpeg|png|heic|webp|mp4|mov))"/u',
+			$chunk,
+			$q,
+			PREG_SET_ORDER
+		) ) {
+			$best       = '';
+			$best_score = 0;
+			foreach ( $q as $row ) {
+				if ( ! $this->is_plausible_original_filename( $row[1] ) ) {
+					continue;
+				}
+				$score = $this->score_filename_candidate( $row[1] );
+				if ( $score > $best_score ) {
+					$best_score = $score;
+					$best       = $row[1];
+				}
+			}
+			if ( '' !== $best && $best_score >= 30 ) {
+				return $best;
+			}
+		}
+
+		return '';
 	}
 }
