@@ -388,11 +388,11 @@ class JZSA_Data_Provider {
 
 				$exif_map[ $id ] = array(
 					'camera'   => trim( $make . ' ' . $model ),
-					'exif'     => sprintf( 'f/%s - %s - %smm - ISO%d', $aperture, $shutter_display, $focal, $iso ),
-					'aperture' => 'f/' . $aperture,
+					'exif'     => sprintf( "\xC6\x92/%s \xC2\xB7 %s \xC2\xB7 %smm \xC2\xB7 ISO%d", $aperture, $shutter_display, $focal, $iso ),
+					'aperture' => "\xC6\x92/" . $aperture,
 					'shutter'  => $shutter_display,
 					'focal'    => $focal . 'mm',
-					'iso'      => 'ISO ' . $iso,
+					'iso'      => 'ISO' . $iso,
 				);
 			}
 		}
@@ -642,7 +642,7 @@ class JZSA_Data_Provider {
 
 		return array(
 			'camera'   => trim( $make . ' ' . $model ),
-			'aperture' => 'f/' . $aperture,
+			'aperture' => "\xC6\x92/" . $aperture,
 			'shutter'  => $shutter_display,
 			'focal'    => $focal . 'mm',
 			'iso'      => 'ISO' . $iso,

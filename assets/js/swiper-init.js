@@ -1518,10 +1518,10 @@
             '{date}': photo.timestamp ? formatPhotoDate(photo.timestamp) : '',
             '{author}': photo.author || '',
             '{camera}': photo.camera || '',
-            '{aperture}': photo.aperture ? '\u0192/' + photo.aperture : '',
+            '{aperture}': photo.aperture || '',
             '{shutter}': photo.shutter || '',
-            '{focal}': photo.focal ? photo.focal + 'mm' : '',
-            '{iso}': photo.iso ? 'ISO' + photo.iso : '',
+            '{focal}': photo.focal || '',
+            '{iso}': photo.iso || '',
             '{dimensions}': dims,
             '{megapixels}': mp,
             '{filesize}': fs
@@ -1634,10 +1634,10 @@
 
     /**
      * After EXIF arrives for a photo, merge into the allPhotos array and
-     * re-resolve zone text on any matching DOM elements.
+     * trigger a container-level info box refresh.
      */
     function applyExifToPhoto(mediaId, exifData, $container, zoneFormats, photoIndex) {
-        if (!exifData || !exifData.camera) {
+        if (!exifData) {
             return;
         }
 
@@ -1648,49 +1648,21 @@
                 var photos = JSON.parse(photosJson);
                 if (photos[photoIndex]) {
                     var p = photos[photoIndex];
-                    p.camera   = exifData.camera;
-                    p.aperture = exifData.aperture;
-                    p.shutter  = exifData.shutter;
-                    p.focal    = exifData.focal;
-                    p.iso      = exifData.iso;
-                    $container.attr('data-all-photos', JSON.stringify(photos));
-
-                    // Re-resolve zone text in DOM for this photo's slides.
-                    var isFs = $container.hasClass('jzsa-is-fullscreen') ||
-                               $container.hasClass('jzsa-pseudo-fullscreen');
-                    var fmts = isFs ? (zoneFormats.fullscreen || zoneFormats.inline) : zoneFormats.inline;
-                    var fsFmts = zoneFormats.fullscreen || zoneFormats.inline;
-
-                    // Find slides/items with this photo index.
-                    $container.find('.swiper-slide, .jzsa-gallery-item').each(function() {
-                        var $el = $(this);
-                        var slideIndex = $el.attr('data-swiper-slide-index') || $el.attr('data-index');
-                        if (slideIndex === undefined) {
-                            // For non-loop slides, use DOM position.
-                            slideIndex = $el.index();
+                    var changed = false;
+                    var fields = ['camera', 'aperture', 'shutter', 'focal', 'iso'];
+                    for (var f = 0; f < fields.length; f++) {
+                        if (exifData[fields[f]]) {
+                            p[fields[f]] = exifData[fields[f]];
+                            changed = true;
                         }
-                        if (parseInt(slideIndex, 10) !== photoIndex) {
-                            return;
-                        }
-                        $el.find('.jzsa-info-box').each(function() {
-                            var $zone = $(this);
-                            var zoneName = '';
-                            for (var z = 0; z < INFO_BOX_NAMES.length; z++) {
-                                if ($zone.hasClass('jzsa-' + INFO_BOX_NAMES[z])) {
-                                    zoneName = INFO_BOX_NAMES[z];
-                                    break;
-                                }
-                            }
-                            if (!zoneName) {
-                                return;
-                            }
-                            var newInline = resolveInfoTokens(zoneFormats.inline[zoneName] || '', p);
-                            var newFs = resolveInfoTokens(fsFmts[zoneName] || zoneFormats.inline[zoneName] || '', p);
-                            $zone.attr('data-inline', newInline);
-                            $zone.attr('data-fullscreen', newFs);
-                            this.textContent = isFs ? newFs : newInline;
-                        });
-                    });
+                    }
+                    if (changed) {
+                        $container.attr('data-all-photos', JSON.stringify(photos));
+                        // Trigger container-level info box refresh.
+                        // Info boxes are container-level (not per-slide), so we
+                        // fire a custom event that updateAllInfoBoxes listens on.
+                        $container.trigger('jzsa:exif-update');
+                    }
                 }
             } catch (e) { /* ignore */ }
         }
@@ -1725,7 +1697,7 @@
                         photo_url: queueItem.photoUrl
                     }
                 }).done(function(response) {
-                    if (response && response.success && response.data && response.data.camera) {
+                    if (response && response.success && response.data) {
                         exifCache[queueItem.mediaId] = response.data;
                         applyExifToPhoto(queueItem.mediaId, response.data, queueItem.$container, queueItem.zoneFormats, queueItem.photoIndex);
                     }
@@ -4329,6 +4301,7 @@
                 swiper.on('slideChange', updateAllInfoBoxes);
                 swiper.on('slideChangeTransitionEnd', updateAllInfoBoxes);
                 $container.on('jzsa:fullscreen-state', updateAllInfoBoxes);
+                $container.on('jzsa:exif-update', updateAllInfoBoxes);
             }
 
             // Stop autoplay initially if inline slideshow is not 'auto' (e.g. 'manual' or 'disabled',
