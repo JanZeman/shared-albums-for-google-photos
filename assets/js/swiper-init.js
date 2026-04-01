@@ -1457,6 +1457,133 @@
         return text.replace(/[&<>"']/g, function(m) { return map[m]; });
     }
 
+    // ========================================================================
+    // Info zone system — resolve {token} format strings per photo
+    // ========================================================================
+
+    var INFO_ZONE_NAMES = [
+        'info-bottom-left', 'info-bottom-right',
+        'info-top-left', 'info-top',
+        'info-secondary'
+    ];
+
+    /**
+     * Resolve a format string by replacing {token} placeholders with photo data.
+     * Tokens that resolve to empty are removed along with adjacent separators.
+     *
+     * @param {string} format  Format string (e.g. "{name} · {date}").
+     * @param {Object} photo   Photo data object.
+     * @return {string} Resolved string, or empty if all tokens resolved to nothing.
+     */
+    function resolveInfoTokens(format, photo) {
+        if (!format || !photo) {
+            return '';
+        }
+
+        var name = photo.filename
+            ? photo.filename.replace(/\.[^.]+$/, '')
+            : formatPhotoDate(photo.timestamp);
+
+        var dims = '';
+        if (photo.width && photo.height) {
+            dims = photo.width + ' \u00d7 ' + photo.height;
+        }
+
+        var mp = '';
+        if (photo.width && photo.height) {
+            var pixels = parseInt(photo.width, 10) * parseInt(photo.height, 10);
+            if (pixels > 0) {
+                mp = (pixels / 1000000).toFixed(1) + ' MP';
+            }
+        }
+
+        var fs = '';
+        if (photo.filesize) {
+            var bytes = parseInt(photo.filesize, 10);
+            if (bytes >= 1048576) {
+                fs = (bytes / 1048576).toFixed(1) + ' MB';
+            } else if (bytes >= 1024) {
+                fs = Math.round(bytes / 1024) + ' KB';
+            } else if (bytes > 0) {
+                fs = bytes + ' B';
+            }
+        }
+
+        var tokens = {
+            '{name}': name || '',
+            '{filename}': photo.filename || '',
+            '{date}': photo.timestamp ? formatPhotoDate(photo.timestamp) : '',
+            '{author}': photo.author || '',
+            '{camera}': photo.camera || '',
+            '{aperture}': photo.aperture ? '\u0192/' + photo.aperture : '',
+            '{shutter}': photo.shutter || '',
+            '{focal}': photo.focal ? photo.focal + 'mm' : '',
+            '{iso}': photo.iso ? 'ISO' + photo.iso : '',
+            '{dimensions}': dims,
+            '{megapixels}': mp,
+            '{filesize}': fs
+        };
+
+        var result = format;
+        for (var token in tokens) {
+            if (tokens.hasOwnProperty(token)) {
+                result = result.replace(new RegExp(token.replace(/[{}]/g, '\\$&'), 'g'), tokens[token]);
+            }
+        }
+
+        // Clean up separators around removed tokens: collapse runs of
+        // whitespace + separator + whitespace into nothing when adjacent
+        // to the start/end or another separator.
+        result = result.replace(/^[\s·•|—–-]+/, '').replace(/[\s·•|—–-]+$/, '');
+        // Collapse internal double-separators (e.g. "foo ·  · bar" → "foo · bar").
+        result = result.replace(/([·•|—–-])\s*([·•|—–-])/g, '$1');
+        result = result.replace(/\s{2,}/g, ' ').trim();
+
+        return result;
+    }
+
+    /**
+     * Build info zone overlay HTML for a single slide/thumbnail.
+     *
+     * @param {Object} photo       Photo data object.
+     * @param {Object} zoneFormats Object with zone names as keys: { 'info-bottom-left': '{name}', ... }
+     * @param {Object} fsFormats   Fullscreen zone formats (same shape).
+     * @return {string} HTML string with zone divs (empty if no zones have content).
+     */
+    function buildInfoZoneHtml(photo, zoneFormats, fsFormats) {
+        var html = '';
+        for (var i = 0; i < INFO_ZONE_NAMES.length; i++) {
+            var zone = INFO_ZONE_NAMES[i];
+            var inlineText = resolveInfoTokens(zoneFormats[zone] || '', photo);
+            var fullscreenText = resolveInfoTokens(fsFormats[zone] || zoneFormats[zone] || '', photo);
+            if (!inlineText && !fullscreenText) {
+                continue;
+            }
+            html += '<div class="jzsa-info-zone jzsa-' + zone + '"' +
+                ' data-inline="' + escapeHtml(inlineText) + '"' +
+                ' data-fullscreen="' + escapeHtml(fullscreenText) + '">' +
+                escapeHtml(inlineText) + '</div>';
+        }
+        return html;
+    }
+
+    /**
+     * Read info zone format strings from a container's data attributes.
+     *
+     * @param {jQuery} $container Gallery container element.
+     * @return {Object} { inline: { 'info-bottom-left': '...', ... }, fullscreen: { ... } }
+     */
+    function readInfoZoneFormats($container) {
+        var inline = {};
+        var fullscreen = {};
+        for (var i = 0; i < INFO_ZONE_NAMES.length; i++) {
+            var zone = INFO_ZONE_NAMES[i];
+            inline[zone] = $container.attr('data-' + zone) || '';
+            fullscreen[zone] = $container.attr('data-fullscreen-' + zone) || inline[zone];
+        }
+        return { inline: inline, fullscreen: fullscreen };
+    }
+
     // Helper: Build slides HTML structure (for photo/video array)
     function buildSlidesHtml(photos, options) {
         var config = options || {};
@@ -1493,20 +1620,21 @@
                 }
             }
 
-            // Build display label: filename (extension stripped) → date fallback → generic.
-            var nameLabel = '';
-            var altText = 'Photo';
-            if (photo.filename) {
-                nameLabel = photo.filename.replace(/\.[^.]+$/, '');
-                altText = nameLabel;
-            } else if (photo.timestamp) {
-                nameLabel = formatPhotoDate(photo.timestamp);
-            }
+            // Build alt text from filename when available.
+            var altText = photo.filename
+                ? photo.filename.replace(/\.[^.]+$/, '')
+                : 'Photo';
+
+            // Info zone overlays (resolved per-photo from format strings).
+            var slideZoneHtml = config.zoneFormats
+                ? buildInfoZoneHtml(photo, config.zoneFormats.inline, config.zoneFormats.fullscreen)
+                : '';
 
             if (isVideo) {
                 var posterUrl = photo.preview || photo.full || '';
                 html += '<div class="swiper-slide jzsa-slide-video" data-media-type="video">' +
                     buildVideoHtml({ src: photo.video, poster: posterUrl, mediaIndex: index }) +
+                    slideZoneHtml +
                     tileOverlayButtons +
                     '</div>';
             } else {
@@ -1518,19 +1646,13 @@
                     loadingAttr = ' loading="' + (index === eagerIndex ? 'eager' : 'lazy') + '" decoding="async"';
                 }
 
-                // Name overlay: rendered when show-name is enabled and a label exists
-                // (filename or date fallback). Hidden by default; CSS toggles visibility.
-                var nameOverlay = nameLabel
-                    ? '<div class="jzsa-photo-name">' + escapeHtml(nameLabel) + '</div>'
-                    : '';
-
                 html += '<div class="swiper-slide">' +
                     '<div class="swiper-zoom-container">' +
                     '<img src="' + previewUrl + '" ' +
                     (previewUrl !== fullUrl ? 'data-full-src="' + fullUrl + '" ' : '') +
                     'alt="' + escapeHtml(altText) + '" class="jzsa-progressive-image"' + loadingAttr + ' decoding="async" />' +
+                    slideZoneHtml +
                     '</div>' +
-                    nameOverlay +
                     tileOverlayButtons +
                     '</div>';
             }
@@ -1627,6 +1749,13 @@
         }
 
         applyVideoControlsAutohideSetting($container, videoControlsAutohide);
+
+        // Swap info zone text between inline and fullscreen resolved content.
+        var zoneAttrKey = useFullscreen ? 'data-fullscreen' : 'data-inline';
+        $container.find('.jzsa-info-zone').each(function() {
+            var text = $(this).attr(zoneAttrKey) || '';
+            this.textContent = text;
+        });
 
         params.slideshowAutoresume = useFullscreen ? params.fullscreenSlideshowAutoresume : params.inlineSlideshowAutoresume;
 
@@ -3618,6 +3747,7 @@
         var showCarouselTileDownloadButtons =
             mode === 'carousel' && !interactionLock && showDownloadButton;
         $container.toggleClass('jzsa-carousel-tile-fs-enabled', showCarouselTileFullscreenButtons);
+        var zoneFormats = readInfoZoneFormats($container);
         var slidesRenderOptions = {
             mode: mode,
             showCarouselTileFullscreenButtons: showCarouselTileFullscreenButtons,
@@ -3625,7 +3755,8 @@
             showCarouselTileDownloadButtons: showCarouselTileDownloadButtons,
             carouselAlbumUrl: albumUrl,
             lazyHints: shouldUseLazyHints,
-            eagerIndex: initialSlide
+            eagerIndex: initialSlide,
+            zoneFormats: zoneFormats
         };
 
         function renderSwiperBootstrapSlides() {
@@ -4447,7 +4578,17 @@
             'data-show-link-button',
             'data-fullscreen-show-download-button',
             'data-fullscreen-show-link-button',
-            'data-download-size-warning'
+            'data-download-size-warning',
+            'data-info-bottom-left',
+            'data-fullscreen-info-bottom-left',
+            'data-info-bottom-right',
+            'data-fullscreen-info-bottom-right',
+            'data-info-top-left',
+            'data-fullscreen-info-top-left',
+            'data-info-top',
+            'data-fullscreen-info-top',
+            'data-info-secondary',
+            'data-fullscreen-info-secondary'
         ];
         for (var i = 0; i < forwardAttrs.length; i++) {
             var val = $galleryContainer.attr(forwardAttrs[i]);
@@ -4606,21 +4747,14 @@
                 thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open ' + mediaLabel + ' ' + (globalIndex + 1) + ' in fullscreen"></div>';
             }
 
-            // Name overlay for gallery thumbnails (date fallback when no filename).
-            var thumbNameLabel = '';
-            if (photo.filename) {
-                thumbNameLabel = photo.filename.replace(/\.[^.]+$/, '');
-            } else if (photo.timestamp) {
-                thumbNameLabel = formatPhotoDate(photo.timestamp);
-            }
-            var thumbNameOverlay = thumbNameLabel
-                ? '<div class="jzsa-photo-name">' + escapeHtml(thumbNameLabel) + '</div>'
-                : '';
+            // Info zone overlays for gallery thumbnails.
+            var thumbZoneFormats = readInfoZoneFormats($container);
+            var thumbZoneHtml = buildInfoZoneHtml(photo, thumbZoneFormats.inline, thumbZoneFormats.fullscreen);
 
             html +=
                 '<div class="' + itemClass + '" data-index="' + globalIndex + '">' +
                     mediaHtml +
-                    thumbNameOverlay +
+                    thumbZoneHtml +
                     thumbOverlayBtns +
                 '</div>';
         });
@@ -4728,21 +4862,14 @@
                     thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open ' + mediaLabel + ' ' + (item.index + 1) + ' in fullscreen"></div>';
                 }
 
-                // Name overlay for justified thumbnails.
-                var justifiedNameLabel = '';
-                if (item.photo.filename) {
-                    justifiedNameLabel = item.photo.filename.replace(/\.[^.]+$/, '');
-                } else if (item.photo.timestamp) {
-                    justifiedNameLabel = formatPhotoDate(item.photo.timestamp);
-                }
-                var justifiedNameOverlay = justifiedNameLabel
-                    ? '<div class="jzsa-photo-name">' + escapeHtml(justifiedNameLabel) + '</div>'
-                    : '';
+                // Info zone overlays for justified thumbnails.
+                var justifiedZoneFormats = readInfoZoneFormats($container);
+                var justifiedZoneHtml = buildInfoZoneHtml(item.photo, justifiedZoneFormats.inline, justifiedZoneFormats.fullscreen);
 
                 html +=
                     '<div class="' + itemClass + '" data-index="' + item.index + '" style="width:' + width + 'px;height:' + targetHeight + 'px;">' +
                         mediaHtml +
-                        justifiedNameOverlay +
+                        justifiedZoneHtml +
                         thumbOverlayBtns +
                     '</div>';
             });

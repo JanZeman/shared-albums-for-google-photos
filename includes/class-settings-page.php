@@ -1262,6 +1262,25 @@ class JZSA_Settings_Page {
 							</tbody>
 						</table>
 
+						<h3><?php esc_html_e( 'Info Zones (Inline)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Per-photo metadata overlays. Each zone accepts a format string with {token} placeholders. Leave empty (default) to hide a zone. See the Photo Info Overlay section below for available tokens and examples.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<table class="jzsa-settings-table">
+							<thead>
+								<tr>
+									<th><?php esc_html_e( 'Parameter', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+									<th><?php esc_html_e( 'Position', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+									<th><?php esc_html_e( 'Default', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr><td><code>info-bottom-left</code></td><td><?php esc_html_e( 'Bottom left corner', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+								<tr><td><code>info-bottom-right</code></td><td><?php esc_html_e( 'Bottom right corner', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+								<tr><td><code>info-top-left</code></td><td><?php esc_html_e( 'Top left corner', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+								<tr><td><code>info-top</code></td><td><?php esc_html_e( 'Top center', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+								<tr><td><code>info-secondary</code></td><td><?php esc_html_e( 'Bottom center, above pagination', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							</tbody>
+						</table>
+
 						<h3><?php esc_html_e( 'Fullscreen Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<table class="jzsa-settings-table">
 							<thead>
@@ -1352,6 +1371,11 @@ class JZSA_Settings_Page {
 									<td>Show download button in fullscreen view: "false" or "true". Defaults to <code>show-download-button</code> when omitted.</td>
 									<td>inherits show-download-button</td>
 								</tr>
+								<tr><td><code>fullscreen-info-bottom-left</code></td><td><?php esc_html_e( 'Info zone: bottom left in fullscreen. Inherits from info-bottom-left when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-bottom-left', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
+								<tr><td><code>fullscreen-info-bottom-right</code></td><td><?php esc_html_e( 'Info zone: bottom right in fullscreen. Inherits from info-bottom-right when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-bottom-right', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
+								<tr><td><code>fullscreen-info-top-left</code></td><td><?php esc_html_e( 'Info zone: top left in fullscreen. Inherits from info-top-left when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-top-left', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
+								<tr><td><code>fullscreen-info-top</code></td><td><?php esc_html_e( 'Info zone: top center in fullscreen. Inherits from info-top when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-top', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
+								<tr><td><code>fullscreen-info-secondary</code></td><td><?php esc_html_e( 'Info zone: bottom center (above pagination) in fullscreen. Inherits from info-secondary when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-secondary', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
 							</tbody>
 						</table>
 
@@ -1560,62 +1584,37 @@ class JZSA_Settings_Page {
 					</div>
 
 					<h3 style="margin-top: 28px;"><?php esc_html_e( 'Shortcode Parameters', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<p><?php esc_html_e( 'The 5 inline info-zone parameters and their 5 fullscreen siblings are listed in the "Info Zones (Inline)" and "Fullscreen Settings" sections of the All Shortcode Parameters reference above.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<p style="margin-top: 8px;"><strong><?php esc_html_e( 'Backward compatibility:', 'janzeman-shared-albums-for-google-photos' ); ?></strong> <?php esc_html_e( 'show-name="true" still works — it maps to info-bottom-left="{name}".', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+
+					<h3 style="margin-top: 28px;"><?php esc_html_e( 'Example Shortcodes', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 					<table class="jzsa-settings-table">
 						<thead>
 							<tr>
-								<th><?php esc_html_e( 'Parameter', 'janzeman-shared-albums-for-google-photos' ); ?></th>
-								<th><?php esc_html_e( 'Description', 'janzeman-shared-albums-for-google-photos' ); ?></th>
-								<th><?php esc_html_e( 'Default', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Shortcode excerpt', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'What it shows', 'janzeman-shared-albums-for-google-photos' ); ?></th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr>
-								<td><code>photo-info</code></td>
-								<td><?php esc_html_e( 'Format string controlling what is shown in the photo info overlay in inline mode. Use the tokens from the table above. Set to empty string or omit to disable the overlay. Use fullscreen-photo-info to override this in fullscreen.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td>
+								<td><code>info-bottom-left="{name}"</code></td>
+								<td><?php esc_html_e( 'Filename (or date fallback) in the bottom left.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
 							<tr>
-								<td><code>fullscreen-photo-info</code></td>
-								<td><?php esc_html_e( 'Format string for fullscreen mode. If omitted, inherits from photo-info.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td><em><?php esc_html_e( 'inherits photo-info', 'janzeman-shared-albums-for-google-photos' ); ?></em></td>
-							</tr>
-						</tbody>
-					</table>
-
-					<div class="jzsa-attention-box" style="margin-top: 16px;">
-						<strong><?php esc_html_e( 'Data transfer note', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-						<p style="margin: 8px 0 0 0;"><?php esc_html_e( 'Enabling photo-info adds per-photo metadata to the page HTML (approximately 90 bytes per photo). For a large album of 200 photos this adds around 18 KB per page load. This is unlikely to be noticeable in practice, but worth keeping in mind for very large albums or high-traffic pages.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					</div>
-
-					<h3 style="margin-top: 28px;"><?php esc_html_e( 'Example Format Strings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<table class="jzsa-settings-table">
-						<thead>
-							<tr>
-								<th><?php esc_html_e( 'Format string', 'janzeman-shared-albums-for-google-photos' ); ?></th>
-								<th><?php esc_html_e( 'Example output', 'janzeman-shared-albums-for-google-photos' ); ?></th>
-								<th><?php esc_html_e( 'Notes', 'janzeman-shared-albums-for-google-photos' ); ?></th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td><code>{name}</code></td>
-								<td>IMG_4095</td>
-								<td><?php esc_html_e( 'Minimal - just the filename.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><code>info-bottom-left="{name} · {date}"</code></td>
+								<td><?php esc_html_e( 'Name and date separated by ·. Separator dropped if either is empty.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
 							<tr>
-								<td><code>{name} · {date}</code></td>
-								<td>IMG_4095 · Apr 3, 2024</td>
-								<td><?php esc_html_e( 'Name and date. Separator is dropped if either token is empty.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><code>info-bottom-right="{author}"</code></td>
+								<td><?php esc_html_e( 'Contributor name in the bottom right (multi-contributor albums).', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
 							<tr>
-								<td><code>{camera} · {aperture} {shutter} {focal} {iso}</code></td>
-								<td>Canon EOS 5D Mark II · ƒ/2.8 1/500s 100mm ISO400</td>
-								<td><?php esc_html_e( 'Full EXIF line. All tokens silently omitted if EXIF is unavailable.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><code>info-top-left="{camera}" info-bottom-left="{aperture} {shutter} {focal} {iso}"</code></td>
+								<td><?php esc_html_e( 'Camera model top left, EXIF settings bottom left. Silently hidden if EXIF is stripped.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
 							<tr>
-								<td><code>{name} · {dimensions} · {filesize}</code></td>
-								<td>IMG_4095 · 6000 × 4000 · 7.0 MB</td>
-								<td><?php esc_html_e( 'Technical details without EXIF dependency.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><code>info-bottom-left="{date}" fullscreen-info-bottom-left="{name} · {date} · {camera}"</code></td>
+								<td><?php esc_html_e( 'Date only inline, full details in fullscreen.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
 						</tbody>
 					</table>

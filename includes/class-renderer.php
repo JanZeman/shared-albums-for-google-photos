@@ -277,13 +277,25 @@ class JZSA_Renderer {
 			'video-controls-autohide' => 'data-video-controls-autohide',
 			'fullscreen-video-controls-autohide' => 'data-fullscreen-video-controls-autohide',
 			'mosaic'                  => 'data-mosaic',
-			'show-name'               => 'data-show-name',
-			'fullscreen-show-name'    => 'data-fullscreen-show-name',
 		);
 
 		foreach ( $boolean_attrs as $key => $attr_name ) {
 			if ( isset( $config[ $key ] ) ) {
 				$attrs[] = sprintf( '%s="%s"', $attr_name, $config[ $key ] ? 'true' : 'false' );
+			}
+		}
+
+		// Info zone format strings (only emit non-empty).
+		$info_zones = array(
+			'info-bottom-left', 'fullscreen-info-bottom-left',
+			'info-bottom-right', 'fullscreen-info-bottom-right',
+			'info-top-left', 'fullscreen-info-top-left',
+			'info-top', 'fullscreen-info-top',
+			'info-secondary', 'fullscreen-info-secondary',
+		);
+		foreach ( $info_zones as $zone_key ) {
+			if ( ! empty( $config[ $zone_key ] ) ) {
+				$attrs[] = sprintf( 'data-%s="%s"', $zone_key, esc_attr( $config[ $zone_key ] ) );
 			}
 		}
 
@@ -467,12 +479,24 @@ class JZSA_Renderer {
 			'fullscreen-show-download-button' => 'data-fullscreen-show-download-button',
 			'video-controls-autohide' => 'data-video-controls-autohide',
 			'fullscreen-video-controls-autohide' => 'data-fullscreen-video-controls-autohide',
-			'show-name'               => 'data-show-name',
-			'fullscreen-show-name'    => 'data-fullscreen-show-name',
 		);
 		foreach ( $slideshow_booleans as $key => $attr_name ) {
 			if ( isset( $config[ $key ] ) ) {
 				$attrs[] = sprintf( '%s="%s"', $attr_name, $config[ $key ] ? 'true' : 'false' );
+			}
+		}
+
+		// Info zone format strings (only emit non-empty).
+		$gallery_info_zones = array(
+			'info-bottom-left', 'fullscreen-info-bottom-left',
+			'info-bottom-right', 'fullscreen-info-bottom-right',
+			'info-top-left', 'fullscreen-info-top-left',
+			'info-top', 'fullscreen-info-top',
+			'info-secondary', 'fullscreen-info-secondary',
+		);
+		foreach ( $gallery_info_zones as $zone_key ) {
+			if ( ! empty( $config[ $zone_key ] ) ) {
+				$attrs[] = sprintf( 'data-%s="%s"', $zone_key, esc_attr( $config[ $zone_key ] ) );
 			}
 		}
 

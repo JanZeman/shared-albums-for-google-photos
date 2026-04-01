@@ -482,14 +482,47 @@ class JZSA_Shared_Albums {
 			'corner-radius'        => $this->parse_corner_radius( $atts ),
 			'mosaic-corner-radius' => $this->parse_mosaic_corner_radius( $atts ),
 
-			// Photo metadata overlays
-			'show-name'            => $this->parse_bool( $atts, 'show-name', false ),
-			'fullscreen-show-name' => isset( $atts['fullscreen-show-name'] )
-				? $this->parse_bool( $atts, 'fullscreen-show-name', false )
-				: $this->parse_bool( $atts, 'show-name', false ),
-		);
+			// Info zones — format strings with {token} placeholders resolved per photo.
+			// Backward compat: show-name="true" maps to info-bottom-left="{name}".
+		) + $this->build_info_zone_config( $atts );
 
 		return $config;
+	}
+
+	/**
+	 * Build the info zone sub-array for the shortcode config.
+	 * Extracted to keep the main config array readable.
+	 *
+	 * @param array $atts Raw shortcode attributes.
+	 * @return array
+	 */
+	private function build_info_zone_config( $atts ) {
+		// Backward compat defaults for info-bottom-left.
+		$show_name_compat    = $this->parse_bool( $atts, 'show-name', false );
+		$fs_show_name_compat = isset( $atts['fullscreen-show-name'] )
+			? $this->parse_bool( $atts, 'fullscreen-show-name', false )
+			: $show_name_compat;
+
+		$bl  = $this->parse_info_zone( $atts, 'info-bottom-left',  $show_name_compat    ? '{name}' : '' );
+		$br  = $this->parse_info_zone( $atts, 'info-bottom-right', '' );
+		$tl  = $this->parse_info_zone( $atts, 'info-top-left',     '' );
+		$top = $this->parse_info_zone( $atts, 'info-top',          '' );
+		$sec = $this->parse_info_zone( $atts, 'info-secondary',    '' );
+
+		return array(
+			'info-bottom-left'              => $bl,
+			'fullscreen-info-bottom-left'   => isset( $atts['fullscreen-info-bottom-left'] )
+				? $this->parse_info_zone( $atts, 'fullscreen-info-bottom-left', '' )
+				: ( $fs_show_name_compat ? '{name}' : $bl ),
+			'info-bottom-right'             => $br,
+			'fullscreen-info-bottom-right'  => $this->parse_info_zone( $atts, 'fullscreen-info-bottom-right', $br ),
+			'info-top-left'                 => $tl,
+			'fullscreen-info-top-left'      => $this->parse_info_zone( $atts, 'fullscreen-info-top-left', $tl ),
+			'info-top'                      => $top,
+			'fullscreen-info-top'           => $this->parse_info_zone( $atts, 'fullscreen-info-top', $top ),
+			'info-secondary'                => $sec,
+			'fullscreen-info-secondary'     => $this->parse_info_zone( $atts, 'fullscreen-info-secondary', $sec ),
+		);
 	}
 
 	/**
@@ -511,6 +544,22 @@ class JZSA_Shared_Albums {
 
 		$value = intval( $atts[ $key ] );
 		return $value > 0 ? $value : $default;
+	}
+
+	/**
+	 * Parse info zone format string attribute.
+	 * Returns the sanitized format string, or $default if the attribute is absent.
+	 *
+	 * @param array  $atts    Attributes
+	 * @param string $key     Attribute key
+	 * @param string $default Default format string (empty = zone hidden)
+	 * @return string
+	 */
+	private function parse_info_zone( $atts, $key, $default ) {
+		if ( ! isset( $atts[ $key ] ) ) {
+			return $default;
+		}
+		return sanitize_text_field( $atts[ $key ] );
 	}
 
 	/**
@@ -1127,7 +1176,7 @@ class JZSA_Shared_Albums {
 
 			// Pass through Wave 1 metadata fields (all zero-cost, extracted from album HTML).
 			if ( is_array( $item ) ) {
-				foreach ( array( 'filename', 'timestamp', 'width', 'height', 'filesize', 'camera', 'exif', 'author' ) as $meta_key ) {
+				foreach ( array( 'filename', 'timestamp', 'width', 'height', 'filesize', 'camera', 'exif', 'aperture', 'shutter', 'focal', 'iso', 'author' ) as $meta_key ) {
 					if ( isset( $item[ $meta_key ] ) ) {
 						$photo[ $meta_key ] = $item[ $meta_key ];
 					}

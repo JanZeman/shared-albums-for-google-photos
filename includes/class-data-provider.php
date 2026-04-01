@@ -387,8 +387,12 @@ class JZSA_Data_Provider {
 					: round( $shutter, 1 ) . 's';
 
 				$exif_map[ $id ] = array(
-					'camera' => trim( $make . ' ' . $model ),
-					'exif'   => sprintf( 'ƒ/%s • %s • %smm • ISO%d', $aperture, $shutter_display, $focal, $iso ),
+					'camera'   => trim( $make . ' ' . $model ),
+					'exif'     => sprintf( 'f/%s - %s - %smm - ISO%d', $aperture, $shutter_display, $focal, $iso ),
+					'aperture' => 'f/' . $aperture,
+					'shutter'  => $shutter_display,
+					'focal'    => $focal . 'mm',
+					'iso'      => 'ISO ' . $iso,
 				);
 			}
 		}
@@ -450,8 +454,13 @@ class JZSA_Data_Provider {
 
 			// Stage 2c: EXIF (from the pass above).
 			if ( isset( $exif_map[ $meta['id'] ] ) ) {
-				$item['camera'] = $exif_map[ $meta['id'] ]['camera'];
-				$item['exif']   = $exif_map[ $meta['id'] ]['exif'];
+				$exif            = $exif_map[ $meta['id'] ];
+				$item['camera']   = $exif['camera'];
+				$item['exif']     = $exif['exif'];
+				$item['aperture'] = $exif['aperture'];
+				$item['shutter']  = $exif['shutter'];
+				$item['focal']    = $exif['focal'];
+				$item['iso']      = $exif['iso'];
 			}
 
 			// Stage 2d: Owner/author (pure display name, no prefix).
