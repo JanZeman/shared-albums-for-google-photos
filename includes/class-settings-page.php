@@ -1442,7 +1442,7 @@ class JZSA_Settings_Page {
 					<p><?php esc_html_e( 'The live preview below shows all five info boxes with descriptive labels so you can see where each box appears:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
 					<?php
-						$info_boxes_demo_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" width="400" height="300" limit="7" start-at="1" slideshow="auto" slideshow-delay="15" info-bottom-center="{counter}" info-bottom-left="Bottom-left" info-top-left="Top-left" info-top-center="Top-center" info-top-right="Top-right" info-bottom-right="Bottom-right"]';
+						$info_boxes_demo_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" width="400" height="300" limit="7" start-at="1" slideshow="auto" slideshow-delay="15" show-link-button="true" show-download-button="true" info-bottom-center="{counter}" info-bottom-left="Bottom-left" info-top-left="Top-left" info-top-center="Top-center" info-top-right="Top-right" info-bottom-right="Bottom-right"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $info_boxes_demo_shortcode ); ?></code>
@@ -1627,13 +1627,13 @@ class JZSA_Settings_Page {
 							<span><?php esc_html_e( 'EXIF output is not perfectly reliable. It depends heavily on how complete and clean the metadata is across the photos in your shared album.', 'janzeman-shared-albums-for-google-photos' ); ?></span>
 						</p>
 						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" corner-radius="16" info-bottom-center="{counter}" info-bottom-left="{date}" info-top-left="{camera}" info-top-right="{aperture} {shutter} {focal} {iso}"]</code>
+							<code>[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" corner-radius="16" show-link-button="true" show-download-button="true" info-bottom-center="{counter}" info-bottom-left="{date}" info-top-center="Top center"]</code>
 							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-info-exif">
 							<?php
 								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" corner-radius="16" info-bottom-center="{counter}" info-bottom-left="{date}" info-top-left="{camera}" info-top-right="{aperture} {shutter} {focal} {iso}"]' );
+								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" corner-radius="16" show-link-button="true" show-download-button="true" info-bottom-center="{counter}" info-bottom-left="{date}" info-top-center="Top center"]' );
 							?>
 						</div>
 					</div>

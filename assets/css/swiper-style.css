@@ -12,6 +12,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     --jzsa-controls-visible-opacity: 0.8;
     --jzsa-controls-fade-duration: 350ms;
     --jzsa-controls-fade-easing: linear;
+    --jzsa-info-fade-duration: 10ms;
     --jzsa-controls-bg-duration: 0.3s;
     --jzsa-controls-bg-easing: ease;
     --jzsa-controls-bg: rgba(0, 0, 0, 0.35);
@@ -324,7 +325,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 /* Slideshow progress bar (only visible when slideshow is running) */
 .jzsa-album .swiper-slideshow-progress {
     position: absolute;
-    bottom: 5px;
+    bottom: 4px;
     left: 50%;
     transform: translateX(-50%);
     width: 39px;
@@ -341,7 +342,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 
 /* In fullscreen mode, position it below the raised pagination */
 .jzsa-album.jzsa-is-fullscreen .swiper-slideshow-progress {
-    bottom: 12px;
+    bottom: 11px;
 }
 
 .jzsa-album .swiper-slideshow-progress-bar {
@@ -355,7 +356,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 /* Play/Pause button */
 .jzsa-album .swiper-button-play-pause {
     position: absolute;
-    bottom: 27px;
+    bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
     width: var(--jzsa-controls-circle-size);
@@ -391,7 +392,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 
 /* When counter is hidden, move play/pause down near the progress bar */
 .jzsa-album[data-show-counter="false"] .swiper-button-play-pause {
-    bottom: 0px;
+    bottom: -3px;
 }
 
 /* Show play/pause button in fullscreen only when a slideshow is enabled
@@ -402,13 +403,13 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 .jzsa-album.jzsa-is-fullscreen[data-slideshow="auto"] .swiper-button-play-pause,
 .jzsa-album.jzsa-is-fullscreen[data-slideshow="manual"] .swiper-button-play-pause {
     display: flex;
-    bottom: 46px;
+    bottom: 43px;
 }
 .jzsa-album.jzsa-is-fullscreen[data-fullscreen-slideshow="auto"][data-show-counter="false"] .swiper-button-play-pause,
 .jzsa-album.jzsa-is-fullscreen[data-fullscreen-slideshow="manual"][data-show-counter="false"] .swiper-button-play-pause,
 .jzsa-album.jzsa-is-fullscreen[data-slideshow="auto"][data-show-counter="false"] .swiper-button-play-pause,
 .jzsa-album.jzsa-is-fullscreen[data-slideshow="manual"][data-show-counter="false"] .swiper-button-play-pause {
-    bottom: 7px;
+    bottom: 4px;
 }
 
 .jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
@@ -661,14 +662,14 @@ body.jzsa-no-scroll {
     padding: 4px 12px;
     border-radius: var(--jzsa-controls-pill-radius);
     display: inline-block;
-    bottom: 12px;
+    bottom: 9px;
     left: 10px;
     right: 10px;
     margin: 0 auto;
     max-width: max-content;
     width: auto;
     font-size: 12px;
-    line-height: 1.3;
+    line-height: 1.5;
     text-align: center;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     overflow: hidden;
@@ -679,7 +680,7 @@ body.jzsa-no-scroll {
 
 /* Move pagination up in fullscreen to make room for progress bar below */
 .jzsa-album.jzsa-is-fullscreen .swiper-pagination {
-    bottom: 23px;
+    bottom: 20px;
 }
 
 /* Loading state */
@@ -1109,7 +1110,7 @@ body.jzsa-no-scroll {
     padding: 4px 12px;
     border-radius: var(--jzsa-controls-pill-radius);
     font-size: 12px;
-    line-height: 1.3;
+    line-height: 1.5;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     pointer-events: none;
     z-index: 10;
@@ -1118,14 +1119,15 @@ body.jzsa-no-scroll {
     text-overflow: ellipsis;
     white-space: nowrap;
     opacity: var(--jzsa-controls-visible-opacity);
+    transition: opacity var(--jzsa-info-fade-duration) linear;
 }
 
 /* Box positions */
-.jzsa-info-bottom-left   { bottom: 12px; left: 12px; }
-.jzsa-info-bottom-right  { bottom: 12px; right: 12px; left: auto; }
-.jzsa-info-top-left      { top: 12px; left: 12px; bottom: auto; }
-.jzsa-info-top-right     { top: 12px; right: 12px; left: auto; bottom: auto; }
-.jzsa-info-top-center           { top: 12px; left: 50%; transform: translateX(-50%); bottom: auto; }
+.jzsa-info-bottom-left   { bottom: 9px; left: 12px; }
+.jzsa-info-bottom-right  { bottom: 9px; right: 12px; left: auto; }
+.jzsa-info-top-left      { top: 9px; left: 12px; bottom: auto; }
+.jzsa-info-top-right     { top: 9px; right: 12px; left: auto; bottom: auto; }
+.jzsa-info-top-center           { top: 9px; left: 50%; transform: translateX(-50%); bottom: auto; }
 
 /* Compact variant for gallery thumbnails */
 .jzsa-gallery-item .jzsa-info-box {
@@ -1526,6 +1528,23 @@ body.jzsa-no-scroll {
         opacity: var(--jzsa-controls-visible-opacity);
         pointer-events: auto;
     }
+
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover[data-show-link-button="true"] .jzsa-info-top-left,
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover[data-show-download-button="true"] .jzsa-info-top-left,
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within[data-show-link-button="true"] .jzsa-info-top-left,
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within[data-show-download-button="true"] .jzsa-info-top-left,
+    .jzsa-album.swiper.jzsa-is-fullscreen:hover[data-fullscreen-show-link-button="true"] .jzsa-info-top-left,
+    .jzsa-album.swiper.jzsa-is-fullscreen:hover[data-fullscreen-show-download-button="true"] .jzsa-info-top-left,
+    .jzsa-album.swiper.jzsa-is-fullscreen:focus-within[data-fullscreen-show-link-button="true"] .jzsa-info-top-left,
+    .jzsa-album.swiper.jzsa-is-fullscreen:focus-within[data-fullscreen-show-download-button="true"] .jzsa-info-top-left,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover[data-fullscreen-show-link-button="true"] .jzsa-info-top-left,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover[data-fullscreen-show-download-button="true"] .jzsa-info-top-left,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen:focus-within[data-fullscreen-show-link-button="true"] .jzsa-info-top-left,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen:focus-within[data-fullscreen-show-download-button="true"] .jzsa-info-top-left,
+    .jzsa-album.swiper:not([data-fullscreen-toggle="disabled"]):not([data-interaction-lock="true"]):hover .jzsa-info-top-right,
+    .jzsa-album.swiper:not([data-fullscreen-toggle="disabled"]):not([data-interaction-lock="true"]):focus-within .jzsa-info-top-right {
+        opacity: 0;
+    }
 }
 
 /* Touch devices (inline slider): hide all controls until tap; reveal via jzsa-touch-active class. */
@@ -1550,6 +1569,16 @@ body.jzsa-no-scroll {
     .jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn):not(.jzsa-carousel-slide-overlay-btn) {
         opacity: var(--jzsa-controls-visible-opacity);
         pointer-events: auto;
+    }
+
+    .jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-show-link-button="true"] .jzsa-info-top-left,
+    .jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-show-download-button="true"] .jzsa-info-top-left,
+    .jzsa-album.swiper.jzsa-touch-active.jzsa-is-fullscreen[data-fullscreen-show-link-button="true"] .jzsa-info-top-left,
+    .jzsa-album.swiper.jzsa-touch-active.jzsa-is-fullscreen[data-fullscreen-show-download-button="true"] .jzsa-info-top-left,
+    .jzsa-album.swiper.jzsa-touch-active.jzsa-pseudo-fullscreen[data-fullscreen-show-link-button="true"] .jzsa-info-top-left,
+    .jzsa-album.swiper.jzsa-touch-active.jzsa-pseudo-fullscreen[data-fullscreen-show-download-button="true"] .jzsa-info-top-left,
+    .jzsa-album.swiper.jzsa-touch-active:not([data-fullscreen-toggle="disabled"]):not([data-interaction-lock="true"]) .jzsa-info-top-right {
+        opacity: 0;
     }
 }
 
