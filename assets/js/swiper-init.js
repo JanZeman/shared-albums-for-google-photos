@@ -2048,6 +2048,11 @@
             containerElement.style.removeProperty('--jzsa-video-controls-color');
         }
 
+        var activeBottomCenterFormat = useFullscreen
+            ? ($container.attr('data-fullscreen-info-bottom-center') || $container.attr('data-info-bottom-center') || '')
+            : ($container.attr('data-info-bottom-center') || '');
+        $container.attr('data-has-active-bottom-center', activeBottomCenterFormat ? 'true' : 'false');
+
         applyVideoControlsAutohideSetting($container, videoControlsAutohide);
 
         params.slideshowAutoresume = useFullscreen ? params.fullscreenSlideshowAutoresume : params.inlineSlideshowAutoresume;
@@ -4017,6 +4022,7 @@
             mode === 'carousel' && !interactionLock && showDownloadButton;
         $container.toggleClass('jzsa-carousel-tile-fs-enabled', showCarouselTileFullscreenButtons);
         var zoneFormats = readInfoZoneFormats($container);
+        $container.attr('data-has-active-bottom-center', zoneFormats.bottomCenter.inline ? 'true' : 'false');
         var slidesRenderOptions = {
             mode: mode,
             showCarouselTileFullscreenButtons: showCarouselTileFullscreenButtons,
