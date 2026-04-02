@@ -1472,15 +1472,15 @@ class JZSA_Settings_Page {
 						<tbody>
 							<tr>
 								<td><code>{counter}</code></td>
-								<td><?php esc_html_e( 'Slide counter (e.g. "3 / 41"). Only works in info-bottom-center.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Slide counter (e.g. "3 / 41")', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>3 / 41</td>
-								<td>✅ <?php esc_html_e( 'Always available (info-bottom-center only)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>✅ <?php esc_html_e( 'Always available', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
 							<tr>
 								<td><code>{album-title}</code></td>
-								<td><?php esc_html_e( 'Album title. Only works in info-bottom-center.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td>Trip to Bali</td>
-								<td>✅ <?php esc_html_e( 'Always available (info-bottom-center only)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Album title', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>Trip to Vietnam</td>
+								<td>✅ <?php esc_html_e( 'Always available', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
 							<tr>
 								<td><code>{date}</code></td>
@@ -1558,9 +1558,13 @@ class JZSA_Settings_Page {
 					</table>
 
 					<div class="jzsa-attention-box" style="margin-top: 16px;">
-						<strong><?php esc_html_e( 'Note on EXIF tokens (background fetching)', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+						<strong><?php esc_html_e( 'Note on EXIF tokens', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
 						<p style="margin: 8px 0 0 0;"><?php esc_html_e( 'EXIF data (camera, aperture, shutter, focal, ISO) is not available in the album listing. When you use any EXIF token, the plugin automatically fetches each photo\'s individual page from Google Photos in the background to retrieve it. This means:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-						<ul style="margin: 8px 0 0 16px; padding: 0;">
+						<ul style="margin: 10px 0 0 0; padding-left: 22px; list-style: disc;">
+							<li style="display: flex; align-items: flex-start; gap: 8px; list-style: none; margin-left: -22px;">
+								<span class="dashicons dashicons-warning" style="font-size: 18px; width: 18px; height: 18px; line-height: 18px; color: #dba617; flex-shrink: 0; margin-top: 2px;"></span>
+								<span><?php esc_html_e( 'EXIF information is not perfectly reliable. Google decides what survives in a shared album, so availability depends a lot on the quality and origin of your album content.', 'janzeman-shared-albums-for-google-photos' ); ?></span>
+							</li>
 							<li><?php esc_html_e( 'EXIF data appears with a brief delay after the page loads (not instantly like date or dimensions).', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'Each photo requires one background HTTP request (~1 MB). For large albums this adds significant bandwidth.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'Photos that were uploaded without EXIF (e.g. screenshots, edited exports) will show nothing for these tokens.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
@@ -1618,14 +1622,18 @@ class JZSA_Settings_Page {
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Full Photo Info with EXIF', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Combines always-available tokens with background-fetched EXIF data. Camera model appears in the top left; exposure settings (aperture, shutter, focal length, ISO) in the top right; date and dimensions in the bottom left. EXIF tokens appear with a brief delay as each photo\'s data is fetched in the background. Photos without EXIF (e.g. phone screenshots) silently hide those boxes.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<p style="margin: 8px 0 0 0; display: flex; align-items: flex-start; gap: 8px;">
+							<span class="dashicons dashicons-warning" style="font-size: 20px; width: 20px; height: 20px; line-height: 20px; color: #dba617; flex-shrink: 0;"></span>
+							<span><?php esc_html_e( 'EXIF output is not perfectly reliable. It depends heavily on how complete and clean the metadata is across the photos in your shared album.', 'janzeman-shared-albums-for-google-photos' ); ?></span>
+						</p>
 						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" info-bottom-center="{counter}" info-top-left="{camera}" info-top-right="{aperture} {shutter} {focal} {iso}" info-bottom-left="{date}"]</code>
+							<code>[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" corner-radius="16" info-bottom-center="{counter}" info-top-left="{camera}" info-top-right="{aperture} {shutter} {focal} {iso}" info-bottom-left="{date}"]</code>
 							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-info-exif">
 							<?php
 								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" info-bottom-center="{counter}" info-top-left="{camera}" info-top-right="{aperture} {shutter} {focal} {iso}" info-bottom-left="{date}"]' );
+								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" corner-radius="16" info-bottom-center="{counter}" info-top-left="{camera}" info-top-right="{aperture} {shutter} {focal} {iso}" info-bottom-left="{date}"]' );
 							?>
 						</div>
 					</div>

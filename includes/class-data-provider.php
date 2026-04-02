@@ -341,7 +341,7 @@ class JZSA_Data_Provider {
 		// Structure per photo: ["AF1Qip…", ["url", WIDTH, HEIGHT, null×5, […], [FILESIZE]], TIMESTAMP, "", TZ_OFFSET]
 		$url_meta = array();
 		if ( preg_match_all(
-			'/\["(AF1Qip[^"]+)"\s*,\s*\["(https?:\/\/[^"]+googleusercontent\.com[^"]+)"\s*,\s*(\d+)\s*,\s*(\d+).*?\[(\d+)\]\s*\]\s*,\s*(\d{10,13})\s*,\s*"[^"]*"\s*,\s*(\d+)/is',
+			'/\["(AF1Qip[^"]+)"\s*,\s*\["(https?:\/\/[^"]+googleusercontent\.com[^"]+)"\s*,\s*(\d+)\s*,\s*(\d+).*?\[(\d+)\].*?\]\s*,\s*(\d{10,13})\s*,\s*"[^"]*"\s*,\s*(\d+)/is',
 			$html,
 			$id_matches
 		) ) {
@@ -366,36 +366,10 @@ class JZSA_Data_Provider {
 			return $items;
 		}
 
-		// Stage 2c: EXIF extraction (one pass over full HTML).
-		// Usually matches nothing on shared album pages, but is safe and additive.
+		// Stage 2c: EXIF extraction is done per media ID below, limited to the
+		// current media entry so metadata from neighbouring photos cannot bleed
+		// across when album order changes.
 		$exif_map = array(); // id → [ 'camera' => ..., 'exif' => ... ]
-		if ( preg_match_all(
-			'/\["(AF1Qip[^"]+)".*?\[(\d+)\s*,\s*(\d+)\s*,\s*1\s*,\s*null\s*,\s*\["([^"]+)"\s*,\s*"([^"]+)"\s*,\s*(?:"[^"]*"|null)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*(\d+)\s*,\s*([\d.]+)/is',
-			$html,
-			$exif_matches
-		) ) {
-			foreach ( $exif_matches[1] as $i => $id ) {
-				$make    = $exif_matches[4][ $i ];
-				$model   = $exif_matches[5][ $i ];
-				$focal   = $exif_matches[6][ $i ];
-				$aperture = $exif_matches[7][ $i ];
-				$iso     = (int) $exif_matches[8][ $i ];
-				$shutter = (float) $exif_matches[9][ $i ];
-
-				$shutter_display = $shutter < 1 && $shutter > 0
-					? '1/' . round( 1 / $shutter )
-					: round( $shutter, 1 ) . 's';
-
-				$exif_map[ $id ] = array(
-					'camera'   => trim( $make . ' ' . $model ),
-					'exif'     => sprintf( "\xC6\x92/%s \xC2\xB7 %s \xC2\xB7 %smm \xC2\xB7 ISO%d", $aperture, $shutter_display, $focal, $iso ),
-					'aperture' => "\xC6\x92/" . $aperture,
-					'shutter'  => $shutter_display,
-					'focal'    => $focal . 'mm',
-					'iso'      => 'ISO' . $iso,
-				);
-			}
-		}
 
 		// Stage 2d: Owner/author extraction (two passes over full HTML).
 		// Pass 1: photo_id → owner_id.
@@ -455,8 +429,11 @@ class JZSA_Data_Provider {
 				$item['filename'] = $filename;
 			}
 
-			// Stage 2c: EXIF (from the pass above).
-			if ( isset( $exif_map[ $meta['id'] ] ) ) {
+			// Stage 2c: EXIF (scoped to the current media record).
+			if ( ! array_key_exists( $meta['id'], $exif_map ) ) {
+				$exif_map[ $meta['id'] ] = $this->extract_album_exif_for_media_id( $html, $meta['id'] );
+			}
+			if ( ! empty( $exif_map[ $meta['id'] ] ) ) {
 				$exif            = $exif_map[ $meta['id'] ];
 				$item['camera']   = $exif['camera'];
 				$item['exif']     = $exif['exif'];
@@ -522,17 +499,17 @@ class JZSA_Data_Provider {
 	}
 
 	/**
-	 * Extract the original filename for a media ID from the album HTML.
+	 * Extract the chunk of HTML that belongs to a single media entry.
 	 *
-	 * Searches a ~35 KB window around the media ID for filename candidates.
-	 * Three-level fallback: known protobuf key, any numeric key with a
-	 * plausible value, quoted filename strings.
+	 * Google Photos album HTML stores many media records back-to-back. Keeping
+	 * searches inside one record prevents data from adjacent photos from being
+	 * incorrectly attributed when regexes scan too far forward.
 	 *
 	 * @param string $html     Full HTML content.
 	 * @param string $media_id AF1Qip… media ID.
-	 * @return string Filename or empty string.
+	 * @return string
 	 */
-	private function extract_filename_for_media_id( $html, $media_id ) {
+	private function extract_media_item_chunk( $html, $media_id ) {
 		if ( '' === $media_id ) {
 			return '';
 		}
@@ -546,7 +523,31 @@ class JZSA_Data_Provider {
 				return '';
 			}
 		}
-		$chunk = substr( $html, $pos, 35000 );
+
+		$next_pos = strpos( $html, '],["AF1Qip', $pos + strlen( $needle ) );
+		if ( false !== $next_pos ) {
+			return substr( $html, $pos, $next_pos - $pos + 1 );
+		}
+
+		return substr( $html, $pos, 35000 );
+	}
+
+	/**
+	 * Extract the original filename for a media ID from the album HTML.
+	 *
+	 * Searches a ~35 KB window around the media ID for filename candidates.
+	 * Three-level fallback: known protobuf key, any numeric key with a
+	 * plausible value, quoted filename strings.
+	 *
+	 * @param string $html     Full HTML content.
+	 * @param string $media_id AF1Qip… media ID.
+	 * @return string Filename or empty string.
+	 */
+	private function extract_filename_for_media_id( $html, $media_id ) {
+		$chunk = $this->extract_media_item_chunk( $html, $media_id );
+		if ( '' === $chunk ) {
+			return '';
+		}
 
 		// Method 1: Known historical protobuf key 101428965.
 		if ( preg_match( '/"101428965"\s*:\s*\[\s*(?:\d+|null)\s*,\s*"([^"]+)"/', $chunk, $m ) ) {
@@ -603,7 +604,52 @@ class JZSA_Data_Provider {
 			}
 		}
 
-	return '';
+		return '';
+	}
+
+	/**
+	 * Extract EXIF metadata for a single media ID from album HTML.
+	 *
+	 * Shared album pages may contain multiple media records adjacent to each
+	 * other, so this search is restricted to the current media entry.
+	 *
+	 * @param string $html     Full HTML content.
+	 * @param string $media_id AF1Qip… media ID.
+	 * @return array
+	 */
+	private function extract_album_exif_for_media_id( $html, $media_id ) {
+		$chunk = $this->extract_media_item_chunk( $html, $media_id );
+		if ( '' === $chunk ) {
+			return array();
+		}
+
+		if ( ! preg_match(
+			'/\[(\d+)\s*,\s*(\d+)\s*,\s*1\s*,\s*null\s*,\s*\["([^"]+)"\s*,\s*"([^"]+)"\s*,\s*(?:"[^"]*"|null)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*(\d+)\s*,\s*([\d.]+)/s',
+			$chunk,
+			$m
+		) ) {
+			return array();
+		}
+
+		$make     = $m[3];
+		$model    = $m[4];
+		$focal    = $m[5];
+		$aperture = $m[6];
+		$iso      = (int) $m[7];
+		$shutter  = (float) $m[8];
+
+		$shutter_display = $shutter < 1 && $shutter > 0
+			? '1/' . round( 1 / $shutter )
+			: round( $shutter, 1 ) . 's';
+
+		return array(
+			'camera'   => trim( $make . ' ' . $model ),
+			'exif'     => sprintf( "\xC6\x92/%s \xC2\xB7 %s \xC2\xB7 %smm \xC2\xB7 ISO%d", $aperture, $shutter_display, $focal, $iso ),
+			'aperture' => "\xC6\x92/" . $aperture,
+			'shutter'  => $shutter_display,
+			'focal'    => $focal . 'mm',
+			'iso'      => 'ISO' . $iso,
+		);
 	}
 
 	/**

@@ -1476,12 +1476,14 @@
      *
      * @param {string} format  Format string (e.g. "{name} · {date}").
      * @param {Object} photo   Photo data object.
+     * @param {Object} context Optional extra token context.
      * @return {string} Resolved string, or empty if all tokens resolved to nothing.
      */
-    function resolveInfoTokens(format, photo) {
+    function resolveInfoTokens(format, photo, context) {
         if (!format || !photo) {
             return '';
         }
+        var tokenContext = context || {};
 
         var name = photo.filename
             ? photo.filename.replace(/\.[^.]+$/, '')
@@ -1513,6 +1515,9 @@
         }
 
         var tokens = {
+            '{counter}': tokenContext.counter || '',
+            '{album-title}': tokenContext.albumTitle || '',
+            '{album-name}': tokenContext.albumTitle || '',
             '{name}': name || '',
             '{filename}': photo.filename || '',
             '{date}': photo.timestamp ? formatPhotoDate(photo.timestamp) : '',
@@ -1553,12 +1558,12 @@
      * @param {Object} fsFormats   Fullscreen zone formats (same shape).
      * @return {string} HTML string with zone divs (empty if no zones have content).
      */
-    function buildInfoZoneHtml(photo, zoneFormats, fsFormats) {
+    function buildInfoZoneHtml(photo, zoneFormats, fsFormats, context) {
         var html = '';
         for (var i = 0; i < INFO_BOX_NAMES.length; i++) {
             var zone = INFO_BOX_NAMES[i];
-            var inlineText = resolveInfoTokens(zoneFormats[zone] || '', photo);
-            var fullscreenText = resolveInfoTokens(fsFormats[zone] || zoneFormats[zone] || '', photo);
+            var inlineText = resolveInfoTokens(zoneFormats[zone] || '', photo, context);
+            var fullscreenText = resolveInfoTokens(fsFormats[zone] || zoneFormats[zone] || '', photo, context);
             if (!inlineText && !fullscreenText) {
                 continue;
             }
@@ -1584,7 +1589,15 @@
             inline[zone] = $container.attr('data-' + zone) || '';
             fullscreen[zone] = $container.attr('data-fullscreen-' + zone) || inline[zone];
         }
-        return { inline: inline, fullscreen: fullscreen };
+        var bottomCenterInline = $container.attr('data-info-bottom-center') || '';
+        return {
+            inline: inline,
+            fullscreen: fullscreen,
+            bottomCenter: {
+                inline: bottomCenterInline,
+                fullscreen: $container.attr('data-fullscreen-info-bottom-center') || bottomCenterInline
+            }
+        };
     }
 
     // ========================================================================
@@ -1594,9 +1607,10 @@
     var EXIF_TOKEN_RE = /\{(?:camera|aperture|shutter|focal|iso)\}/;
     var EXIF_PREFETCH_WORKERS = 3;
     var exifCache = {};          // mediaId -> { camera, aperture, shutter, focal, iso }
-    var exifQueue = [];          // { mediaId, photoUrl, $container, zoneFormats, photoIndex }
+    var exifQueue = [];          // { mediaId, photoUrl }
     var exifQueued = {};         // mediaId -> true
     var exifInFlight = {};       // mediaId -> true
+    var exifWaiters = {};        // mediaId -> [ { $container, zoneFormats, photoIndex } ]
     var exifPrefetchActive = 0;
     var exifPrefetchScheduled = false;
 
@@ -1609,11 +1623,15 @@
         }
         var all = zoneFormats.inline || {};
         var fs  = zoneFormats.fullscreen || {};
+        var bottomCenter = zoneFormats.bottomCenter || {};
         for (var i = 0; i < INFO_BOX_NAMES.length; i++) {
             var zone = INFO_BOX_NAMES[i];
             if (EXIF_TOKEN_RE.test(all[zone] || '') || EXIF_TOKEN_RE.test(fs[zone] || '')) {
                 return true;
             }
+        }
+        if (EXIF_TOKEN_RE.test(bottomCenter.inline || '') || EXIF_TOKEN_RE.test(bottomCenter.fullscreen || '')) {
+            return true;
         }
         return false;
     }
@@ -1668,14 +1686,42 @@
         }
     }
 
+    function addExifWaiter(mediaId, $container, zoneFormats, photoIndex) {
+        if (!mediaId || !$container || !$container.length) {
+            return;
+        }
+
+        if (!exifWaiters[mediaId]) {
+            exifWaiters[mediaId] = [];
+        }
+
+        exifWaiters[mediaId].push({
+            $container: $container,
+            zoneFormats: zoneFormats,
+            photoIndex: photoIndex
+        });
+    }
+
+    function flushExifWaiters(mediaId, exifData) {
+        var waiters = exifWaiters[mediaId] || [];
+        delete exifWaiters[mediaId];
+
+        if (!exifData) {
+            return;
+        }
+
+        for (var i = 0; i < waiters.length; i++) {
+            applyExifToPhoto(mediaId, exifData, waiters[i].$container, waiters[i].zoneFormats, waiters[i].photoIndex);
+        }
+    }
+
     function processExifQueue() {
         while (exifPrefetchActive < EXIF_PREFETCH_WORKERS && exifQueue.length) {
             var item = exifQueue.shift();
             delete exifQueued[item.mediaId];
             if (exifCache[item.mediaId] || exifInFlight[item.mediaId]) {
-                // Already have data or in-flight — apply cached if available.
                 if (exifCache[item.mediaId]) {
-                    applyExifToPhoto(item.mediaId, exifCache[item.mediaId], item.$container, item.zoneFormats, item.photoIndex);
+                    flushExifWaiters(item.mediaId, exifCache[item.mediaId]);
                 }
                 continue;
             }
@@ -1699,9 +1745,12 @@
                 }).done(function(response) {
                     if (response && response.success && response.data) {
                         exifCache[queueItem.mediaId] = response.data;
-                        applyExifToPhoto(queueItem.mediaId, response.data, queueItem.$container, queueItem.zoneFormats, queueItem.photoIndex);
+                        flushExifWaiters(queueItem.mediaId, response.data);
                     }
                 }).always(function() {
+                    if (exifCache[queueItem.mediaId]) {
+                        flushExifWaiters(queueItem.mediaId, exifCache[queueItem.mediaId]);
+                    }
                     delete exifInFlight[queueItem.mediaId];
                     exifPrefetchActive = Math.max(0, exifPrefetchActive - 1);
                     processExifQueue();
@@ -1742,20 +1791,26 @@
                 if (!p.id || p.camera) {
                     continue; // No ID or already has EXIF from Wave 1.
                 }
-                if (exifCache[p.id] || exifQueued[p.id] || exifInFlight[p.id]) {
+
+                if (exifCache[p.id]) {
+                    applyExifToPhoto(p.id, exifCache[p.id], $container, zoneFormats, i);
+                    continue;
+                }
+
+                addExifWaiter(p.id, $container, zoneFormats, i);
+
+                if (exifQueued[p.id] || exifInFlight[p.id]) {
                     continue;
                 }
                 var photoUrl = buildPhotoPageUrl(albumUrl, p.id);
                 if (!photoUrl) {
+                    delete exifWaiters[p.id];
                     continue;
                 }
                 exifQueued[p.id] = true;
                 exifQueue.push({
                     mediaId: p.id,
-                    photoUrl: photoUrl,
-                    $container: $container,
-                    zoneFormats: zoneFormats,
-                    photoIndex: i
+                    photoUrl: photoUrl
                 });
             }
         } catch (e) { /* ignore parse errors */ }
@@ -1770,6 +1825,71 @@
             exifPrefetchScheduled = false;
             processExifQueue();
         });
+    }
+
+    function getSwiperPhotoIndex(swiper) {
+        if (!swiper) {
+            return 0;
+        }
+
+        if (typeof swiper.realIndex === 'number' && !isNaN(swiper.realIndex)) {
+            return swiper.realIndex;
+        }
+
+        if (
+            swiper.slides &&
+            typeof swiper.activeIndex === 'number' &&
+            swiper.activeIndex >= 0 &&
+            swiper.slides[swiper.activeIndex]
+        ) {
+            var realIndexAttr = $(swiper.slides[swiper.activeIndex]).attr('data-swiper-slide-index');
+            var parsedRealIndex = parseInt(realIndexAttr, 10);
+            if (!isNaN(parsedRealIndex) && parsedRealIndex >= 0) {
+                return parsedRealIndex;
+            }
+        }
+
+        if (typeof swiper.activeIndex === 'number' && swiper.activeIndex >= 0) {
+            return swiper.activeIndex;
+        }
+
+        return 0;
+    }
+
+    function getContainerPhoto($container, photoIndex) {
+        var photosJson = $container.attr('data-all-photos');
+        if (!photosJson || photoIndex < 0) {
+            return {};
+        }
+        try {
+            return JSON.parse(photosJson)[photoIndex] || {};
+        } catch (e) {
+            return {};
+        }
+    }
+
+    function buildCounterTokenText(mode, swiper, current, total) {
+        if (mode === 'carousel') {
+            var slidesPerView = swiper.params.slidesPerView || 1;
+            var realIndex = getSwiperPhotoIndex(swiper);
+            var visible = [];
+            var maxVisible = Math.min(slidesPerView, total);
+            for (var i = 0; i < maxVisible; i++) {
+                var idx = realIndex + i;
+                if (idx >= total) {
+                    idx = swiper.params.loop ? idx % total : -1;
+                }
+                if (idx >= 0) {
+                    visible.push(idx + 1);
+                }
+            }
+            if (visible.length <= 1) {
+                return (visible[0] || current) + ' / ' + total;
+            }
+            return visible[0] + '-' + visible[visible.length - 1] + ' / ' + total;
+        }
+
+        return current + ' / ' + total;
     }
 
     // Helper: Build slides HTML structure (for photo/video array)
@@ -3585,46 +3705,15 @@
                 }
 
                 // Build {counter} text.
-                var counterText = '';
-                if (params.mode === 'carousel') {
-                    var slidesPerView = swiper.params.slidesPerView || 1;
-                    var realIndex = (typeof swiper.realIndex === 'number') ? swiper.realIndex : (current - 1);
-                    var visible = [];
-                    var maxVisible = Math.min(slidesPerView, total);
-                    for (var i = 0; i < maxVisible; i++) {
-                        var idx = realIndex + i;
-                        if (idx >= total) {
-                            idx = swiper.params.loop ? idx % total : -1;
-                        }
-                        if (idx >= 0) {
-                            visible.push(idx + 1);
-                        }
-                    }
-                    if (visible.length <= 1) {
-                        counterText = (visible[0] || current) + ' / ' + total;
-                    } else {
-                        counterText = visible[0] + '-' + visible[visible.length - 1] + ' / ' + total;
-                    }
-                } else {
-                    counterText = current + ' / ' + total;
-                }
+                var counterText = buildCounterTokenText(params.mode, swiper, current, total);
 
-                // Resolve format string with {counter}, {title}, and per-photo tokens.
                 var albumTitle = $swiperEl.attr('data-album-title') || '';
-                var photoIndex = (typeof swiper.realIndex === 'number') ? swiper.realIndex : (current - 1);
-                var photosJson = $swiperEl.attr('data-all-photos');
-                var photo = {};
-                if (photosJson) {
-                    try { photo = JSON.parse(photosJson)[photoIndex] || {}; } catch (e) {}
-                }
-
-                // Inject {counter} and {title} into the format before resolveInfoTokens.
-                var text = format
-                    .replace(/\{counter\}/g, counterText)
-                    .replace(/\{album-title\}/g, albumTitle);
-
-                // Resolve remaining per-photo tokens.
-                text = resolveInfoTokens(text, photo);
+                var photoIndex = getSwiperPhotoIndex(swiper);
+                var photo = getContainerPhoto($swiperEl, photoIndex);
+                var text = resolveInfoTokens(format, photo, {
+                    counter: counterText,
+                    albumTitle: albumTitle
+                });
 
                 $swiperEl.find('.swiper-pagination').toggle(text !== '');
                 return text;
@@ -4283,16 +4372,26 @@
             if (containerBoxes.length) {
                 function updateAllInfoBoxes() {
                     var isFs = $container.hasClass('jzsa-is-fullscreen') || $container.hasClass('jzsa-pseudo-fullscreen');
-                    var photoIndex = (typeof swiper.realIndex === 'number') ? swiper.realIndex : swiper.activeIndex;
+                    var photoIndex = getSwiperPhotoIndex(swiper);
+                    var photo = getContainerPhoto($container, photoIndex);
                     var photosJson = $container.attr('data-all-photos');
-                    var photo = {};
+                    var total = 0;
                     if (photosJson) {
-                        try { photo = JSON.parse(photosJson)[photoIndex] || {}; } catch (e) {}
+                        try {
+                            total = JSON.parse(photosJson).length;
+                        } catch (e) {
+                            total = 0;
+                        }
                     }
+                    var counterText = total ? buildCounterTokenText(mode, swiper, photoIndex + 1, total) : '';
+                    var albumTitle = $container.attr('data-album-title') || '';
                     for (var j = 0; j < containerBoxes.length; j++) {
                         var cb = containerBoxes[j];
                         var fmt = isFs ? cb.fsFmt : cb.fmt;
-                        var text = resolveInfoTokens(fmt, photo);
+                        var text = resolveInfoTokens(fmt, photo, {
+                            counter: counterText,
+                            albumTitle: albumTitle
+                        });
                         cb.$el.text(text).toggle(text !== '');
                     }
                 }
@@ -4971,7 +5070,10 @@
 
             // Info box overlays for gallery thumbnails.
             var thumbZoneFormats = readInfoZoneFormats($container);
-            var thumbZoneHtml = buildInfoZoneHtml(photo, thumbZoneFormats.inline, thumbZoneFormats.fullscreen);
+            var thumbZoneHtml = buildInfoZoneHtml(photo, thumbZoneFormats.inline, thumbZoneFormats.fullscreen, {
+                counter: (globalIndex + 1) + ' / ' + (parseInt($container.attr('data-total-count'), 10) || 0),
+                albumTitle: ''
+            });
 
             html +=
                 '<div class="' + itemClass + '" data-index="' + globalIndex + '">' +
@@ -5086,7 +5188,10 @@
 
                 // Info box overlays for justified thumbnails.
                 var justifiedZoneFormats = readInfoZoneFormats($container);
-                var justifiedZoneHtml = buildInfoZoneHtml(item.photo, justifiedZoneFormats.inline, justifiedZoneFormats.fullscreen);
+                var justifiedZoneHtml = buildInfoZoneHtml(item.photo, justifiedZoneFormats.inline, justifiedZoneFormats.fullscreen, {
+                    counter: (item.index + 1) + ' / ' + (parseInt($container.attr('data-total-count'), 10) || 0),
+                    albumTitle: $container.attr('data-album-title') || ''
+                });
 
                 html +=
                     '<div class="' + itemClass + '" data-index="' + item.index + '" style="width:' + width + 'px;height:' + targetHeight + 'px;">' +

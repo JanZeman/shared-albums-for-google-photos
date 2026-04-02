@@ -35,6 +35,16 @@ class JZSA_Shared_Albums {
 	const DEFAULT_CACHE_REFRESH = 168;
 
 	/**
+	 * Per-photo EXIF cache TTL in seconds.
+	 *
+	 * Individual photo metadata is effectively immutable, so keep it cached much
+	 * longer than album HTML.
+	 *
+	 * @var int
+	 */
+	const PHOTO_META_CACHE_TTL = 2592000; // 30 days.
+
+	/**
 	 * Default gallery dimensions
 	 *
 	 * @var int
@@ -1271,6 +1281,20 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
+	 * Get cache key for per-photo EXIF metadata.
+	 *
+	 * @param string $photo_url Individual Google Photos page URL.
+	 * @return string
+	 */
+	private function get_photo_meta_cache_key( $photo_url ) {
+		if ( preg_match( '#/photo/([^?&/]+)#', $photo_url, $matches ) ) {
+			return 'jzsa_photo_meta_' . md5( $matches[1] );
+		}
+
+		return 'jzsa_photo_meta_' . md5( $photo_url );
+	}
+
+	/**
 	 * Clear all cached galleries for a post
 	 * Also clears global album caches for albums used in this post
 	 *
@@ -1405,6 +1429,13 @@ class JZSA_Shared_Albums {
 			return;
 		}
 
+		$cache_key   = $this->get_photo_meta_cache_key( $photo_url );
+		$cached_meta = get_transient( $cache_key );
+		if ( false !== $cached_meta && is_array( $cached_meta ) ) {
+			wp_send_json_success( $cached_meta );
+			return;
+		}
+
 		// Fetch the individual photo page.
 		$response = wp_remote_get(
 			$photo_url,
@@ -1426,6 +1457,7 @@ class JZSA_Shared_Albums {
 		}
 
 		$meta = $this->provider->extract_individual_photo_meta( $html );
+		set_transient( $cache_key, $meta, self::PHOTO_META_CACHE_TTL );
 
 		wp_send_json_success( $meta );
 	}

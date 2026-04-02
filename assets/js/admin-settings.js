@@ -191,14 +191,12 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			applyBtn.type = 'button';
 			applyBtn.className = 'jzsa-action-btn';
 			applyBtn.textContent = 'Apply';
-			applyBtn.disabled = true;
 			btnCol.appendChild( applyBtn );
 
 			revertBtn = document.createElement( 'button' );
 			revertBtn.type = 'button';
 			revertBtn.className = 'jzsa-action-btn';
 			revertBtn.textContent = 'Revert';
-			revertBtn.disabled = true;
 			btnCol.appendChild( revertBtn );
 		}
 
@@ -213,11 +211,8 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			return;
 		}
 
-		// Enable/disable Apply+Revert when content changes; highlight tokens.
+		// Keep token highlighting live while editing.
 		codeEl.addEventListener( 'input', function () {
-			var changed = ( codeEl.textContent || '' ) !== originalText;
-			applyBtn.disabled = ! changed;
-			revertBtn.disabled = ! changed;
 			jzsaHighlightTokens( codeEl );
 		} );
 
@@ -228,8 +223,6 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		revertBtn.addEventListener( 'click', function () {
 			codeEl.textContent = originalText;
 			jzsaHighlightTokens( codeEl );
-			applyBtn.disabled = true;
-			revertBtn.disabled = true;
 			jzsaApplyPreview( codeEl, revertBtn, previewContainer, 'Reverted!' );
 		} );
 
