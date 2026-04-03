@@ -1575,46 +1575,46 @@ class JZSA_Settings_Page {
 					<h3 style="margin-top: 28px;"><?php esc_html_e( 'Example Shortcodes', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 
 					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Album with Title and Photo Counter', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Display the album title followed by the photo counter in the bottom-center pagination pill.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<h3><?php esc_html_e( 'Photo Info (Slider)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Shows per-photo info overlays in slider mode.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" info-bottom-center="{album-title}: {counter}"]</code>
+							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" info-bottom-center="{counter}" info-bottom-left="{date}" info-top-left="{dimensions}" info-bottom-right="{filesize}"]</code>
 							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 						</div>
-						<div class="jzsa-preview-container jzsa-preview-container-title-counter">
-							<?php
-								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" info-bottom-center="{album-title}: {counter}"]' );
-							?>
-						</div>
-					</div>
-
-					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Album with Title Only', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Display just the album title without a photo counter.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" info-bottom-center="{album-title}"]</code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
-						</div>
-						<div class="jzsa-preview-container jzsa-preview-container-title-only">
-							<?php
-								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" info-bottom-center="{album-title}"]' );
-							?>
-						</div>
-					</div>
-
-					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Meta Information', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Showcases all tokens that resolve instantly without background fetching: counter in the bottom-center pagination pill, date in the bottom left, dimensions and megapixels in the top left, and filesize in the bottom right. All boxes update on each slide change.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" info-bottom-center="Bottom-center" info-bottom-left="{date}" info-top-left="{dimensions}" info-bottom-right="{filesize}"]</code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
-						</div>
-						<div class="jzsa-preview-container jzsa-preview-container-info-always">
+						<div class="jzsa-preview-container jzsa-preview-container-info-slider">
 							<?php
 								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" info-bottom-center="{counter}" info-bottom-left="{date}" info-top-left="{dimensions}" info-bottom-right="{filesize}"]' );
+							?>
+						</div>
+					</div>
+
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Photo Info (Carousel)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Shows per-photo info overlays in carousel mode.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
+							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel" corner-radius="16" info-bottom-center="{counter}" info-top-center="{dimensions}"]</code>
+							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+						<div class="jzsa-preview-container jzsa-preview-container-info-carousel">
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel" corner-radius="16" info-bottom-center="{counter}" info-top-center="{dimensions}"]' );
+							?>
+						</div>
+					</div>
+
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Photo Info (Gallery)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Shows per-photo info overlays on gallery thumbnails.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
+							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="gallery" corner-radius="16" width="800" limit="6" info-bottom-left="{date}" info-top-left="{dimensions}" info-bottom-right="{filesize}"]</code>
+							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+						<div class="jzsa-preview-container jzsa-preview-container-info-gallery" style="height:auto;">
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="gallery" corner-radius="16" width="800" limit="6" info-bottom-left="{date}" info-top-left="{dimensions}" info-bottom-right="{filesize}"]' );
 							?>
 						</div>
 					</div>

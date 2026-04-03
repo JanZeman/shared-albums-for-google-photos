@@ -1892,6 +1892,22 @@
         return current + ' / ' + total;
     }
 
+    function buildSinglePhotoCounterText(index, total) {
+        var safeIndex = typeof index === 'number' && index >= 0 ? index + 1 : 1;
+        return safeIndex + ' / ' + total;
+    }
+
+    function resolveCarouselTileInfo(photo, zoneFormats, context) {
+        if (!zoneFormats) {
+            return { topCenter: '', bottomCenter: '' };
+        }
+
+        return {
+            topCenter: resolveInfoTokens((zoneFormats.inline && zoneFormats.inline['info-top-center']) || '', photo, context),
+            bottomCenter: resolveInfoTokens((zoneFormats.bottomCenter && zoneFormats.bottomCenter.inline) || '', photo, context)
+        };
+    }
+
     // Helper: Build slides HTML structure (for photo/video array)
     function buildSlidesHtml(photos, options) {
         var config = options || {};
@@ -1902,10 +1918,14 @@
         var showCarouselTileLinkButtons = !!config.showCarouselTileLinkButtons;
         var showCarouselTileDownloadButtons = !!config.showCarouselTileDownloadButtons;
         var carouselAlbumUrl = config.carouselAlbumUrl || '';
+        var carouselZoneFormats = config.carouselZoneFormats || null;
+        var carouselTotalCount = parseInt(config.carouselTotalCount, 10) || photos.length || 0;
+        var carouselAlbumTitle = config.carouselAlbumTitle || '';
         var html = '';
         photos.forEach(function(photo, index) {
             var isVideo = photo.type === 'video';
             var tileOverlayButtons = '';
+            var tileInfoHtml = '';
             if (mode === 'carousel') {
                 var showTileLink = showCarouselTileLinkButtons && !!carouselAlbumUrl;
                 var showTileDownload = showCarouselTileDownloadButtons;
@@ -1926,6 +1946,19 @@
                     tileOverlayButtons +=
                         '<button class="swiper-button-download jzsa-carousel-slide-overlay-btn jzsa-carousel-slide-download-btn ' + downloadPosClass + '" type="button" data-download-url="' + downloadUrl + '" data-download-type="' + (isVideo ? 'video' : 'photo') + '" data-download-index="' + (index + 1) + '" title="Download current media" aria-label="Download media ' + (index + 1) + '"></button>';
                 }
+
+                var tileInfo = resolveCarouselTileInfo(photo, carouselZoneFormats, {
+                    counter: buildSinglePhotoCounterText(index, carouselTotalCount),
+                    albumTitle: carouselAlbumTitle
+                });
+                if (tileInfo.topCenter) {
+                    tileInfoHtml += '<div class="jzsa-info-box jzsa-info-top-center jzsa-carousel-tile-info-box jzsa-carousel-tile-info-top-center">' +
+                        escapeHtml(tileInfo.topCenter) + '</div>';
+                }
+                if (tileInfo.bottomCenter) {
+                    tileInfoHtml += '<div class="jzsa-info-box jzsa-info-bottom-center jzsa-carousel-tile-info-box jzsa-carousel-tile-info-bottom-center">' +
+                        escapeHtml(tileInfo.bottomCenter) + '</div>';
+                }
             }
 
             // Build alt text from filename when available.
@@ -1934,8 +1967,9 @@
                 : 'Photo';
             if (isVideo) {
                 var posterUrl = photo.preview || photo.full || '';
-                html += '<div class="swiper-slide jzsa-slide-video" data-media-type="video">' +
+                html += '<div class="swiper-slide jzsa-slide-video" data-media-type="video" data-carousel-photo-index="' + index + '">' +
                     buildVideoHtml({ src: photo.video, poster: posterUrl, mediaIndex: index }) +
+                    tileInfoHtml +
                     tileOverlayButtons +
                     '</div>';
             } else {
@@ -1947,17 +1981,67 @@
                     loadingAttr = ' loading="' + (index === eagerIndex ? 'eager' : 'lazy') + '" decoding="async"';
                 }
 
-                html += '<div class="swiper-slide">' +
+                html += '<div class="swiper-slide" data-carousel-photo-index="' + index + '">' +
                     '<div class="swiper-zoom-container">' +
                     '<img src="' + previewUrl + '" ' +
                     (previewUrl !== fullUrl ? 'data-full-src="' + fullUrl + '" ' : '') +
                     'alt="' + escapeHtml(altText) + '" class="jzsa-progressive-image"' + loadingAttr + ' decoding="async" />' +
                     '</div>' +
+                    tileInfoHtml +
                     tileOverlayButtons +
                     '</div>';
             }
         });
         return html;
+    }
+
+    function updateCarouselTileInfoBoxes($container, swiper, zoneFormats) {
+        if (!$container || !$container.length || !swiper) {
+            return;
+        }
+        if ($container.attr('data-mode') !== 'carousel') {
+            return;
+        }
+        if ($container.hasClass('jzsa-is-fullscreen') || $container.hasClass('jzsa-pseudo-fullscreen')) {
+            return;
+        }
+
+        var photosJson = $container.attr('data-all-photos');
+        var total = 0;
+        if (photosJson) {
+            try {
+                total = JSON.parse(photosJson).length;
+            } catch (e) {
+                total = 0;
+            }
+        }
+        var albumTitle = $container.attr('data-album-title') || '';
+        $container.find('.swiper-slide').each(function() {
+            var $slide = $(this);
+            var photoIndex = parseInt($slide.attr('data-swiper-slide-index'), 10);
+            if (isNaN(photoIndex) || photoIndex < 0) {
+                photoIndex = parseInt($slide.attr('data-carousel-photo-index'), 10);
+            }
+            if (isNaN(photoIndex) || photoIndex < 0) {
+                return;
+            }
+
+            var photo = getContainerPhoto($container, photoIndex);
+            var tileInfo = resolveCarouselTileInfo(photo, zoneFormats, {
+                counter: buildSinglePhotoCounterText(photoIndex, total),
+                albumTitle: albumTitle
+            });
+
+            var $top = $slide.find('.jzsa-carousel-tile-info-top-center');
+            var $bottom = $slide.find('.jzsa-carousel-tile-info-bottom-center');
+
+            if ($top.length) {
+                $top.text(tileInfo.topCenter).toggle(tileInfo.topCenter !== '');
+            }
+            if ($bottom.length) {
+                $bottom.text(tileInfo.bottomCenter).toggle(tileInfo.bottomCenter !== '');
+            }
+        });
     }
 
     // Helper: Build loading overlay markup.
@@ -4029,6 +4113,9 @@
             showCarouselTileLinkButtons: showCarouselTileLinkButtons,
             showCarouselTileDownloadButtons: showCarouselTileDownloadButtons,
             carouselAlbumUrl: albumUrl,
+            carouselZoneFormats: zoneFormats,
+            carouselTotalCount: totalCount,
+            carouselAlbumTitle: albumTitle,
             lazyHints: shouldUseLazyHints,
             eagerIndex: initialSlide
         };
@@ -4421,6 +4508,22 @@
                 $container.on('jzsa:exif-update', updateAllInfoBoxes);
             } else {
                 updateAllInfoBoxes();
+            }
+
+            if (mode === 'carousel') {
+                updateCarouselTileInfoBoxes($container, swiper, zoneFormats);
+                swiper.on('slideChange', function() {
+                    updateCarouselTileInfoBoxes($container, swiper, zoneFormats);
+                });
+                swiper.on('slideChangeTransitionEnd', function() {
+                    updateCarouselTileInfoBoxes($container, swiper, zoneFormats);
+                });
+                $container.on('jzsa:fullscreen-state', function() {
+                    updateCarouselTileInfoBoxes($container, swiper, zoneFormats);
+                });
+                $container.on('jzsa:exif-update', function() {
+                    updateCarouselTileInfoBoxes($container, swiper, zoneFormats);
+                });
             }
 
             // Stop autoplay initially if inline slideshow is not 'auto' (e.g. 'manual' or 'disabled',
