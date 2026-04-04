@@ -1397,11 +1397,11 @@ body.jzsa-no-scroll {
     z-index: 11;
 }
 
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .swiper-slide .jzsa-carousel-tile-info-stack-top {
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .swiper-slide .jzsa-carousel-tile-info-stack.jzsa-info-stack-top {
     top: 9px;
 }
 
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .swiper-slide .jzsa-carousel-tile-info-stack-bottom {
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .swiper-slide .jzsa-carousel-tile-info-stack.jzsa-info-stack-bottom {
     bottom: 9px;
 }
 
@@ -1413,6 +1413,38 @@ body.jzsa-no-scroll {
     left: auto;
     transform: none;
     max-width: calc(100% - 18px);
+}
+
+/* The standalone info-bottom-center (counter) is emitted outside the stack and must remain
+   absolutely positioned at the tile bottom even when safe-info-layout is active. */
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .swiper-slide .jzsa-carousel-tile-info-box.jzsa-info-bottom-center {
+    position: absolute;
+    bottom: 9px;
+    left: 50%;
+    transform: translateX(-50%);
+    top: auto;
+    right: auto;
+    max-width: 66%;
+}
+
+/* Carousel + inline slideshow: push side-info (left/right) above the play button.
+   info-bottom-center (counter) is a standalone element and stays pinned at the tile bottom. */
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-inline-slideshow-controls:not(.jzsa-safe-info-layout)[data-has-active-bottom-center="true"] .swiper-slide .jzsa-info-bottom-left,
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-inline-slideshow-controls:not(.jzsa-safe-info-layout)[data-has-active-bottom-center="true"] .swiper-slide .jzsa-info-bottom-right {
+    bottom: calc(var(--jzsa-inline-play-visual-bottom) + var(--jzsa-play-visual-size) + var(--jzsa-bottom-control-gap));
+}
+
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-inline-slideshow-controls:not(.jzsa-safe-info-layout)[data-has-active-bottom-center="false"] .swiper-slide .jzsa-info-bottom-left,
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-inline-slideshow-controls:not(.jzsa-safe-info-layout)[data-has-active-bottom-center="false"] .swiper-slide .jzsa-info-bottom-right {
+    bottom: calc(var(--jzsa-inline-play-visual-bottom-no-pill) + var(--jzsa-play-visual-size) + var(--jzsa-bottom-control-gap));
+}
+
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-inline-slideshow-controls.jzsa-safe-info-layout[data-has-active-bottom-center="true"] .swiper-slide .jzsa-carousel-tile-info-stack.jzsa-info-stack-bottom {
+    bottom: calc(var(--jzsa-inline-play-visual-bottom) + var(--jzsa-play-visual-size) + var(--jzsa-bottom-control-gap));
+}
+
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-inline-slideshow-controls.jzsa-safe-info-layout[data-has-active-bottom-center="false"] .swiper-slide .jzsa-carousel-tile-info-stack.jzsa-info-stack-bottom {
+    bottom: calc(var(--jzsa-inline-play-visual-bottom-no-pill) + var(--jzsa-play-visual-size) + var(--jzsa-bottom-control-gap));
 }
 
 .jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide:hover .jzsa-carousel-tile-info-stack-top,

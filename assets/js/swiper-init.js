@@ -2115,13 +2115,19 @@
             html += '<div class="jzsa-info-stack jzsa-info-stack-top jzsa-carousel-tile-info-stack">' + topHtml + '</div>';
         }
 
-        var bottomHtml = '';
+        // info-bottom-center is emitted as a standalone element so it can stay
+        // pinned at the tile bottom independently of the side-info stack, which
+        // must move up when a slideshow play button is visible.
+        var bottomSideHtml = '';
         for (var j = 0; j < SAFE_INFO_BOTTOM_ORDER.length; j++) {
-            bottomHtml += buildZoneBox(SAFE_INFO_BOTTOM_ORDER[j]);
+            if (SAFE_INFO_BOTTOM_ORDER[j] !== 'info-bottom-center') {
+                bottomSideHtml += buildZoneBox(SAFE_INFO_BOTTOM_ORDER[j]);
+            }
         }
-        if (bottomHtml) {
-            html += '<div class="jzsa-info-stack jzsa-info-stack-bottom jzsa-carousel-tile-info-stack">' + bottomHtml + '</div>';
+        if (bottomSideHtml) {
+            html += '<div class="jzsa-info-stack jzsa-info-stack-bottom jzsa-carousel-tile-info-stack">' + bottomSideHtml + '</div>';
         }
+        html += buildZoneBox('info-bottom-center');
 
         return html;
     }
