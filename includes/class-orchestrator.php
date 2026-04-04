@@ -549,6 +549,7 @@ class JZSA_Shared_Albums {
 		$tl  = $this->parse_info_box( $atts, 'info-top-left',     '' );
 		$tr  = $this->parse_info_box( $atts, 'info-top-right',    '' );
 		$top = $this->parse_info_box( $atts, 'info-top-center',          '' );
+		$tc2 = $this->parse_info_box( $atts, 'info-top-center-2', '' );
 
 		return array(
 			'info-bottom-center'                  => $bc,
@@ -565,6 +566,8 @@ class JZSA_Shared_Albums {
 			'fullscreen-info-top-right'     => $this->parse_info_box( $atts, 'fullscreen-info-top-right', $tr ),
 			'info-top-center'                      => $top,
 			'fullscreen-info-top-center'           => $this->parse_info_box( $atts, 'fullscreen-info-top-center', $top ),
+			'info-top-center-2'             => $tc2,
+			'fullscreen-info-top-center-2'  => $this->parse_info_box( $atts, 'fullscreen-info-top-center-2', $tc2 ),
 		);
 	}
 

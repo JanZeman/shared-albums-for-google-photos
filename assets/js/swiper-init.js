@@ -1464,15 +1464,13 @@
     // Clockwise from bottom-center (excluding bottom-center which is the pagination pill).
     var INFO_BOX_NAMES = [
         'info-bottom-left',
-        'info-top-left',
         'info-top-center',
-        'info-top-right',
+        'info-top-center-2',
         'info-bottom-right'
     ];
     var SAFE_INFO_TOP_ORDER = [
         'info-top-center',
-        'info-top-left',
-        'info-top-right'
+        'info-top-center-2'
     ];
     var SAFE_INFO_BOTTOM_ORDER = [
         'info-bottom-right',
@@ -4790,7 +4788,7 @@
                     return;
                 }
                 var $box = $('<div class="jzsa-info-box jzsa-' + boxName + '"></div>');
-                if (boxName === 'info-top-center' || boxName === 'info-top-left' || boxName === 'info-top-right') {
+                if (boxName === 'info-top-center' || boxName === 'info-top-center-2') {
                     $topInfoStack.append($box);
                     hasTopStackBoxes = true;
                 } else {
@@ -4831,7 +4829,6 @@
                 }
                 var counterText = total ? buildCounterTokenText(mode, swiper, photoIndex + 1, total) : '';
                 var albumTitle = $container.attr('data-album-title') || '';
-                var hasTopSideInfo = false;
                 var hasBottomSideInfo = false;
                 for (var j = 0; j < containerBoxes.length; j++) {
                     var cb = containerBoxes[j];
@@ -4842,15 +4839,11 @@
                     });
                     cb.$el.text(text).toggle(text !== '');
                     if (text !== '') {
-                        if (cb.$el.hasClass('jzsa-info-top-left') || cb.$el.hasClass('jzsa-info-top-right')) {
-                            hasTopSideInfo = true;
-                        }
                         if (cb.$el.hasClass('jzsa-info-bottom-left') || cb.$el.hasClass('jzsa-info-bottom-right')) {
                             hasBottomSideInfo = true;
                         }
                     }
                 }
-                $container.attr('data-has-active-top-side-info', hasTopSideInfo ? 'true' : 'false');
                 $container.attr('data-has-active-bottom-side-info', hasBottomSideInfo ? 'true' : 'false');
                 updateSafeInfoLayout($container, zoneFormats, photos, total, albumTitle, mode, swiper);
             }
@@ -5390,10 +5383,8 @@
             'data-fullscreen-info-bottom-left',
             'data-info-bottom-right',
             'data-fullscreen-info-bottom-right',
-            'data-info-top-left',
-            'data-fullscreen-info-top-left',
-            'data-info-top-right',
-            'data-fullscreen-info-top-right',
+            'data-info-top-center-2',
+            'data-fullscreen-info-top-center-2',
             'data-info-top',
             'data-fullscreen-info-top',
             'data-info-bottom-center',
