@@ -16,31 +16,17 @@ Shared Albums for Google Photos (by JanZeman) allows you to easily display publi
 
 **Note:** This plugin is not affiliated with or endorsed by Google LLC. Google Photos™ is a trademark of Google LLC.
 
-**IMPORTANT:** Short links (photos.app.goo.gl) might stop working in the future. While both full and short link formats work today, we strongly recommend using the full link format `https://photos.google.com/share/` to ensure your galleries continue working. The plugin will display a warning banner when short links are detected.
-
 = Features =
 
-* **Gallery Mode (Default)** - Display photos as a thumbnail gallery with uniform/justified layouts
-* **Gallery Paging Or Scrolling** - Use `gallery-rows` with optional `gallery-scroll` to choose page controls or a single scrollable gallery
-* **Modern Gallery Viewer** - Powered by Swiper 11, a modern mobile-friendly slider
-* **Responsive Design** - Works perfectly on desktop, tablet, and mobile devices
+* **Google Photos Gallery And Slider** - Display public Google Photos albums as responsive galleries or sliders
+* **Photo And Video Support** - Supports both images and videos from shared Google Photos albums
+* **Fullscreen Viewer** - Mobile-friendly fullscreen viewing with touch gestures, keyboard controls, and slideshow support
+* **Photo Info Overlays** - Dynamic placeholders for counters, filenames, dimensions, dates, and EXIF data
+* **Download And Link Buttons** - Optional inline and fullscreen action buttons
+* **Performance Features** - Lazy loading, progressive loading, caching, and large album support
 * **Shortcode Playground** - Admin-only sandbox on the Settings page for experimenting with `[jzsa-album]` shortcodes and previews
-* **Touch Gestures** - Swipe navigation on touch devices
-* **Play/Pause Control** - Fullscreen play/pause button with spacebar keyboard shortcut
-* **Fullscreen Navigation** - In fullscreen, single-click/tap navigates previous/next photos
-* **Fullscreen Toggle Modes** - `full-screen-toggle` supports `button-only` (default), `single-click`, `double-click`, and `disabled`
-* **Fullscreen Image Fit** - `full-screen-image-fit` supports `fit` (default), `contain`, and `cover`
-* **Dual-Mode Slideshow** - Separate slideshow settings for normal and fullscreen modes
-* **Zoom Support** - Pinch-to-zoom on touch devices
-* **Keyboard Navigation** - Use arrow keys to navigate, spacebar to play/pause in fullscreen
-* **Progressive Loading** - Loads preview images first, then full-resolution for optimal performance
-* **Smart Preloading** - Automatically preloads adjacent slides for smooth navigation
-* **Lazy Loading** - Images load as needed for optimal performance
-* **Error Recovery** - Graceful fallback with placeholder when images fail to load
-* **Download Button** - Optional download button to save photos to your device
-* **Customizable** - Control dimensions, slideshow, delays, and more
-* **Cached for Performance** - Gallery HTML is cached for 24 hours
-* **Large Album Support** - Handles up to 300 photos per album (Google Photos limitation; very old iOS/WebKit devices may be limited to 25 photos for stability)
+
+Many more customization parameters and samples are available on the plugin's Settings & Onboarding page.
 
 = How It Works =
 
@@ -52,85 +38,44 @@ The plugin fetches your public Google Photos album and creates a responsive gall
 * Proper output escaping for XSS prevention
 * WordPress coding standards compliant
 * Swiper library bundled locally
-* User-friendly error messages for invalid or short links
-* Automatic detection and warning for deprecated goo.gl links
+* User-friendly error messages for invalid album links
 
 == Installation ==
 
 1. Install & Activate the plugin
-2. Open Settings page of this plugin. It is a rich onboarding guide as well.
-3. Once comprotable use your own Google Photo albums on your own pages and posts.
+2. Open the plugin's Settings & Onboarding page. It includes a very very large number of customization parameters, many samples, and a live shortcode playground.
+3. Start with a sample there, then use your own Google Photos albums in posts and pages.
 
 == Usage ==
 
 = Basic Usage =
 
-**RECOMMENDED:** Use the full `photos.google.com/share/` URL format for future compatibility.
-
 `[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]`
 
-Note: Short links (photos.app.goo.gl) are still supported but will show a deprecation warning.
+= Common Example =
 
-= Advanced Usage =
-
-`[jzsa-album
-    link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"
-    background-color="#000000"
-    image-fit="contain"
-    width="500"
-    height="375"
-    slideshow="false"
-    slideshow-delay="5"
-    slideshow-autoresume="60"
-    start-at="1"
-    full-screen-slideshow="false"
-    full-screen-slideshow-delay="5"
-    full-screen-image-fit="fit"
-    full-screen-toggle="button-only"
-    show-link-button="true"
-    show-download-button="true"
-    fullscreen-show-link-button="true"
-    fullscreen-show-download-button="true"
-]`
-
-Tip: `full-screen-image-fit` defaults to `fit`, which preserves the full photo (no crop) while scaling it to fill at least one fullscreen axis.
+`[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" show-link-button="true" show-download-button="true"]`
 
 = Shortcode Parameters =
 
 The only required parameter is **link** - the Google Photos share URL.
 
-All other parameters are optional and control appearance, slideshow, fullscreen behavior, display options, gallery mode, and gallery layout.
+All other parameters are optional.
 
-Tip: Use `show-link-button` / `show-download-button` for inline (non-fullscreen) controls, and `fullscreen-show-link-button` / `fullscreen-show-download-button` for fullscreen controls. Fullscreen values inherit from inline values when omitted.
+This readme intentionally keeps shortcode examples short to avoid drift.
 
-For the complete list of all parameters with descriptions and defaults, visit the plugin's **Settings** page in your WordPress admin (Settings → Shared Albums for Google Photos). The Settings page also includes a Playground for experimenting with shortcodes and live Samples you can copy.
+For the complete and current parameter reference, defaults, inheritance rules, a very very large number of customization parameters, many samples, and the shortcode playground, use the plugin's **Settings & Onboarding** page in WordPress admin:
+
+`Settings -> Shared Albums for Google Photos`
 
 = Getting Your Album Share Link =
 
 1. Open Google Photos and select an album
 2. Click the share button (or three-dot menu > Share)
 3. Click "Create link" or "Get link"
-4. Copy the FULL share link (format: `https://photos.google.com/share/AF1QipN...`)
+4. Copy the album share link and paste it into the shortcode:
 
-**IMPORTANT:** Google Photos may show a short link like `https://photos.app.goo.gl/abc123`. These short links **might stop working in the future**.
-
-**Current Behavior:**
-- Short links still work but display a warning banner
-- We strongly recommend using full links to avoid future issues
-
-**How to get the full link:**
-- On web: Right-click the album share link and choose "Copy link address" to get the full link
-- Or visit the short link in your browser and copy the full link from the address bar
-
-**Example:**
-Full link (recommended): `https://photos.google.com/share/AF1QipNxLo...` ✅
-Short link (works with warning): `https://photos.app.goo.gl/abc123` ⚠️
-
-Use the shortcode with full link:
 `[jzsa-album link="https://photos.google.com/share/AF1QipNxLo..."]`
-
-Or with short link (not recommended):
-`[jzsa-album link="https://photos.app.goo.gl/abc123"]`
 
 **Important:** The album must be public (shared via link) for the plugin to access it.
 
@@ -146,17 +91,9 @@ The plugin can handle up to 300 photos per album. This is a limitation from Goog
 
 For performance and stability reasons, **very old iOS devices using legacy WebKit** may automatically be limited to 25 photos on the client side, even if the server-side limit is higher. All other platforms (desktop, Android, modern iOS/iPadOS) can use the full per-album limit you configure.
 
-= Why does my gallery show a warning banner? =
-
-If you see a yellow warning banner above your gallery, it means you're using a short link (photos.app.goo.gl).
-
-**Current status:** Short links still work but this format might stop working in the future.
-
-**What to do:** Update your shortcode to use a full Google Photos share link (format: https://photos.google.com/share/...) to remove the warning and ensure continued functionality.
-
 = Will this slow down my site? =
 
-No. The plugin uses lazy loading (only loads visible images) and caches the gallery HTML for 24 hours. The Swiper library is bundled locally for optimal performance.
+No. The plugin uses lazy loading, progressive image loading, and local bundled frontend assets. Album data is cached, and the refresh interval is configurable with `cache-refresh` (default: 7 days).
 
 = Can I customize the appearance? =
 
@@ -174,7 +111,7 @@ Use `fullscreen-show-download-button` to control the fullscreen download button 
 
 = How does the play/pause button work? =
 
-In fullscreen mode, a play/pause button appears above the photo counter at the bottom center. Click it or press the spacebar to toggle slideshow on/off. The button shows a play icon (▶) when paused and a pause icon (⏸) when playing. This works regardless of the `full-screen-slideshow` setting - if slideshow is disabled, the button lets you start it manually.
+In fullscreen mode, a play/pause button appears above the photo counter at the bottom center. Click it or press the spacebar to toggle slideshow on/off. The button shows a play icon (▶) when paused and a pause icon (⏸) when playing. This works regardless of the `fullscreen-slideshow` setting - if slideshow is disabled, the button lets you start it manually.
 
 = What happens if I update the shortcode? =
 
@@ -183,9 +120,6 @@ The cache is automatically cleared when you save the post, so changes take effec
 = What if I use the wrong URL format? =
 
 The plugin provides clear feedback:
-
-**Warnings (gallery still works):**
-- Short link detected: Yellow warning banner appears above the gallery
 
 **Errors (gallery won't display):**
 - Invalid URL: Not a valid Google Photos link
@@ -266,8 +200,7 @@ The plugin provides clear feedback:
 * SSRF protection and proper escaping
 * WordPress coding standards compliance
 * 24-hour caching mechanism
-* Supports both full and short link formats (short links show deprecation warning)
-* User-friendly error messages and warning banners for invalid/deprecated URLs
+* User-friendly error messages for invalid album URLs
 * Responsive design with touch gestures
 
 == Credits ==
