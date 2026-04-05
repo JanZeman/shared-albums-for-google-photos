@@ -510,7 +510,6 @@ class JZSA_Shared_Albums {
 			'fullscreen-info-font-family' => $fullscreen_info_font_family,
 
 			// Info boxes - format strings with placeholders like {date} resolved per photo.
-			// Backward compat: show-name="true" maps to ="{name}".
 		) + $this->build_info_box_config( $atts );
 
 		return $config;
