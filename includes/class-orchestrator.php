@@ -536,7 +536,7 @@ class JZSA_Shared_Albums {
 		$b1  = $this->parse_info_box( $atts, 'info-bottom', $b1_default );
 		$t1  = $this->parse_info_box( $atts, array( 'info-top', 'info-top-1' ), '' );
 		$t2  = $this->parse_info_box( $atts, array( 'info-top-secondary', 'info-top-2' ), '' );
-		$gpb = $this->parse_info_box( $atts, 'gallery-page-bottom', $is_gallery_mode ? '{page} / {pages}' : '' );
+		$gpb = $this->parse_info_box( $atts, array( 'gallery-info-bottom', 'gallery-page-bottom' ), $is_gallery_mode ? '{page} / {pages}' : '' );
 		$fullscreen_b1_default = $is_gallery_mode ? '{item} / {items}' : $b1;
 
 		// Backward compat: accept fullscreen-show-title / fullscreen-show-counter
@@ -560,7 +560,7 @@ class JZSA_Shared_Albums {
 
 		// Backward compat: in gallery mode, legacy show-counter controls the page pill,
 		// while show-title has no inline gallery effect.
-		if ( $is_gallery_mode && ! isset( $atts['gallery-page-bottom'] ) && isset( $atts['show-counter'] ) ) {
+		if ( $is_gallery_mode && ! isset( $atts['gallery-info-bottom'] ) && ! isset( $atts['gallery-page-bottom'] ) && isset( $atts['show-counter'] ) ) {
 			$gpb = $show_counter_compat ? '{page} / {pages}' : '';
 		}
 
@@ -571,7 +571,7 @@ class JZSA_Shared_Albums {
 			'fullscreen-info-top'            => $this->parse_info_box( $atts, array( 'fullscreen-info-top', 'fullscreen-info-top-1' ), $t1 ),
 			'info-top-secondary'            => $t2,
 			'fullscreen-info-top-secondary' => $this->parse_info_box( $atts, array( 'fullscreen-info-top-secondary', 'fullscreen-info-top-2' ), $t2 ),
-			'gallery-page-bottom'            => $gpb,
+			'gallery-info-bottom'            => $gpb,
 		);
 	}
 

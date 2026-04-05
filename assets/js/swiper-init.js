@@ -11,7 +11,7 @@
 	function jzsaDebug() {
 		if (!window.JZSA_DEBUG) {
 			return;
-		}
+        }
 		// eslint-disable-next-line no-console
 		console.log.apply(console, arguments);
 	}
@@ -5811,9 +5811,12 @@
             $playPause.removeClass('playing');
         }
 
-        var pageBottomFmt = $container.attr('data-gallery-page-bottom');
-        if (showCounter && typeof pageBottomFmt === 'string') {
-            // gallery-page-bottom is the final parser-provided format string.
+	        var pageBottomFmt = $container.attr('data-gallery-info-bottom');
+	        if (pageBottomFmt === undefined) {
+	            pageBottomFmt = $container.attr('data-gallery-page-bottom');
+	        }
+	        if (showCounter && typeof pageBottomFmt === 'string') {
+            // gallery-info-bottom is the final parser-provided format string (with legacy fallback to gallery-page-bottom).
             var pageText = resolveInfoPlaceholders(pageBottomFmt, {}, {
                 page: String(state.currentPage + 1),
                 pages: String(state.totalPages),

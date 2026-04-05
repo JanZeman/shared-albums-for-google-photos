@@ -511,11 +511,11 @@ class JZSA_Renderer {
 			foreach ( $gallery_info_boxes as $box_key ) {
 				if ( ! empty( $config[ $box_key ] ) ) {
 					$attrs[] = sprintf( 'data-%s="%s"', $box_key, esc_attr( $config[ $box_key ] ) );
+			}
+			}
+			if ( array_key_exists( 'gallery-info-bottom', $config ) ) {
+					$attrs[] = sprintf( 'data-gallery-info-bottom="%s"', esc_attr( $config['gallery-info-bottom'] ) );
 				}
-			}
-			if ( array_key_exists( 'gallery-page-bottom', $config ) ) {
-				$attrs[] = sprintf( 'data-gallery-page-bottom="%s"', esc_attr( $config['gallery-page-bottom'] ) );
-			}
 
 		if ( isset( $config['fullscreen-slideshow-delay'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-slideshow-delay="%s"', esc_attr( $config['fullscreen-slideshow-delay'] ) );
