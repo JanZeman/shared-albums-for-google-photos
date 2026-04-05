@@ -517,30 +517,31 @@ class JZSA_Shared_Albums {
 	 * @return array
 	 */
 	private function build_info_box_config( $atts ) {
-		// Backward compat default for info-bottom (show-counter/show-title).
-		// info-bottom backward compat: derive from show-counter / show-title when not set.
+		// Default for info-bottom: derive from legacy show-counter / show-title attributes when not set.
 		$show_counter_compat = $this->parse_bool( $atts, 'show-counter', true );
 		$show_title_compat   = $this->parse_bool( $atts, 'show-title', false );
 		$b1_default     = '';
 		if ( $show_title_compat && $show_counter_compat ) {
-			$b1_default = '{album-title}: {counter}';
+			$b1_default = '{album-title}: {item} / {items}';
 		} elseif ( $show_title_compat ) {
 			$b1_default = '{album-title}';
 		} elseif ( $show_counter_compat ) {
-			$b1_default = '{counter}';
+			$b1_default = '{item} / {items}';
 		}
 
 		$b1  = $this->parse_info_box( $atts, 'info-bottom', $b1_default );
 		$t1  = $this->parse_info_box( $atts, 'info-top-1',    '' );
 		$t2  = $this->parse_info_box( $atts, 'info-top-2',    '' );
+		$gpb = $this->parse_info_box( $atts, 'gallery-page-bottom', '' );
 
 		return array(
 			'info-bottom'              => $b1,
 			'fullscreen-info-bottom'   => $this->parse_info_box( $atts, 'fullscreen-info-bottom', $b1 ),
-			'info-top-1'                 => $t1,
-			'fullscreen-info-top-1'      => $this->parse_info_box( $atts, 'fullscreen-info-top-1', $t1 ),
-			'info-top-2'                 => $t2,
-			'fullscreen-info-top-2'      => $this->parse_info_box( $atts, 'fullscreen-info-top-2', $t2 ),
+			'info-top-1'               => $t1,
+			'fullscreen-info-top-1'    => $this->parse_info_box( $atts, 'fullscreen-info-top-1', $t1 ),
+			'info-top-2'               => $t2,
+			'fullscreen-info-top-2'    => $this->parse_info_box( $atts, 'fullscreen-info-top-2', $t2 ),
+			'gallery-page-bottom'      => $gpb,
 		);
 	}
 

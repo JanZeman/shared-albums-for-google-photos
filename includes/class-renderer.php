@@ -495,6 +495,7 @@ class JZSA_Renderer {
 			'info-bottom',  'fullscreen-info-bottom',
 			'info-top-1',     'fullscreen-info-top-1',
 			'info-top-2',     'fullscreen-info-top-2',
+			'gallery-page-bottom',
 		);
 		foreach ( $gallery_info_boxes as $box_key ) {
 			if ( ! empty( $config[ $box_key ] ) ) {

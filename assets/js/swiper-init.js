@@ -1520,7 +1520,10 @@
         }
 
         var tokens = {
-            '{counter}': tokenContext.counter || '',
+            '{item}': tokenContext.item || '',
+            '{items}': tokenContext.items || '',
+            '{page}': tokenContext.page || '',
+            '{pages}': tokenContext.pages || '',
             '{album-title}': tokenContext.albumTitle || '',
             '{album-name}': tokenContext.albumTitle || '',
             '{name}': name || '',
@@ -1940,7 +1943,9 @@
         }
     }
 
-    function buildCounterTokenText(mode, swiper, current, total) {
+    // Returns {item, items} strings for the container-level pagination pill.
+    // In carousel mode, {item} may be a range like "16-17" when multiple slides are visible.
+    function buildItemTokens(mode, swiper, current, total) {
         if (mode === 'carousel') {
             var slidesPerView = swiper.params.slidesPerView || 1;
             var realIndex = getSwiperPhotoIndex(swiper);
@@ -1955,18 +1960,19 @@
                     visible.push(idx + 1);
                 }
             }
-            if (visible.length <= 1) {
-                return (visible[0] || current) + ' / ' + total;
-            }
-            return visible[0] + '-' + visible[visible.length - 1] + ' / ' + total;
+            var itemStr = visible.length <= 1
+                ? String(visible[0] || current)
+                : visible[0] + '-' + visible[visible.length - 1];
+            return { item: itemStr, items: String(total) };
         }
 
-        return current + ' / ' + total;
+        return { item: String(current), items: String(total) };
     }
 
-    function buildSinglePhotoCounterText(index, total) {
+    // Returns {item, items} strings for a single photo at a 0-based index.
+    function buildSinglePhotoItemTokens(index, total) {
         var safeIndex = typeof index === 'number' && index >= 0 ? index + 1 : 1;
-        return safeIndex + ' / ' + total;
+        return { item: String(safeIndex), items: String(total) };
     }
 
     function resolveCarouselTileInfo(photo, zoneFormats, context) {
@@ -2065,10 +2071,10 @@
                         '<button class="swiper-button-download jzsa-carousel-slide-overlay-btn jzsa-carousel-slide-download-btn ' + downloadPosClass + '" type="button" data-download-url="' + downloadUrl + '" data-download-type="' + (isVideo ? 'video' : 'photo') + '" data-download-index="' + (index + 1) + '" title="Download current media" aria-label="Download media ' + (index + 1) + '"></button>';
                 }
 
-                tileInfoHtml = buildCarouselTileInfoHtml(photo, carouselZoneFormats, {
-                    counter: buildSinglePhotoCounterText(index, carouselTotalCount),
-                    albumTitle: carouselAlbumTitle
-                });
+                tileInfoHtml = buildCarouselTileInfoHtml(photo, carouselZoneFormats, $.extend(
+                    buildSinglePhotoItemTokens(index, carouselTotalCount),
+                    { albumTitle: carouselAlbumTitle }
+                ));
             }
 
             // Build alt text from filename when available.
@@ -2152,10 +2158,9 @@
                 if (!zone) {
                     return;
                 }
-                var text = resolveInfoTokens(getInfoZoneFormat(zoneFormats, zone, false), photo, {
-                    counter: buildSinglePhotoCounterText(photoIndex, total),
-                    albumTitle: albumTitle
-                });
+                var text = resolveInfoTokens(getInfoZoneFormat(zoneFormats, zone, false), photo,
+                    $.extend(buildSinglePhotoItemTokens(photoIndex, total), { albumTitle: albumTitle })
+                );
                 $box.text(text).toggle(text !== '');
             });
         });
@@ -2198,10 +2203,9 @@
                         break;
                     }
                 }
-                var text = resolveInfoTokens(inlineFmt, photo, {
-                    counter: buildSinglePhotoCounterText(photoIndex, total),
-                    albumTitle: albumTitle
-                });
+                var text = resolveInfoTokens(inlineFmt, photo,
+                    $.extend(buildSinglePhotoItemTokens(photoIndex, total), { albumTitle: albumTitle })
+                );
                 $box.text(text).toggle(text !== '');
             });
         });
@@ -3984,7 +3988,7 @@
             },
 
         // Pagination: driven by info-bottom format string.
-        // Supports {counter}, {title}, and all per-photo tokens.
+        // Supports {item}, {items}, and all per-photo tokens.
         pagination: (function() {
             var base = {
                 el: '#' + params.galleryId + ' .swiper-pagination'
@@ -4003,16 +4007,12 @@
                     return '';
                 }
 
-                // Build {counter} text.
-                var counterText = buildCounterTokenText(params.mode, swiper, current, total);
-
                 var albumTitle = $swiperEl.attr('data-album-title') || '';
                 var photoIndex = getSwiperPhotoIndex(swiper);
                 var photo = getContainerPhoto($swiperEl, photoIndex);
-                var text = resolveInfoTokens(format, photo, {
-                    counter: counterText,
-                    albumTitle: albumTitle
-                });
+                var text = resolveInfoTokens(format, photo,
+                    $.extend(buildItemTokens(params.mode, swiper, current, total), { albumTitle: albumTitle })
+                );
 
                 $swiperEl.find('.swiper-pagination').toggle(text !== '');
                 return text;
@@ -4699,15 +4699,14 @@
                         total = 0;
                     }
                 }
-                var counterText = total ? buildCounterTokenText(mode, swiper, photoIndex + 1, total) : '';
+                var itemTokens = total ? buildItemTokens(mode, swiper, photoIndex + 1, total) : { item: '', items: '' };
                 var albumTitle = $container.attr('data-album-title') || '';
                 for (var j = 0; j < containerBoxes.length; j++) {
                     var cb = containerBoxes[j];
                     var fmt = isFs ? cb.fsFmt : cb.fmt;
-                    var text = resolveInfoTokens(fmt, photo, {
-                        counter: counterText,
-                        albumTitle: albumTitle
-                    });
+                    var text = resolveInfoTokens(fmt, photo,
+                        $.extend(itemTokens, { albumTitle: albumTitle })
+                    );
                     cb.$el.text(text).toggle(text !== '');
                 }
             }
@@ -5403,7 +5402,8 @@
             // Info box overlays for gallery thumbnails.
             var thumbZoneFormats = readInfoZoneFormats($container);
             var thumbZoneHtml = buildInfoZoneHtml(photo, thumbZoneFormats.inline, thumbZoneFormats.fullscreen, {
-                counter: (globalIndex + 1) + ' / ' + (parseInt($container.attr('data-total-count'), 10) || 0),
+                item: String(globalIndex + 1),
+                items: String(parseInt($container.attr('data-total-count'), 10) || 0),
                 albumTitle: ''
             }, { bottomOrder: GALLERY_INFO_BOTTOM_ORDER });
 
@@ -5521,7 +5521,8 @@
                 // Info box overlays for justified thumbnails.
                 var justifiedZoneFormats = readInfoZoneFormats($container);
                 var justifiedZoneHtml = buildInfoZoneHtml(item.photo, justifiedZoneFormats.inline, justifiedZoneFormats.fullscreen, {
-                    counter: (item.index + 1) + ' / ' + (parseInt($container.attr('data-total-count'), 10) || 0),
+                    item: String(item.index + 1),
+                    items: String(parseInt($container.attr('data-total-count'), 10) || 0),
                     albumTitle: $container.attr('data-album-title') || ''
                 });
 
@@ -5742,8 +5743,16 @@
             $playPause.removeClass('playing');
         }
 
-        if (showCounter) {
-            $status.text((state.currentPage + 1) + ' / ' + state.totalPages).show();
+        var pageBottomFmt = $container.attr('data-gallery-page-bottom');
+        if (showCounter && pageBottomFmt !== undefined) {
+            // gallery-page-bottom is set — use it as a format string with {page}/{pages} tokens.
+            var pageText = pageBottomFmt
+                .replace(/\{page\}/g, String(state.currentPage + 1))
+                .replace(/\{pages\}/g, String(state.totalPages));
+            $status.text(pageText).toggle(pageText !== '');
+        } else if (showCounter && pageBottomFmt === undefined) {
+            // gallery-page-bottom not set — hide the status pill.
+            $status.hide();
         } else {
             $status.hide();
         }
