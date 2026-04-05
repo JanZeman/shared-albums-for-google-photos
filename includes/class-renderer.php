@@ -502,18 +502,20 @@ class JZSA_Renderer {
 		// correctly before JavaScript runs (JS will update it on fullscreen toggle).
 		$attrs[] = sprintf( 'data-has-active-bottom-center="%s"', ! empty( $config['info-bottom'] ) ? 'true' : 'false' );
 
-		// Info box format strings (only emit non-empty).
-		$gallery_info_boxes = array(
-			'info-bottom',  'fullscreen-info-bottom',
-			'info-top',     'fullscreen-info-top',
-			'info-top-secondary',     'fullscreen-info-top-secondary',
-			'gallery-page-bottom',
-		);
-		foreach ( $gallery_info_boxes as $box_key ) {
-			if ( ! empty( $config[ $box_key ] ) ) {
-				$attrs[] = sprintf( 'data-%s="%s"', $box_key, esc_attr( $config[ $box_key ] ) );
+			// Info box format strings (only emit non-empty).
+			$gallery_info_boxes = array(
+				'info-bottom',  'fullscreen-info-bottom',
+				'info-top',     'fullscreen-info-top',
+				'info-top-secondary',     'fullscreen-info-top-secondary',
+			);
+			foreach ( $gallery_info_boxes as $box_key ) {
+				if ( ! empty( $config[ $box_key ] ) ) {
+					$attrs[] = sprintf( 'data-%s="%s"', $box_key, esc_attr( $config[ $box_key ] ) );
+				}
 			}
-		}
+			if ( array_key_exists( 'gallery-page-bottom', $config ) ) {
+				$attrs[] = sprintf( 'data-gallery-page-bottom="%s"', esc_attr( $config['gallery-page-bottom'] ) );
+			}
 
 		if ( isset( $config['fullscreen-slideshow-delay'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-slideshow-delay="%s"', esc_attr( $config['fullscreen-slideshow-delay'] ) );

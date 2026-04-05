@@ -300,7 +300,7 @@ class JZSA_Settings_Page {
 
 						<div class="jzsa-example">
 							<h3><?php esc_html_e( 'Gallery - Limited Count, No Pagination', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php esc_html_e( 'Uses the default "gallery" mode to display album entries as a thumbnail gallery. Every cell has the same size. Use the fullscreen button on any thumbnail to open it in a fullscreen viewer. Pagination is not required - all thumbnails are shown at once, limited only by limit.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'Uses the default "gallery" mode to display album entries as a thumbnail gallery. Every cell has the same size. Tiles stay clean by default, and opening a thumbnail in fullscreen still shows the current item counter. Pagination is not required - all thumbnails are shown at once, limited only by limit.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
 						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" corner-radius="16" limit="6" gallery-gap="8"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
@@ -313,55 +313,55 @@ class JZSA_Settings_Page {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Gallery - Limited Count, No Pagination, Item Counter On Fullscreen Only', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Same as above but with no counter on the gallery tiles. The item counter only appears when a photo is opened in fullscreen, keeping the gallery grid clean.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" corner-radius="16" limit="6" gallery-gap="8" info-bottom="" fullscreen-info-bottom="{item} / {items}"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
-					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-gallery-grid-fs-counter" style="height:auto;">
-						<?php
-							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" corner-radius="16" limit="6" gallery-gap="8" info-bottom="" fullscreen-info-bottom="{item} / {items}"]' );
-						?>
-					</div>
-					</div>
-
-						<div class="jzsa-example">
-							<h3><?php esc_html_e( 'Gallery - Paged (Item Counter Per Tile)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php esc_html_e( 'Use gallery-rows to split the gallery into pages. The same previous/next and pagination controls are reused for gallery page navigation. Use gallery-sizing="ratio" (default) to keep fixed tile aspect ratio, or gallery-sizing="fill" to stretch row heights and fill explicit control height.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" corner-radius="16" gallery-rows="2" limit="18" gallery-gap="8"]</code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<div class="jzsa-example">
+									<h3><?php esc_html_e( 'Gallery - Paged (Default Page Counter)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+									<p><?php esc_html_e( 'Use gallery-rows to split the gallery into pages. By default, paginated galleries keep the tiles clean and show the page counter in the navigation bar. Use gallery-sizing="ratio" (default) to keep fixed tile aspect ratio, or gallery-sizing="fill" to stretch row heights and fill explicit control height.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<div class="jzsa-code-block">
+								<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" corner-radius="16" gallery-rows="2" limit="18" gallery-gap="8" info-font-size="18"]</code>
+								<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-gallery-paged" style="height:auto;">
 							<?php
 								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" corner-radius="16" gallery-rows="2" limit="18" gallery-gap="8"]' );
+									echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" corner-radius="16" gallery-rows="2" limit="18" gallery-gap="8" info-font-size="18"]' );
 							?>
 						</div>
 						</div>
 
-					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Gallery - Paged (Page Counter In Nav Bar)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Same as above but with the page counter shown in the navigation bar instead of per-tile item numbers. Set info-bottom="" to hide the tile counters, and gallery-page-bottom="{page} / {pages}" to enable the page counter in the navigation bar.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" corner-radius="16" gallery-rows="2" limit="18" gallery-gap="8" gallery-page-bottom="{page} / {pages}" info-bottom="" fullscreen-info-bottom="{item} / {items}"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
-					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-gallery-paged-page-pagination" style="height:auto;">
-						<?php
-							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" corner-radius="16" gallery-rows="2" limit="18" gallery-gap="8" gallery-page-bottom="{page} / {pages}" info-bottom="" fullscreen-info-bottom="{item} / {items}"]' );
-						?>
-					</div>
-					</div>
+						<div class="jzsa-example">
+								<h3><?php esc_html_e( 'Gallery - Paged (Custom Page Counter)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+									<p><?php esc_html_e( 'Same as above but with a custom page counter format in the navigation bar. Use this when you want to include album context such as the album title together with the page count.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+								<div class="jzsa-code-block">
+										<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" corner-radius="16" gallery-rows="2" limit="18" gallery-gap="8" gallery-page-bottom="{album-title}: {page} / {pages}" info-font-size="18"]</code>
+									<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+								</div>
+								<div class="jzsa-preview-container jzsa-preview-container-gallery-paged-page-pagination" style="height:auto;">
+									<?php
+										// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+											echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" corner-radius="16" gallery-rows="2" limit="18" gallery-gap="8" gallery-page-bottom="{album-title}: {page} / {pages}" info-font-size="18"]' );
+									?>
+							</div>
+						</div>
 
-					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Gallery - Scrollable Instead Of Paged', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Use gallery-scrollable="true" with gallery-rows to show a fixed-height, vertically scrollable gallery instead of page controls.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
+							<div class="jzsa-example">
+									<h3><?php esc_html_e( 'Gallery - Paged (Tile Counter Override)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+									<p><?php esc_html_e( 'Same paged gallery layout, but with per-tile item numbers instead of the page counter in the navigation bar. Use this when you want to keep pagination while labeling each tile with its item position in the album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+								<div class="jzsa-code-block">
+									<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" corner-radius="16" gallery-rows="2" limit="18" gallery-gap="8" info-bottom="{item} / {items}" gallery-page-bottom=""]</code>
+									<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+								</div>
+								<div class="jzsa-preview-container jzsa-preview-container-gallery-paged-page-pagination" style="height:auto;">
+									<?php
+										// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+										echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" corner-radius="16" gallery-rows="2" limit="18" gallery-gap="8" info-bottom="{item} / {items}" gallery-page-bottom=""]' );
+									?>
+								</div>
+							</div>
+
+						<div class="jzsa-example">
+							<h3><?php esc_html_e( 'Gallery - Scrollable Instead Of Paged', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php esc_html_e( 'Use gallery-scrollable="true" with gallery-rows to show a fixed-height, vertically scrollable gallery instead of page controls.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
 						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" corner-radius="16" gallery-rows="2" gallery-scrollable="true" gallery-gap="8" limit="18"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
@@ -1250,7 +1250,7 @@ class JZSA_Settings_Page {
 						</table>
 
 						<h3><?php esc_html_e( 'Info Boxes (Inline)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Per-photo metadata overlays. Each zone accepts a format string with placeholders like {date}. Leave empty (default) to hide a zone. See the Photo Info Overlay section below for available placeholders and examples.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php echo wp_kses_post( __( 'Per-photo metadata overlays. Each zone accepts a format string with placeholders like <code>{date}</code>. Defaults are mode-aware: slider and carousel use <code>info-bottom</code> as the current-item counter by default, gallery tiles stay clean by default, paginated galleries use <code>gallery-page-bottom</code> for the page counter, and gallery fullscreen still shows the current-item counter. Leave a zone empty to hide it. See the Photo Info Overlay section below for available placeholders and examples.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 						<table class="jzsa-settings-table jzsa-settings-table--params">
 							<thead>
 								<tr>
@@ -1260,10 +1260,10 @@ class JZSA_Settings_Page {
 								</tr>
 							</thead>
 							<tbody>
-								<tr><td><code>info-bottom</code></td><td><?php esc_html_e( 'Bottom center info box. In slider, carousel, and fullscreen it typically appears as the pagination pill; in gallery mode it appears on each tile. Supports {item}, {items}, {album-title} placeholders and all per-photo placeholders.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><code>{item} / {items}</code></td></tr>
+									<tr><td><code>info-bottom</code></td><td><?php esc_html_e( 'Bottom center info box. In slider and carousel, the default is "{item} / {items}". In gallery mode it appears on each tile only when you set it explicitly. Supports {item}, {items}, {album-title} placeholders and all per-photo placeholders.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php echo wp_kses_post( __( '<code>{item} / {items}</code> in slider/carousel; <em>empty (off)</em> on gallery tiles', 'janzeman-shared-albums-for-google-photos' ) ); ?></td></tr>
 								<tr><td><code>info-top</code></td><td><?php esc_html_e( 'Top center (first line)', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 								<tr><td><code>info-top-secondary</code></td><td><?php esc_html_e( 'Top center (second line, below info-top)', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
-								<tr><td><code>gallery-page-bottom</code></td><td><?php esc_html_e( 'Gallery mode only - text shown in the page navigation bar when paginated gallery rows are enabled. Supports {page} and {pages} placeholders. Hidden by default; set to "{page} / {pages}" to enable.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+										<tr><td><code>gallery-page-bottom</code></td><td><?php esc_html_e( 'Gallery mode only - text shown in the page navigation bar when paginated gallery rows are enabled. Supports {page}, {pages}, and {album-title}. Uses the same info typography settings as the other info boxes, including info-font-size and info-font-family. The default is "{page} / {pages}" for paginated galleries. Set it empty to hide or replace it with your own format string.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php echo wp_kses_post( __( '<code>{page} / {pages}</code> in paginated galleries', 'janzeman-shared-albums-for-google-photos' ) ); ?></td></tr>
 								<tr><td><code>info-font-size</code></td><td><?php esc_html_e( 'Font size for all info boxes, including info-bottom (pixels)', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>12</td></tr>
 								<tr><td><code>info-font-family</code></td><td><?php echo wp_kses_post( __( '<strong>Recommended: use a font family stack, not a single font.</strong> Applies to all info boxes, including info-bottom. Use normal CSS <code>font-family</code> syntax with comma-separated fallbacks, for example <code>system-ui, sans-serif</code>, <code>Georgia, serif</code>, or <code>ui-monospace, SFMono-Regular, Consolas, monospace</code>. The font must already exist on the visitor device or be loaded by the theme/site. The plugin does not load web fonts; the browser falls back to the next family in the stack.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><code>system-ui, sans-serif</code></td></tr>
 						</table>
@@ -1348,7 +1348,7 @@ class JZSA_Settings_Page {
 									<td>Show download button in fullscreen view: "false" or "true". Defaults to <code>show-download-button</code> when omitted.</td>
 									<td>inherits show-download-button</td>
 								</tr>
-								<tr><td><code>fullscreen-info-bottom</code></td><td><?php esc_html_e( 'Pagination pill in fullscreen. Inherits from info-bottom when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-bottom', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
+								<tr><td><code>fullscreen-info-bottom</code></td><td><?php esc_html_e( 'Bottom center info box in fullscreen. In gallery mode it defaults to "{item} / {items}" even though gallery tiles are clean by default. In slider and carousel it inherits from info-bottom when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php echo wp_kses_post( __( 'gallery: <code>{item} / {items}</code>; slider/carousel: inherits <code>info-bottom</code>', 'janzeman-shared-albums-for-google-photos' ) ); ?></td></tr>
 								<tr><td><code>fullscreen-info-top</code></td><td><?php esc_html_e( 'Info box: top center first line in fullscreen. Inherits from info-top when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-top', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
 								<tr><td><code>fullscreen-info-top-secondary</code></td><td><?php esc_html_e( 'Info box: top center second line in fullscreen. Inherits from info-top-secondary when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-top-secondary', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
 								<tr><td><code>fullscreen-info-font-size</code></td><td><?php esc_html_e( 'Font size for all info boxes in fullscreen, including fullscreen-info-bottom (pixels). Defaults to info-font-size when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-font-size', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>

@@ -398,6 +398,7 @@ class JZSA_Shared_Albums {
 	 * @return array Configuration
 	 */
 	private function parse_shortcode_config( $atts, $url ) {
+		$mode                 = $this->parse_mode( $atts );
 		$show_navigation      = $this->parse_bool( $atts, 'show-navigation', true );
 		$show_link_button     = $this->parse_bool( $atts, 'show-link-button', false );
 		$show_download_button = $this->parse_bool( $atts, 'show-download-button', false );
@@ -454,7 +455,7 @@ class JZSA_Shared_Albums {
 			'cache-refresh' => $this->parse_cache_refresh( $atts ),
 
 				// Display
-				'mode'                 => $this->parse_mode( $atts ),
+				'mode'                 => $mode,
 				'background-color'     => $this->parse_color( $atts, 'background-color', 'transparent' ),
 				'fullscreen-background-color' => $this->parse_color( $atts, 'fullscreen-background-color', '' ),
 				'controls-color'       => $controls_color,
@@ -511,7 +512,7 @@ class JZSA_Shared_Albums {
 
 			// Info boxes - format strings with placeholders like {date} resolved per photo.
 			// Backward compat: show-name="true" maps to ="{name}".
-		) + $this->build_info_box_config( $atts );
+		) + $this->build_info_box_config( $atts, $mode );
 
 		return $config;
 	}
@@ -523,17 +524,20 @@ class JZSA_Shared_Albums {
 	 * @param array $atts Raw shortcode attributes.
 	 * @return array
 	 */
-	private function build_info_box_config( $atts ) {
+	private function build_info_box_config( $atts, $mode ) {
 		// Default for info-bottom: derive from legacy show-counter / show-title attributes when not set.
 		$show_counter_compat = $this->parse_bool( $atts, 'show-counter', true );
 		$show_title_compat   = $this->parse_bool( $atts, 'show-title', false );
-		$b1_default          = $this->build_legacy_info_bottom_default( $show_title_compat, $show_counter_compat );
+		$is_gallery_mode     = 'gallery' === $mode;
+		$b1_default          = $is_gallery_mode
+			? ''
+			: $this->build_legacy_info_bottom_default( $show_title_compat, $show_counter_compat );
 
 		$b1  = $this->parse_info_box( $atts, 'info-bottom', $b1_default );
 		$t1  = $this->parse_info_box( $atts, array( 'info-top', 'info-top-1' ), '' );
 		$t2  = $this->parse_info_box( $atts, array( 'info-top-secondary', 'info-top-2' ), '' );
-		$gpb = $this->parse_info_box( $atts, 'gallery-page-bottom', '' );
-		$fullscreen_b1_default = $b1;
+		$gpb = $this->parse_info_box( $atts, 'gallery-page-bottom', $is_gallery_mode ? '{page} / {pages}' : '' );
+		$fullscreen_b1_default = $is_gallery_mode ? '{item} / {items}' : $b1;
 
 		// Backward compat: accept fullscreen-show-title / fullscreen-show-counter
 		// silently for legacy shortcodes. Modern info-bottom params still win when mixed.
@@ -552,6 +556,12 @@ class JZSA_Shared_Albums {
 				$fullscreen_show_title_compat,
 				$fullscreen_show_counter_compat
 			);
+		}
+
+		// Backward compat: in gallery mode, legacy show-counter controls the page pill,
+		// while show-title has no inline gallery effect.
+		if ( $is_gallery_mode && ! isset( $atts['gallery-page-bottom'] ) && isset( $atts['show-counter'] ) ) {
+			$gpb = $show_counter_compat ? '{page} / {pages}' : '';
 		}
 
 		return array(

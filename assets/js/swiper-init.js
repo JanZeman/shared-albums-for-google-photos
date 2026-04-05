@@ -5747,6 +5747,14 @@
             $controls[0].style.setProperty('--jzsa-controls-color', controlsColor);
             applyControlsColorToIcons('#' + $container.attr('id'), controlsColor);
         }
+        var infoFontSize = getInfoFontSizePx($container, 'data-info-font-size', 12);
+        $controls[0].style.setProperty('--jzsa-info-font-size', infoFontSize + 'px');
+        var infoFontFamily = getInfoFontFamily($container, 'data-info-font-family', '');
+        if (infoFontFamily) {
+            $controls[0].style.setProperty('--jzsa-info-font-family', infoFontFamily);
+        } else {
+            $controls[0].style.removeProperty('--jzsa-info-font-family');
+        }
 
         function isActivationKey(e) {
             return e.key === 'Enter' || e.key === ' ' || e.keyCode === 13 || e.keyCode === 32;
@@ -5804,15 +5812,14 @@
         }
 
         var pageBottomFmt = $container.attr('data-gallery-page-bottom');
-        if (showCounter && pageBottomFmt !== undefined) {
-            // gallery-page-bottom is set - use it as a format string with {page}/{pages} placeholders.
-            var pageText = pageBottomFmt
-                .replace(/\{page\}/g, String(state.currentPage + 1))
-                .replace(/\{pages\}/g, String(state.totalPages));
+        if (showCounter && typeof pageBottomFmt === 'string') {
+            // gallery-page-bottom is the final parser-provided format string.
+            var pageText = resolveInfoPlaceholders(pageBottomFmt, {}, {
+                page: String(state.currentPage + 1),
+                pages: String(state.totalPages),
+                albumTitle: $container.attr('data-album-title') || ''
+            });
             $status.text(pageText).toggle(pageText !== '');
-        } else if (showCounter && pageBottomFmt === undefined) {
-            // gallery-page-bottom not set — hide the status pill.
-            $status.hide();
         } else {
             $status.hide();
         }
