@@ -1560,14 +1560,13 @@ body.jzsa-no-scroll {
 }
 /* Shared thumbnail base */
 .jzsa-gallery-thumb {
-    transition: opacity 0.15s ease;
     -webkit-user-drag: none;
     user-select: none;
 }
 
-
 .jzsa-gallery-item {
     position: relative;
+    contain: layout style paint;
 }
 
 .jzsa-gallery-item .jzsa-gallery-thumb-fs-btn,
@@ -1747,7 +1746,6 @@ body.jzsa-no-scroll {
 .jzsa-gallery-album.jzsa-gallery-scrollable {
     overflow-y: auto;
     overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
     scrollbar-gutter: stable;
 }
 

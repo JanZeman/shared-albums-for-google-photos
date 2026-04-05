@@ -5445,7 +5445,7 @@
                     ' data-index="' + globalIndex + '"' +
                     ' alt="' + mediaLabel.charAt(0).toUpperCase() + mediaLabel.slice(1) + ' ' + (globalIndex + 1) + '"' +
                     ' draggable="false"' +
-                    ' loading="lazy" decoding="async"' + tileStyleAttr + '>';
+                    ' loading="lazy" decoding="sync"' + tileStyleAttr + '>';
             }
 
             var thumbOverlayBtns = '';
@@ -5563,7 +5563,7 @@
                         ' data-index="' + item.index + '"' +
                         ' alt="' + mediaLabel.charAt(0).toUpperCase() + mediaLabel.slice(1) + ' ' + (item.index + 1) + '"' +
                         ' draggable="false"' +
-                        ' loading="lazy" decoding="async"' +
+                        ' loading="lazy" decoding="sync"' +
                         ' style="width:100%;height:100%;">';
                 }
 
@@ -7127,13 +7127,14 @@
         renderCurrentGalleryPage();
 
         // Re-render gallery page on resize:
-        // - justified layout depends on container width (always re-render)
+        // - justified layout depends on container width (re-render only when width changes)
         // - grid layout only needs re-render when the column breakpoint changes
         var resizeNamespace = 'resize.jzsa-gallery-' + $container.attr('id');
         $(window).off(resizeNamespace);
         var resizeTimer;
         var resizePending = false;
         var lastResizeColumns = layout !== 'justified' ? getUniformColumnsForViewport($container) : 0;
+        var lastResizeWidth = layout === 'justified' ? getGalleryContainerWidth($container) : 0;
         $(window).on(resizeNamespace, function() {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(function() {
@@ -7144,6 +7145,16 @@
                         return;
                     }
                     lastResizeColumns = currentColumns;
+                } else {
+                    // For justified layout, skip re-render if container width hasn't changed.
+                    // On iOS, browser chrome collapse/expand fires resize events but only changes
+                    // the viewport height, not the content width. Without this guard, justified
+                    // layout would destructively re-render on every scroll-triggered chrome toggle.
+                    var currentWidth = getGalleryContainerWidth($container);
+                    if (currentWidth === lastResizeWidth) {
+                        return;
+                    }
+                    lastResizeWidth = currentWidth;
                 }
                 runOnNextPaint(function() {
                     if ($container.hasClass('jzsa-video-playing')) {
