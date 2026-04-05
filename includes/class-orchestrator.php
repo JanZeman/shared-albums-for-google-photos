@@ -558,10 +558,15 @@ class JZSA_Shared_Albums {
 			);
 		}
 
-		// Backward compat: in gallery mode, legacy show-counter controls the page pill,
-		// while show-title has no inline gallery effect.
-		if ( $is_gallery_mode && ! isset( $atts['gallery-info-bottom'] ) && ! isset( $atts['gallery-page-bottom'] ) && isset( $atts['show-counter'] ) ) {
-			$gpb = $show_counter_compat ? '{page} / {pages}' : '';
+		// Backward compat: in gallery mode, legacy show-title / show-counter control
+		// the page pill, not per-tile overlays.
+		if (
+			$is_gallery_mode &&
+			! isset( $atts['gallery-info-bottom'] ) &&
+			! isset( $atts['gallery-page-bottom'] ) &&
+			( isset( $atts['show-title'] ) || isset( $atts['show-counter'] ) )
+		) {
+			$gpb = $this->build_legacy_gallery_info_bottom_default( $show_title_compat, $show_counter_compat );
 		}
 
 		return array(
@@ -593,6 +598,29 @@ class JZSA_Shared_Albums {
 
 		if ( $show_counter ) {
 			return '{item} / {items}';
+		}
+
+		return '';
+	}
+
+	/**
+	 * Derive the legacy gallery page-bar display string from old title/counter flags.
+	 *
+	 * @param bool $show_title   Whether to show album title.
+	 * @param bool $show_counter Whether to show page counter.
+	 * @return string
+	 */
+	private function build_legacy_gallery_info_bottom_default( $show_title, $show_counter ) {
+		if ( $show_title && $show_counter ) {
+			return '{album-title}: {page} / {pages}';
+		}
+
+		if ( $show_title ) {
+			return '{album-title}';
+		}
+
+		if ( $show_counter ) {
+			return '{page} / {pages}';
 		}
 
 		return '';
