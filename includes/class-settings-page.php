@@ -1497,7 +1497,7 @@ class JZSA_Settings_Page {
 					<p style="margin-top: 16px;"><?php esc_html_e( 'Each box has an inline variant and a fullscreen variant. When the fullscreen variant is omitted, it inherits the inline value. You can show different content in fullscreen - for example, a short date inline and a full EXIF line in fullscreen.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
 					<h3 style="margin-top: 28px;"><?php esc_html_e( 'What Goes in the Boxes: Tokens', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<p><?php esc_html_e( 'Box content is a text string. You can use plain text (as in the preview above) or {token} placeholders that resolve to per-photo metadata. Tokens that cannot be resolved (no data available) are silently removed together with any surrounding separator characters. Most tokens resolve instantly; background metadata appears with a brief delay only the first time and then loads immediately from cache.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<p><?php esc_html_e( 'Box content is a text string. You can use plain text (as in the preview above) or {token} placeholders that resolve to per-photo metadata or gallery page state. Tokens that cannot be resolved (no data available) are silently removed together with any surrounding separator characters. Most tokens resolve instantly; background metadata appears with a brief delay only the first time and then loads immediately from cache.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
 					<table class="jzsa-settings-table">
 						<thead>
@@ -1520,6 +1520,18 @@ class JZSA_Settings_Page {
 								<td><?php esc_html_e( 'Total item count (e.g. "41")', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>41</td>
 								<td>✅ <?php esc_html_e( 'Available', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{page}</code></td>
+								<td><?php esc_html_e( 'Current gallery page number when paginated gallery rows are enabled', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>2</td>
+								<td>✅ <?php esc_html_e( 'Available in gallery-page-bottom only', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{pages}</code></td>
+								<td><?php esc_html_e( 'Total number of gallery pages when paginated gallery rows are enabled', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>9</td>
+								<td>✅ <?php esc_html_e( 'Available in gallery-page-bottom only', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
 							<tr>
 								<td><code>{album-title}</code></td>
