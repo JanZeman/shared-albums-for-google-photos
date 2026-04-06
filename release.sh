@@ -4,7 +4,7 @@
 # Shared Albums for Google Photos (by JanZeman) - Release Script
 #
 # Default:  Bumps version numbers across all files, builds a ZIP package.
-#           Does NOT touch git tags or SVN — safe for local testing.
+#           Does NOT touch git tags or SVN - safe for local testing.
 #
 # --now:    Full release. Everything above plus git tag + push and
 #           SVN trunk sync + commit + tag.

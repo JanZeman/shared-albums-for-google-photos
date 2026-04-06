@@ -110,7 +110,7 @@ if [[ -z "$OUTPUT" ]]; then
   [[ "$NO_TEXT" == true ]] && SUFFIX="-no-text"
   OUTPUT="${SCRIPT_DIR}/icon-${SIZE}x${SIZE}${SUFFIX}"
 fi
-# Strip any extension the user may have added — we append per format
+# Strip any extension the user may have added - we append per format
 OUTPUT_BASE="${OUTPUT%.*}"
 # If user gave e.g. "foo.gif", keep the base; we add the right extension later
 
@@ -177,7 +177,7 @@ generate_gif() {
     -frames:v "$frames" \
     "$out" 2>/dev/null
 
-  echo "  ✓ $(du -h "$out" | cut -f1 | xargs) — $out"
+  echo "  ✓ $(du -h "$out" | cut -f1 | xargs) - $out"
 }
 
 # ── Generate MP4 ──────────────────────────────────────────────────────────
@@ -199,7 +199,7 @@ generate_mp4() {
     -t "$DURATION" \
     "$out" 2>/dev/null
 
-  echo "  ✓ $(du -h "$out" | cut -f1 | xargs) — $out"
+  echo "  ✓ $(du -h "$out" | cut -f1 | xargs) - $out"
 }
 
 # ── Run ───────────────────────────────────────────────────────────────────

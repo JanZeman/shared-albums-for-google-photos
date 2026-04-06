@@ -137,7 +137,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 }
 
 /* fullscreen-image-fit overrides image-fit when in fullscreen.
-   Each vendor prefix MUST be in its own rule — grouping them causes browsers
+   Each vendor prefix MUST be in its own rule - grouping them causes browsers
    to drop the entire rule when they encounter an unrecognised pseudo-class. */
 .jzsa-album:fullscreen[data-fullscreen-image-fit="contain"] .swiper-slide img {
     object-fit: contain;
@@ -187,13 +187,13 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 .jzsa-album .swiper-button-prev { left: 0; }
 .jzsa-album .swiper-button-next { right: 0; }
 
-/* show-navigation="false" — hide prev/next arrows */
+/* show-navigation="false" - hide prev/next arrows */
 .jzsa-album[data-show-navigation="false"] .swiper-button-prev,
 .jzsa-album[data-show-navigation="false"] .swiper-button-next {
     display: none !important;
 }
 
-/* interaction-lock="true" — hide interactive plugin controls and prevent interaction */
+/* interaction-lock="true" - hide interactive plugin controls and prevent interaction */
 .jzsa-album[data-interaction-lock="true"] .swiper-button-prev,
 .jzsa-album[data-interaction-lock="true"] .swiper-button-next,
 .jzsa-album[data-interaction-lock="true"] .swiper-button-play-pause,
@@ -503,7 +503,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 
 
 
-/* Play icon (default — slideshow paused) */
+/* Play icon (default - slideshow paused) */
 .jzsa-album .swiper-button-play-pause:after {
     content: '';
     display: block;
@@ -591,7 +591,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z' fill='%23ffffff' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>");
 }
 
-/* Scale top controls up in fullscreen — each scales from its nearest corner */
+/* Scale top controls up in fullscreen - each scales from its nearest corner */
 .jzsa-album:fullscreen .swiper-button-fullscreen,
 .jzsa-album:-webkit-full-screen .swiper-button-fullscreen,
 .jzsa-album.jzsa-pseudo-fullscreen .swiper-button-fullscreen {
@@ -816,7 +816,7 @@ body.jzsa-no-scroll {
 
 /* Slider mode: round the container, not individual slides.
    .swiper already has overflow:hidden, so border-radius on the container
-   clips all content — including mid-transition slides — to rounded corners. */
+   clips all content - including mid-transition slides - to rounded corners. */
 .jzsa-album[data-mode="slider"] {
     border-radius: var(--jzsa-corner-radius, 0);
 }
@@ -917,7 +917,7 @@ body.jzsa-no-scroll {
     }
 }
 
-/* Touch reveal via JS (same approach as gallery items — covers iOS 13+ and all touch devices). */
+/* Touch reveal via JS (same approach as gallery items - covers iOS 13+ and all touch devices). */
 .jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide.jzsa-slide-touched .jzsa-carousel-slide-overlay-btn {
     opacity: var(--jzsa-controls-visible-opacity) !important;
     pointer-events: auto !important;
@@ -939,7 +939,7 @@ body.jzsa-no-scroll {
     user-select: none;
 }
 
-/* Fullscreen: disable corner-radius — edges meet the screen boundary. */
+/* Fullscreen: disable corner-radius - edges meet the screen boundary. */
 .jzsa-album:fullscreen,
 .jzsa-album:-webkit-full-screen,
 .jzsa-album.jzsa-pseudo-fullscreen {
@@ -1172,7 +1172,7 @@ body.jzsa-no-scroll {
     opacity: 1;
 }
 
-/* Info box overlays — format-string driven per-photo metadata labels.
+/* Info box overlays - format-string driven per-photo metadata labels.
    Each box is positioned absolutely within the slide or gallery item.
    Boxes are only rendered when their format string resolves to non-empty text.
    Styled to match the pagination pill (controls-bg, controls-color, pill radius). */
@@ -1200,7 +1200,7 @@ body.jzsa-no-scroll {
     position: static;
 }
 
-/* Box positions —  lives inside the flex stack; no absolute position needed here. */
+/* Box positions -  lives inside the flex stack; no absolute position needed here. */
 .jzsa-info-bottom { bottom: 9px; left: 50%; transform: translateX(-50%); max-width: var(--jzsa-info-center-max-width-expanded); }
 .jzsa-info-top { top: 9px; left: 50%; transform: translateX(-50%); bottom: auto; max-width: var(--jzsa-info-center-max-width-default); }
 .jzsa-info-top-secondary { top: 9px; left: 50%; transform: translateX(-50%); bottom: auto; max-width: var(--jzsa-info-center-max-width-default); }
@@ -1255,7 +1255,7 @@ body.jzsa-no-scroll {
     max-width: calc(100% - 24px);
 }
 
-/* Bottom stack is always a vertical column —  is centred, stacked above the pill.
+/* Bottom stack is always a vertical column -  is centred, stacked above the pill.
    Positioning adjusts based on whether the pill (info-bottom) is active. */
 .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .jzsa-info-stack-bottom {
     position: absolute;
@@ -1984,7 +1984,7 @@ body.jzsa-no-scroll {
 
 /* Gallery fullscreen slideshow: rendered off-screen at viewport size so Swiper can
    measure dimensions during init. The existing .jzsa-album:fullscreen and
-   .jzsa-album.jzsa-pseudo-fullscreen CSS handles the rest — exactly the same
+   .jzsa-album.jzsa-pseudo-fullscreen CSS handles the rest - exactly the same
    mechanism used by slideshow/carousel/gallery modes. */
 .jzsa-gallery-slideshow {
     position: fixed;
@@ -2094,7 +2094,7 @@ body.jzsa-no-scroll {
     transform: scale(0.8);
 }
 
-/* Duration badge on the video wrapper — independent of the player so it
+/* Duration badge on the video wrapper - independent of the player so it
    survives player destroy/re-init cycles (e.g. fullscreen toggle).
    Hidden by default; shown only via jzsa-show-duration on the wrapper,
    which JS sets when the big play button is in its default triangle state. */
@@ -2121,7 +2121,7 @@ body.jzsa-no-scroll {
     display: block;
 }
 
-/* Play button loading state — override Plyr's own hide so the button stays
+/* Play button loading state - override Plyr's own hide so the button stays
    visible (covering the Google poster triangle) until actual playback. */
 .jzsa-video-wrapper .plyr__control--overlaid.jzsa-plyr-loading {
     visibility: visible !important;
@@ -2187,7 +2187,7 @@ body.jzsa-no-scroll {
     opacity: 0.5 !important;
 }
 
-/* Error state — blue button stays, triangle turns red so user can retry */
+/* Error state - blue button stays, triangle turns red so user can retry */
 .jzsa-video-wrapper .plyr__control--overlaid.jzsa-plyr-error {
     visibility: visible !important;
     opacity: 1 !important;
@@ -2268,7 +2268,7 @@ body.jzsa-no-scroll {
     cursor: pointer;
 }
 
-/* Mute button never hides — it acts as the right-side boundary
+/* Mute button never hides - it acts as the right-side boundary
    preventing the progress bar from overflowing. */
 
 /* PlayMute default: hide restart + progress + volume slider + time */

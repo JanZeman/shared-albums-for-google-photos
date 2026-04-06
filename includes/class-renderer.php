@@ -404,7 +404,7 @@ class JZSA_Renderer {
 	}
 
 	/**
-	 * Build gallery-mode container HTML (no Swiper — plain thumbnail gallery).
+	 * Build gallery-mode container HTML (no Swiper - plain thumbnail gallery).
 	 * Thumbnails and layout are rendered by JS after page load.
 	 *
 	 * @param string $gallery_id Gallery ID.

@@ -146,14 +146,14 @@ class JZSA_Data_Provider {
 	 * Extract album title from HTML
 	 *
 	 * Two sources are tried in order:
-	 * - Primary: <title> tag — contains the user's album name with a "- Google Photos" suffix.
-	 * - Secondary: og:title meta tag — contains Google-appended noise (dates, camera icons, etc.).
+	 * - Primary: <title> tag - contains the user's album name with a "- Google Photos" suffix.
+	 * - Secondary: og:title meta tag - contains Google-appended noise (dates, camera icons, etc.).
 	 *
 	 * @param string $html HTML content
 	 * @return string|null Album title or null
 	 */
 	private function extract_album_title( $html ) {
-		// Primary source: <title> tag — contains only the user's album name
+		// Primary source: <title> tag - contains only the user's album name
 		if ( preg_match( '/<title[^>]*>([^<]+)<\/title>/i', $html, $match ) ) {
 			$title = html_entity_decode( $match[1], ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 			$title = $this->clean_primary_album_title( $title );
@@ -162,7 +162,7 @@ class JZSA_Data_Provider {
 			}
 		}
 
-		// Secondary source: og:title meta tag — contains Google-appended noise
+		// Secondary source: og:title meta tag - contains Google-appended noise
 		// (dates, camera icons, separators) so we clean it up aggressively
 		if ( preg_match( '/<\s*meta\s+property=["\']og:title["\']\s+content=["\']([^"\']+)["\']/i', $html, $match ) ) {
 			$title = $match[1];
@@ -248,7 +248,7 @@ class JZSA_Data_Provider {
 		$media  = array();
 		$is_primary = false;
 
-		// ── Stage 1: Primary URL extraction — NO CHANGE ───────────────────
+		// ── Stage 1: Primary URL extraction - NO CHANGE ───────────────────
 
 		// Primary strategy: Extract URLs followed by numeric dimensions (with offsets for video detection)
 		if ( preg_match_all( '/\"(https?:\/\/[^\"]+)\"\s*,\s*\d+\s*,\s*\d+/i', $html, $matches, PREG_OFFSET_CAPTURE ) ) {
@@ -316,7 +316,7 @@ class JZSA_Data_Provider {
 		}
 
 		// ── Stage 0 + 2a/2b/2c: Metadata enrichment (purely additive) ────
-		// If this entire block fails, $unique is returned as-is — identical
+		// If this entire block fails, $unique is returned as-is - identical
 		// to previous behaviour.
 		if ( $is_primary ) {
 			$unique = $this->enrich_with_metadata( $html, $unique );
@@ -439,7 +439,7 @@ class JZSA_Data_Provider {
 	}
 
 	/**
-	 * Score a filename candidate — higher is more likely to be the real filename.
+	 * Score a filename candidate - higher is more likely to be the real filename.
 	 *
 	 * @param string $fn Candidate filename.
 	 * @return int Score.
@@ -543,7 +543,7 @@ class JZSA_Data_Provider {
 			}
 		}
 
-		// Method 3: Last resort — quoted *.ext strings with a high score.
+		// Method 3: Last resort - quoted *.ext strings with a high score.
 		if ( preg_match_all(
 			'/"([A-Za-z0-9][^"]{0,180}\.(?:jpg|jpeg|png|heic|webp|mp4|mov))"/u',
 			$chunk,

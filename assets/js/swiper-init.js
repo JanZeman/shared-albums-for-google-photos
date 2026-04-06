@@ -5,7 +5,7 @@
 (function($) {
 'use strict';
 
-	// iOS/iPadOS detection — iPad Pro reports as MacIntel with touch points > 1.
+	// iOS/iPadOS detection - iPad Pro reports as MacIntel with touch points > 1.
 	var IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
 	    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
@@ -836,7 +836,7 @@
             var loadingTimeout = null;
             var stallWatchdogTimer = null;
             var playbackState = VIDEO_STATE_IDLE;
-            // Play button starts in default triangle state — allow duration badge to show.
+            // Play button starts in default triangle state - allow duration badge to show.
             $wrapper.addClass('jzsa-show-duration');
             var autoHealAttempts = 0;
             var healRunToken = 0;
@@ -1180,7 +1180,7 @@
                 showLoadingUi();
                 trace('play-click');
 
-                // 30s timeout — show error state if playback never starts
+                // 30s timeout - show error state if playback never starts
                 armLoadingTimeout('initial-click');
 
                 armStallWatchdog('initial-click');
@@ -1475,7 +1475,7 @@
         'info-top',
         'info-top-secondary'
     ];
-    // info-bottom is the Swiper pagination pill — handled separately outside the stack.
+    // info-bottom is the Swiper pagination pill - handled separately outside the stack.
     var SAFE_INFO_BOTTOM_ORDER = [];
     var infoMeasureCanvas = null;
     var DEFAULT_INFO_FONT_FAMILY = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
@@ -3304,7 +3304,7 @@
         // Toggle play/pause
         function togglePlayPause() {
 			if (swiper.autoplay) {
-				// Explicit user action — clear interrupted state
+				// Explicit user action - clear interrupted state
 				clearCountdownRing($container);
 				if (swiper.autoplay.running) {
 					swiper.autoplay.stop();
@@ -3640,7 +3640,7 @@
             });
         }
 
-        // When a video starts playing, pause slider autoplay (no inactivity timer —
+        // When a video starts playing, pause slider autoplay (no inactivity timer -
         // autoplay stays paused for the entire duration of playback)
         // Use capture phase because media events don't bubble
         $container[0].addEventListener('play', function() {
@@ -4131,7 +4131,7 @@
             // transient black frames during transform-based slide transitions.
             // However, testing on iOS 15.7 (Safari and Chrome) showed no black frames,
             // suggesting the issue was either fixed in WebKit long ago or never reliably
-            // reproducible. The fade fallback is therefore disabled below — retain it
+            // reproducible. The fade fallback is therefore disabled below - retain it
             // here in case it needs to be re-enabled for a specific future device report.
             //
             // if (isOldIosWebkit()) {
@@ -5115,7 +5115,7 @@
                     carouselEl.addEventListener('touchend', function(e) {
                         var slide = closestSlide(e.target);
                         if (!slide) return;
-                        // Skip Swiper loop clones — they are repositioned without transition events.
+                        // Skip Swiper loop clones - they are repositioned without transition events.
                         if (slide.classList.contains('swiper-slide-duplicate')) return;
                         var $slide = $(slide);
                         var startX = $slide.data('jzsaRevealTouchX');
@@ -5174,7 +5174,7 @@
     }
 
     // ============================================================================
-    // GALLERY MODE — thumbnail gallery + fullscreen slideshow
+    // GALLERY MODE - thumbnail gallery + fullscreen slideshow
     // ============================================================================
 
     /**
@@ -5243,7 +5243,7 @@
         $slideshow.attr('data-total-count', $galleryContainer.attr('data-total-count'));
         $slideshow.attr('data-mode', 'slider');
         $slideshow.attr('data-start-at', $galleryContainer.attr('data-start-at') || '1');
-        // Gallery has no inline slideshow — use fullscreen slideshow settings
+        // Gallery has no inline slideshow - use fullscreen slideshow settings
         $slideshow.attr('data-slideshow', 'disabled');
 
         // Forward player-relevant settings from the gallery container
@@ -7219,7 +7219,7 @@
 
             // Paginated gallery: compute the target page and re-render
             if (paginationState.totalPages <= 1) {
-                // No pagination and no internal scroller — all items are in the
+                // No pagination and no internal scroller - all items are in the
                 // normal page flow.  Scroll the page itself to the target item.
                 if ($item.length) {
                     $item[0].scrollIntoView({ block: 'center', behavior: 'instant' });
@@ -7257,7 +7257,7 @@
         });
 
         // Build the fullscreen slideshow and initialize it eagerly (same as
-        // player/carousel modes — Swiper is always ready, not lazily created).
+        // player/carousel modes - Swiper is always ready, not lazily created).
         slideshowId = buildGallerySlideshow($container);
         $slideshow = $('#' + slideshowId);
         initializeSwiper($slideshow[0], 'slideshow');

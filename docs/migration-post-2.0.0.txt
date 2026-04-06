@@ -1,10 +1,10 @@
-TITLE: Important: Breaking changes in version 2.0.0 — Migration guide
+TITLE: Important: Breaking changes in version 2.0.0 - Migration guide
 
 BODY:
 
 Hi everyone,
 
-Version 2.0.0 introduces new features like experimental video support and, based on user feedback, makes 'gallery' the default mode. I also took the liberty to clean up naming inconsistencies in shortcode parameter names, default values, and allowed values while the plugin is still young and the user base is small. <strong>This is a one-time cleanup — from 2.0.0 onward, all parameter names and values will remain stable and backward-compatible.</strong>
+Version 2.0.0 introduces new features like experimental video support and, based on user feedback, makes 'gallery' the default mode. I also took the liberty to clean up naming inconsistencies in shortcode parameter names, default values, and allowed values while the plugin is still young and the user base is small. <strong>This is a one-time cleanup - from 2.0.0 onward, all parameter names and values will remain stable and backward-compatible.</strong>
 
 If you are upgrading from 1.0.x, you will need to update your shortcodes. Below is a complete migration guide.
 
@@ -51,22 +51,22 @@ If you are upgrading from 1.0.x, you will need to update your shortcodes. Below 
 The following new parameters have been added:
 
 <ul>
-<li><code>fullscreen-source-width</code>, <code>fullscreen-source-height</code> — separate source resolution for fullscreen mode (default 1920x1440)</li>
-<li><code>fullscreen-image-fit</code> — image fit mode for fullscreen, independent from inline (default "contain")</li>
-<li><code>controls-color</code> — color of slider/gallery UI controls</li>
-<li><code>video-controls-color</code> — color of video player controls</li>
-<li><code>show-navigation</code> — show/hide prev/next arrows (default true)</li>
-<li><code>show-videos</code> — include or exclude video entries (default false)</li>
-<li><code>video-controls-autohide</code> — auto-hide video controls (default false)</li>
-<li><code>interaction-lock</code> — lock all user interaction, useful for digital signage (default false)</li>
-<li><code>gallery-layout</code> — gallery thumbnail layout: "grid" or "justified" (default "grid")</li>
-<li><code>gallery-sizing</code> — gallery thumbnail sizing: "ratio" or "fill" (default "ratio")</li>
-<li><code>gallery-columns</code> — number of gallery columns on desktop (default 3)</li>
-<li><code>gallery-columns-tablet</code> — number of gallery columns on tablet (default 2)</li>
-<li><code>gallery-columns-mobile</code> — number of gallery columns on mobile (default 1)</li>
-<li><code>gallery-row-height</code> — row height in pixels for justified layout (default 200)</li>
-<li><code>gallery-rows</code> — number of gallery rows per page, 0 = show all (default 0)</li>
-<li><code>gallery-scrollable</code> — enable scrollable gallery container (default false)</li>
+<li><code>fullscreen-source-width</code>, <code>fullscreen-source-height</code> - separate source resolution for fullscreen mode (default 1920x1440)</li>
+<li><code>fullscreen-image-fit</code> - image fit mode for fullscreen, independent from inline (default "contain")</li>
+<li><code>controls-color</code> - color of slider/gallery UI controls</li>
+<li><code>video-controls-color</code> - color of video player controls</li>
+<li><code>show-navigation</code> - show/hide prev/next arrows (default true)</li>
+<li><code>show-videos</code> - include or exclude video entries (default false)</li>
+<li><code>video-controls-autohide</code> - auto-hide video controls (default false)</li>
+<li><code>interaction-lock</code> - lock all user interaction, useful for digital signage (default false)</li>
+<li><code>gallery-layout</code> - gallery thumbnail layout: "grid" or "justified" (default "grid")</li>
+<li><code>gallery-sizing</code> - gallery thumbnail sizing: "ratio" or "fill" (default "ratio")</li>
+<li><code>gallery-columns</code> - number of gallery columns on desktop (default 3)</li>
+<li><code>gallery-columns-tablet</code> - number of gallery columns on tablet (default 2)</li>
+<li><code>gallery-columns-mobile</code> - number of gallery columns on mobile (default 1)</li>
+<li><code>gallery-row-height</code> - row height in pixels for justified layout (default 200)</li>
+<li><code>gallery-rows</code> - number of gallery rows per page, 0 = show all (default 0)</li>
+<li><code>gallery-scrollable</code> - enable scrollable gallery container (default false)</li>
 </ul>
 
 <strong>Quick migration example</strong>

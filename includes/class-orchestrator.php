@@ -893,7 +893,7 @@ class JZSA_Shared_Albums {
 			}
 		}
 
-		// Not set or invalid — default to 'contain' (show whole image).
+		// Not set or invalid - default to 'contain' (show whole image).
 		return 'contain';
 	}
 
