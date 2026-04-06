@@ -64,6 +64,11 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     --jzsa-info-center-max-width-fs: calc(var(--jzsa-info-center-max-width-default) / var(--jzsa-controls-fs-scale));
     --jzsa-info-center-max-width-expanded-fs: calc(var(--jzsa-info-center-max-width-expanded) / var(--jzsa-controls-fs-scale));
     --jzsa-info-corner-max-width-fs: calc(var(--jzsa-info-corner-max-width) / var(--jzsa-controls-fs-scale));
+    /* info-top is constrained by 2 action icons on each side (link+download left, symmetry right).
+       Wide variant is for info-top-secondary, info-bottom stack, and the pagination pill. */
+    --jzsa-info-top-max-width: calc(100% - 4 * var(--jzsa-controls-circle-size));
+    --jzsa-info-top-max-width-fs: calc((100% - 4 * var(--jzsa-controls-circle-size-fs)) / var(--jzsa-controls-fs-scale));
+    --jzsa-info-wide-max-width-fs: calc((100% - 24px) / var(--jzsa-controls-fs-scale));
     --jzsa-info-top-fs-offset: 9px;
     --jzsa-info-bottom-fs-offset: 20px;
     --jzsa-controls-circle-size-fs: 55px;
@@ -637,7 +642,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 .jzsa-album.jzsa-pseudo-fullscreen .swiper-pagination {
     transform: translateX(-50%) scale(var(--jzsa-controls-fs-scale));
     transform-origin: bottom center;
-    max-width: var(--jzsa-info-center-max-width-fs);
+    max-width: var(--jzsa-info-wide-max-width-fs);
 }
 
 .jzsa-album:fullscreen .swiper-album-title,
@@ -1255,6 +1260,11 @@ body.jzsa-no-scroll {
     max-width: calc(100% - 24px);
 }
 
+/* info-top is narrower than info-top-secondary: reserve space for 2 action icons on each side. */
+.jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .jzsa-info-stack-top .jzsa-info-top {
+    max-width: var(--jzsa-info-top-max-width);
+}
+
 /* Bottom stack is always a vertical column -  is centred, stacked above the pill.
    Positioning adjusts based on whether the pill (info-bottom) is active. */
 .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .jzsa-info-stack-bottom {
@@ -1309,7 +1319,15 @@ body.jzsa-no-scroll {
     bottom: auto;
     left: auto;
     transform: none;
-    max-width: var(--jzsa-info-center-max-width-fs);
+    max-width: var(--jzsa-info-wide-max-width-fs);
+}
+
+/* info-top is narrower: reserve space for 2 action icons on each side. */
+.jzsa-album:fullscreen .jzsa-info-stack-top .jzsa-info-top,
+.jzsa-album:-webkit-full-screen .jzsa-info-stack-top .jzsa-info-top,
+.jzsa-album.jzsa-pseudo-fullscreen .jzsa-info-stack-top .jzsa-info-top,
+.jzsa-album.jzsa-is-fullscreen .jzsa-info-stack-top .jzsa-info-top {
+    max-width: var(--jzsa-info-top-max-width-fs);
 }
 
 /* Fullscreen: bottom stack is a vertical column; scale applied to the container. */
@@ -1341,7 +1359,7 @@ body.jzsa-no-scroll {
     bottom: auto;
     left: auto;
     transform: none;
-    max-width: var(--jzsa-info-center-max-width-fs);
+    max-width: var(--jzsa-info-wide-max-width-fs);
 }
 
 .jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-carousel-tile-info-box {
