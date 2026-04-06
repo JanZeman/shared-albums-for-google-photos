@@ -7541,9 +7541,16 @@
         (function() {
             var galleryEl = $container[0];
 
-            // scroll-reveal-on-mobile: add jzsa-scrolling while scrolling, remove shortly after stop.
-            // Restricted to touch/mobile devices (maxTouchPoints > 0).
-            if ($container.attr('data-scroll-reveal-on-mobile') === 'true' && navigator.maxTouchPoints > 0) {
+            // gallery-scroll-reveal: add jzsa-scrolling while scrolling, remove shortly after stop.
+            // Values: 'mobile' (touch devices only), 'desktop' (non-touch only), 'always' (all).
+            (function() {
+                var scrollReveal = $container.attr('data-gallery-scroll-reveal');
+                if (!scrollReveal) return;
+                var isTouchDevice = navigator.maxTouchPoints > 0;
+                var active = scrollReveal === 'always' ||
+                             (scrollReveal === 'mobile'  &&  isTouchDevice) ||
+                             (scrollReveal === 'desktop' && !isTouchDevice);
+                if (!active) return;
                 var scrollStopTimer = null;
                 function onScroll() {
                     $container.addClass('jzsa-scrolling');
@@ -7555,7 +7562,7 @@
                 var scrollNs = 'scroll.jzsaScrollReveal-' + ($container.attr('id') || '');
                 $(window).off(scrollNs).on(scrollNs, onScroll);
                 galleryEl.addEventListener('scroll', onScroll, { passive: true });
-            }
+            }());
 
             function closestItem(target) {
                 return target && target.closest ? target.closest('.jzsa-gallery-item') : null;

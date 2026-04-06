@@ -493,7 +493,7 @@ class JZSA_Shared_Albums {
 			'gallery-row-height'     => $this->parse_gallery_row_height( $atts ),
 			'gallery-rows'           => $this->parse_gallery_rows( $atts ),
 			'gallery-scrollable'     => $this->parse_bool( $atts, 'gallery-scrollable', false ),
-			'scroll-reveal-on-mobile' => $this->parse_bool( $atts, 'scroll-reveal-on-mobile', false ),
+			'gallery-scroll-reveal'   => $this->parse_gallery_scroll_reveal( $atts ),
 			'gallery-gap'            => $this->parse_gallery_gap( $atts ),
 
 			// Mosaic (thumbnail strip alongside the main gallery)
@@ -764,6 +764,17 @@ class JZSA_Shared_Albums {
 	 * @param string $key  Attribute key.
 	 * @return string 'auto', 'manual', or 'disabled'.
 	 */
+	private function parse_gallery_scroll_reveal( $atts ) {
+		if ( ! isset( $atts['gallery-scroll-reveal'] ) ) {
+			return 'never';
+		}
+		$value = strtolower( trim( $atts['gallery-scroll-reveal'] ) );
+		if ( in_array( $value, array( 'never', 'mobile', 'desktop', 'always' ), true ) ) {
+			return $value;
+		}
+		return 'never';
+	}
+
 	private function parse_slideshow_mode( $atts, $key ) {
 		if ( ! isset( $atts[ $key ] ) ) {
 			return 'disabled';

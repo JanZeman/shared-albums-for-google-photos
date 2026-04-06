@@ -1138,9 +1138,9 @@ class JZSA_Settings_Page {
 								<td>false</td>
 							</tr>
 							<tr>
-								<td><code>scroll-reveal-on-mobile</code></td>
-								<td><?php esc_html_e( 'When set to "true", shows all thumbnail action buttons (fullscreen, link, download) while the user is scrolling on a touch device. Buttons are not tappable during scrolling but remain visible for 800ms after scroll stops, making them easy to tap. Has no effect on desktop.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td>false</td>
+								<td><code>gallery-scroll-reveal</code></td>
+								<td><?php esc_html_e( 'Shows all thumbnail action buttons while the user is scrolling, making them easy to discover and tap. "mobile" activates on touch devices only, "desktop" on non-touch only, "always" on all devices, "never" disables the feature. Buttons are not tappable mid-scroll but remain visible for 800ms after scroll stops.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>never</td>
 							</tr>
 							<tr>
 								<td><code>gallery-gap</code></td>
