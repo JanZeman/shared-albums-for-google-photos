@@ -1447,16 +1447,21 @@ class JZSA_Shared_Albums {
 			return '';
 		}
 
+		// sanitize_file_name() is intentionally NOT used here: it converts
+		// non-ASCII characters (ø→o, æ→a, etc.) and replaces spaces with hyphens,
+		// which corrupts display-only filenames. We just strip control characters.
 		if ( preg_match( "/filename\*\s*=\s*(?:UTF-8''|utf-8'')?([^;]+)/i", $content_disposition, $matches ) ) {
-			return sanitize_file_name( rawurldecode( trim( $matches[1], " \t\n\r\0\x0B\"'" ) ) );
+			$fn = rawurldecode( trim( $matches[1], " \t\n\r\0\x0B\"'" ) );
+			return preg_replace( '/[\x00-\x1F\x7F]/', '', $fn );
 		}
 
 		if ( preg_match( '/filename\s*=\s*"([^"]+)"/i', $content_disposition, $matches ) ) {
-			return sanitize_file_name( $matches[1] );
+			return preg_replace( '/[\x00-\x1F\x7F]/', '', $matches[1] );
 		}
 
 		if ( preg_match( '/filename\s*=\s*([^;]+)/i', $content_disposition, $matches ) ) {
-			return sanitize_file_name( trim( $matches[1], " \t\n\r\0\x0B\"'" ) );
+			$fn = trim( $matches[1], " \t\n\r\0\x0B\"'" );
+			return preg_replace( '/[\x00-\x1F\x7F]/', '', $fn );
 		}
 
 		return '';
