@@ -136,6 +136,9 @@ The plugin provides clear feedback:
 
 == Changelog ==
 
+= 2.0.8 =
+* File name bug fix
+
 = 2.0.7 =
 * New dynamic photo info overlays
 * EXIF placeholders with background loading
