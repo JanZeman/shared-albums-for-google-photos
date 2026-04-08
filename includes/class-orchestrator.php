@@ -409,6 +409,19 @@ class JZSA_Shared_Albums {
 		$info_font_family     = $this->parse_info_font_family( $atts, 'info-font-family', '' );
 		$info_font_color      = $this->parse_color( $atts, 'info-font-color', '' );
 		$info_wrap            = $this->parse_bool( $atts, 'info-wrap', false );
+		$allowed_alignments   = array( 'left', 'center', 'right' );
+		$info_text_align      = ( isset( $atts['info-text-align'] ) && in_array( $atts['info-text-align'], $allowed_alignments, true ) )
+			? $atts['info-text-align']
+			: 'center';
+		$info_top_text_align           = ( isset( $atts['info-top-text-align'] ) && in_array( $atts['info-top-text-align'], $allowed_alignments, true ) )
+			? $atts['info-top-text-align']
+			: null;
+		$info_top_secondary_text_align = ( isset( $atts['info-top-secondary-text-align'] ) && in_array( $atts['info-top-secondary-text-align'], $allowed_alignments, true ) )
+			? $atts['info-top-secondary-text-align']
+			: null;
+		$info_bottom_text_align        = ( isset( $atts['info-bottom-text-align'] ) && in_array( $atts['info-bottom-text-align'], $allowed_alignments, true ) )
+			? $atts['info-bottom-text-align']
+			: null;
 		$slideshow_autoresume = $this->parse_slideshow_autoresume(
 			$atts,
 			array( 'slideshow-autoresume', 'slideshow-autoresume-timeout', 'slideshow-inactivity-timeout' )
@@ -516,6 +529,10 @@ class JZSA_Shared_Albums {
 				'info-font-color'      => $info_font_color,
 				'fullscreen-info-font-color' => $fullscreen_info_font_color,
 				'info-wrap'            => $info_wrap,
+			'info-text-align'                => $info_text_align,
+			'info-top-text-align'            => $info_top_text_align,
+			'info-top-secondary-text-align'  => $info_top_secondary_text_align,
+			'info-bottom-text-align'         => $info_bottom_text_align,
 
 			// Info boxes - format strings with placeholders like {date} resolved per photo.
 			// Backward compat: show-name="true" maps to ="{name}".

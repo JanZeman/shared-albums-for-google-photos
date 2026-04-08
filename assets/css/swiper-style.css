@@ -1218,9 +1218,30 @@ body.jzsa-no-scroll {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    text-align: center;
     opacity: var(--jzsa-controls-visible-opacity);
     transition: opacity var(--jzsa-info-fade-duration) linear;
 }
+
+.jzsa-album[data-info-text-align="left"] .jzsa-info-box,
+.jzsa-album[data-info-text-align="left"] .swiper-pagination {
+    text-align: left;
+}
+.jzsa-album[data-info-text-align="right"] .jzsa-info-box,
+.jzsa-album[data-info-text-align="right"] .swiper-pagination {
+    text-align: right;
+}
+
+/* Per-box overrides — come after global rules so same specificity wins by order */
+.jzsa-album[data-info-top-text-align="left"] .jzsa-info-top { text-align: left; }
+.jzsa-album[data-info-top-text-align="center"] .jzsa-info-top { text-align: center; }
+.jzsa-album[data-info-top-text-align="right"] .jzsa-info-top { text-align: right; }
+.jzsa-album[data-info-top-secondary-text-align="left"] .jzsa-info-top-secondary { text-align: left; }
+.jzsa-album[data-info-top-secondary-text-align="center"] .jzsa-info-top-secondary { text-align: center; }
+.jzsa-album[data-info-top-secondary-text-align="right"] .jzsa-info-top-secondary { text-align: right; }
+.jzsa-album[data-info-bottom-text-align="left"] .swiper-pagination { text-align: left; }
+.jzsa-album[data-info-bottom-text-align="center"] .swiper-pagination { text-align: center; }
+.jzsa-album[data-info-bottom-text-align="right"] .swiper-pagination { text-align: right; }
 
 .jzsa-info-stack {
     position: static;
