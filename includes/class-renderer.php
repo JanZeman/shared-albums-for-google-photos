@@ -393,6 +393,9 @@ class JZSA_Renderer {
 		if ( isset( $config['info-font-size'] ) ) {
 			$attrs[] = sprintf( 'data-info-font-size="%d"', intval( $config['info-font-size'] ) );
 		}
+		if ( ! empty( $config['info-wrap'] ) ) {
+			$attrs[] = 'data-info-wrap="true"';
+		}
 		if ( isset( $config['fullscreen-info-font-size'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-info-font-size="%d"', intval( $config['fullscreen-info-font-size'] ) );
 		}

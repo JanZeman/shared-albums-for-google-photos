@@ -1269,7 +1269,7 @@ class JZSA_Settings_Page {
 							</tbody>
 						</table>
 
-						<h3><?php esc_html_e( 'Info Boxes (Inline)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<h3><?php esc_html_e( 'Info Boxes', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php echo wp_kses_post( __( 'Per-photo metadata overlays. Each zone accepts a format string with placeholders like <code>{date}</code>. Defaults are mode-aware: slider and carousel use <code>info-bottom</code> as the current-item counter by default, gallery tiles stay clean by default, paginated galleries use <code>gallery-info-bottom</code> for the page counter, and gallery fullscreen still shows the current-item counter. Leave a zone empty to hide it. See the Photo Info Overlay section below for available placeholders and examples.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 						<table class="jzsa-settings-table jzsa-settings-table--params">
 							<thead>
@@ -1287,6 +1287,7 @@ class JZSA_Settings_Page {
 								<tr><td><code>info-font-size</code></td><td><?php esc_html_e( 'Font size for all info boxes, including info-bottom (pixels)', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>12</td></tr>
 								<tr><td><code>info-font-family</code></td><td><?php echo wp_kses_post( __( '<strong>Recommended: use a font family stack, not a single font.</strong> Applies to all info boxes, including info-bottom. Use normal CSS <code>font-family</code> syntax with comma-separated fallbacks, for example <code>system-ui, sans-serif</code>, <code>Georgia, serif</code>, or <code>ui-monospace, SFMono-Regular, Consolas, monospace</code>. The font must already exist on the visitor device or be loaded by the theme/site. The plugin does not load web fonts; the browser falls back to the next family in the stack.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><code>system-ui, sans-serif</code></td></tr>
 								<tr><td><code>info-font-color</code></td><td><?php echo wp_kses_post( __( 'Text color for all info boxes, including info-bottom and gallery-info-bottom. Any valid 6-digit hex color such as <code>#FFFFFF</code> or <code>#9FE8FF</code>. <strong>If you set it, it overrides the info-box text color only.</strong> If you leave it empty, info boxes continue using <code>controls-color</code> for backward compatibility; if neither is set, they fall back to white.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><?php esc_html_e( 'inherits controls-color', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
+								<tr><td><code>info-wrap</code></td><td><?php esc_html_e( 'Allow info box text to wrap to multiple lines instead of being cut off with "...". Useful when displaying long values such as filenames ({name}) or combined EXIF strings. Set to "true" to enable wrapping; by default text is kept to a single line.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'false (single line)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 						</table>
 
 						<h3><?php esc_html_e( 'Fullscreen Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
@@ -1691,6 +1692,51 @@ class JZSA_Settings_Page {
 							<?php
 								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 										echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="512" corner-radius="16" show-link-button="true" show-download-button="true" info-font-size="18" info-font-family="ui-monospace, SFMono-Regular, Consolas, monospace" info-bottom="{item} / {items}" info-top="{camera}" info-top-secondary="{aperture} ⸱ {shutter} ⸱ {focal} ⸱ {iso}"]' );
+							?>
+						</div>
+					</div>
+
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Long Text: Truncated (Default)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'When text is too long it is cut off with "..." by default. Notice that info-top is intentionally narrower than info-top-secondary: it shares the top corners with action buttons (such as the fullscreen toggle), so space is reserved on both sides to avoid overlap. info-top-secondary and info-bottom have no such constraint and can use the full width.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
+							<code>[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom"]</code>
+							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+						<div class="jzsa-preview-container">
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom"]' );
+							?>
+						</div>
+					</div>
+
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Long Text: Wrapped (info-wrap="true")', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'The same shortcode with info-wrap="true" added. Long text breaks to a new line instead of being cut off; the pill expands vertically to fit all content. Consider reducing info-font-size slightly if the result feels too large.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
+							<code>[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-wrap="true"]</code>
+							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+						<div class="jzsa-preview-container">
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-wrap="true"]' );
+							?>
+						</div>
+					</div>
+
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Long Text: Wrapped with Link and Download Buttons', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'The same wrapped shortcode, but with show-link-button="true" and show-download-button="true" added. Both buttons appear in the top-left corner, so the plugin now reserves two slots on each side, making info-top noticeably shorter than in the previous example. This is intentional: without the extra reservation, info-top would overlap the buttons.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
+							<code>[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-wrap="true" show-link-button="true" show-download-button="true"]</code>
+							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+						<div class="jzsa-preview-container">
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-wrap="true" show-link-button="true" show-download-button="true"]' );
 							?>
 						</div>
 					</div>

@@ -64,10 +64,12 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     --jzsa-info-center-max-width-fs: calc(var(--jzsa-info-center-max-width-default) / var(--jzsa-controls-fs-scale));
     --jzsa-info-center-max-width-expanded-fs: calc(var(--jzsa-info-center-max-width-expanded) / var(--jzsa-controls-fs-scale));
     --jzsa-info-corner-max-width-fs: calc(var(--jzsa-info-corner-max-width) / var(--jzsa-controls-fs-scale));
-    /* info-top is constrained by 2 action icons on each side (link+download left, symmetry right).
-       Wide variant is for info-top-secondary, info-bottom stack, and the pagination pill. */
-    --jzsa-info-top-max-width: calc(100% - 4 * var(--jzsa-controls-circle-size));
-    --jzsa-info-top-max-width-fs: calc((100% - 4 * var(--jzsa-controls-circle-size-fs)) / var(--jzsa-controls-fs-scale));
+    /* info-top is constrained by corner action buttons. Default reserves 1 slot each side
+       (fullscreen right + mirror left for symmetry). Expands to 4 slots when link/download
+       are also active (overridden below). Wide variant is for info-top-secondary, info-bottom
+       stack, and the pagination pill. */
+    --jzsa-info-top-max-width: calc(100% - 2 * var(--jzsa-controls-circle-size));
+    --jzsa-info-top-max-width-fs: calc((100% - 2 * var(--jzsa-controls-circle-size-fs)) / var(--jzsa-controls-fs-scale));
     --jzsa-info-wide-max-width-fs: calc((100% - 24px) / var(--jzsa-controls-fs-scale));
     --jzsa-info-top-fs-offset: 9px;
     --jzsa-info-bottom-fs-offset: 20px;
@@ -357,6 +359,18 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 .jzsa-album:fullscreen[data-fullscreen-show-link-button="true"][data-fullscreen-show-download-button="true"] > .swiper-button-download,
 .jzsa-album:-webkit-full-screen[data-fullscreen-show-link-button="true"][data-fullscreen-show-download-button="true"] > .swiper-button-download {
     left: calc(var(--jzsa-controls-icon-size) + 24px);
+}
+
+/* Only when BOTH link and download are active do they occupy 2 slots on the left corner.
+   Reserve 4 slots total (2 each side for symmetry) so info-top never overlaps the buttons. */
+.jzsa-album[data-show-link-button="true"][data-show-download-button="true"] {
+    --jzsa-info-top-max-width: calc(100% - 4 * var(--jzsa-controls-circle-size));
+}
+.jzsa-album.jzsa-is-fullscreen[data-fullscreen-show-link-button="true"][data-fullscreen-show-download-button="true"],
+.jzsa-album.jzsa-pseudo-fullscreen[data-fullscreen-show-link-button="true"][data-fullscreen-show-download-button="true"],
+.jzsa-album:fullscreen[data-fullscreen-show-link-button="true"][data-fullscreen-show-download-button="true"],
+.jzsa-album:-webkit-full-screen[data-fullscreen-show-link-button="true"][data-fullscreen-show-download-button="true"] {
+    --jzsa-info-top-max-width-fs: calc((100% - 4 * var(--jzsa-controls-circle-size-fs)) / var(--jzsa-controls-fs-scale));
 }
 
 
@@ -734,7 +748,7 @@ body.jzsa-no-scroll {
     right: auto;
     margin: 0;
     transform: translateX(-50%);
-    max-width: calc(100% - 24px);
+    max-width: calc(100% - 2 * var(--jzsa-controls-circle-size));
     width: max-content;
     font-size: var(--jzsa-info-font-size, 12px);
     line-height: 1.5;
@@ -745,6 +759,12 @@ body.jzsa-no-scroll {
     text-overflow: ellipsis;
     white-space: nowrap;
     opacity: var(--jzsa-controls-visible-opacity);
+}
+
+.jzsa-album[data-info-wrap="true"] .jzsa-info-box,
+.jzsa-album[data-info-wrap="true"] .swiper-pagination {
+    white-space: normal;
+    text-overflow: clip;
 }
 
 .jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-has-active-bottom-center="true"] .swiper-pagination {
@@ -1261,9 +1281,14 @@ body.jzsa-no-scroll {
     max-width: calc(100% - 24px);
 }
 
-/* info-top is narrower than info-top-secondary: reserve space for 2 action icons on each side. */
+/* info-top: narrows with active corner buttons (link/download add slots). */
 .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .jzsa-info-stack-top .jzsa-info-top {
     max-width: var(--jzsa-info-top-max-width);
+}
+/* info-top-secondary: always clears the nav arrows (1 slot each side), but does not shrink
+   further when link/download buttons are active — those buttons are above it in the corners. */
+.jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .jzsa-info-stack-top .jzsa-info-top-secondary {
+    max-width: calc(100% - 2 * var(--jzsa-controls-circle-size));
 }
 
 /* Bottom stack is always a vertical column -  is centred, stacked above the pill.
@@ -1323,12 +1348,19 @@ body.jzsa-no-scroll {
     max-width: var(--jzsa-info-wide-max-width-fs);
 }
 
-/* info-top is narrower: reserve space for 2 action icons on each side. */
+/* Fullscreen: info-top narrows with active corner buttons. */
 .jzsa-album:fullscreen .jzsa-info-stack-top .jzsa-info-top,
 .jzsa-album:-webkit-full-screen .jzsa-info-stack-top .jzsa-info-top,
 .jzsa-album.jzsa-pseudo-fullscreen .jzsa-info-stack-top .jzsa-info-top,
 .jzsa-album.jzsa-is-fullscreen .jzsa-info-stack-top .jzsa-info-top {
     max-width: var(--jzsa-info-top-max-width-fs);
+}
+/* Fullscreen: info-top-secondary clears nav arrows only (1 slot each side, fixed). */
+.jzsa-album:fullscreen .jzsa-info-stack-top .jzsa-info-top-secondary,
+.jzsa-album:-webkit-full-screen .jzsa-info-stack-top .jzsa-info-top-secondary,
+.jzsa-album.jzsa-pseudo-fullscreen .jzsa-info-stack-top .jzsa-info-top-secondary,
+.jzsa-album.jzsa-is-fullscreen .jzsa-info-stack-top .jzsa-info-top-secondary {
+    max-width: calc((100% - 2 * var(--jzsa-controls-circle-size-fs)) / var(--jzsa-controls-fs-scale));
 }
 
 /* Fullscreen: bottom stack is a vertical column; scale applied to the container. */
