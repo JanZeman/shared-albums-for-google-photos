@@ -1640,6 +1640,8 @@ body.jzsa-no-scroll {
 .jzsa-gallery-item {
     position: relative;
     contain: layout style paint;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .jzsa-gallery-item .jzsa-gallery-thumb-fs-btn,
