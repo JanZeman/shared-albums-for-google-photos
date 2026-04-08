@@ -130,16 +130,18 @@ class JZSA_Renderer {
 		$styles = $this->build_container_styles( $config );
 		$attrs  = $this->build_data_attributes( $config );
 
-		$mosaic_enabled = ! empty( $config['mosaic'] );
-		$mosaic_pos     = ! empty( $config['mosaic-position'] ) ? $config['mosaic-position'] : 'right';
+		$mosaic_enabled    = ! empty( $config['mosaic'] );
+		$mosaic_pos        = ! empty( $config['mosaic-position'] ) ? $config['mosaic-position'] : 'right';
+		$has_responsive_ar = $this->has_explicit_responsive_aspect_ratio( $config );
 
 		$html = '';
 
 		// Mosaic wrapper: wraps both the main gallery and the thumbnail strip.
 		if ( $mosaic_enabled ) {
 			$html .= sprintf(
-				'<div class="jzsa-gallery-wrapper jzsa-mosaic-%s" style="%s">',
+				'<div class="jzsa-gallery-wrapper jzsa-mosaic-%s"%s style="%s">',
 				esc_attr( $mosaic_pos ),
+				$has_responsive_ar ? ' data-responsive-ar="true"' : '',
 				esc_attr( $styles )
 			);
 		}
@@ -211,12 +213,24 @@ class JZSA_Renderer {
 	private function build_container_styles( $config ) {
 		$styles = array();
 
-		if ( isset( $config['width'] ) && $config['width'] !== 'auto' ) {
+		$has_width       = isset( $config['width'] ) && $config['width'] !== 'auto';
+		$has_height      = isset( $config['height'] ) && $config['height'] !== 'auto';
+		$has_responsive_ar = $this->has_explicit_responsive_aspect_ratio( $config );
+
+		if ( $has_width ) {
 			$styles[] = 'width: ' . intval( $config['width'] ) . 'px';
+			$styles[] = 'max-width: 100%';
 		}
 
-		if ( isset( $config['height'] ) && $config['height'] !== 'auto' ) {
+		if ( $has_height ) {
+			// Always emit the fixed height so old browsers (no aspect-ratio support) keep a defined box.
 			$styles[] = 'height: ' . intval( $config['height'] ) . 'px';
+			// When the user explicitly set both dimensions, also store the ratio as a CSS custom
+			// property. The @supports rule in swiper-style.css then uses it to override height with
+			// auto + aspect-ratio on modern browsers, giving proportional scaling on narrow screens.
+			if ( $has_responsive_ar ) {
+				$styles[] = '--jzsa-ar: ' . intval( $config['width'] ) . ' / ' . intval( $config['height'] );
+			}
 		}
 
 		if ( ! empty( $config['background-color'] ) ) {
@@ -426,7 +440,28 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-fullscreen-info-font-color="%s"', esc_attr( $config['fullscreen-info-font-color'] ) );
 		}
 
+		// Flag for CSS @supports aspect-ratio rule: both dimensions were explicitly set in the shortcode.
+		if ( $this->has_explicit_responsive_aspect_ratio( $config ) ) {
+			$attrs[] = 'data-responsive-ar="true"';
+		}
+
 		return implode( ' ', $attrs );
+	}
+
+	/**
+	 * Check whether width and height were both explicitly set in the shortcode.
+	 *
+	 * This enables responsive aspect-ratio scaling on narrow screens without
+	 * changing gallery mode or non-explicit default sizing semantics.
+	 *
+	 * @param array $config Gallery configuration.
+	 * @return bool
+	 */
+	private function has_explicit_responsive_aspect_ratio( $config ) {
+		return ! empty( $config['width-explicit'] )
+			&& ! empty( $config['height-explicit'] )
+			&& isset( $config['width'] ) && $config['width'] !== 'auto'
+			&& isset( $config['height'] ) && $config['height'] !== 'auto';
 	}
 
 	/**
@@ -638,7 +673,7 @@ class JZSA_Renderer {
 		if ( ! empty( $config['info-font-color'] ) ) {
 			$styles[] = '--jzsa-info-font-color: ' . esc_attr( $config['info-font-color'] );
 		}
-		if ( ! empty( $config['width-explicit'] )&& isset( $config['width'] ) && $config['width'] !== 'auto' ) {
+		if ( ! empty( $config['width-explicit'] ) && isset( $config['width'] ) && $config['width'] !== 'auto' ) {
 			$styles[] = 'width: ' . intval( $config['width'] ) . 'px';
 		}
 		if ( ! empty( $config['height-explicit'] ) && isset( $config['height'] ) && $config['height'] !== 'auto' ) {

@@ -198,6 +198,28 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     margin: auto;
 }
 
+/* Responsive aspect-ratio for slider/carousel when both width and height were explicitly set.
+   The inline style carries height: Xpx as a fallback for browsers that don't support aspect-ratio.
+   This @supports block overrides that fallback on modern browsers so the height scales
+   proportionally as the container shrinks below the declared width. In mosaic mode,
+   the bounded size lives on the outer wrapper, so it needs the same override too.
+   Each vendor-prefixed fullscreen pseudo-class must be in its own selector to avoid
+   the whole rule being dropped when a browser encounters an unrecognised pseudo-class. */
+@supports (aspect-ratio: 1) {
+    .jzsa-album[data-responsive-ar="true"]:not(:fullscreen):not(.jzsa-pseudo-fullscreen) {
+        aspect-ratio: var(--jzsa-ar);
+        height: auto !important;
+    }
+    .jzsa-album[data-responsive-ar="true"]:not(:-webkit-full-screen):not(.jzsa-pseudo-fullscreen) {
+        aspect-ratio: var(--jzsa-ar);
+        height: auto !important;
+    }
+    .jzsa-gallery-wrapper[data-responsive-ar="true"] {
+        aspect-ratio: var(--jzsa-ar);
+        height: auto !important;
+    }
+}
+
 /* Navigation buttons */
 .jzsa-album .swiper-button-next,
 .jzsa-album .swiper-button-prev {
