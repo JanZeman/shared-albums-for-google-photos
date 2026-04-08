@@ -451,6 +451,21 @@
         return value === 'true';
     }
 
+    // Helper: Read an optional positive integer data attribute.
+    function readOptionalPositiveIntAttr($container, attrName) {
+        var rawValue = $container.attr(attrName);
+        if (rawValue === undefined || rawValue === null || rawValue === '') {
+            return null;
+        }
+
+        var parsed = parseInt(rawValue, 10);
+        if (isNaN(parsed) || parsed <= 0) {
+            return null;
+        }
+
+        return parsed;
+    }
+
     // Helper: Parse per-gallery download warning size from data attr (MB -> bytes).
     // Returns null when not specified, 0 to disable warning.
     function getDownloadWarningSizeBytes($container) {
@@ -2304,8 +2319,15 @@
         var infoFontSize = useFullscreen ? params.fullscreenInfoFontSize : params.infoFontSize;
         var infoFontFamily = useFullscreen ? params.fullscreenInfoFontFamily : params.infoFontFamily;
         var infoFontColor = useFullscreen ? params.fullscreenInfoFontColor : params.infoFontColor;
+        var fullscreenDisplayMaxWidth = params.fullscreenDisplayMaxWidth;
+        var fullscreenDisplayMaxHeight = params.fullscreenDisplayMaxHeight;
+        var hasFullscreenDisplayLimits = useFullscreen && (
+            (typeof fullscreenDisplayMaxWidth === 'number' && fullscreenDisplayMaxWidth > 0) ||
+            (typeof fullscreenDisplayMaxHeight === 'number' && fullscreenDisplayMaxHeight > 0)
+        );
 
         $container.attr('data-show-navigation', showNavigation ? 'true' : 'false');
+        $container.attr('data-has-fullscreen-display-limits', hasFullscreenDisplayLimits ? 'true' : 'false');
 
         if (controlsColor) {
             containerElement.style.setProperty('--jzsa-controls-color', controlsColor);
@@ -2336,6 +2358,18 @@
             containerElement.style.setProperty('--jzsa-info-font-color', infoFontColor);
         } else {
             containerElement.style.removeProperty('--jzsa-info-font-color');
+        }
+
+        if (hasFullscreenDisplayLimits && typeof fullscreenDisplayMaxWidth === 'number' && fullscreenDisplayMaxWidth > 0) {
+            containerElement.style.setProperty('--jzsa-fullscreen-display-max-width', fullscreenDisplayMaxWidth + 'px');
+        } else {
+            containerElement.style.removeProperty('--jzsa-fullscreen-display-max-width');
+        }
+
+        if (hasFullscreenDisplayLimits && typeof fullscreenDisplayMaxHeight === 'number' && fullscreenDisplayMaxHeight > 0) {
+            containerElement.style.setProperty('--jzsa-fullscreen-display-max-height', fullscreenDisplayMaxHeight + 'px');
+        } else {
+            containerElement.style.removeProperty('--jzsa-fullscreen-display-max-height');
         }
 
         var activeBottomCenterFormat = useFullscreen
@@ -4233,6 +4267,8 @@
         var fullscreenInfoFontFamilySetting = getInfoFontFamily($container, 'data-fullscreen-info-font-family', inlineInfoFontFamilySetting);
         var inlineInfoFontColorSetting = getInfoFontColor($container, 'data-info-font-color', '');
         var fullscreenInfoFontColorSetting = getInfoFontColor($container, 'data-fullscreen-info-font-color', inlineInfoFontColorSetting);
+        var fullscreenDisplayMaxWidthSetting = readOptionalPositiveIntAttr($container, 'data-fullscreen-display-max-width');
+        var fullscreenDisplayMaxHeightSetting = readOptionalPositiveIntAttr($container, 'data-fullscreen-display-max-height');
         var inlineVideoControlsAutohideSetting = readBooleanDataAttr($container, 'data-video-controls-autohide', false);
         var fullscreenVideoControlsAutohideSetting = readBooleanDataAttr(
             $container,
@@ -4276,6 +4312,8 @@
             fullscreenInfoFontFamily: fullscreenInfoFontFamilySetting,
             infoFontColor: inlineInfoFontColorSetting,
             fullscreenInfoFontColor: fullscreenInfoFontColorSetting,
+            fullscreenDisplayMaxWidth: fullscreenDisplayMaxWidthSetting,
+            fullscreenDisplayMaxHeight: fullscreenDisplayMaxHeightSetting,
             videoControlsAutohide: inlineVideoControlsAutohideSetting,
             fullscreenVideoControlsAutohide: fullscreenVideoControlsAutohideSetting,
             albumTitle: $container.attr('data-album-title') || '',
@@ -4847,6 +4885,8 @@
                 fullscreenInfoFontFamily: config.fullscreenInfoFontFamily,
                 infoFontColor: config.infoFontColor,
                 fullscreenInfoFontColor: config.fullscreenInfoFontColor,
+                fullscreenDisplayMaxWidth: config.fullscreenDisplayMaxWidth,
+                fullscreenDisplayMaxHeight: config.fullscreenDisplayMaxHeight,
                 videoControlsAutohide: videoControlsAutohide,
                 fullscreenVideoControlsAutohide: fullscreenVideoControlsAutohide,
                 browserPrefix: null,
@@ -5284,6 +5324,8 @@
             'data-album-url',
             'data-image-fit',
             'data-fullscreen-image-fit',
+            'data-fullscreen-display-max-width',
+            'data-fullscreen-display-max-height',
             'data-background-color',
             'data-fullscreen-background-color',
             'data-controls-color',

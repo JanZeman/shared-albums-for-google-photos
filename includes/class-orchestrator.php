@@ -454,6 +454,8 @@ class JZSA_Shared_Albums {
 			'source-height'             => isset( $atts['source-height'] ) ? intval( $atts['source-height'] ) : self::DEFAULT_SOURCE_HEIGHT,
 			'fullscreen-source-width'   => isset( $atts['fullscreen-source-width'] ) ? intval( $atts['fullscreen-source-width'] ) : self::DEFAULT_FULLSCREEN_SOURCE_WIDTH,
 			'fullscreen-source-height'  => isset( $atts['fullscreen-source-height'] ) ? intval( $atts['fullscreen-source-height'] ) : self::DEFAULT_FULLSCREEN_SOURCE_HEIGHT,
+			'fullscreen-display-max-width'  => $this->parse_optional_positive_int( $atts, 'fullscreen-display-max-width' ),
+			'fullscreen-display-max-height' => $this->parse_optional_positive_int( $atts, 'fullscreen-display-max-height' ),
 			// Slideshow (normal mode)
 			'slideshow'       => $this->parse_slideshow_mode( $atts, 'slideshow' ),
 			'slideshow-delay' => $this->parse_delay_range( isset( $atts['slideshow-delay'] ) ? $atts['slideshow-delay'] : self::DEFAULT_SLIDESHOW_DELAY_RANGE ),
@@ -774,6 +776,28 @@ class JZSA_Shared_Albums {
 
 		if ( self::MAX_DOWNLOAD_SIZE_MB > 0 && $value > self::MAX_DOWNLOAD_SIZE_MB ) {
 			return self::MAX_DOWNLOAD_SIZE_MB;
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Parse an optional positive integer attribute.
+	 *
+	 * Returns null when the attribute is omitted or invalid.
+	 *
+	 * @param array  $atts Shortcode attributes.
+	 * @param string $key  Attribute key.
+	 * @return int|null Positive integer or null.
+	 */
+	private function parse_optional_positive_int( $atts, $key ) {
+		if ( ! isset( $atts[ $key ] ) ) {
+			return null;
+		}
+
+		$value = intval( $atts[ $key ] );
+		if ( $value <= 0 ) {
+			return null;
 		}
 
 		return $value;

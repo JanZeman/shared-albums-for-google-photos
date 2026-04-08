@@ -340,6 +340,12 @@ class JZSA_Renderer {
 		if ( ! empty( $config['fullscreen-image-fit'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-image-fit="%s"', esc_attr( $config['fullscreen-image-fit'] ) );
 		}
+		if ( isset( $config['fullscreen-display-max-width'] ) && null !== $config['fullscreen-display-max-width'] ) {
+			$attrs[] = sprintf( 'data-fullscreen-display-max-width="%d"', intval( $config['fullscreen-display-max-width'] ) );
+		}
+		if ( isset( $config['fullscreen-display-max-height'] ) && null !== $config['fullscreen-display-max-height'] ) {
+			$attrs[] = sprintf( 'data-fullscreen-display-max-height="%d"', intval( $config['fullscreen-display-max-height'] ) );
+		}
 
 		if ( isset( $config['start-at'] ) && '' !== $config['start-at'] ) {
 			$attrs[] = sprintf( 'data-start-at="%s"', esc_attr( $config['start-at'] ) );
@@ -560,6 +566,12 @@ class JZSA_Renderer {
 
 		if ( ! empty( $config['fullscreen-image-fit'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-image-fit="%s"', esc_attr( $config['fullscreen-image-fit'] ) );
+		}
+		if ( isset( $config['fullscreen-display-max-width'] ) && null !== $config['fullscreen-display-max-width'] ) {
+			$attrs[] = sprintf( 'data-fullscreen-display-max-width="%d"', intval( $config['fullscreen-display-max-width'] ) );
+		}
+		if ( isset( $config['fullscreen-display-max-height'] ) && null !== $config['fullscreen-display-max-height'] ) {
+			$attrs[] = sprintf( 'data-fullscreen-display-max-height="%d"', intval( $config['fullscreen-display-max-height'] ) );
 		}
 
 		if ( ! empty( $config['background-color'] ) ) {
