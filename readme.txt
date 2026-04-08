@@ -136,6 +136,11 @@ The plugin provides clear feedback:
 
 == Changelog ==
 
+= 2.0.9 =
+* New `fullscreen-display-max-width` and `fullscreen-display-max-height`
+* New `info-wrap` and info text alignment parameters
+* New `gallery-buttons-on-mobile` behavior for touch devices
+
 = 2.0.8 =
 * File name bug fix
 
