@@ -31,7 +31,7 @@ class JZSA_Settings_Page {
 	public function add_settings_page() {
 		add_options_page(
 			'Shared Albums for Google Photos (by JanZeman)',           // Page title
-			'Shared Albums for Google Photos (by JanZeman)',           // Menu title
+			'Shared Albums for Google Photos',           // Menu title
 			'manage_options',                 // Capability
 			'janzeman-shared-albums-for-google-photos',           // Menu slug
 			array( $this, 'render_settings_page' ) // Callback
