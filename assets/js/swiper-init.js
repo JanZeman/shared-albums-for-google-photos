@@ -1021,6 +1021,21 @@
                 scheduleExifPrefetch($container, zoneFormats);
             }
             maybeEnableRewind(getLoadedPhotos());
+
+            // If we've reached one end, keep loading the other side until the
+            // whole album is ready and rewind can turn on. setTimeout waits
+            // for the current load to finish before starting the next one.
+            if (!swiper.params.rewind) {
+                var allLoaded = getLoadedPhotos();
+                var fIdx = allLoaded.length ? getPhotoGlobalIndex(allLoaded[0], 0) : -1;
+                var lIdx = allLoaded.length ? getPhotoGlobalIndex(allLoaded[allLoaded.length - 1], allLoaded.length - 1) : -1;
+                if (fIdx === 0 && lIdx < totalCount - 1) {
+                    window.setTimeout(ensureChunkAfter, 0);
+                }
+                if (lIdx >= totalCount - 1 && fIdx > 0) {
+                    window.setTimeout(ensureChunkBefore, 0);
+                }
+            }
         }
 
         function ensureChunkBefore() {
