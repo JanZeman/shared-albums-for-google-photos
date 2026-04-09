@@ -273,6 +273,10 @@ class JZSA_Renderer {
 		// Photo URLs as JSON
 		if ( ! empty( $config['photos'] ) ) {
 			$attrs[] = sprintf( 'data-all-photos=\'%s\'', esc_attr( wp_json_encode( $config['photos'] ) ) );
+		}
+		if ( isset( $config['progressive-total-count'] ) ) {
+			$attrs[] = sprintf( 'data-total-count="%d"', intval( $config['progressive-total-count'] ) );
+		} elseif ( ! empty( $config['photos'] ) ) {
 			$attrs[] = sprintf( 'data-total-count="%d"', count( $config['photos'] ) );
 		}
 
@@ -409,6 +413,17 @@ class JZSA_Renderer {
 
 		if ( ! empty( $config['album-url'] ) ) {
 			$attrs[] = sprintf( 'data-album-url="%s"', esc_url( $config['album-url'] ) );
+		}
+		if ( ! empty( $config['progressive-loading'] ) ) {
+			$attrs[] = 'data-progressive-loading="true"';
+			$attrs[] = sprintf( 'data-progressive-initial-chunk-size="%d"', intval( $config['progressive-initial-chunk-size'] ) );
+			$attrs[] = sprintf( 'data-progressive-chunk-size="%d"', intval( $config['progressive-chunk-size'] ) );
+			$attrs[] = sprintf( 'data-progressive-limit="%d"', intval( $config['limit'] ) );
+			$attrs[] = sprintf( 'data-progressive-show-videos="%s"', ! empty( $config['show-videos'] ) ? 'true' : 'false' );
+			$attrs[] = sprintf( 'data-progressive-source-width="%d"', intval( $config['source-width'] ) );
+			$attrs[] = sprintf( 'data-progressive-source-height="%d"', intval( $config['source-height'] ) );
+			$attrs[] = sprintf( 'data-progressive-fullscreen-source-width="%d"', intval( $config['fullscreen-source-width'] ) );
+			$attrs[] = sprintf( 'data-progressive-fullscreen-source-height="%d"', intval( $config['fullscreen-source-height'] ) );
 		}
 		if ( isset( $config['info-font-size'] ) ) {
 			$attrs[] = sprintf( 'data-info-font-size="%d"', intval( $config['info-font-size'] ) );

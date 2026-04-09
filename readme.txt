@@ -136,6 +136,9 @@ The plugin provides clear feedback:
 
 == Changelog ==
 
+= 2.0.10 =
+* Lighter loading for large sliders
+
 = 2.0.9 =
 * New `fullscreen-display-max-width` and `fullscreen-display-max-height`
 * New `info-wrap` and info text alignment parameters

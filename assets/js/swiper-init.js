@@ -288,34 +288,6 @@
         return (window.navigator.maxTouchPoints || 0) > 0;
     }
 
-    // Old iOS/WebKit limits
-    var OLD_IOS_MAX_PHOTOS = 25; // Keep galleries small on older iOS devices
-
-    // Helper: Parse iOS major version from the user agent string.
-    // Returns a number (e.g. 16) or null if not on iOS / not parsable.
-    function getIosMajorVersion() {
-        var ua = window.navigator.userAgent || '';
-        var match = ua.match(/OS (\d+)_\d+(?:_\d+)? like Mac OS X/);
-        if (match && match[1]) {
-            var v = parseInt(match[1], 10);
-            return isNaN(v) ? null : v;
-        }
-        return null;
-    }
-
-    // Helper: Detect "old" iOS/WebKit where large galleries are problematic.
-    // Threshold 16 is chosen based on real-device behaviour; adjust if needed.
-    function isOldIosWebkit() {
-        if (!isIosDevice()) {
-            return false;
-        }
-        var major = getIosMajorVersion();
-        if (major == null) {
-            return false;
-        }
-        return major <= 16;
-    }
-
     // Helper: Detect iPhone/iPod (used for pseudo fullscreen fallback)
     function isIphone() {
         var ua = window.navigator.userAgent || '';
@@ -784,6 +756,351 @@
             }
             return freshPhotos;
         });
+    }
+
+    function getPhotoGlobalIndex(photo, fallbackIndex) {
+        if (photo && photo.globalIndex !== undefined && photo.globalIndex !== null) {
+            var parsed = parseInt(photo.globalIndex, 10);
+            if (!isNaN(parsed) && parsed >= 0) {
+                return parsed;
+            }
+        }
+        return (typeof fallbackIndex === 'number' && fallbackIndex >= 0) ? fallbackIndex : 0;
+    }
+
+    function getContainerPhotos($container) {
+        var photosJson = $container.attr('data-all-photos');
+        if (!photosJson) {
+            return [];
+        }
+        try {
+            var photos = JSON.parse(photosJson);
+            return Array.isArray(photos) ? photos : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function setContainerPhotos($container, photos) {
+        $container.attr('data-all-photos', JSON.stringify(Array.isArray(photos) ? photos : []));
+    }
+
+    function getContainerTotalCount($container) {
+        var totalCount = parseInt($container.attr('data-total-count'), 10);
+        if (!isNaN(totalCount) && totalCount >= 0) {
+            return totalCount;
+        }
+        return getContainerPhotos($container).length;
+    }
+
+    function findPhotoLocalIndex(photos, globalIndex) {
+        for (var i = 0; i < photos.length; i++) {
+            if (getPhotoGlobalIndex(photos[i], i) === globalIndex) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    function getContainerPhotoByGlobalIndex($container, globalIndex) {
+        var photos = getContainerPhotos($container);
+        if (!photos.length || globalIndex < 0) {
+            return {};
+        }
+
+        if (photos[globalIndex] && getPhotoGlobalIndex(photos[globalIndex], globalIndex) === globalIndex) {
+            return photos[globalIndex];
+        }
+
+        var localIndex = findPhotoLocalIndex(photos, globalIndex);
+        return localIndex >= 0 ? (photos[localIndex] || {}) : {};
+    }
+
+    function replaceContainerPhotoByGlobalIndex($container, globalIndex, updatedPhoto) {
+        var photos = getContainerPhotos($container);
+        var localIndex = findPhotoLocalIndex(photos, globalIndex);
+        if (localIndex < 0) {
+            return false;
+        }
+        photos[localIndex] = updatedPhoto;
+        setContainerPhotos($container, photos);
+        return true;
+    }
+
+    function getProgressiveSliderSettings($container) {
+        return {
+            enabled: $container.attr('data-progressive-loading') === 'true',
+            initialChunkSize: Math.max(1, parseInt($container.attr('data-progressive-initial-chunk-size'), 10) || 24),
+            chunkSize: Math.max(1, parseInt($container.attr('data-progressive-chunk-size'), 10) || 24),
+            limit: Math.max(1, parseInt($container.attr('data-progressive-limit'), 10) || getContainerTotalCount($container) || 1),
+            showVideos: $container.attr('data-progressive-show-videos') === 'true',
+            sourceWidth: Math.max(1, parseInt($container.attr('data-progressive-source-width'), 10) || 800),
+            sourceHeight: Math.max(1, parseInt($container.attr('data-progressive-source-height'), 10) || 600),
+            fullscreenSourceWidth: Math.max(1, parseInt($container.attr('data-progressive-fullscreen-source-width'), 10) || 1920),
+            fullscreenSourceHeight: Math.max(1, parseInt($container.attr('data-progressive-fullscreen-source-height'), 10) || 1440)
+        };
+    }
+
+    function fetchAlbumChunk($container, offset, count) {
+        if (typeof jzsaAjax === 'undefined' || !jzsaAjax.ajaxUrl || !jzsaAjax.chunkNonce) {
+            return $.Deferred().reject('missing-ajax-config').promise();
+        }
+
+        var settings = getProgressiveSliderSettings($container);
+        var albumUrl = $container.attr('data-album-url') || '';
+        if (!albumUrl) {
+            return $.Deferred().reject('missing-album-url').promise();
+        }
+
+        return $.ajax({
+            url: jzsaAjax.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'jzsa_fetch_album_chunk',
+                nonce: jzsaAjax.chunkNonce,
+                album_url: albumUrl,
+                offset: Math.max(0, offset),
+                count: Math.max(1, count),
+                limit: settings.limit,
+                show_videos: settings.showVideos ? 'true' : 'false',
+                source_width: settings.sourceWidth,
+                source_height: settings.sourceHeight,
+                fullscreen_source_width: settings.fullscreenSourceWidth,
+                fullscreen_source_height: settings.fullscreenSourceHeight
+            }
+        }).then(function(response) {
+            if (!response || !response.success || !response.data || !Array.isArray(response.data.photos)) {
+                return $.Deferred().reject('invalid-chunk-response').promise();
+            }
+            return response.data;
+        });
+    }
+
+    function computeInitialGlobalPhotoIndex($container, totalCount) {
+        var startAtRaw = (($container.attr('data-start-at') || '1') + '').toLowerCase();
+        if (totalCount <= 0) {
+            return 0;
+        }
+        if (startAtRaw === 'random') {
+            return Math.floor(Math.random() * totalCount);
+        }
+        var requested = parseInt(startAtRaw, 10);
+        if (isNaN(requested) || requested < 1 || requested > totalCount) {
+            requested = 1;
+        }
+        return requested - 1;
+    }
+
+    function bootstrapProgressiveSlider($container, mode) {
+        var existingPromise = $container.data('jzsaProgressiveBootstrap');
+        if (existingPromise) {
+            return existingPromise;
+        }
+
+        var totalCount = getContainerTotalCount($container);
+        var settings = getProgressiveSliderSettings($container);
+        var initialGlobalIndex = computeInitialGlobalPhotoIndex($container, totalCount);
+        var initialOffset = Math.max(
+            0,
+            Math.min(
+                initialGlobalIndex - Math.floor(settings.initialChunkSize / 2),
+                Math.max(0, totalCount - settings.initialChunkSize)
+            )
+        );
+
+        $container.data('jzsaProgressiveInitialGlobalIndex', initialGlobalIndex);
+        if ($container.find('.jzsa-loader').length === 0) {
+            $container.append(buildLoaderHtml('Loading content...'));
+        }
+        $container
+            .removeClass('jzsa-loaded')
+            .addClass('jzsa-loader-pending jzsa-loader-visible');
+
+        var bootstrapPromise = fetchAlbumChunk($container, initialOffset, settings.initialChunkSize)
+            .done(function(data) {
+                setContainerPhotos($container, data.photos);
+                if (data.total_count !== undefined && data.total_count !== null) {
+                    $container.attr('data-total-count', data.total_count);
+                }
+                $container.removeData('jzsaProgressiveBootstrap');
+                initializeSwiper($container[0], mode);
+            })
+            .fail(function() {
+                $container
+                    .removeClass('jzsa-loader-pending jzsa-loader-visible')
+                    .addClass('jzsa-loaded');
+                $container.removeData('jzsaProgressiveBootstrap');
+            });
+
+        $container.data('jzsaProgressiveBootstrap', bootstrapPromise);
+        return bootstrapPromise;
+    }
+
+    function setupProgressiveSliderChunkLoading(swiper, $container, progressiveParams) {
+        if (!progressiveParams || !progressiveParams.enabled || !swiper) {
+            return;
+        }
+
+        var chunkSize = Math.max(1, progressiveParams.chunkSize || 24);
+        var totalCount = Math.max(0, progressiveParams.totalCount || getContainerTotalCount($container));
+        var zoneFormats = progressiveParams.zoneFormats || null;
+        var prefetchMargin = Math.max(4, Math.floor(chunkSize / 3));
+        var loadingBefore = false;
+        var loadingAfter = false;
+
+        function getLoadedPhotos() {
+            return getContainerPhotos($container);
+        }
+
+        function syncLoadedPhotos(photos) {
+            setContainerPhotos($container, photos);
+        }
+
+        function maybeEnableRewind(photos) {
+            if (!photos.length) {
+                return;
+            }
+            var firstIndex = getPhotoGlobalIndex(photos[0], 0);
+            var lastIndex = getPhotoGlobalIndex(photos[photos.length - 1], photos.length - 1);
+            if (firstIndex === 0 && lastIndex >= totalCount - 1 && !swiper.params.rewind) {
+                swiper.params.rewind = true;
+                swiper.update();
+            }
+        }
+
+        function mergeChunk(direction, chunkPhotos) {
+            if (!chunkPhotos || !chunkPhotos.length) {
+                maybeEnableRewind(getLoadedPhotos());
+                return;
+            }
+
+            var loadedPhotos = getLoadedPhotos();
+            var existing = {};
+            for (var i = 0; i < loadedPhotos.length; i++) {
+                existing[getPhotoGlobalIndex(loadedPhotos[i], i)] = true;
+            }
+
+            var mergedPhotos = [];
+            for (var j = 0; j < chunkPhotos.length; j++) {
+                var globalIndex = getPhotoGlobalIndex(chunkPhotos[j], j);
+                if (!existing[globalIndex]) {
+                    mergedPhotos.push(chunkPhotos[j]);
+                    existing[globalIndex] = true;
+                }
+            }
+
+            if (!mergedPhotos.length) {
+                maybeEnableRewind(loadedPhotos);
+                return;
+            }
+
+            var activeIndex = swiper.activeIndex;
+            var slideMarkupList = mergedPhotos.map(function(photo) {
+                return buildSlidesHtml([photo], {
+                    mode: 'slider',
+                    lazyHints: true,
+                    eagerIndex: -1
+                });
+            });
+
+            if (direction === 'before') {
+                syncLoadedPhotos(mergedPhotos.concat(loadedPhotos));
+                swiper.prependSlide(slideMarkupList);
+                swiper.update();
+                swiper.slideTo(activeIndex + mergedPhotos.length, 0, false);
+            } else {
+                syncLoadedPhotos(loadedPhotos.concat(mergedPhotos));
+                swiper.appendSlide(slideMarkupList);
+                swiper.update();
+            }
+
+            scheduleDurationPrefetch($container);
+            if (zoneFormats) {
+                scheduleExifPrefetch($container, zoneFormats);
+            }
+            maybeEnableRewind(getLoadedPhotos());
+        }
+
+        function ensureChunkBefore() {
+            if (loadingBefore) {
+                return;
+            }
+            var loadedPhotos = getLoadedPhotos();
+            if (!loadedPhotos.length) {
+                return;
+            }
+            var firstIndex = getPhotoGlobalIndex(loadedPhotos[0], 0);
+            if (firstIndex <= 0) {
+                maybeEnableRewind(loadedPhotos);
+                return;
+            }
+            loadingBefore = true;
+            var beforeOffset = Math.max(0, firstIndex - chunkSize);
+            var beforeCount = firstIndex - beforeOffset;
+            fetchAlbumChunk($container, beforeOffset, beforeCount)
+                .done(function(data) {
+                    mergeChunk('before', data.photos || []);
+                })
+                .always(function() {
+                    loadingBefore = false;
+                });
+        }
+
+        function ensureChunkAfter() {
+            if (loadingAfter) {
+                return;
+            }
+            var loadedPhotos = getLoadedPhotos();
+            if (!loadedPhotos.length) {
+                return;
+            }
+            var lastIndex = getPhotoGlobalIndex(loadedPhotos[loadedPhotos.length - 1], loadedPhotos.length - 1);
+            if (lastIndex >= totalCount - 1) {
+                maybeEnableRewind(loadedPhotos);
+                return;
+            }
+            loadingAfter = true;
+            var afterOffset = lastIndex + 1;
+            var afterCount = Math.min(chunkSize, totalCount - afterOffset);
+            fetchAlbumChunk($container, afterOffset, afterCount)
+                .done(function(data) {
+                    mergeChunk('after', data.photos || []);
+                })
+                .always(function() {
+                    loadingAfter = false;
+                });
+        }
+
+        function ensureBuffer() {
+            var loadedPhotos = getLoadedPhotos();
+            if (!loadedPhotos.length) {
+                return;
+            }
+
+            var activeGlobalIndex = getSwiperPhotoIndex(swiper);
+            var firstIndex = getPhotoGlobalIndex(loadedPhotos[0], 0);
+            var lastIndex = getPhotoGlobalIndex(loadedPhotos[loadedPhotos.length - 1], loadedPhotos.length - 1);
+
+            if (activeGlobalIndex - firstIndex <= prefetchMargin) {
+                ensureChunkBefore();
+            }
+            if (lastIndex - activeGlobalIndex <= prefetchMargin) {
+                ensureChunkAfter();
+            }
+        }
+
+        maybeEnableRewind(getLoadedPhotos());
+        // Eagerly pre-fetch in both directions regardless of the current position —
+        // each function already knows when there is nothing to fetch (firstIndex === 0,
+        // lastIndex >= totalCount - 1) and returns early in those cases. This covers
+        // the scenario where the initial chunk is centred in the album and the user
+        // navigates backwards before the margin-based ensureBuffer would have fired.
+        ensureChunkBefore();
+        ensureChunkAfter();
+        swiper.on('slideChange', ensureBuffer);
+        swiper.on('slideChangeTransitionEnd', ensureBuffer);
+        swiper.on('reachBeginning', ensureBuffer);
+        swiper.on('reachEnd', ensureBuffer);
     }
 
     /**
@@ -1754,30 +2071,25 @@
             return;
         }
 
-        // Merge into allPhotos JSON so future slide rebuilds have EXIF.
-        var photosJson = $container.attr('data-all-photos');
-        if (photosJson) {
-            try {
-                var photos = JSON.parse(photosJson);
-                if (photos[photoIndex]) {
-                    var p = photos[photoIndex];
-                    var changed = false;
-                    var fields = ['camera', 'aperture', 'shutter', 'focal', 'iso', 'filename'];
-                    for (var f = 0; f < fields.length; f++) {
-                        if (exifData[fields[f]]) {
-                            p[fields[f]] = exifData[fields[f]];
-                            changed = true;
-                        }
-                    }
-                    if (changed) {
-                        $container.attr('data-all-photos', JSON.stringify(photos));
-                        // Trigger container-level info box refresh.
-                        // Info boxes are container-level (not per-slide), so we
-                        // fire a custom event that updateAllInfoBoxes listens on.
-                        $container.trigger('jzsa:exif-update');
-                    }
+        var photos = getContainerPhotos($container);
+        var localIndex = findPhotoLocalIndex(photos, photoIndex);
+        if (localIndex >= 0) {
+            var p = photos[localIndex];
+            var changed = false;
+            var fields = ['camera', 'aperture', 'shutter', 'focal', 'iso', 'filename'];
+            for (var f = 0; f < fields.length; f++) {
+                if (exifData[fields[f]]) {
+                    p[fields[f]] = exifData[fields[f]];
+                    changed = true;
                 }
-            } catch (e) { /* ignore */ }
+            }
+            if (changed) {
+                replaceContainerPhotoByGlobalIndex($container, photoIndex, p);
+                // Trigger container-level info box refresh.
+                // Info boxes are container-level (not per-slide), so we
+                // fire a custom event that updateAllInfoBoxes listens on.
+                $container.trigger('jzsa:exif-update');
+            }
         }
     }
 
@@ -1888,6 +2200,7 @@
             var photos = JSON.parse(photosJson);
             for (var i = 0; i < photos.length; i++) {
                 var p = photos[i];
+                var photoGlobalIndex = getPhotoGlobalIndex(p, i);
                 var cachedMeta = exifCache[p.id] || {};
                 var needsExifForPhoto = metaNeeds.exif && !p.camera && !cachedMeta.camera;
                 var needsFilenameForPhoto = metaNeeds.filename && !p.filename && !cachedMeta.filename;
@@ -1897,14 +2210,14 @@
                         window.setTimeout(function() {
                             applyExifToPhoto(mediaId, cachedMeta, containerEl, formats, photoIndex);
                         }, 0);
-                    })(p.id, exifCache[p.id], $container, zoneFormats, i);
+                    })(p.id, exifCache[p.id], $container, zoneFormats, photoGlobalIndex);
                 }
 
                 if (!p.id || (!needsExifForPhoto && !needsFilenameForPhoto)) {
                     continue;
                 }
 
-                addExifWaiter(p.id, $container, zoneFormats, i);
+                addExifWaiter(p.id, $container, zoneFormats, photoGlobalIndex);
 
                 if (exifQueued[p.id] || exifInFlight[p.id]) {
                     continue;
@@ -1943,21 +2256,27 @@
             return 0;
         }
 
-        if (typeof swiper.realIndex === 'number' && !isNaN(swiper.realIndex)) {
-            return swiper.realIndex;
-        }
-
         if (
             swiper.slides &&
             typeof swiper.activeIndex === 'number' &&
             swiper.activeIndex >= 0 &&
             swiper.slides[swiper.activeIndex]
         ) {
+            var globalIndexAttr = $(swiper.slides[swiper.activeIndex]).attr('data-jzsa-global-index');
+            var parsedGlobalIndex = parseInt(globalIndexAttr, 10);
+            if (!isNaN(parsedGlobalIndex) && parsedGlobalIndex >= 0) {
+                return parsedGlobalIndex;
+            }
+
             var realIndexAttr = $(swiper.slides[swiper.activeIndex]).attr('data-swiper-slide-index');
             var parsedRealIndex = parseInt(realIndexAttr, 10);
             if (!isNaN(parsedRealIndex) && parsedRealIndex >= 0) {
                 return parsedRealIndex;
             }
+        }
+
+        if (typeof swiper.realIndex === 'number' && !isNaN(swiper.realIndex)) {
+            return swiper.realIndex;
         }
 
         if (typeof swiper.activeIndex === 'number' && swiper.activeIndex >= 0) {
@@ -1968,15 +2287,7 @@
     }
 
     function getContainerPhoto($container, photoIndex) {
-        var photosJson = $container.attr('data-all-photos');
-        if (!photosJson || photoIndex < 0) {
-            return {};
-        }
-        try {
-            return JSON.parse(photosJson)[photoIndex] || {};
-        } catch (e) {
-            return {};
-        }
+        return getContainerPhotoByGlobalIndex($container, photoIndex);
     }
 
     // Returns {item, items} strings for the container-level pagination pill.
@@ -2083,6 +2394,7 @@
         var carouselAlbumTitle = config.carouselAlbumTitle || '';
         var html = '';
         photos.forEach(function(photo, index) {
+            var globalIndex = getPhotoGlobalIndex(photo, index);
             var isVideo = photo.type === 'video';
             var tileOverlayButtons = '';
             var tileInfoHtml = '';
@@ -2104,11 +2416,11 @@
                         : (photo.full || photo.preview || '');
                     var downloadPosClass = showTileLink ? 'jzsa-carousel-slide-left-secondary' : 'jzsa-carousel-slide-left-primary';
                     tileOverlayButtons +=
-                        '<button class="swiper-button-download jzsa-carousel-slide-overlay-btn jzsa-carousel-slide-download-btn ' + downloadPosClass + '" type="button" data-download-url="' + downloadUrl + '" data-download-type="' + (isVideo ? 'video' : 'photo') + '" data-download-index="' + (index + 1) + '" title="Download current media" aria-label="Download media ' + (index + 1) + '"></button>';
+                        '<button class="swiper-button-download jzsa-carousel-slide-overlay-btn jzsa-carousel-slide-download-btn ' + downloadPosClass + '" type="button" data-download-url="' + downloadUrl + '" data-download-type="' + (isVideo ? 'video' : 'photo') + '" data-download-index="' + (globalIndex + 1) + '" title="Download current media" aria-label="Download media ' + (globalIndex + 1) + '"></button>';
                 }
 
                 tileInfoHtml = buildCarouselTileInfoHtml(photo, carouselZoneFormats, $.extend(
-                    buildSinglePhotoItemPlaceholders(index, carouselTotalCount),
+                    buildSinglePhotoItemPlaceholders(globalIndex, carouselTotalCount),
                     { albumTitle: carouselAlbumTitle }
                 ));
             }
@@ -2119,8 +2431,8 @@
                 : 'Photo';
             if (isVideo) {
                 var posterUrl = photo.preview || photo.full || '';
-                html += '<div class="swiper-slide jzsa-slide-video" data-media-type="video" data-carousel-photo-index="' + index + '">' +
-                    buildVideoHtml({ src: photo.video, poster: posterUrl, mediaIndex: index }) +
+                html += '<div class="swiper-slide jzsa-slide-video" data-media-type="video" data-carousel-photo-index="' + globalIndex + '" data-jzsa-global-index="' + globalIndex + '">' +
+                    buildVideoHtml({ src: photo.video, poster: posterUrl, mediaIndex: globalIndex }) +
                     tileInfoHtml +
                     tileOverlayButtons +
                     '</div>';
@@ -2133,7 +2445,7 @@
                     loadingAttr = ' loading="' + (index === eagerIndex ? 'eager' : 'lazy') + '" decoding="async"';
                 }
 
-                html += '<div class="swiper-slide" data-carousel-photo-index="' + index + '">' +
+                html += '<div class="swiper-slide" data-carousel-photo-index="' + globalIndex + '" data-jzsa-global-index="' + globalIndex + '">' +
                     '<div class="swiper-zoom-container">' +
                     '<img src="' + previewUrl + '" ' +
                     (previewUrl !== fullUrl ? 'data-full-src="' + fullUrl + '" ' : '') +
@@ -2160,14 +2472,11 @@
 
         var photosJson = $container.attr('data-all-photos');
         var photos = [];
-        var total = 0;
+        var total = getContainerTotalCount($container);
         if (photosJson) {
             try {
                 photos = JSON.parse(photosJson);
-                total = photos.length;
-            } catch (e) {
-                total = 0;
-            }
+            } catch (e) {}
         }
         var albumTitle = $container.attr('data-album-title') || '';
         var allInfoZones = SAFE_INFO_TOP_ORDER.concat(SAFE_INFO_BOTTOM_ORDER);
@@ -2210,14 +2519,11 @@
 
         var photosJson = $container.attr('data-all-photos');
         var photos = [];
-        var total = 0;
+        var total = getContainerTotalCount($container);
         if (photosJson) {
             try {
                 photos = JSON.parse(photosJson);
-                total = photos.length;
-            } catch (e) {
-                total = 0;
-            }
+            } catch (e) {}
         }
         var albumTitle = $container.attr('data-album-title') || '';
         var allInfoZones = SAFE_INFO_TOP_ORDER.concat(GALLERY_INFO_BOTTOM_ORDER);
@@ -3035,16 +3341,13 @@
             if (!isNaN(downloadIndex) && downloadIndex > 0) {
                 return downloadIndex - 1;
             }
-            if (typeof swiper.realIndex === 'number' && !isNaN(swiper.realIndex)) {
-                return swiper.realIndex;
-            }
-            return swiper.activeIndex;
+            return getSwiperPhotoIndex(swiper);
         }
 
         function buildFilename(mediaType, downloadIndex) {
             var currentIndex = getDownloadPhotoIndex(downloadIndex);
             // Use original filename from Google Photos when available.
-            var photo = allPhotos[currentIndex];
+            var photo = getContainerPhoto($container, currentIndex);
             if (photo && photo.filename) {
                 return photo.filename;
             }
@@ -3056,7 +3359,7 @@
 
         function fetchFilenameForDownload(mediaType, mediaUrl, downloadIndex, onDone) {
             var photoIndex = getDownloadPhotoIndex(downloadIndex);
-            var photo = allPhotos[photoIndex] || {};
+            var photo = getContainerPhoto($container, photoIndex) || {};
             if (!photo.id || photo.filename || typeof jzsaAjax === 'undefined' || !jzsaAjax.photoMetaNonce) {
                 onDone(buildFilename(mediaType, downloadIndex));
                 return;
@@ -3084,8 +3387,7 @@
             }).done(function(response) {
                 if (response && response.success && response.data && response.data.filename) {
                     photo.filename = response.data.filename;
-                    allPhotos[photoIndex] = photo;
-                    $container.attr('data-all-photos', JSON.stringify(allPhotos));
+                    replaceContainerPhotoByGlobalIndex($container, photoIndex, photo);
                 }
             }).always(function() {
                 onDone(buildFilename(mediaType, downloadIndex));
@@ -4089,8 +4391,9 @@
                 var albumTitle = $swiperEl.attr('data-album-title') || '';
                 var photoIndex = getSwiperPhotoIndex(swiper);
                 var photo = getContainerPhoto($swiperEl, photoIndex);
+                var totalCount = getContainerTotalCount($swiperEl);
                 var text = resolveInfoPlaceholders(format, photo,
-                    $.extend(buildItemPlaceholders(params.mode, swiper, current, total), { albumTitle: albumTitle })
+                    $.extend(buildItemPlaceholders(params.mode, swiper, photoIndex + 1, totalCount), { albumTitle: albumTitle })
                 );
 
                 $swiperEl.find('.swiper-pagination').toggle(text !== '');
@@ -4111,6 +4414,7 @@
 
             // Loop
             loop: params.loop,
+            rewind: !!params.rewind,
 
             // Performance
             lazy: {
@@ -4235,24 +4539,22 @@
 
         var $container = $(container);
         var galleryId = $container.attr('id');
+        var progressiveSettings = getProgressiveSliderSettings($container);
+        var progressiveSliderEnabled = mode === 'slider' && progressiveSettings.enabled;
 
         // Parse configuration from data attributes
-        var allPhotosJson = $container.attr('data-all-photos');
-        var allPhotos = allPhotosJson ? JSON.parse(allPhotosJson) : [];
+        var allPhotos = getContainerPhotos($container);
+        var totalCount = getContainerTotalCount($container);
+
+        if (progressiveSliderEnabled && !allPhotos.length) {
+            bootstrapProgressiveSlider($container, mode);
+            return null;
+        }
 
         // Guard: Swiper (especially with loop:true) crashes on empty containers
         if (!allPhotos.length) {
             // console.warn('[JZSA] No photos for gallery "' + galleryId + '", skipping Swiper init.');
             return null;
-        }
-        var totalCount = parseInt($container.attr('data-total-count')) || allPhotos.length;
-
-        // On older iOS/WebKit stacks, very large galleries (e.g. 300 photos) can
-        // be unstable. Cap the number of photos there, but allow the full set
-        // everywhere else.
-        if (isOldIosWebkit() && allPhotos.length > OLD_IOS_MAX_PHOTOS) {
-            allPhotos = allPhotos.slice(0, OLD_IOS_MAX_PHOTOS);
-            // console.log('[JZSA] Old iOS/WebKit detected – capping photos to', OLD_IOS_MAX_PHOTOS, 'out of', totalCount);
         }
 
         var inlineShowNavigationSetting = readBooleanDataAttr($container, 'data-show-navigation', true);
@@ -4285,6 +4587,8 @@
             // Photo data
             allPhotos: allPhotos,
             totalCount: totalCount,
+            progressiveSlider: progressiveSliderEnabled,
+            progressiveChunkSize: progressiveSettings.chunkSize,
 
             // Slideshow settings ('auto', 'manual', or 'disabled')
             slideshow: $container.attr('data-slideshow') || 'disabled',
@@ -4295,7 +4599,8 @@
             fullscreenSlideshowAutoresume: fullscreenSlideshowAutoresumeSetting,
 
             // Display settings
-            loop: allPhotos.length >= 4, // Loop requires enough slides for Swiper to work properly
+            loop: !progressiveSliderEnabled && allPhotos.length >= 4, // Loop requires enough slides for Swiper to work properly
+            rewind: false,
             interactionLock: $container.attr('data-interaction-lock') === 'true',
             fullscreenToggle:
                 $container.attr('data-fullscreen-toggle') || 'button-only',
@@ -4318,6 +4623,7 @@
             fullscreenVideoControlsAutohide: fullscreenVideoControlsAutohideSetting,
             albumTitle: $container.attr('data-album-title') || '',
             initialSlide: 0,
+            initialGlobalSlide: 0,
 
             // Mosaic settings
             mosaic: $container.attr('data-mosaic') === 'true',
@@ -4333,16 +4639,33 @@
 
         // Calculate initial slide based on startAt setting
         var startAtRaw = (config.startAt || 'random').toString().toLowerCase();
-        if (startAtRaw === 'random') {
-            if (totalCount > 0) {
-                config.initialSlide = Math.floor(Math.random() * totalCount);
+        if (progressiveSliderEnabled) {
+            var bootstrappedGlobalIndex = parseInt($container.data('jzsaProgressiveInitialGlobalIndex'), 10);
+            if (!isNaN(bootstrappedGlobalIndex) && bootstrappedGlobalIndex >= 0 && bootstrappedGlobalIndex < totalCount) {
+                config.initialGlobalSlide = bootstrappedGlobalIndex;
+            } else if (startAtRaw === 'random') {
+                config.initialGlobalSlide = Math.floor(Math.random() * totalCount);
+            } else {
+                var progressiveRequested = parseInt(startAtRaw, 10);
+                if (isNaN(progressiveRequested) || progressiveRequested < 1 || progressiveRequested > totalCount) {
+                    progressiveRequested = 1;
+                }
+                config.initialGlobalSlide = progressiveRequested - 1;
             }
+            var progressiveLocalIndex = findPhotoLocalIndex(allPhotos, config.initialGlobalSlide);
+            config.initialSlide = progressiveLocalIndex >= 0 ? progressiveLocalIndex : 0;
         } else {
-            var requested = parseInt(startAtRaw, 10);
-            if (isNaN(requested) || requested < 1 || requested > totalCount) {
-                requested = 1; // Out of range or invalid -> start at 1
+            if (startAtRaw === 'random') {
+                if (totalCount > 0) {
+                    config.initialSlide = Math.floor(Math.random() * totalCount);
+                }
+            } else {
+                var requested = parseInt(startAtRaw, 10);
+                if (isNaN(requested) || requested < 1 || requested > totalCount) {
+                    requested = 1; // Out of range or invalid -> start at 1
+                }
+                config.initialSlide = requested - 1;
             }
-            config.initialSlide = requested - 1;
         }
 
         // Extract config values for easier access
@@ -4355,6 +4678,7 @@
         var slideshowAutoresume = config.slideshowAutoresume;
         var fullscreenSlideshowAutoresume = config.fullscreenSlideshowAutoresume;
         var loop = config.loop;
+        var rewind = config.rewind;
         var interactionLock = config.interactionLock;
         var fullscreenToggle = interactionLock ? 'disabled' : config.fullscreenToggle;
         var showLinkButton = readBooleanDataAttr($container, 'data-show-link-button', false);
@@ -4370,16 +4694,17 @@
         var fullscreenVideoControlsAutohide = config.fullscreenVideoControlsAutohide;
         var albumTitle = config.albumTitle;
         var initialSlide = config.initialSlide;
+        var progressiveSlider = config.progressiveSlider;
         var mosaic = config.mosaic;
         var mosaicPosition = config.mosaicPosition;
         var mosaicCount = config.mosaicCount;
         var mosaicOpacity = config.mosaicOpacity;
 
         // console.log('📸 Initializing Swiper for gallery:', galleryId);
-        // console.log('  - Mode:', mode);
-        // console.log('  - Total photos:', totalCount);
-        // console.log('  - Initial photos loaded:', allPhotos.length);
-        // console.log('  - startAt setting:', startAt, '=> initial slide index (0-based):', initialSlide, '/', totalCount);
+            // console.log('  - Mode:', mode);
+            // console.log('  - Total photos:', totalCount);
+            // console.log('  - Initial photos loaded:', allPhotos.length);
+            // console.log('  - startAt setting:', startAt, '=> initial slide index (0-based):', initialSlide, '/', totalCount);
 
         // Debug: Log configuration values
         // console.log('🔍 Configuration debug:');
@@ -4692,6 +5017,7 @@
                 fullscreenSlideshow: fullscreenSlideshow,
                 slideshowDelay: slideshowDelay,
                 loop: loop,
+                rewind: rewind,
                 LAZY_LOAD_PREV_NEXT_AMOUNT: LAZY_LOAD_PREV_NEXT_AMOUNT,
                 SWIPER_SPEED: SWIPER_SPEED,
                 SLIDES_MOBILE: SLIDES_MOBILE,
@@ -4783,17 +5109,7 @@
                 var isFs = $container.hasClass('jzsa-is-fullscreen') || $container.hasClass('jzsa-pseudo-fullscreen');
                 var photoIndex = getSwiperPhotoIndex(swiper);
                 var photo = getContainerPhoto($container, photoIndex);
-                var photosJson = $container.attr('data-all-photos');
-                var photos = [];
-                var total = 0;
-                if (photosJson) {
-                    try {
-                        photos = JSON.parse(photosJson);
-                        total = photos.length;
-                    } catch (e) {
-                        total = 0;
-                    }
-                }
+                var total = getContainerTotalCount($container);
                 var itemPlaceholders = total ? buildItemPlaceholders(mode, swiper, photoIndex + 1, total) : { item: '', items: '' };
                 var albumTitle = $container.attr('data-album-title') || '';
                 for (var j = 0; j < containerBoxes.length; j++) {
@@ -5155,6 +5471,12 @@
             initPlyrInContainer($container);
             scheduleDurationPrefetch($container);
             scheduleExifPrefetch($container, zoneFormats);
+            setupProgressiveSliderChunkLoading(swiper, $container, {
+                enabled: progressiveSlider,
+                chunkSize: config.progressiveChunkSize,
+                totalCount: totalCount,
+                zoneFormats: zoneFormats
+            });
 
             // CAROUSEL TOUCH REVEAL:
             // Passive listeners so iOS never blocks scroll. Same approach as gallery touch reveal.
@@ -6621,11 +6943,6 @@
             .removeClass('jzsa-loaded jzsa-loader-visible')
             .addClass('jzsa-loader-pending jzsa-gallery-loading');
         triggerGalleryIntroFade($container);
-
-        // Honour the same old-iOS cap as the Swiper path
-        if (isOldIosWebkit() && allPhotos.length > OLD_IOS_MAX_PHOTOS) {
-            allPhotos = allPhotos.slice(0, OLD_IOS_MAX_PHOTOS);
-        }
 
         var requestedGalleryRows = parseInt(readGalleryAttr($container, 'rows'), 10);
         var galleryRows = (!isNaN(requestedGalleryRows) && requestedGalleryRows > 0) ? requestedGalleryRows : 0;

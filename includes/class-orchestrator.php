@@ -91,6 +91,23 @@ class JZSA_Shared_Albums {
 	const DEFAULT_MAX_PHOTOS_PER_ALBUM = 300;
 
 	/**
+	 * Use progressive chunk loading for large slider-only photo albums.
+	 *
+	 * Keeps initial HTML payload small and lets the browser fetch additional
+	 * photos on demand instead of embedding the full album JSON up front.
+	 *
+	 * PROGRESSIVE_SLIDER_THRESHOLD is intentionally set to ~2.5× PROGRESSIVE_SLIDER_INITIAL_CHUNK.
+	 * If the album fits in roughly two initial chunks the user would exhaust it in the first few
+	 * swipes anyway, so the AJAX overhead, nonce dependency, and loss of infinite loop aren't
+	 * worth it. Adjust THRESHOLD proportionally whenever INITIAL_CHUNK changes.
+	 *
+	 * @var int
+	 */
+	const PROGRESSIVE_SLIDER_INITIAL_CHUNK = 24;
+	const PROGRESSIVE_SLIDER_CHUNK_SIZE    = 24;
+	const PROGRESSIVE_SLIDER_THRESHOLD     = 60; // ~2.5 × PROGRESSIVE_SLIDER_INITIAL_CHUNK
+
+	/**
 	 * Hard maximum download size for proxied downloads (MB).
 	 * Set to 0 to disable the hard limit (not recommended).
 	 *
@@ -169,6 +186,8 @@ class JZSA_Shared_Albums {
 		add_action( 'wp_ajax_jzsa_clear_cache', array( $this, 'handle_clear_cache' ) );
 		add_action( 'wp_ajax_jzsa_fetch_photo_meta', array( $this, 'handle_fetch_photo_meta' ) );
 		add_action( 'wp_ajax_nopriv_jzsa_fetch_photo_meta', array( $this, 'handle_fetch_photo_meta' ) );
+		add_action( 'wp_ajax_jzsa_fetch_album_chunk', array( $this, 'handle_fetch_album_chunk' ) );
+		add_action( 'wp_ajax_nopriv_jzsa_fetch_album_chunk', array( $this, 'handle_fetch_album_chunk' ) );
 
 		// Also load front-end gallery assets on our settings page so the sample
 		// shortcode preview works inside the admin.
@@ -250,6 +269,7 @@ class JZSA_Shared_Albums {
 		$download_nonce = wp_create_nonce( 'jzsa_download_nonce' );
 		$preview_nonce  = wp_create_nonce( 'jzsa_shortcode_preview' );
 		$refresh_nonce  = wp_create_nonce( 'jzsa_refresh_urls' );
+		$chunk_nonce    = wp_create_nonce( 'jzsa_album_chunk' );
 
 		$photo_meta_nonce = wp_create_nonce( 'jzsa_photo_meta' );
 
@@ -261,6 +281,7 @@ class JZSA_Shared_Albums {
 				'downloadNonce'  => $download_nonce,
 				'previewNonce'   => $preview_nonce,
 				'refreshNonce'   => $refresh_nonce,
+				'chunkNonce'     => $chunk_nonce,
 				'photoMetaNonce' => $photo_meta_nonce,
 				'plyrSvgUrl'     => plugins_url( 'assets/vendor/plyr/plyr.svg', $this->plugin_file ),
 			)
@@ -340,6 +361,7 @@ class JZSA_Shared_Albums {
 				);
 			$config['album-title']              = $cached_data['title'] ?? null;
 			$config['show-deprecation-warning'] = $cached_data['is_deprecated'];
+			$config                            = $this->apply_progressive_slider_loading_config( $config );
 
 			return $this->renderer->render( $config );
 		}
@@ -385,6 +407,7 @@ class JZSA_Shared_Albums {
 
 		$config['album-title']              = $result['data']['title'] ?? null;
 		$config['show-deprecation-warning'] = $result['is_deprecated'];
+		$config                            = $this->apply_progressive_slider_loading_config( $config );
 
 		// Render output (OUTPUT PHASE)
 		return $this->renderer->render( $config );
@@ -1392,6 +1415,185 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
+	 * Switch large plain photo sliders to progressive chunk loading.
+	 *
+	 * @param array $config Shortcode render config.
+	 * @return array
+	 */
+	private function apply_progressive_slider_loading_config( $config ) {
+		if ( ! $this->should_use_progressive_slider_loading( $config ) ) {
+			return $config;
+		}
+
+		$config['progressive-loading']           = true;
+		$config['progressive-total-count']       = count( $config['photos'] );
+		$config['progressive-initial-chunk-size'] = self::PROGRESSIVE_SLIDER_INITIAL_CHUNK;
+		$config['progressive-chunk-size']        = self::PROGRESSIVE_SLIDER_CHUNK_SIZE;
+		$config['photos']                        = array();
+
+		return $config;
+	}
+
+	/**
+	 * Decide whether a render should use progressive slider chunk loading.
+	 *
+	 * Scope is intentionally narrow: slider mode only, no mosaic, no videos.
+	 *
+	 * @param array $config Shortcode render config.
+	 * @return bool
+	 */
+	private function should_use_progressive_slider_loading( $config ) {
+		if ( empty( $config['mode'] ) || 'slider' !== $config['mode'] ) {
+			return false;
+		}
+
+		if ( ! empty( $config['mosaic'] ) || empty( $config['photos'] ) || ! is_array( $config['photos'] ) ) {
+			return false;
+		}
+
+		if ( count( $config['photos'] ) <= self::PROGRESSIVE_SLIDER_THRESHOLD ) {
+			return false;
+		}
+
+		foreach ( $config['photos'] as $photo ) {
+			if ( is_array( $photo ) && isset( $photo['type'] ) && 'video' === $photo['type'] ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Fetch cached album base items or prime the cache on demand.
+	 *
+	 * @param string $album_url Album URL.
+	 * @return array Result array with success/data/error keys.
+	 */
+	private function get_cached_or_fresh_album_data( $album_url ) {
+		$cache_key    = $this->get_cache_key( $album_url );
+		$expiry_key   = $this->get_expiration_key( $album_url );
+		$cached_data  = get_transient( $cache_key );
+
+		if ( is_array( $cached_data ) && ! empty( $cached_data['photos'] ) && is_array( $cached_data['photos'] ) ) {
+			return array(
+				'success' => true,
+				'data'    => $cached_data,
+				'error'   => null,
+			);
+		}
+
+		$result = $this->provider->fetch_album( $album_url );
+		if ( ! $result['success'] ) {
+			return $result;
+		}
+
+		$cache_duration = (int) get_option( $expiry_key, self::DEFAULT_CACHE_REFRESH * 3600 );
+		if ( $cache_duration <= 0 ) {
+			$cache_duration = self::DEFAULT_CACHE_REFRESH * 3600;
+			update_option( $expiry_key, $cache_duration, false );
+		}
+
+		$cached_data = array(
+			'title'         => $result['data']['title'] ?? null,
+			'photos'        => $result['data']['photos'],
+			'is_deprecated' => $result['is_deprecated'],
+		);
+
+		set_transient( $cache_key, $cached_data, $cache_duration );
+
+		return array(
+			'success' => true,
+			'data'    => $cached_data,
+			'error'   => null,
+		);
+	}
+
+	/**
+	 * Prepare a filtered chunk of visible photos for progressive loading.
+	 *
+	 * @param array  $base_items      Cached base album items.
+	 * @param string $album_url       Album URL.
+	 * @param int    $offset          Zero-based visible-item offset.
+	 * @param int    $chunk_size      Number of visible items to return.
+	 * @param int    $full_width      Full image width.
+	 * @param int    $full_height     Full image height.
+	 * @param int    $preview_width   Preview image width.
+	 * @param int    $preview_height  Preview image height.
+	 * @param int    $max_entries     Visible album limit.
+	 * @param bool   $show_videos     Whether videos are included.
+	 * @return array
+	 */
+	private function prepare_photo_chunk( $base_items, $album_url, $offset, $chunk_size, $full_width, $full_height, $preview_width, $preview_height, $max_entries, $show_videos ) {
+		$limit = intval( $max_entries );
+		if ( $limit <= 0 ) {
+			$limit = self::DEFAULT_MAX_PHOTOS_PER_ALBUM;
+		}
+		if ( $limit > self::MAX_PHOTOS ) {
+			$limit = self::MAX_PHOTOS;
+		}
+
+		$offset = max( 0, intval( $offset ) );
+		$chunk_size = max( 1, min( self::MAX_PHOTOS, intval( $chunk_size ) ) );
+
+		$selected_items   = array();
+		$selected_indexes = array();
+		$visible_total    = 0;
+
+		foreach ( $base_items as $item ) {
+			$type = is_array( $item ) && isset( $item['type'] ) ? $item['type'] : 'image';
+			if ( ! $show_videos && 'video' === $type ) {
+				continue;
+			}
+
+			if ( $visible_total >= $limit ) {
+				break;
+			}
+
+			if ( $visible_total >= $offset && count( $selected_items ) < $chunk_size ) {
+				$selected_items[]   = $item;
+				$selected_indexes[] = $visible_total;
+			}
+
+			$visible_total++;
+		}
+
+		$selected_count = count( $selected_items );
+		if ( 0 === $selected_count ) {
+			return array(
+				'photos'      => array(),
+				'total_count' => $visible_total,
+			);
+		}
+
+		$hydrated_items = $this->hydrate_cached_photo_meta(
+			$selected_items,
+			$album_url,
+			$selected_count,
+			$show_videos
+		);
+		$photos = $this->prepare_photo_urls(
+			$hydrated_items,
+			$full_width,
+			$full_height,
+			$preview_width,
+			$preview_height,
+			$selected_count,
+			$show_videos
+		);
+
+		foreach ( $photos as $index => &$photo ) {
+			$photo['globalIndex'] = $selected_indexes[ $index ];
+		}
+		unset( $photo );
+
+		return array(
+			'photos'      => $photos,
+			'total_count' => $visible_total,
+		);
+	}
+
+	/**
 	 * Render error message for fetch failures
 	 *
 	 * @param string $error Error message
@@ -1894,6 +2096,63 @@ class JZSA_Shared_Albums {
 		set_transient( $cache_key, $meta, self::PHOTO_META_CACHE_TTL );
 
 		wp_send_json_success( $this->filter_public_photo_meta( $meta ) );
+	}
+
+	/**
+	 * Handle AJAX request to fetch one visible chunk of a large slider album.
+	 *
+	 * Uses cached album data whenever possible so large pages can load a small
+	 * initial window and append more photos later without embedding all photos
+	 * into the page HTML.
+	 */
+	public function handle_fetch_album_chunk() {
+		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
+		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'jzsa_album_chunk' ) ) {
+			wp_send_json_error( 'Invalid nonce' );
+			return;
+		}
+
+		$album_url = isset( $_POST['album_url'] ) ? esc_url_raw( wp_unslash( $_POST['album_url'] ) ) : '';
+		if ( empty( $album_url ) ) {
+			wp_send_json_error( 'Missing album URL' );
+			return;
+		}
+
+		$offset                     = isset( $_POST['offset'] ) ? intval( wp_unslash( $_POST['offset'] ) ) : 0;
+		$count                      = isset( $_POST['count'] ) ? intval( wp_unslash( $_POST['count'] ) ) : self::PROGRESSIVE_SLIDER_CHUNK_SIZE;
+		$limit                      = isset( $_POST['limit'] ) ? intval( wp_unslash( $_POST['limit'] ) ) : self::DEFAULT_MAX_PHOTOS_PER_ALBUM;
+		$show_videos                = isset( $_POST['show_videos'] ) ? filter_var( wp_unslash( $_POST['show_videos'] ), FILTER_VALIDATE_BOOLEAN ) : true;
+		$preview_width              = isset( $_POST['source_width'] ) ? intval( wp_unslash( $_POST['source_width'] ) ) : self::DEFAULT_SOURCE_WIDTH;
+		$preview_height             = isset( $_POST['source_height'] ) ? intval( wp_unslash( $_POST['source_height'] ) ) : self::DEFAULT_SOURCE_HEIGHT;
+		$fullscreen_width           = isset( $_POST['fullscreen_source_width'] ) ? intval( wp_unslash( $_POST['fullscreen_source_width'] ) ) : self::DEFAULT_FULLSCREEN_SOURCE_WIDTH;
+		$fullscreen_height          = isset( $_POST['fullscreen_source_height'] ) ? intval( wp_unslash( $_POST['fullscreen_source_height'] ) ) : self::DEFAULT_FULLSCREEN_SOURCE_HEIGHT;
+
+		$album_result = $this->get_cached_or_fresh_album_data( $album_url );
+		if ( ! $album_result['success'] || empty( $album_result['data']['photos'] ) ) {
+			wp_send_json_error( $album_result['error'] ?? 'Unable to load album' );
+			return;
+		}
+
+		$chunk = $this->prepare_photo_chunk(
+			$album_result['data']['photos'],
+			$album_url,
+			$offset,
+			$count,
+			$fullscreen_width,
+			$fullscreen_height,
+			$preview_width,
+			$preview_height,
+			$limit,
+			$show_videos
+		);
+
+		wp_send_json_success(
+			array(
+				'photos'      => $chunk['photos'],
+				'offset'      => max( 0, $offset ),
+				'total_count' => $chunk['total_count'],
+			)
+		);
 	}
 
 	/**
