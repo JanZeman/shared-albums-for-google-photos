@@ -4,7 +4,7 @@ Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.0
 Tested up to: 6.9
 Requires PHP: 7.0
-Stable tag: 2.0.11
+Stable tag: 2.0.12
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -137,7 +137,7 @@ The plugin provides clear feedback:
 == Changelog ==
 
 = 2.0.12 =
-* We support Google Photo description field on the individual photos by now :-)
+* Google Photo description can be supported after all :-)
 
 = 2.0.11 =
 * Swiper loop navigation
