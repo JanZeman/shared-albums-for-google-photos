@@ -1663,6 +1663,65 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
+	 * Collect known media IDs for an album so related per-photo caches can be cleared.
+	 *
+	 * Uses the cached album payload when present, otherwise falls back to a fresh
+	 * provider fetch.
+	 *
+	 * @param string $album_url Album share URL.
+	 * @return string[]
+	 */
+	private function get_album_media_ids( $album_url ) {
+		if ( empty( $album_url ) ) {
+			return array();
+		}
+
+		$photos = array();
+		$cached = get_transient( $this->get_cache_key( $album_url ) );
+		if ( is_array( $cached ) && ! empty( $cached['photos'] ) && is_array( $cached['photos'] ) ) {
+			$photos = $cached['photos'];
+		} else {
+			$result = $this->provider->fetch_album( $album_url );
+			if ( ! empty( $result['success'] ) && ! empty( $result['data']['photos'] ) && is_array( $result['data']['photos'] ) ) {
+				$photos = $result['data']['photos'];
+			}
+		}
+
+		$ids = array();
+		foreach ( $photos as $photo ) {
+			if ( is_array( $photo ) && ! empty( $photo['id'] ) ) {
+				$ids[ $photo['id'] ] = true;
+			}
+		}
+
+		return array_keys( $ids );
+	}
+
+	/**
+	 * Clear all cache entries related to a single album.
+	 *
+	 * @param string $album_url Album share URL.
+	 * @return void
+	 */
+	private function clear_album_related_caches( $album_url ) {
+		if ( empty( $album_url ) ) {
+			return;
+		}
+
+		$media_ids = $this->get_album_media_ids( $album_url );
+
+		delete_transient( $this->get_cache_key( $album_url ) );
+		delete_option( $this->get_expiration_key( $album_url ) );
+
+		foreach ( $media_ids as $media_id ) {
+			$photo_url = $this->build_photo_page_url( $album_url, $media_id );
+			if ( '' !== $photo_url ) {
+				delete_transient( $this->get_photo_meta_cache_key( $photo_url ) );
+			}
+		}
+	}
+
+	/**
 	 * Build an individual photo page URL from album URL and media ID.
 	 *
 	 * @param string $album_url Album share URL.
@@ -1900,12 +1959,7 @@ class JZSA_Shared_Albums {
 		// Find all jzsa-album shortcodes in post content
 		if ( preg_match_all( '/\[jzsa-album[^\]]*link=["\']([^"\']+)["\'][^\]]*\]/i', $post->post_content, $matches ) ) {
 			foreach ( $matches[1] as $url ) {
-				$cache_key = $this->get_cache_key( $url );
-				delete_transient( $cache_key );
-
-				// Also delete expiration tracking
-				$expiry_key = $this->get_expiration_key( $url );
-				delete_option( $expiry_key );
+				$this->clear_album_related_caches( $url );
 			}
 		}
 	}
@@ -1953,10 +2007,10 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Handle AJAX request to clear all cached album data.
+	 * Handle AJAX request to clear all plugin-managed cache data.
 	 *
-	 * Deletes all jzsa_album_* transients and jzsa_expiry_* options so that
-	 * the next page load fetches fresh data from Google Photos.
+	 * Deletes all album caches, per-photo metadata caches, and stored album
+	 * expiry options so the next page load fetches fresh data from Google Photos.
 	 */
 	public function handle_clear_cache() {
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -1968,27 +2022,27 @@ class JZSA_Shared_Albums {
 			wp_send_json_error( __( 'Invalid nonce', 'janzeman-shared-albums-for-google-photos' ) );
 		}
 
-		global $wpdb;
+		$result = function_exists( 'jzsa_clear_all_plugin_caches' )
+			? jzsa_clear_all_plugin_caches()
+			: array(
+				'album_transient_rows'      => 0,
+				'photo_meta_transient_rows' => 0,
+				'expiry_rows'               => 0,
+			);
 
-		// Delete all album transients (stored as _transient_jzsa_album_* in wp_options).
-		$deleted = $wpdb->query(
-			"DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_jzsa_album_%' OR option_name LIKE '_transient_timeout_jzsa_album_%'"
-		);
+		$album_count = (int) floor( max( 0, (int) $result['album_transient_rows'] ) / 2 );
+		$photo_count = (int) floor( max( 0, (int) $result['photo_meta_transient_rows'] ) / 2 );
 
-		// Delete all expiry tracking options.
-		$wpdb->query(
-			"DELETE FROM {$wpdb->options} WHERE option_name LIKE 'jzsa_expiry_%'"
-		);
-
-		$album_count = (int) ( $deleted / 2 );
-
-		$message = $album_count > 0
-			? sprintf(
-				/* translators: %d: number of cached albums cleared */
-				_n( '%d cached album cleared.', '%d cached albums cleared.', $album_count, 'janzeman-shared-albums-for-google-photos' ),
-				$album_count
-			)
-			: __( 'Cache was already empty.', 'janzeman-shared-albums-for-google-photos' );
+		if ( $album_count > 0 || $photo_count > 0 ) {
+			$message = sprintf(
+				/* translators: 1: number of cached albums cleared, 2: number of cached photo metadata entries cleared */
+				__( 'Cleared %1$d cached albums and %2$d cached photo metadata entries.', 'janzeman-shared-albums-for-google-photos' ),
+				$album_count,
+				$photo_count
+			);
+		} else {
+			$message = __( 'All plugin caches were already empty.', 'janzeman-shared-albums-for-google-photos' );
+		}
 
 		wp_send_json_success( array( 'message' => $message ) );
 	}

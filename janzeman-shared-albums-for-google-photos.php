@@ -36,6 +36,42 @@ require_once JZSA_PLUGIN_DIR . 'includes/class-orchestrator.php';
 require_once JZSA_PLUGIN_DIR . 'includes/class-settings-page.php';
 
 /**
+ * Clear all plugin-managed caches.
+ *
+ * This includes:
+ * - album transients
+ * - per-photo metadata transients
+ * - stored album expiry options
+ *
+ * @return array<string,int>
+ */
+function jzsa_clear_all_plugin_caches() {
+	global $wpdb;
+
+	// Direct database queries are safe here as we are deleting only this plugin's own cache keys.
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$deleted_album_rows = (int) $wpdb->query(
+		"DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_jzsa_album_%' OR option_name LIKE '_transient_timeout_jzsa_album_%'"
+	);
+
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$deleted_photo_meta_rows = (int) $wpdb->query(
+		"DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_jzsa_photo_meta_%' OR option_name LIKE '_transient_timeout_jzsa_photo_meta_%'"
+	);
+
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$deleted_expiry_rows = (int) $wpdb->query(
+		"DELETE FROM {$wpdb->options} WHERE option_name LIKE 'jzsa_expiry_%'"
+	);
+
+	return array(
+		'album_transient_rows'      => $deleted_album_rows,
+		'photo_meta_transient_rows' => $deleted_photo_meta_rows,
+		'expiry_rows'               => $deleted_expiry_rows,
+	);
+}
+
+/**
  * Initialize the plugin
  */
 function jzsa_init_plugin() {
@@ -53,11 +89,8 @@ add_action( 'init', 'jzsa_init_plugin' );
  * Activation hook
  */
 function jzsa_activate() {
-	// Clear any cached album data on activation.
-	global $wpdb;
-	// Direct database query is safe here as we are deleting only this plugin's own transients.
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_jzsa_album_%' OR option_name LIKE '_transient_timeout_jzsa_album_%'" );
+	// Clear all plugin caches on activation.
+	jzsa_clear_all_plugin_caches();
 
 	// Set a transient to redirect to settings page after activation
 	set_transient( 'jzsa_activation_redirect', true, 30 );
@@ -107,9 +140,6 @@ add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'jzsa_add_sett
  */
 function jzsa_deactivate() {
 	// Clear all plugin transients on deactivation.
-	global $wpdb;
-	// Direct database query is safe here as we are deleting only this plugin's own transients.
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_jzsa_album_%' OR option_name LIKE '_transient_timeout_jzsa_album_%'" );
+	jzsa_clear_all_plugin_caches();
 }
 register_deactivation_hook( __FILE__, 'jzsa_deactivate' );
