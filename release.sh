@@ -278,8 +278,10 @@ REQUIRED_FILES=(
     "includes/class-orchestrator.php"
     "includes/class-renderer.php"
     "includes/class-admin-pages.php"
+    "assets/css/admin-menu-icon.css"
     "assets/css/admin-settings.css"
     "assets/css/swiper-style.css"
+    "assets/icon-admin.svg"
     "assets/js/admin-settings.js"
     "assets/js/swiper-init.js"
     "assets/vendor/swiper/swiper-bundle.min.css"
@@ -391,6 +393,16 @@ if [ "$FULL_RELEASE" -eq 1 ] && [ "$SYNCED_TO_SVN" -eq 1 ] && command -v svn &> 
         cd "$SVN_TRUNK" && \
         svn add . --force >/dev/null 2>&1 || true
     )
+
+    # Schedule SVN-tracked files that no longer exist (renamed/deleted) for removal
+    SVN_MISSING=$(cd "$SVN_TRUNK" && svn status | awk '/^!/ {print $2}')
+    if [ -n "$SVN_MISSING" ]; then
+        echo -e "${YELLOW}Scheduling SVN deletions for missing tracked files:${NC}"
+        while IFS= read -r missing_file; do
+            echo "  - $missing_file"
+            (cd "$SVN_TRUNK" && svn delete "$missing_file") || true
+        done <<< "$SVN_MISSING"
+    fi
 
     echo -e "${YELLOW}SVN status for trunk before commit:${NC}"
     SVN_STATUS_OUTPUT=$(cd "$SVN_TRUNK" && svn status || true)
