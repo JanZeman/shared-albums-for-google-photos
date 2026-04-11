@@ -8243,13 +8243,14 @@
         }
 
         // GALLERY TOUCH REVEAL: show per-item buttons on touch devices.
-        // "active-item": scrolling activates one item persistently until another
-        // item becomes active or leaves the viewport; fullscreen return restores it.
+        // "on-interaction": interacting with one item activates it persistently
+        // until another item becomes active or it leaves the viewport;
+        // fullscreen return restores it.
         // Passive listeners so iOS/Android never have to wait for JS before
         // committing a scroll frame.
         (function() {
             var galleryEl = $container[0];
-            var buttonsMode = $container.attr('data-gallery-buttons-on-mobile') || 'active-item';
+            var buttonsMode = $container.attr('data-gallery-buttons-on-mobile') || 'on-interaction';
             var isTouchDevice = hasTouchInput();
 
             // gallery-buttons-on-mobile="always": mark container so CSS keeps buttons permanently visible.

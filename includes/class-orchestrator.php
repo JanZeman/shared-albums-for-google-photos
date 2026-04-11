@@ -865,17 +865,17 @@ class JZSA_Shared_Albums {
 	 * Parse gallery-buttons-on-mobile mode.
 	 *
 	 * @param array $atts Shortcode attributes.
-	 * @return string 'active-item' or 'always'.
+	 * @return string 'on-interaction' or 'always'.
 	 */
 	private function parse_gallery_buttons_on_mobile( $atts ) {
 		if ( ! isset( $atts['gallery-buttons-on-mobile'] ) ) {
-			return 'active-item';
+			return 'on-interaction';
 		}
 		$value = strtolower( trim( $atts['gallery-buttons-on-mobile'] ) );
-		if ( in_array( $value, array( 'active-item', 'always' ), true ) ) {
+		if ( in_array( $value, array( 'on-interaction', 'always' ), true ) ) {
 			return $value;
 		}
-		return 'active-item';
+		return 'on-interaction';
 	}
 
 	private function parse_slideshow_mode( $atts, $key ) {

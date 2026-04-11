@@ -509,7 +509,7 @@ class JZSA_Renderer {
 		$gallery_row_height   = isset( $config['gallery-row-height'] ) ? intval( $config['gallery-row-height'] ) : 200;
 		$gallery_rows         = isset( $config['gallery-rows'] ) ? intval( $config['gallery-rows'] ) : 0;
 		$gallery_scrollable   = ! empty( $config['gallery-scrollable'] );
-		$buttons_on_mobile    = isset( $config['gallery-buttons-on-mobile'] ) ? $config['gallery-buttons-on-mobile'] : 'active-item';
+		$buttons_on_mobile    = isset( $config['gallery-buttons-on-mobile'] ) ? $config['gallery-buttons-on-mobile'] : 'on-interaction';
 
 		$attrs[] = 'data-mode="gallery"';
 

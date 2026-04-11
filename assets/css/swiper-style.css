@@ -1842,7 +1842,7 @@ body.jzsa-no-scroll {
     max-width: calc(100% - 8px);
 }
 
-/* Touch reveal via JS (used by gallery-buttons-on-mobile="active-item"). */
+/* Touch reveal via JS (used by gallery-buttons-on-mobile="on-interaction"). */
 .jzsa-gallery-album .jzsa-gallery-item.jzsa-item-touched .jzsa-gallery-thumb-fs-btn,
 .jzsa-gallery-album .jzsa-gallery-item.jzsa-item-touched .jzsa-gallery-thumb-link-btn,
 .jzsa-gallery-album .jzsa-gallery-item.jzsa-item-touched .jzsa-gallery-thumb-download-btn {
