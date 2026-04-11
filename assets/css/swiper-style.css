@@ -2067,6 +2067,18 @@ body.jzsa-no-scroll {
     .jzsa-album.swiper.jzsa-is-fullscreen .swiper-button-play-pause,
     .jzsa-album.swiper.jzsa-is-fullscreen .swiper-button-external-link,
     .jzsa-album.swiper.jzsa-is-fullscreen .swiper-button-download,
+    .jzsa-album.swiper:fullscreen .swiper-button-prev,
+    .jzsa-album.swiper:fullscreen .swiper-button-next,
+    .jzsa-album.swiper:fullscreen .swiper-button-fullscreen,
+    .jzsa-album.swiper:fullscreen .swiper-button-play-pause,
+    .jzsa-album.swiper:fullscreen .swiper-button-external-link,
+    .jzsa-album.swiper:fullscreen .swiper-button-download,
+    .jzsa-album.swiper:-webkit-full-screen .swiper-button-prev,
+    .jzsa-album.swiper:-webkit-full-screen .swiper-button-next,
+    .jzsa-album.swiper:-webkit-full-screen .swiper-button-fullscreen,
+    .jzsa-album.swiper:-webkit-full-screen .swiper-button-play-pause,
+    .jzsa-album.swiper:-webkit-full-screen .swiper-button-external-link,
+    .jzsa-album.swiper:-webkit-full-screen .swiper-button-download,
     .jzsa-album.swiper.jzsa-pseudo-fullscreen .swiper-button-prev,
     .jzsa-album.swiper.jzsa-pseudo-fullscreen .swiper-button-next,
     .jzsa-album.swiper.jzsa-pseudo-fullscreen .swiper-button-fullscreen,
@@ -2074,6 +2086,7 @@ body.jzsa-no-scroll {
     .jzsa-album.swiper.jzsa-pseudo-fullscreen .swiper-button-external-link,
     .jzsa-album.swiper.jzsa-pseudo-fullscreen .swiper-button-download {
         opacity: 0;
+        visibility: hidden;
         pointer-events: none;
         animation: none;
     }
@@ -2082,16 +2095,76 @@ body.jzsa-no-scroll {
     .jzsa-album.swiper.jzsa-is-fullscreen:hover .swiper-button-next,
     .jzsa-album.swiper.jzsa-is-fullscreen:hover .swiper-button-fullscreen,
     .jzsa-album.swiper.jzsa-is-fullscreen:hover .swiper-button-play-pause,
-    .jzsa-album.swiper.jzsa-is-fullscreen:hover .swiper-button-external-link,
-    .jzsa-album.swiper.jzsa-is-fullscreen:hover .swiper-button-download,
+    .jzsa-album.swiper:fullscreen:hover .swiper-button-prev,
+    .jzsa-album.swiper:fullscreen:hover .swiper-button-next,
+    .jzsa-album.swiper:fullscreen:hover .swiper-button-fullscreen,
+    .jzsa-album.swiper:fullscreen:hover .swiper-button-play-pause,
+    .jzsa-album.swiper:-webkit-full-screen:hover .swiper-button-prev,
+    .jzsa-album.swiper:-webkit-full-screen:hover .swiper-button-next,
+    .jzsa-album.swiper:-webkit-full-screen:hover .swiper-button-fullscreen,
+    .jzsa-album.swiper:-webkit-full-screen:hover .swiper-button-play-pause,
+    .jzsa-album.swiper.jzsa-is-fullscreen:focus-within .swiper-button-prev,
+    .jzsa-album.swiper.jzsa-is-fullscreen:focus-within .swiper-button-next,
+    .jzsa-album.swiper.jzsa-is-fullscreen:focus-within .swiper-button-fullscreen,
+    .jzsa-album.swiper.jzsa-is-fullscreen:focus-within .swiper-button-play-pause,
+    .jzsa-album.swiper:fullscreen:focus-within .swiper-button-prev,
+    .jzsa-album.swiper:fullscreen:focus-within .swiper-button-next,
+    .jzsa-album.swiper:fullscreen:focus-within .swiper-button-fullscreen,
+    .jzsa-album.swiper:fullscreen:focus-within .swiper-button-play-pause,
+    .jzsa-album.swiper:-webkit-full-screen:focus-within .swiper-button-prev,
+    .jzsa-album.swiper:-webkit-full-screen:focus-within .swiper-button-next,
+    .jzsa-album.swiper:-webkit-full-screen:focus-within .swiper-button-fullscreen,
+    .jzsa-album.swiper:-webkit-full-screen:focus-within .swiper-button-play-pause,
     .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover .swiper-button-prev,
     .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover .swiper-button-next,
     .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover .swiper-button-fullscreen,
     .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover .swiper-button-play-pause,
-    .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover .swiper-button-external-link,
-    .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover .swiper-button-download {
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen:focus-within .swiper-button-prev,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen:focus-within .swiper-button-next,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen:focus-within .swiper-button-fullscreen,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen:focus-within .swiper-button-play-pause {
         opacity: var(--jzsa-controls-visible-opacity);
+        visibility: visible;
         pointer-events: auto;
+    }
+
+    /* Fullscreen top-left container buttons: follow the same desktop reveal
+       behavior as the fullscreen toggle. Use direct-child selectors so this
+       does not affect per-slide/gallery overlay buttons. */
+    .jzsa-album.swiper.jzsa-is-fullscreen > .swiper-button-external-link,
+    .jzsa-album.swiper.jzsa-is-fullscreen > .swiper-button-download,
+    .jzsa-album.swiper:fullscreen > .swiper-button-external-link,
+    .jzsa-album.swiper:fullscreen > .swiper-button-download,
+    .jzsa-album.swiper:-webkit-full-screen > .swiper-button-external-link,
+    .jzsa-album.swiper:-webkit-full-screen > .swiper-button-download,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen > .swiper-button-external-link,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen > .swiper-button-download {
+        display: flex !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        animation: none !important;
+    }
+
+    .jzsa-album.swiper.jzsa-is-fullscreen:hover > .swiper-button-external-link,
+    .jzsa-album.swiper.jzsa-is-fullscreen:hover > .swiper-button-download,
+    .jzsa-album.swiper:fullscreen:hover > .swiper-button-external-link,
+    .jzsa-album.swiper:fullscreen:hover > .swiper-button-download,
+    .jzsa-album.swiper:-webkit-full-screen:hover > .swiper-button-external-link,
+    .jzsa-album.swiper:-webkit-full-screen:hover > .swiper-button-download,
+    .jzsa-album.swiper.jzsa-is-fullscreen:focus-within > .swiper-button-external-link,
+    .jzsa-album.swiper.jzsa-is-fullscreen:focus-within > .swiper-button-download,
+    .jzsa-album.swiper:fullscreen:focus-within > .swiper-button-external-link,
+    .jzsa-album.swiper:fullscreen:focus-within > .swiper-button-download,
+    .jzsa-album.swiper:-webkit-full-screen:focus-within > .swiper-button-external-link,
+    .jzsa-album.swiper:-webkit-full-screen:focus-within > .swiper-button-download,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover > .swiper-button-external-link,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover > .swiper-button-download,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen:focus-within > .swiper-button-external-link,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen:focus-within > .swiper-button-download {
+        opacity: var(--jzsa-controls-visible-opacity) !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
     }
 
 }
