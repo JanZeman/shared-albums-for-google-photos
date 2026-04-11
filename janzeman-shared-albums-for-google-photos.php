@@ -26,6 +26,7 @@ define( 'JZSA_VERSION', '2.0.12' );
 define( 'JZSA_PLUGIN_FILE', __FILE__ );
 define( 'JZSA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'JZSA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'JZSA_VERSION_OPTION', 'jzsa_plugin_version' );
 
 /**
  * Load plugin classes
@@ -86,11 +87,37 @@ function jzsa_init_plugin() {
 add_action( 'init', 'jzsa_init_plugin' );
 
 /**
+ * Clear plugin-managed caches once per plugin version bump.
+ *
+ * Plugin updates do not trigger the activation hook, so compare the stored
+ * version against the current code version on load and invalidate stale
+ * transients exactly once when they differ.
+ */
+function jzsa_maybe_run_version_migration() {
+	$stored_version = get_option( JZSA_VERSION_OPTION, '' );
+
+	if ( JZSA_VERSION === $stored_version ) {
+		return;
+	}
+
+	jzsa_clear_all_plugin_caches();
+
+	if ( '' === $stored_version ) {
+		add_option( JZSA_VERSION_OPTION, JZSA_VERSION, '', false );
+		return;
+	}
+
+	update_option( JZSA_VERSION_OPTION, JZSA_VERSION, false );
+}
+add_action( 'plugins_loaded', 'jzsa_maybe_run_version_migration' );
+
+/**
  * Activation hook
  */
 function jzsa_activate() {
 	// Clear all plugin caches on activation.
 	jzsa_clear_all_plugin_caches();
+	update_option( JZSA_VERSION_OPTION, JZSA_VERSION, false );
 
 	// Set a transient to redirect to the Guide page after activation.
 	set_transient( 'jzsa_activation_redirect', true, 30 );
