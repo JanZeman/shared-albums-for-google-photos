@@ -111,26 +111,37 @@ function jzsa_activation_redirect() {
 			return;
 		}
 
-		// Redirect to settings page
-		wp_safe_redirect( admin_url( 'options-general.php?page=janzeman-shared-albums-for-google-photos' ) );
+		// Redirect to the canonical Guide page.
+		wp_safe_redirect( JZSA_Settings_Page::get_settings_page_url() );
 		exit;
 	}
 }
 add_action( 'admin_init', 'jzsa_activation_redirect' );
 
 /**
- * Add Settings link to plugin listing page
+ * Add plugin quick links to the plugin listing page.
  *
  * @param array $links Existing plugin action links
  * @return array Modified plugin action links
  */
 function jzsa_add_settings_link( $links ) {
-	$settings_link = sprintf(
+	$guide_link = sprintf(
 		'<a href="%s">%s</a>',
-		admin_url( 'options-general.php?page=janzeman-shared-albums-for-google-photos' ),
-		esc_html__( 'Settings & Onboarding', 'janzeman-shared-albums-for-google-photos' )
+		JZSA_Settings_Page::get_settings_page_url(),
+		esc_html__( 'Guide', 'janzeman-shared-albums-for-google-photos' )
 	);
-	array_unshift( $links, $settings_link );
+	$parameters_link = sprintf(
+		'<a href="%s">%s</a>',
+		JZSA_Settings_Page::get_shortcode_parameters_page_url(),
+		esc_html__( 'Parameters', 'janzeman-shared-albums-for-google-photos' )
+	);
+	$placeholders_link = sprintf(
+		'<a href="%s">%s</a>',
+		JZSA_Settings_Page::get_placeholders_page_url(),
+		esc_html__( 'Placeholders', 'janzeman-shared-albums-for-google-photos' )
+	);
+
+	array_unshift( $links, $guide_link, $parameters_link, $placeholders_link );
 	return $links;
 }
 add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'jzsa_add_settings_link' );

@@ -196,20 +196,25 @@ class JZSA_Shared_Albums {
 		}
 	}
 
-/**
+	/**
 	 * Enqueue front-end gallery assets on the plugin's settings page in admin.
 	 *
 	 * @param string $hook Current admin page hook.
 	 */
 	public function enqueue_admin_assets( $hook ) {
-		if ( 'settings_page_janzeman-shared-albums-for-google-photos' !== $hook ) {
+		unset( $hook );
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only admin page routing check.
+		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+
+		if ( ! class_exists( 'JZSA_Settings_Page' ) || JZSA_Settings_Page::MENU_SLUG !== $page ) {
 			return;
 		}
 
 		$this->enqueue_assets();
 	}
 
-/**
+	/**
 	 * Enqueue CSS and JavaScript assets
 	 *
 	 */

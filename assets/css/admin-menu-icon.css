@@ -1,0 +1,32 @@
+#adminmenu #toplevel_page_janzeman-shared-albums-for-google-photos div.wp-menu-image {
+	color: rgba(240, 246, 252, 0.6);
+}
+
+#adminmenu #toplevel_page_janzeman-shared-albums-for-google-photos div.wp-menu-image::before {
+	content: "";
+	display: block;
+	width: 20px;
+	height: 20px;
+	margin: 7px auto 0;
+	padding: 0;
+	background-color: currentColor;
+	-webkit-mask-image: url("../icon-admin.svg");
+	mask-image: url("../icon-admin.svg");
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-size: contain;
+	mask-size: contain;
+}
+
+#adminmenu #toplevel_page_janzeman-shared-albums-for-google-photos:hover div.wp-menu-image,
+#adminmenu #toplevel_page_janzeman-shared-albums-for-google-photos.opensub div.wp-menu-image,
+#adminmenu #toplevel_page_janzeman-shared-albums-for-google-photos > a:focus div.wp-menu-image {
+	color: #72aee6;
+}
+
+#adminmenu #toplevel_page_janzeman-shared-albums-for-google-photos.current div.wp-menu-image,
+#adminmenu #toplevel_page_janzeman-shared-albums-for-google-photos.wp-has-current-submenu div.wp-menu-image {
+	color: #fff;
+}
