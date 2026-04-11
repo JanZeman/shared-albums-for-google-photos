@@ -138,6 +138,7 @@ The plugin provides clear feedback:
 
 = 2.0.12 =
 * Google Photo description can be supported after all :-)
+* Introduce a halo effect to improve text readability
 
 = 2.0.11 =
 * Swiper loop navigation

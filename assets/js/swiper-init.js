@@ -5900,6 +5900,12 @@
             'data-fullscreen-info-font-family',
             'data-info-font-color',
             'data-fullscreen-info-font-color',
+            'data-info-halo-effect',
+            'data-info-top-halo-effect',
+            'data-info-top-secondary-halo-effect',
+            'data-info-bottom-halo-effect',
+            'data-gallery-info-bottom-halo-effect',
+            'data-album-title-halo-effect',
             'data-info-top',
             'data-fullscreen-info-top',
             'data-info-top-secondary',
@@ -5914,6 +5920,10 @@
                 $slideshow.attr(forwardAttrs[i], val);
             }
         }
+        $slideshow.attr(
+            'data-info-halo-effect',
+            readBooleanDataAttr($galleryContainer, 'data-info-halo-effect', true) ? 'true' : 'false'
+        );
 
         // Forward --gallery-bg-color CSS custom property for fullscreen background
         // Prefer fullscreen-background-color for the slideshow (which is always fullscreen)
@@ -6372,6 +6382,7 @@
         var controlsId = $container.attr('id') + '-gallery-controls';
         var $shell = ensureGalleryShell($container);
         var $controls = $('#' + controlsId);
+        var infoHaloEffect = readBooleanDataAttr($container, 'data-info-halo-effect', true);
 
         if (state.totalPages <= 1) {
             $controls.remove();
@@ -6380,7 +6391,7 @@
 
         if (!$controls.length) {
             var html =
-                '<div id="' + controlsId + '" class="jzsa-gallery-controls jzsa-album" role="group" aria-label="Gallery page navigation">' +
+                '<div id="' + controlsId + '" class="jzsa-gallery-controls jzsa-album" data-info-halo-effect="' + (infoHaloEffect ? 'true' : 'false') + '" role="group" aria-label="Gallery page navigation">' +
                     '<div class="swiper-button-prev" role="button" tabindex="0" aria-label="Previous gallery page"></div>' +
                     '<div class="swiper-pagination" aria-live="polite"></div>' +
                     '<button class="swiper-button-play-pause" title="Play/Pause" aria-label="Pause slideshow"></button>' +
@@ -6391,6 +6402,22 @@
             $shell.append(html);
             $controls = $('#' + controlsId);
         }
+
+        $controls.attr('data-info-halo-effect', infoHaloEffect ? 'true' : 'false');
+        [
+            'data-info-top-halo-effect',
+            'data-info-top-secondary-halo-effect',
+            'data-info-bottom-halo-effect',
+            'data-gallery-info-bottom-halo-effect',
+            'data-album-title-halo-effect'
+        ].forEach(function(attrName) {
+            var haloAttrValue = $container.attr(attrName);
+            if (haloAttrValue !== undefined) {
+                $controls.attr(attrName, haloAttrValue);
+            } else {
+                $controls.removeAttr(attrName);
+            }
+        });
 
         var $prev = $controls.find('.swiper-button-prev');
         var $next = $controls.find('.swiper-button-next');

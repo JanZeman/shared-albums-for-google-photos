@@ -299,6 +299,12 @@ class JZSA_Renderer {
 			'fullscreen-show-download-button' => 'data-fullscreen-show-download-button',
 			'video-controls-autohide' => 'data-video-controls-autohide',
 			'fullscreen-video-controls-autohide' => 'data-fullscreen-video-controls-autohide',
+			'info-halo-effect'       => 'data-info-halo-effect',
+			'info-top-halo-effect'   => 'data-info-top-halo-effect',
+			'info-top-secondary-halo-effect' => 'data-info-top-secondary-halo-effect',
+			'info-bottom-halo-effect' => 'data-info-bottom-halo-effect',
+			'gallery-info-bottom-halo-effect' => 'data-gallery-info-bottom-halo-effect',
+			'album-title-halo-effect' => 'data-album-title-halo-effect',
 			'mosaic'                  => 'data-mosaic',
 		);
 
@@ -569,6 +575,12 @@ class JZSA_Renderer {
 			'fullscreen-show-download-button' => 'data-fullscreen-show-download-button',
 			'video-controls-autohide' => 'data-video-controls-autohide',
 			'fullscreen-video-controls-autohide' => 'data-fullscreen-video-controls-autohide',
+			'info-halo-effect'       => 'data-info-halo-effect',
+			'info-top-halo-effect'   => 'data-info-top-halo-effect',
+			'info-top-secondary-halo-effect' => 'data-info-top-secondary-halo-effect',
+			'info-bottom-halo-effect' => 'data-info-bottom-halo-effect',
+			'gallery-info-bottom-halo-effect' => 'data-gallery-info-bottom-halo-effect',
+			'album-title-halo-effect' => 'data-album-title-halo-effect',
 		);
 		foreach ( $slideshow_booleans as $key => $attr_name ) {
 			if ( isset( $config[ $key ] ) ) {

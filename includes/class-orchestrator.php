@@ -431,6 +431,12 @@ class JZSA_Shared_Albums {
 		$info_font_size       = $this->parse_info_font_size( $atts, 'info-font-size', 12 );
 		$info_font_family     = $this->parse_info_font_family( $atts, 'info-font-family', '' );
 		$info_font_color      = $this->parse_color( $atts, 'info-font-color', '' );
+		$info_halo_effect     = $this->parse_bool( $atts, 'info-halo-effect', true );
+		$info_top_halo_effect = $this->parse_optional_bool( $atts, 'info-top-halo-effect' );
+		$info_top_secondary_halo_effect = $this->parse_optional_bool( $atts, 'info-top-secondary-halo-effect' );
+		$info_bottom_halo_effect = $this->parse_optional_bool( $atts, 'info-bottom-halo-effect' );
+		$gallery_info_bottom_halo_effect = $this->parse_optional_bool( $atts, 'gallery-info-bottom-halo-effect' );
+		$album_title_halo_effect = $this->parse_optional_bool( $atts, 'album-title-halo-effect' );
 		$info_wrap            = $this->parse_bool( $atts, 'info-wrap', false );
 		$allowed_alignments   = array( 'left', 'center', 'right' );
 		$info_text_align      = ( isset( $atts['info-text-align'] ) && in_array( $atts['info-text-align'], $allowed_alignments, true ) )
@@ -553,6 +559,12 @@ class JZSA_Shared_Albums {
 				'fullscreen-info-font-family' => $fullscreen_info_font_family,
 				'info-font-color'      => $info_font_color,
 				'fullscreen-info-font-color' => $fullscreen_info_font_color,
+				'info-halo-effect'     => $info_halo_effect,
+				'info-top-halo-effect' => $info_top_halo_effect,
+				'info-top-secondary-halo-effect' => $info_top_secondary_halo_effect,
+				'info-bottom-halo-effect' => $info_bottom_halo_effect,
+				'gallery-info-bottom-halo-effect' => $gallery_info_bottom_halo_effect,
+				'album-title-halo-effect' => $album_title_halo_effect,
 				'info-wrap'            => $info_wrap,
 			'info-text-align'                => $info_text_align,
 			'info-top-text-align'            => $info_top_text_align,
@@ -778,6 +790,24 @@ class JZSA_Shared_Albums {
 		}
 
 		return 'true' === strtolower( $atts[ $key ] );
+	}
+
+	/**
+	 * Parse optional boolean attribute.
+	 *
+	 * Returns null when the attribute is omitted so callers can inherit
+	 * the global/default behavior and only emit an override when explicitly set.
+	 *
+	 * @param array  $atts Attributes
+	 * @param string $key  Attribute key
+	 * @return bool|null Boolean value or null when omitted
+	 */
+	private function parse_optional_bool( $atts, $key ) {
+		if ( ! isset( $atts[ $key ] ) ) {
+			return null;
+		}
+
+		return $this->parse_bool( $atts, $key, false );
 	}
 
 	/**

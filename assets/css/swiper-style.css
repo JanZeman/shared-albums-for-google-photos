@@ -79,6 +79,12 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     --jzsa-nav-opacity-active: 1;
     --jzsa-controls-fs-scale: 1.25;
     --jzsa-controls-color: #ffffff;
+    --jzsa-halo-shadow-value:
+        0.75px 0 0 rgba(0, 0, 0, 0.95),
+        -0.75px 0 0 rgba(0, 0, 0, 0.95),
+        0 0.75px 0 rgba(0, 0, 0, 0.95),
+        0 -0.75px 0 rgba(0, 0, 0, 0.95),
+        0 1px 2px rgba(0, 0, 0, 0.85);
     /* Flat icon-contrast helpers (no visible button backgrounds). */
     position: relative; /* For loader overlay positioning */
 }
@@ -779,6 +785,31 @@ body.jzsa-no-scroll {
     text-overflow: ellipsis;
     white-space: nowrap;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Optional readability halo for text overlays and the album title. */
+.jzsa-album[data-info-halo-effect="true"] .swiper-album-title,
+.jzsa-album[data-info-halo-effect="true"] .swiper-pagination,
+.jzsa-album[data-info-halo-effect="true"] .jzsa-info-box {
+    text-shadow: var(--jzsa-halo-shadow-value);
+}
+
+.jzsa-album[data-info-top-halo-effect="false"] .jzsa-info-top,
+.jzsa-album[data-info-top-secondary-halo-effect="false"] .jzsa-info-top-secondary,
+.jzsa-album[data-info-bottom-halo-effect="false"] .jzsa-info-bottom,
+.jzsa-album[data-info-bottom-halo-effect="false"]:not(.jzsa-gallery-controls) .swiper-pagination,
+.jzsa-album[data-gallery-info-bottom-halo-effect="false"].jzsa-gallery-controls .swiper-pagination,
+.jzsa-album[data-album-title-halo-effect="false"] .swiper-album-title {
+    text-shadow: none;
+}
+
+.jzsa-album[data-info-top-halo-effect="true"] .jzsa-info-top,
+.jzsa-album[data-info-top-secondary-halo-effect="true"] .jzsa-info-top-secondary,
+.jzsa-album[data-info-bottom-halo-effect="true"] .jzsa-info-bottom,
+.jzsa-album[data-info-bottom-halo-effect="true"]:not(.jzsa-gallery-controls) .swiper-pagination,
+.jzsa-album[data-gallery-info-bottom-halo-effect="true"].jzsa-gallery-controls .swiper-pagination,
+.jzsa-album[data-album-title-halo-effect="true"] .swiper-album-title {
+    text-shadow: var(--jzsa-halo-shadow-value);
 }
 
 /* Pagination */
