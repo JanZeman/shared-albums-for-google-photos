@@ -1077,7 +1077,7 @@ body.jzsa-no-scroll {
     visibility: hidden;
 }
 
-/* Dashed border shows the placeholder area while content is loading */
+/* Dashed border shows immediately so the user knows where to expect the gallery. */
 .jzsa-album.jzsa-loader-pending {
     outline: 2px dashed rgba(128, 128, 128, 0.4);
     outline-offset: -2px;
@@ -1138,9 +1138,24 @@ body.jzsa-no-scroll {
     animation: none;
 }
 
-/* Keep Swiper slide content hidden until the first image is considered loaded. */
+/* Keep Swiper slide content hidden until the first image is considered loaded.
+   opacity:0 is paired with the jzsa-loaded transition below so photos
+   cross-fade in as the loader cross-fades out, instead of a hard pop. */
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-wrapper {
+    opacity: 0;
     visibility: hidden;
+}
+
+/* Fade content in as loader fades out (both use 350ms so timing is in sync). */
+.jzsa-album.swiper.jzsa-loaded .swiper-wrapper {
+    opacity: 1;
+    transition: opacity 350ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .jzsa-album.swiper.jzsa-loaded .swiper-wrapper {
+        transition: none;
+    }
 }
 
 /* Hide controls while gallery is still in loading-pending state. */
