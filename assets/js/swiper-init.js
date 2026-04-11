@@ -220,8 +220,7 @@
     // Time conversion constant (shared by all helpers and initializers)
     var MILLISECONDS_PER_SECOND = 1000; // Conversion factor from seconds to milliseconds
     // Loader UX: avoid flashing loader on quick responses.
-    // 500ms gives enough headroom that sub-500ms loads never show the spinner at all.
-    var LOADER_SHOW_DELAY_MS = 500;
+    var LOADER_SHOW_DELAY_MS = 300;
     var LOADER_MIN_VISIBLE_MS = 250;
 
     // Helper: Run after the next paint cycle (double RAF) to avoid synchronous
@@ -915,36 +914,18 @@
         }
         $container
             .removeClass('jzsa-loaded')
-            .addClass('jzsa-loader-pending');
-
-        // Use the same delayed-show pattern as the other init paths so fast AJAX
-        // responses skip the spinner entirely.
-        var progressiveLoaderShownAt = 0;
-        var progressiveLoaderTimer = window.setTimeout(function() {
-            if ($container.hasClass('jzsa-loaded')) {
-                return;
-            }
-            progressiveLoaderShownAt = Date.now();
-            $container.addClass('jzsa-loader-visible');
-        }, LOADER_SHOW_DELAY_MS);
+            .addClass('jzsa-loader-pending jzsa-loader-visible');
 
         var bootstrapPromise = fetchAlbumChunk($container, initialOffset, settings.initialChunkSize)
             .done(function(data) {
-                window.clearTimeout(progressiveLoaderTimer);
                 setContainerPhotos($container, data.photos);
                 if (data.total_count !== undefined && data.total_count !== null) {
                     $container.attr('data-total-count', data.total_count);
                 }
-                var minVisibleRemaining = progressiveLoaderShownAt > 0
-                    ? Math.max(0, LOADER_MIN_VISIBLE_MS - (Date.now() - progressiveLoaderShownAt))
-                    : 0;
-                window.setTimeout(function() {
-                    $container.removeData('jzsaProgressiveBootstrap');
-                    initializeSwiper($container[0], mode);
-                }, minVisibleRemaining);
+                $container.removeData('jzsaProgressiveBootstrap');
+                initializeSwiper($container[0], mode);
             })
             .fail(function() {
-                window.clearTimeout(progressiveLoaderTimer);
                 $container
                     .removeClass('jzsa-loader-pending jzsa-loader-visible')
                     .addClass('jzsa-loaded');
@@ -5150,12 +5131,10 @@
         if ($container.find('.jzsa-loader').length === 0) {
             $container.append(buildLoaderHtml('Loading content...'));
         }
-        // Strip intro-fade so the container is visible (dashed outline) from the start.
-        // The spinner itself is delayed by LOADER_SHOW_DELAY_MS so fast photo loads
-        // skip the loader entirely and photos appear directly.
         $container
-            .removeClass('jzsa-loaded jzsa-loader-visible jzsa-content-intro jzsa-content-intro-visible')
+            .removeClass('jzsa-loaded jzsa-loader-visible')
             .addClass('jzsa-loader-pending');
+        triggerGalleryIntroFade($container);
 
         var galleryLoaderShownAt = 0;
         var jzsaHasMarkedLoaded = false;
@@ -5218,16 +5197,12 @@
             var imgEl = $initialPreviewImg[0];
             $initialPreviewImg.off('.jzsaLoader');
             if (imgEl.complete && imgEl.naturalWidth > 0) {
-                // Image already in browser cache: wait for next paint so the
-                // photo is actually on screen before the loader disappears.
-                runOnNextPaint(markGalleryLoaded);
+                markGalleryLoaded();
                 return;
             }
 
             $initialPreviewImg.one('load.jzsaLoader', function() {
-                // Give the browser two frames to decode and commit the image
-                // to the display before hiding the loader, avoiding a blank flash.
-                runOnNextPaint(markGalleryLoaded);
+                markGalleryLoaded();
             });
             $initialPreviewImg.one('error.jzsaLoader', function() {
                 window.setTimeout(markGalleryLoaded, 800);
@@ -7223,13 +7198,11 @@
         if ($container.find('.jzsa-loader').length === 0) {
             $container.append(buildLoaderHtml('Loading content...'));
         }
-        // Strip intro-fade so the container is visible (dashed outline) from the start.
-        // The spinner itself is delayed by LOADER_SHOW_DELAY_MS so fast photo loads
-        // skip the loader entirely and photos appear directly.
         $container
             .addClass('jzsa-gallery-album')
-            .removeClass('jzsa-loaded jzsa-loader-visible jzsa-content-intro jzsa-content-intro-visible')
+            .removeClass('jzsa-loaded jzsa-loader-visible')
             .addClass('jzsa-loader-pending jzsa-gallery-loading');
+        triggerGalleryIntroFade($container);
 
         var requestedGalleryRows = parseInt(readGalleryAttr($container, 'rows'), 10);
         var galleryRows = (!isNaN(requestedGalleryRows) && requestedGalleryRows > 0) ? requestedGalleryRows : 0;
@@ -7326,16 +7299,12 @@
             var thumbEl = $firstThumb[0];
             $container.find('.jzsa-gallery-thumb').off('.jzsaGalleryLoader');
             if (thumbEl.complete && thumbEl.naturalWidth > 0) {
-                // Image already in browser cache: wait for next paint so the
-                // photo is actually on screen before the loader disappears.
-                runOnNextPaint(markGalleryLoaded);
+                markGalleryLoaded();
                 return;
             }
 
             $firstThumb.one('load.jzsaGalleryLoader', function() {
-                // Give the browser two frames to decode and commit the image
-                // to the display before hiding the loader, avoiding a blank flash.
-                runOnNextPaint(markGalleryLoaded);
+                markGalleryLoaded();
             });
             $firstThumb.one('error.jzsaGalleryLoader', function() {
                 window.setTimeout(markGalleryLoaded, 500);

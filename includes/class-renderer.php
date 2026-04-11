@@ -147,7 +147,7 @@ class JZSA_Renderer {
 		}
 
 		$html .= sprintf(
-			'<div id="%s" class="jzsa-album swiper jzsa-loader-pending" %s style="%s">',
+			'<div id="%s" class="jzsa-album swiper jzsa-loader-pending jzsa-content-intro" %s style="%s">',
 			esc_attr( $gallery_id ),
 			$attrs,
 			$mosaic_enabled ? '' : esc_attr( $styles )
@@ -710,7 +710,7 @@ class JZSA_Renderer {
 		$style_attr = ! empty( $styles ) ? sprintf( ' style="%s"', esc_attr( implode( '; ', $styles ) ) ) : '';
 
 		return sprintf(
-			'<div id="%s" class="jzsa-album jzsa-gallery-album jzsa-loader-pending jzsa-gallery-loading" %s%s></div>',
+			'<div id="%s" class="jzsa-album jzsa-gallery-album jzsa-loader-pending jzsa-gallery-loading jzsa-content-intro" %s%s></div>',
 			esc_attr( $gallery_id ),
 			implode( ' ', $attrs ),
 			$style_attr
