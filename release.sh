@@ -29,6 +29,22 @@ RELEASE_DIR_ROOT="${SCRIPT_DIR}/release"
 BUILD_DIR="${RELEASE_DIR_ROOT}/build"
 RELEASE_DIR="${BUILD_DIR}/${PLUGIN_SLUG}"
 EXTRACT_DIR="${RELEASE_DIR_ROOT}/${PLUGIN_SLUG}"
+ALLOWED_TOP_LEVEL_ENTRIES=(
+    "janzeman-shared-albums-for-google-photos.php"
+    "readme.txt"
+    "LICENSE"
+    "includes"
+    "assets"
+    "languages"
+)
+UNWANTED_RELEASE_PATTERNS=(
+    ".DS_Store"
+    "Thumbs.db"
+    "*.bak"
+    "*.tmp"
+    "*~"
+    "._*"
+)
 
 # ---------------------------------------------------------------------------
 # Parse arguments
@@ -228,6 +244,13 @@ echo ""
 echo -e "${YELLOW}Cleaning previous release build...${NC}"
 rm -rf "$BUILD_DIR" "$EXTRACT_DIR"
 
+if [ -e "$BUILD_DIR" ] || [ -e "$EXTRACT_DIR" ]; then
+    echo -e "${RED}Error:${NC} Failed to remove previous build artifacts."
+    echo "  BUILD_DIR:   $BUILD_DIR"
+    echo "  EXTRACT_DIR: $EXTRACT_DIR"
+    exit 1
+fi
+
 # Create build directory structure
 echo -e "${YELLOW}Creating build directory...${NC}"
 mkdir -p "$RELEASE_DIR"
@@ -303,6 +326,55 @@ done
 
 if [ $VALIDATION_FAILED -eq 1 ]; then
     echo -e "${RED}Validation failed! Some required files are missing.${NC}"
+    exit 1
+fi
+
+# Validate top-level package structure
+TOP_LEVEL_FAILED=0
+for entry_path in "$RELEASE_DIR"/*; do
+    if [ ! -e "$entry_path" ]; then
+        continue
+    fi
+
+    entry_name="$(basename "$entry_path")"
+    allowed=0
+    for allowed_name in "${ALLOWED_TOP_LEVEL_ENTRIES[@]}"; do
+        if [ "$entry_name" = "$allowed_name" ]; then
+            allowed=1
+            break
+        fi
+    done
+
+    if [ "$allowed" -eq 0 ]; then
+        echo -e "${RED}  ✗ Unexpected top-level entry in release package: ${entry_name}${NC}"
+        TOP_LEVEL_FAILED=1
+    fi
+done
+
+if [ "$TOP_LEVEL_FAILED" -eq 1 ]; then
+    echo -e "${RED}Validation failed! Remove unexpected top-level files before releasing.${NC}"
+    exit 1
+fi
+
+# Refuse to package symlinks.
+if find "$RELEASE_DIR" -type l | grep -q .; then
+    echo -e "${RED}Validation failed! Symlinks are not allowed in the release package.${NC}"
+    find "$RELEASE_DIR" -type l | sed 's#^#  - #'
+    exit 1
+fi
+
+# Refuse to package junk files, even after cleanup.
+UNWANTED_FOUND=0
+for pattern in "${UNWANTED_RELEASE_PATTERNS[@]}"; do
+    while IFS= read -r unwanted_path; do
+        [ -z "$unwanted_path" ] && continue
+        echo -e "${RED}  ✗ Unexpected junk file in release package: ${unwanted_path}${NC}"
+        UNWANTED_FOUND=1
+    done < <(find "$RELEASE_DIR" -type f -name "$pattern")
+done
+
+if [ "$UNWANTED_FOUND" -eq 1 ]; then
+    echo -e "${RED}Validation failed! Release package still contains unwanted files.${NC}"
     exit 1
 fi
 
