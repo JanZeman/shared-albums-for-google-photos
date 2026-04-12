@@ -525,12 +525,13 @@ class JZSA_Admin_Pages {
 								<button type="button" class="button button-link" data-jzsa-clear-cache-scope="album" data-jzsa-idle-label="<?php echo esc_attr__( 'Clear Album Cache Only', 'janzeman-shared-albums-for-google-photos' ); ?>">
 									<?php esc_html_e( 'Clear Album Cache Only', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</button>
-								<button type="button" class="button button-link" data-jzsa-clear-cache-scope="photo_meta" data-jzsa-idle-label="<?php echo esc_attr__( 'Clear Metadata Cache Only', 'janzeman-shared-albums-for-google-photos' ); ?>">
-									<?php esc_html_e( 'Clear Metadata Cache Only', 'janzeman-shared-albums-for-google-photos' ); ?>
-								</button>
+									<button type="button" class="button button-link" data-jzsa-clear-cache-scope="photo_meta" data-jzsa-idle-label="<?php echo esc_attr__( 'Clear Metadata Cache Only', 'janzeman-shared-albums-for-google-photos' ); ?>">
+										<?php esc_html_e( 'Clear Metadata Cache Only', 'janzeman-shared-albums-for-google-photos' ); ?>
+									</button>
+								</div>
+								<span id="jzsa-clear-cache-result" class="jzsa-cache-result" aria-live="polite"></span>
 							</div>
 						</div>
-					</div>
 			</div>
 
 				<!-- Samples Section -->
