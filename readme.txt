@@ -129,10 +129,14 @@ The plugin provides clear feedback:
 
 == Screenshots ==
 
-1. Gallery in normal view with navigation
-2. Fullscreen mode
-3. Mobile responsive view
-4. Shortcode example in post editor
+1. Slider mode with navigation and paging
+2. Slider mode with mosaic strip
+3. Gallery mode
+4. Carousel mode (also shows the video capability)
+5. Fullscreen mode with description and EXIF info overlay
+6. From low- to high-resolution image support
+7. Shortcode example in page editor (with preview)
+8. Descripton with custom font
 
 == Changelog ==
 

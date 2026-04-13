@@ -431,6 +431,29 @@ else
         rm -rf "${SVN_TRUNK}"/*
         cp -R "${EXTRACT_DIR}/"* "$SVN_TRUNK/"
         SYNCED_TO_SVN=1
+
+        # Sync screenshots into SVN assets directory
+        SVN_ASSETS="${SVN_TRUNK%/trunk}/assets"
+        SCREENSHOTS_DIR="${SCRIPT_DIR}/screenshots"
+        if [ ! -d "$SCREENSHOTS_DIR" ]; then
+            echo -e "${RED}Error:${NC} Screenshots directory not found at ${SCREENSHOTS_DIR}"
+            echo "  Please create the directory and add screenshot files before releasing."
+            exit 1
+        fi
+        if [ -d "$SVN_ASSETS" ]; then
+            SCREENSHOT_COUNT=$(find "$SCREENSHOTS_DIR" -maxdepth 1 -type f -name 'screenshot-*' \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | wc -l | tr -d ' ')
+            if [ "$SCREENSHOT_COUNT" -gt 0 ]; then
+                echo -e "${YELLOW}Syncing ${SCREENSHOT_COUNT} screenshot(s) into SVN assets: ${SVN_ASSETS}${NC}"
+                # Remove old screenshots from SVN assets, keep other assets (icon, banner, etc.)
+                find "$SVN_ASSETS" -maxdepth 1 -type f -name 'screenshot-*' -delete 2>/dev/null || true
+                find "$SCREENSHOTS_DIR" -maxdepth 1 -type f -name 'screenshot-*' \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -exec cp {} "$SVN_ASSETS/" \;
+                echo -e "${GREEN}✓ Screenshots synced to SVN assets.${NC}"
+            else
+                echo -e "${RED}Error:${NC} No screenshot files found in ${SCREENSHOTS_DIR}"
+                echo "  Please add screenshot-*.{png,jpg,jpeg} files before releasing."
+                exit 1
+            fi
+        fi
     else
         echo -e "${YELLOW}SVN trunk not found at ${SVN_TRUNK}. Skipping SVN sync.${NC}"
     fi
@@ -462,37 +485,43 @@ echo ""
 
 # If we synced to SVN, stage new files in SVN, show status, and optionally commit & tag
 if [ "$FULL_RELEASE" -eq 1 ] && [ "$SYNCED_TO_SVN" -eq 1 ] && command -v svn &> /dev/null; then
+    SVN_ROOT="${SVN_TRUNK%/trunk}"
+
     echo -e "${YELLOW}Running 'svn add . --force' in trunk (no commit yet)...${NC}"
     (
         cd "$SVN_TRUNK" && \
         svn add . --force >/dev/null 2>&1 || true
     )
 
+    # Stage new screenshots in SVN assets
+    SVN_ASSETS="${SVN_ROOT}/assets"
+    if [ -d "$SVN_ASSETS" ]; then
+        (cd "$SVN_ASSETS" && svn add . --force >/dev/null 2>&1 || true)
+    fi
+
     # Schedule SVN-tracked files that no longer exist (renamed/deleted) for removal
-    SVN_MISSING=$(cd "$SVN_TRUNK" && svn status | awk '/^!/ {print $2}')
+    SVN_MISSING=$(cd "$SVN_ROOT" && svn status trunk assets 2>/dev/null | awk '/^!/ {print $2}')
     if [ -n "$SVN_MISSING" ]; then
         echo -e "${YELLOW}Scheduling SVN deletions for missing tracked files:${NC}"
         while IFS= read -r missing_file; do
             echo "  - $missing_file"
-            (cd "$SVN_TRUNK" && svn delete "$missing_file") || true
+            (cd "$SVN_ROOT" && svn delete "$missing_file") || true
         done <<< "$SVN_MISSING"
     fi
 
-    echo -e "${YELLOW}SVN status for trunk before commit:${NC}"
-    SVN_STATUS_OUTPUT=$(cd "$SVN_TRUNK" && svn status || true)
+    echo -e "${YELLOW}SVN status before commit:${NC}"
+    SVN_STATUS_OUTPUT=$(cd "$SVN_ROOT" && svn status trunk assets 2>/dev/null || true)
     echo "$SVN_STATUS_OUTPUT"
 
     if [ -z "${SVN_STATUS_OUTPUT}" ]; then
         echo -e "${YELLOW}No pending changes in SVN trunk; skipping automatic SVN commit and tag.${NC}"
     else
-        echo -e "${YELLOW}Committing changes to SVN trunk...${NC}"
-        if ! (cd "$SVN_TRUNK" && svn commit -m "Release ${VERSION}"); then
-            echo -e "${RED}Error:${NC} Failed to commit changes to SVN trunk."
-            echo "Please resolve the issue in ${SVN_TRUNK} and commit manually."
+        echo -e "${YELLOW}Committing changes to SVN (trunk + assets)...${NC}"
+        if ! (cd "$SVN_ROOT" && svn commit trunk assets -m "Release ${VERSION}"); then
+            echo -e "${RED}Error:${NC} Failed to commit changes to SVN."
+            echo "Please resolve the issue in ${SVN_ROOT} and commit manually."
             exit 1
         fi
-
-        SVN_ROOT="${SVN_TRUNK%/trunk}"
         if [ ! -d "$SVN_ROOT/tags" ]; then
             echo -e "${YELLOW}Warning:${NC} SVN tags directory not found under ${SVN_ROOT}; skipping SVN tag creation."
         else
