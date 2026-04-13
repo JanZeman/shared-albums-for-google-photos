@@ -525,8 +525,7 @@ class JZSA_Admin_Pages {
 
 					<div class="jzsa-cache-row">
 							<div class="jzsa-cache-info">
-								<?php esc_html_e( 'Caching is important because it improves performance and reduces the number of requests to Google Photos. This plugin keeps two cache types:', 'janzeman-shared-albums-for-google-photos' ); ?>
-									<p><strong><?php esc_html_e( 'Album cache:', 'janzeman-shared-albums-for-google-photos' ); ?></strong> <?php esc_html_e( 'stores the album listing and media URLs.', 'janzeman-shared-albums-for-google-photos' ); ?><br><strong><?php esc_html_e( 'Metadata cache:', 'janzeman-shared-albums-for-google-photos' ); ?></strong> <?php esc_html_e( 'stores per-photo values such as description, camera, filename, and EXIF after the first fetch.', 'janzeman-shared-albums-for-google-photos' ); ?><br><span style="display:block;margin-top:6px"></span><?php esc_html_e( 'The heavier metadata fetching usually happens only once, to warm the cache. Later visitors are served from cache immediately. Avoid clearing caches routinely unless you actually need fresh Google Photos data. Use the cache-refresh shortcode parameter to automatically reduce the album cache duration. If you use a page caching plugin (WP Fastest Cache, WP Super Cache, etc.), clear that separately. This section refers to server-side cache only; your browser cache is separate.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+								<?php esc_html_e( 'Server-side caching is important because it significantly reduces requests to Google Photos and speeds up page loads. Only clear the cache when you need fresh data from Google Photos.', 'janzeman-shared-albums-for-google-photos' ); ?>
 							</div>
 							<div class="jzsa-cache-action">
 								<div class="jzsa-cache-actions-row">
@@ -539,10 +538,20 @@ class JZSA_Admin_Pages {
 									<button type="button" class="button button-link" data-jzsa-clear-cache-scope="photo_meta" data-jzsa-idle-label="<?php echo esc_attr__( 'Clear Metadata Cache Only', 'janzeman-shared-albums-for-google-photos' ); ?>">
 										<?php esc_html_e( 'Clear Metadata Cache Only', 'janzeman-shared-albums-for-google-photos' ); ?>
 									</button>
+									<span id="jzsa-clear-cache-result" class="jzsa-cache-result" aria-live="polite"></span>
 								</div>
-								<span id="jzsa-clear-cache-result" class="jzsa-cache-result" aria-live="polite"></span>
 							</div>
 						</div>
+
+					<details class="jzsa-cache-explainer">
+						<summary><?php esc_html_e( 'How the cache works', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
+						<div class="jzsa-cache-explainer__body">
+							<p><strong><?php esc_html_e( 'Album cache', 'janzeman-shared-albums-for-google-photos' ); ?></strong> &mdash; <?php esc_html_e( 'Stores the photo list and album title. Lifetime is controlled by the cache-refresh shortcode attribute (default: 7 days). When it expires the plugin re-fetches the list from Google Photos, picking up any new or removed photos.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><strong><?php esc_html_e( 'Metadata cache', 'janzeman-shared-albums-for-google-photos' ); ?></strong> &mdash; <?php esc_html_e( 'Stores per-photo data (filename, description, camera, EXIF) with a fixed 30-day lifetime, independent of the album cache. Populated lazily on the first visit; all subsequent requests — even after an album cache refresh — are served from this cache. The heavier EXIF fetch only ever happens once per photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'If you use a page caching plugin (e.g. WP Fastest Cache, WP Super Cache), clear that separately — this section only covers the server-side plugin cache. Your browser cache is separate too.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><em><?php esc_html_e( 'Tip: Lowering cache-refresh makes new photos appear sooner without triggering metadata re-fetches for already-cached photos.', 'janzeman-shared-albums-for-google-photos' ); ?></em></p>
+						</div>
+					</details>
 			</div>
 
 				<!-- Samples Section -->
