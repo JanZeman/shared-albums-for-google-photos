@@ -136,6 +136,10 @@ The plugin provides clear feedback:
 
 == Changelog ==
 
+= 2.1.3 =
+* Add "How the cache works" section
+* Improve Guide page loading experience
+
 = 2.1.2 =
 * Make caching description more clear and prominent
 

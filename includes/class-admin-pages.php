@@ -532,14 +532,14 @@ class JZSA_Admin_Pages {
 									<button type="button" id="jzsa-clear-cache-btn" class="button button-secondary" data-jzsa-clear-cache-scope="all" data-jzsa-idle-label="<?php echo esc_attr__( 'Clear All Cache', 'janzeman-shared-albums-for-google-photos' ); ?>">
 										<?php esc_html_e( 'Clear All Cache', 'janzeman-shared-albums-for-google-photos' ); ?>
 									</button>
-								<button type="button" class="button button-link" data-jzsa-clear-cache-scope="album" data-jzsa-idle-label="<?php echo esc_attr__( 'Clear Album Cache Only', 'janzeman-shared-albums-for-google-photos' ); ?>">
-									<?php esc_html_e( 'Clear Album Cache Only', 'janzeman-shared-albums-for-google-photos' ); ?>
+								<button type="button" class="button button-link" data-jzsa-clear-cache-scope="album" data-jzsa-idle-label="<?php echo esc_attr__( 'Clear Album Cache', 'janzeman-shared-albums-for-google-photos' ); ?>">
+									<?php esc_html_e( 'Clear Album Cache', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</button>
-									<button type="button" class="button button-link" data-jzsa-clear-cache-scope="photo_meta" data-jzsa-idle-label="<?php echo esc_attr__( 'Clear Metadata Cache Only', 'janzeman-shared-albums-for-google-photos' ); ?>">
-										<?php esc_html_e( 'Clear Metadata Cache Only', 'janzeman-shared-albums-for-google-photos' ); ?>
+									<button type="button" class="button button-link" data-jzsa-clear-cache-scope="photo_meta" data-jzsa-idle-label="<?php echo esc_attr__( 'Clear Metadata Cache', 'janzeman-shared-albums-for-google-photos' ); ?>">
+										<?php esc_html_e( 'Clear Metadata Cache', 'janzeman-shared-albums-for-google-photos' ); ?>
 									</button>
 									<span id="jzsa-clear-cache-result" class="jzsa-cache-result" aria-live="polite"></span>
-								</div>
+								</div>	
 							</div>
 						</div>
 
