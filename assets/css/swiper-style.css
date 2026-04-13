@@ -1649,7 +1649,7 @@ body.jzsa-no-scroll {
 }
 
 .jzsa-gallery-album.jzsa-gallery-loading .jzsa-loader {
-    background: radial-gradient(circle at top, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.58));
+    background: transparent;
 }
 
 /* Uniform gallery layout */
