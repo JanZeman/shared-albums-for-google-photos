@@ -143,6 +143,7 @@ class JZSA_Admin_Pages {
 			array(
 				'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
 				'clearCacheNonce' => wp_create_nonce( 'jzsa_clear_cache' ),
+				'previewNonce'    => wp_create_nonce( 'jzsa_shortcode_preview' ),
 			)
 		);
 	}
@@ -490,21 +491,31 @@ class JZSA_Admin_Pages {
 						$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="slider" corner-radius="16" mosaic="true" mosaic-count="10"]';
 					?>
 
-					<label for="jzsa-playground-shortcode" class="screen-reader-text">
-						<?php esc_html_e( 'Shortcode to test', 'janzeman-shared-albums-for-google-photos' ); ?>
-					</label>
-					<textarea
-						id="jzsa-playground-shortcode"
-						class="large-text code"
-						rows="3"
-					><?php echo esc_textarea( $sample_shortcode ); ?></textarea>
+					<div class="jzsa-code-block jzsa-playground-code-block">
+						<code
+							id="jzsa-playground-shortcode"
+							class="jzsa-editable-code"
+							contenteditable="true"
+							spellcheck="false"
+							role="textbox"
+							aria-multiline="true"
+							aria-label="<?php esc_attr_e( 'Shortcode to test', 'janzeman-shared-albums-for-google-photos' ); ?>"
+						><?php echo esc_html( $sample_shortcode ); ?></code>
+						<div class="jzsa-code-block-btns">
+							<button type="button" class="jzsa-action-btn" data-jzsa-action="copy"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button type="button" class="jzsa-action-btn" data-jzsa-action="apply"><?php esc_html_e( 'Apply', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button type="button" class="jzsa-action-btn" data-jzsa-action="revert"><?php esc_html_e( 'Revert', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+					</div>
 
-					<div class="jzsa-preview-container jzsa-playground-preview">
-						<?php
-							// Step 1: static preview using the same sample album as above.
-							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( $sample_shortcode );
-						?>
+					<div
+						class="jzsa-preview-container jzsa-playground-preview"
+						data-initial-shortcode="<?php echo esc_attr( $sample_shortcode ); ?>"
+						aria-live="polite"
+					>
+						<div class="jzsa-playground-placeholder">
+							<?php esc_html_e( 'Preparing preview...', 'janzeman-shared-albums-for-google-photos' ); ?>
+						</div>
 					</div>
 				</div>
 

@@ -113,6 +113,11 @@
     justify-content: center;
 }
 
+.jzsa-playground-placeholder {
+    color: rgba(100, 105, 112, 0.45);
+    font-size: 14px;
+}
+
 /* Tutorial Steps */
 .jzsa-tutorial-section {
     background: linear-gradient(to bottom, #fff 0%, #f9f9f9 100%);

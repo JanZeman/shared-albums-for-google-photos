@@ -89,26 +89,34 @@ function jzsaHighlightPlaceholders( codeEl ) {
 	} catch ( e ) { /* ignore */ }
 }
 
-function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel ) {
+function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel, options ) {
 	var shortcode = ( codeEl.textContent || '' ).trim();
+	var opts = options || {};
+	var silent = !! opts.silent;
+	var ajaxConfig = ( typeof jzsaAjax !== 'undefined' && jzsaAjax && jzsaAjax.ajaxUrl && jzsaAjax.previewNonce ) ? jzsaAjax : jzsaAdminAjax;
 	if ( ! shortcode ) {
 		return;
 	}
-	if ( typeof jzsaAjax === 'undefined' || ! jzsaAjax.ajaxUrl || ! jzsaAjax.previewNonce ) {
+	if ( ! ajaxConfig || ! ajaxConfig.ajaxUrl || ! ajaxConfig.previewNonce ) {
+		previewContainer.innerHTML = '<div class="jzsa-playground-error">Preview configuration missing.</div>';
 		return;
 	}
 
-	var savedLabel = triggerBtn.textContent;
-	triggerBtn.disabled = true;
-	triggerBtn.textContent = 'Applying\u2026';
+	var savedLabel = triggerBtn ? triggerBtn.textContent : '';
+	if ( triggerBtn ) {
+		triggerBtn.disabled = true;
+		if ( ! silent ) {
+			triggerBtn.textContent = 'Applying\u2026';
+		}
+	}
 	previewContainer.style.opacity = '0.5';
 
 	var params = new URLSearchParams();
 	params.append( 'action', 'jzsa_shortcode_preview' );
-	params.append( 'nonce', jzsaAjax.previewNonce );
+	params.append( 'nonce', ajaxConfig.previewNonce );
 	params.append( 'shortcode', shortcode );
 
-	window.fetch( jzsaAjax.ajaxUrl, {
+	window.fetch( ajaxConfig.ajaxUrl, {
 		method: 'POST',
 		credentials: 'same-origin',
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
@@ -116,8 +124,10 @@ function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel ) {
 	} )
 		.then( function ( r ) { return r.json(); } )
 		.then( function ( data ) {
-			triggerBtn.disabled = false;
-			triggerBtn.textContent = savedLabel;
+			if ( triggerBtn ) {
+				triggerBtn.disabled = false;
+				triggerBtn.textContent = savedLabel;
+			}
 			previewContainer.style.opacity = '';
 
 			if ( ! data || ! data.success || ! data.data || ! data.data.html ) {
@@ -128,7 +138,9 @@ function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel ) {
 
 			previewContainer.innerHTML = data.data.html;
 
-			jzsaFlashButton( triggerBtn, flashLabel || 'Applied!' );
+			if ( triggerBtn && ! silent ) {
+				jzsaFlashButton( triggerBtn, flashLabel || 'Applied!' );
+			}
 
 			if ( window.SharedGooglePhotos ) {
 				var album = previewContainer.querySelector( '.jzsa-album' );
@@ -143,11 +155,24 @@ function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel ) {
 			}
 		} )
 		.catch( function () {
-			triggerBtn.disabled = false;
-			triggerBtn.textContent = savedLabel;
+			if ( triggerBtn ) {
+				triggerBtn.disabled = false;
+				triggerBtn.textContent = savedLabel;
+			}
 			previewContainer.style.opacity = '';
 			previewContainer.innerHTML = '<div class="jzsa-playground-error">Request failed.</div>';
 		} );
+}
+
+function jzsaSchedulePlaygroundInitialPreview( codeEl, previewContainer, applyBtn ) {
+	if ( ! codeEl || ! previewContainer ) {
+		return;
+	}
+
+	var scheduleLoad = function () {
+		jzsaApplyPreview( codeEl, applyBtn, previewContainer, '', { silent: true } );
+	};
+	window.setTimeout( scheduleLoad, 250 );
 }
 
 /**
@@ -174,33 +199,48 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		}
 
 		// Build button column: Copy + (Apply + Revert if preview exists).
-		var btnCol = document.createElement( 'div' );
-		btnCol.className = 'jzsa-code-block-btns';
-
-		var copyBtn = document.createElement( 'button' );
-		copyBtn.type = 'button';
-		copyBtn.className = 'jzsa-action-btn';
-		copyBtn.textContent = 'Copy';
-		btnCol.appendChild( copyBtn );
+		var btnCol = block.querySelector( '.jzsa-code-block-btns' );
+		var copyBtn = btnCol ? btnCol.querySelector( '[data-jzsa-action="copy"]' ) : null;
 
 		var applyBtn = null;
 		var revertBtn = null;
 
-		if ( hasPreview ) {
-			applyBtn = document.createElement( 'button' );
-			applyBtn.type = 'button';
-			applyBtn.className = 'jzsa-action-btn';
-			applyBtn.textContent = 'Apply';
-			btnCol.appendChild( applyBtn );
-
-			revertBtn = document.createElement( 'button' );
-			revertBtn.type = 'button';
-			revertBtn.className = 'jzsa-action-btn';
-			revertBtn.textContent = 'Revert';
-			btnCol.appendChild( revertBtn );
+		if ( ! btnCol ) {
+			btnCol = document.createElement( 'div' );
+			btnCol.className = 'jzsa-code-block-btns';
+			block.appendChild( btnCol );
 		}
 
-		block.appendChild( btnCol );
+		if ( ! copyBtn ) {
+			copyBtn = document.createElement( 'button' );
+			copyBtn.type = 'button';
+			copyBtn.className = 'jzsa-action-btn';
+			copyBtn.textContent = 'Copy';
+			if ( ! btnCol.contains( copyBtn ) ) {
+				btnCol.appendChild( copyBtn );
+			}
+		}
+
+		if ( hasPreview ) {
+			applyBtn = btnCol.querySelector( '[data-jzsa-action="apply"]' );
+			revertBtn = btnCol.querySelector( '[data-jzsa-action="revert"]' );
+
+			if ( ! applyBtn ) {
+				applyBtn = document.createElement( 'button' );
+				applyBtn.type = 'button';
+				applyBtn.className = 'jzsa-action-btn';
+				applyBtn.textContent = 'Apply';
+				btnCol.appendChild( applyBtn );
+			}
+
+			if ( ! revertBtn ) {
+				revertBtn = document.createElement( 'button' );
+				revertBtn.type = 'button';
+				revertBtn.className = 'jzsa-action-btn';
+				revertBtn.textContent = 'Revert';
+				btnCol.appendChild( revertBtn );
+			}
+		}
 
 		// Copy handler.
 		copyBtn.addEventListener( 'click', function () {
@@ -288,77 +328,14 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		} );
 	}
 
-	// Playground: convert textarea into the same code-block + 3-button layout.
-	var textarea = document.getElementById( 'jzsa-playground-shortcode' );
-	if ( textarea ) {
-		var playgroundSection = textarea.closest( '.jzsa-playground-section' );
+	var playgroundCode = document.getElementById( 'jzsa-playground-shortcode' );
+	if ( playgroundCode ) {
+		var playgroundSection = playgroundCode.closest( '.jzsa-playground-section' );
 		var playgroundPreview = playgroundSection ? playgroundSection.querySelector( '.jzsa-playground-preview' ) : null;
-		var playgroundOriginal = textarea.value || '';
-
-		// Replace textarea with a code-block layout.
-		var pgBlock = document.createElement( 'div' );
-		pgBlock.className = 'jzsa-code-block';
-
-		var pgCode = document.createElement( 'code' );
-		pgCode.contentEditable = 'true';
-		pgCode.spellcheck = false;
-		pgCode.className = 'jzsa-editable-code';
-		pgCode.textContent = playgroundOriginal;
-		pgBlock.appendChild( pgCode );
-
-		var pgBtns = document.createElement( 'div' );
-		pgBtns.className = 'jzsa-code-block-btns';
-
-		var pgCopy = document.createElement( 'button' );
-		pgCopy.type = 'button';
-		pgCopy.className = 'jzsa-action-btn';
-		pgCopy.textContent = 'Copy';
-		pgBtns.appendChild( pgCopy );
-
-		var pgApply = document.createElement( 'button' );
-		pgApply.type = 'button';
-		pgApply.className = 'jzsa-action-btn';
-		pgApply.textContent = 'Apply';
-		pgBtns.appendChild( pgApply );
-
-		var pgRevert = document.createElement( 'button' );
-		pgRevert.type = 'button';
-		pgRevert.className = 'jzsa-action-btn';
-		pgRevert.textContent = 'Revert';
-		pgBtns.appendChild( pgRevert );
-
-		pgBlock.appendChild( pgBtns );
-
-		// Also remove the screen-reader label.
-		var pgLabel = playgroundSection ? playgroundSection.querySelector( 'label[for="jzsa-playground-shortcode"]' ) : null;
-		if ( pgLabel ) {
-			pgLabel.remove();
+		var playgroundBlock = playgroundCode.closest( '.jzsa-code-block' );
+		var playgroundApply = playgroundBlock ? playgroundBlock.querySelector( '[data-jzsa-action="apply"]' ) : null;
+		if ( playgroundPreview && playgroundPreview.hasAttribute( 'data-initial-shortcode' ) ) {
+			jzsaSchedulePlaygroundInitialPreview( playgroundCode, playgroundPreview, playgroundApply );
 		}
-		textarea.parentNode.insertBefore( pgBlock, textarea );
-		textarea.remove();
-
-		pgCopy.addEventListener( 'click', function () {
-			jzsaCopyToClipboard( pgCopy, pgCode.textContent || '' );
-		} );
-
-		pgCode.addEventListener( 'input', function () {
-			jzsaHighlightPlaceholders( pgCode );
-		} );
-
-		jzsaHighlightPlaceholders( pgCode );
-
-		pgRevert.addEventListener( 'click', function () {
-			pgCode.textContent = playgroundOriginal;
-			jzsaHighlightPlaceholders( pgCode );
-			if ( playgroundPreview ) {
-				jzsaApplyPreview( pgCode, pgRevert, playgroundPreview, 'Reverted!' );
-			}
-		} );
-
-		pgApply.addEventListener( 'click', function () {
-			if ( playgroundPreview ) {
-				jzsaApplyPreview( pgCode, pgApply, playgroundPreview );
-			}
-		} );
 	}
 } );
