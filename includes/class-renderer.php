@@ -657,6 +657,17 @@ class JZSA_Renderer {
 		if ( isset( $config['info-font-size'] ) ) {
 			$attrs[] = sprintf( 'data-info-font-size="%d"', intval( $config['info-font-size'] ) );
 		}
+		if ( ! empty( $config['info-wrap'] ) ) {
+			$attrs[] = 'data-info-wrap="true"';
+		}
+		if ( ! empty( $config['info-text-align'] ) && 'center' !== $config['info-text-align'] ) {
+			$attrs[] = sprintf( 'data-info-text-align="%s"', esc_attr( $config['info-text-align'] ) );
+		}
+		foreach ( array( 'info-top-text-align', 'info-top-secondary-text-align', 'info-bottom-text-align' ) as $align_key ) {
+			if ( ! empty( $config[ $align_key ] ) ) {
+				$attrs[] = sprintf( 'data-%s="%s"', $align_key, esc_attr( $config[ $align_key ] ) );
+			}
+		}
 		if ( isset( $config['fullscreen-info-font-size'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-info-font-size="%d"', intval( $config['fullscreen-info-font-size'] ) );
 		}
