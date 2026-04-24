@@ -5289,9 +5289,14 @@
 
             $container.attr('data-fullscreen-mosaic', 'true');
             $container.attr('data-fullscreen-mosaic-position', fullscreenMosaicPosition);
+            var fullscreenMosaicThumbCount = allPhotos.length;
             $fullscreenMosaic.find('.swiper-wrapper').html(buildMosaicThumbSlidesHtml(allPhotos));
-            $fullscreenMosaic.toggleClass('jzsa-fullscreen-mosaic-auto-size', config.fullscreenMosaicCount <= 0);
             $fullscreenMosaic[0].style.setProperty('--jzsa-mosaic-opacity', config.fullscreenMosaicOpacity);
+            var FULLSCREEN_MOSAIC_TARGET_THUMB_SIZE = 86;
+            var fullscreenMosaicEffectiveCount = 1;
+            var fullscreenMosaicThumbSize = 1;
+            var fullscreenMosaicPageStart = 0;
+            var fullscreenMosaicVertical = false;
 
             if (!$fullscreenMosaic.find('.jzsa-mosaic-arrow-prev').length) {
                 $fullscreenMosaic.append(
@@ -5300,31 +5305,170 @@
                 );
             }
 
-            function buildFullscreenMosaicConfig(startSlide) {
-                var mobile = window.innerWidth <= 480;
-                var vertical = !mobile && (fullscreenMosaicPosition === 'left' || fullscreenMosaicPosition === 'right');
-                $fullscreenMosaic.toggleClass('jzsa-mosaic-vertical', vertical);
+            function isFullscreenMosaicVertical() {
+                return window.innerWidth > 480 && (fullscreenMosaicPosition === 'left' || fullscreenMosaicPosition === 'right');
+            }
 
+            function getFullscreenMosaicRailGeometry() {
+                var vertical = isFullscreenMosaicVertical();
+                var containerRect = $container[0].getBoundingClientRect();
+                var containerLength = vertical ? containerRect.height : containerRect.width;
+                if (!containerLength || containerLength <= 0) {
+                    containerLength = vertical ? (window.innerHeight || 600) : (window.innerWidth || 800);
+                }
+                var mosaicEl = $fullscreenMosaic[0];
+                var originalStyle = {
+                    left: mosaicEl.style.left,
+                    right: mosaicEl.style.right,
+                    top: mosaicEl.style.top,
+                    bottom: mosaicEl.style.bottom,
+                    width: mosaicEl.style.width,
+                    height: mosaicEl.style.height
+                };
+                mosaicEl.style.left = '';
+                mosaicEl.style.right = '';
+                mosaicEl.style.top = '';
+                mosaicEl.style.bottom = '';
+                mosaicEl.style.width = '';
+                mosaicEl.style.height = '';
+                var startOffset = 0;
+                var endOffset = 0;
+                var computedStyle = window.getComputedStyle ? window.getComputedStyle($fullscreenMosaic[0]) : null;
+                if (computedStyle) {
+                    startOffset = parseFloat(vertical ? computedStyle.top : computedStyle.left);
+                    endOffset = parseFloat(vertical ? computedStyle.bottom : computedStyle.right);
+                    startOffset = isNaN(startOffset) ? 0 : startOffset;
+                    endOffset = isNaN(endOffset) ? 0 : endOffset;
+                }
+                var rect = $fullscreenMosaic[0].getBoundingClientRect();
+                var length = vertical ? rect.height : rect.width;
+                mosaicEl.style.left = originalStyle.left;
+                mosaicEl.style.right = originalStyle.right;
+                mosaicEl.style.top = originalStyle.top;
+                mosaicEl.style.bottom = originalStyle.bottom;
+                mosaicEl.style.width = originalStyle.width;
+                mosaicEl.style.height = originalStyle.height;
+                var measuredLength = containerLength - startOffset - endOffset;
+                if (measuredLength > 0) {
+                    length = measuredLength;
+                }
+                if (length > 0) {
+                    return {
+                        vertical: vertical,
+                        containerLength: containerLength,
+                        startOffset: startOffset,
+                        endOffset: endOffset,
+                        availableLength: length
+                    };
+                }
                 return {
-                    spaceBetween: config.fullscreenMosaicGap,
-                    freeMode: false,
-                    watchSlidesProgress: true,
-                    slideToClickedSlide: true,
-                    initialSlide: startSlide,
-                    watchOverflow: true,
-                    direction: vertical ? 'vertical' : 'horizontal',
-                    slidesPerView: config.fullscreenMosaicCount > 0 ? config.fullscreenMosaicCount : 'auto',
-                    slidesPerGroup: config.fullscreenMosaicCount > 0 ? config.fullscreenMosaicCount : 4,
-                    navigation: {
-                        nextEl: '#' + fullscreenMosaicId + ' .jzsa-mosaic-arrow-next',
-                        prevEl: '#' + fullscreenMosaicId + ' .jzsa-mosaic-arrow-prev'
-                    }
+                    vertical: vertical,
+                    containerLength: containerLength,
+                    startOffset: 0,
+                    endOffset: 0,
+                    availableLength: containerLength
                 };
             }
 
-            var fullscreenMosaicSwiper = new Swiper('#' + fullscreenMosaicId, buildFullscreenMosaicConfig(initialSlide));
+            function computeAutoFullscreenMosaicCount() {
+                var availableLength = getFullscreenMosaicRailGeometry().availableLength;
+                var fitCount = Math.floor((availableLength + config.fullscreenMosaicGap) / (FULLSCREEN_MOSAIC_TARGET_THUMB_SIZE + config.fullscreenMosaicGap));
+                return Math.max(1, fitCount);
+            }
 
-            $fullscreenMosaic.on('click', '.swiper-slide', function() {
+            function getEffectiveFullscreenMosaicCount() {
+                var rawCount = config.fullscreenMosaicCount > 0 ? config.fullscreenMosaicCount : computeAutoFullscreenMosaicCount();
+                return Math.max(1, Math.min(rawCount, fullscreenMosaicThumbCount));
+            }
+
+            function applyFullscreenMosaicSlideSize(thumbSize, vertical) {
+                $fullscreenMosaic.find('.swiper-slide').each(function(index) {
+                    this.style.setProperty('flex-basis', thumbSize + 'px', 'important');
+                    this.style.setProperty('flex-shrink', '0', 'important');
+                    if (vertical) {
+                        this.style.removeProperty('width');
+                        this.style.setProperty('height', thumbSize + 'px', 'important');
+                        this.style.marginRight = '0px';
+                        this.style.marginBottom = index < fullscreenMosaicThumbCount - 1 ? config.fullscreenMosaicGap + 'px' : '0px';
+                    } else {
+                        this.style.setProperty('width', thumbSize + 'px', 'important');
+                        this.style.removeProperty('height');
+                        this.style.marginRight = index < fullscreenMosaicThumbCount - 1 ? config.fullscreenMosaicGap + 'px' : '0px';
+                        this.style.marginBottom = '0px';
+                    }
+                });
+            }
+
+            function positionFullscreenMosaicPage(pageStart) {
+                var maxStart = Math.max(0, fullscreenMosaicThumbCount - fullscreenMosaicEffectiveCount);
+                fullscreenMosaicPageStart = Math.max(0, Math.min(pageStart, maxStart));
+                var offset = fullscreenMosaicPageStart * (fullscreenMosaicThumbSize + config.fullscreenMosaicGap);
+                var transform = fullscreenMosaicVertical ?
+                    'translate3d(0px, -' + offset + 'px, 0px)' :
+                    'translate3d(-' + offset + 'px, 0px, 0px)';
+                $fullscreenMosaic.find('.swiper-wrapper').css({
+                    flexDirection: fullscreenMosaicVertical ? 'column' : 'row',
+                    transform: transform,
+                    transitionDuration: '0ms'
+                });
+            }
+
+            function resizeFullscreenMosaic() {
+                var rail = getFullscreenMosaicRailGeometry();
+                var vertical = rail.vertical;
+                var count = getEffectiveFullscreenMosaicCount();
+                var availableLength = rail.availableLength;
+                var thumbSize = (availableLength - (config.fullscreenMosaicGap * (count - 1))) / count;
+                thumbSize = Math.max(1, Math.floor(thumbSize));
+                var renderedLength = (thumbSize * count) + (config.fullscreenMosaicGap * (count - 1));
+                var centeredOffset = Math.max(0, Math.floor((availableLength - renderedLength) / 2));
+                fullscreenMosaicVertical = vertical;
+                fullscreenMosaicEffectiveCount = count;
+                fullscreenMosaicThumbSize = thumbSize;
+                $fullscreenMosaic.toggleClass('jzsa-mosaic-vertical', vertical);
+                $fullscreenMosaic[0].style.setProperty('--jzsa-fullscreen-mosaic-thumb-size', thumbSize + 'px');
+                applyFullscreenMosaicSlideSize(thumbSize, vertical);
+                if (vertical) {
+                    $fullscreenMosaic.css({
+                        left: '',
+                        right: '',
+                        top: (rail.startOffset + centeredOffset) + 'px',
+                        bottom: 'auto',
+                        width: thumbSize + 'px',
+                        height: renderedLength + 'px'
+                    });
+                } else {
+                    $fullscreenMosaic.css({
+                        left: (rail.startOffset + centeredOffset) + 'px',
+                        right: 'auto',
+                        top: '',
+                        bottom: '',
+                        width: renderedLength + 'px',
+                        height: thumbSize + 'px'
+                    });
+                }
+                positionFullscreenMosaicPage(fullscreenMosaicPageStart);
+            }
+
+            resizeFullscreenMosaic();
+
+            function layoutVisibleFullscreenMosaic() {
+                if (!$fullscreenMosaic.is(':visible')) {
+                    return;
+                }
+                resizeFullscreenMosaic();
+                syncFullscreenMosaic();
+            }
+
+            function scheduleVisibleFullscreenMosaicLayout() {
+                var raf = window.requestAnimationFrame || function(cb) { window.setTimeout(cb, 16); };
+                raf(function() {
+                    raf(layoutVisibleFullscreenMosaic);
+                });
+            }
+
+            $fullscreenMosaic.on('click', '.swiper-slide', function(e) {
+                e.stopPropagation();
                 var index = $(this).index();
                 if (index < 0) {
                     return;
@@ -5336,30 +5480,36 @@
                 }
             });
 
+            $fullscreenMosaic.on('click', '.jzsa-mosaic-arrow-prev', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                positionFullscreenMosaicPage(fullscreenMosaicPageStart - fullscreenMosaicEffectiveCount);
+            });
+
+            $fullscreenMosaic.on('click', '.jzsa-mosaic-arrow-next', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                positionFullscreenMosaicPage(fullscreenMosaicPageStart + fullscreenMosaicEffectiveCount);
+            });
+
             function syncFullscreenMosaic() {
-                if (!fullscreenMosaicSwiper || fullscreenMosaicSwiper.destroyed) {
-                    return;
-                }
                 var activeRealIndex = (typeof swiper.realIndex === 'number') ? swiper.realIndex : swiper.activeIndex;
-                $fullscreenMosaic.find('.swiper-slide').removeClass('swiper-slide-thumb-active')
-                    .eq(activeRealIndex).addClass('swiper-slide-thumb-active');
-                if (config.fullscreenMosaicCount > 0) {
-                    var maxStart = Math.max(0, allPhotos.length - config.fullscreenMosaicCount);
-                    var pageStart = Math.floor(activeRealIndex / config.fullscreenMosaicCount) * config.fullscreenMosaicCount;
-                    fullscreenMosaicSwiper.slideTo(Math.min(pageStart, maxStart));
-                } else {
-                    fullscreenMosaicSwiper.slideTo(Math.max(0, activeRealIndex - 2));
+                var activeThumbIndex = Math.min(activeRealIndex, fullscreenMosaicThumbCount - 1);
+                $fullscreenMosaic.find('.swiper-slide').removeClass('swiper-slide-thumb-active');
+                if (activeRealIndex < fullscreenMosaicThumbCount) {
+                    $fullscreenMosaic.find('.swiper-slide').eq(activeThumbIndex).addClass('swiper-slide-thumb-active');
+                }
+                if (fullscreenMosaicEffectiveCount > 0) {
+                    var pageStart = Math.floor(activeThumbIndex / fullscreenMosaicEffectiveCount) * fullscreenMosaicEffectiveCount;
+                    positionFullscreenMosaicPage(pageStart);
                 }
             }
 
             function updateFullscreenMosaicState() {
-                var isFs = $container.hasClass('jzsa-is-fullscreen') || $container.hasClass('jzsa-pseudo-fullscreen');
+                var isFs = isFullscreen($container[0]) || $container.hasClass('jzsa-is-fullscreen') || $container.hasClass('jzsa-pseudo-fullscreen');
                 $fullscreenMosaic.attr('aria-hidden', isFs ? 'false' : 'true');
                 if (isFs) {
-                    window.setTimeout(function() {
-                        fullscreenMosaicSwiper.update();
-                        syncFullscreenMosaic();
-                    }, 0);
+                    scheduleVisibleFullscreenMosaicLayout();
                 }
             }
 
@@ -5373,23 +5523,14 @@
                 updateFullscreenMosaicState
             );
             $(window).on('resize.jzsaFullscreenMosaic-' + galleryId, function() {
-                if (!fullscreenMosaicSwiper || fullscreenMosaicSwiper.destroyed) {
-                    return;
-                }
-                var desiredConfig = buildFullscreenMosaicConfig(fullscreenMosaicSwiper.activeIndex || 0);
-                if (fullscreenMosaicSwiper.params.direction !== desiredConfig.direction) {
-                    var currentSlide = fullscreenMosaicSwiper.activeIndex || 0;
-                    fullscreenMosaicSwiper.destroy(true, true);
-                    fullscreenMosaicSwiper = new Swiper('#' + fullscreenMosaicId, buildFullscreenMosaicConfig(currentSlide));
-                    syncFullscreenMosaic();
-                    return;
-                }
-                fullscreenMosaicSwiper.update();
+                resizeFullscreenMosaic();
+                syncFullscreenMosaic();
             });
+            resizeFullscreenMosaic();
             syncFullscreenMosaic();
             updateFullscreenMosaicState();
 
-            return fullscreenMosaicSwiper;
+            return null;
         }
 
         // --------------------------------------------------------------------
