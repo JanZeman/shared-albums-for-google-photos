@@ -2740,6 +2740,8 @@ body.jzsa-no-scroll {
 
 .jzsa-album .jzsa-fullscreen-mosaic .swiper-slide {
     box-sizing: border-box;
+    border-radius: var(--jzsa-fullscreen-mosaic-corner-radius, var(--jzsa-mosaic-corner-radius, var(--jzsa-corner-radius, 0)));
+    overflow: hidden;
 }
 
 .jzsa-album .jzsa-fullscreen-mosaic .swiper-slide:hover {
