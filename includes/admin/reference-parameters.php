@@ -387,6 +387,11 @@
 								<td>0.3</td>
 							</tr>
 							<tr>
+								<td><code>mosaic-background</code></td>
+								<td><?php esc_html_e( 'Background color of the inline mosaic strip container. Accepts "transparent" or a 6-digit hex color (e.g. "#000000"). Useful to keep thumbnails visible on bright images.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>transparent</td>
+							</tr>
+							<tr>
 								<td><code>mosaic-corner-radius</code></td>
 								<td><?php esc_html_e( 'Rounded corner radius in pixels for the mosaic strip and its thumbnails. When not set, inherits from corner-radius.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td><?php esc_html_e( 'corner-radius', 'janzeman-shared-albums-for-google-photos' ); ?></td>
@@ -429,6 +434,11 @@
 								<td><code>fullscreen-mosaic-opacity</code></td>
 								<td><?php esc_html_e( 'Opacity of inactive thumbnails in the fullscreen mosaic strip. Accepts a value between 0 and 1.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>0.3</td>
+							</tr>
+							<tr>
+								<td><code>fullscreen-mosaic-background</code></td>
+								<td><?php esc_html_e( 'Background color of the fullscreen mosaic strip container. Accepts "transparent" or a 6-digit hex color (e.g. "#000000"). Useful in fullscreen to keep thumbnails visible regardless of image content behind the strip.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>transparent</td>
 							</tr>
 							<tr>
 								<td><code>fullscreen-mosaic-corner-radius</code></td>

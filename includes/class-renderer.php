@@ -351,6 +351,10 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-mosaic-opacity="%s"', esc_attr( $config['mosaic-opacity'] ) );
 		}
 
+		if ( ! empty( $config['mosaic-background'] ) ) {
+			$attrs[] = sprintf( 'data-mosaic-background="%s"', esc_attr( $config['mosaic-background'] ) );
+		}
+
 		if ( ! empty( $config['fullscreen-mosaic-position'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-mosaic-position="%s"', esc_attr( $config['fullscreen-mosaic-position'] ) );
 		}
@@ -365,6 +369,10 @@ class JZSA_Renderer {
 
 		if ( isset( $config['fullscreen-mosaic-opacity'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-mosaic-opacity="%s"', esc_attr( $config['fullscreen-mosaic-opacity'] ) );
+		}
+
+		if ( ! empty( $config['fullscreen-mosaic-background'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-mosaic-background="%s"', esc_attr( $config['fullscreen-mosaic-background'] ) );
 		}
 
 		if ( isset( $config['fullscreen-mosaic-corner-radius'] ) ) {
@@ -654,6 +662,10 @@ class JZSA_Renderer {
 		if ( ! empty( $config['fullscreen-image-fit'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-image-fit="%s"', esc_attr( $config['fullscreen-image-fit'] ) );
 		}
+		if ( ! empty( $config['mosaic-background'] ) ) {
+			$attrs[] = sprintf( 'data-mosaic-background="%s"', esc_attr( $config['mosaic-background'] ) );
+		}
+
 		if ( ! empty( $config['fullscreen-mosaic-position'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-mosaic-position="%s"', esc_attr( $config['fullscreen-mosaic-position'] ) );
 		}
@@ -666,6 +678,10 @@ class JZSA_Renderer {
 		if ( isset( $config['fullscreen-mosaic-opacity'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-mosaic-opacity="%s"', esc_attr( $config['fullscreen-mosaic-opacity'] ) );
 		}
+		if ( ! empty( $config['fullscreen-mosaic-background'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-mosaic-background="%s"', esc_attr( $config['fullscreen-mosaic-background'] ) );
+		}
+
 		if ( isset( $config['fullscreen-mosaic-corner-radius'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-mosaic-corner-radius="%d"', intval( $config['fullscreen-mosaic-corner-radius'] ) );
 		}

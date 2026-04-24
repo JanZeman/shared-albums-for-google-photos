@@ -2659,7 +2659,7 @@ body.jzsa-no-scroll {
     flex-shrink: 0;
     overflow: hidden;
     position: relative;
-    background: transparent;
+    background: var(--jzsa-mosaic-background, transparent);
     border-radius: var(--jzsa-mosaic-corner-radius, var(--jzsa-corner-radius, 0));
 }
 
@@ -2671,8 +2671,12 @@ body.jzsa-no-scroll {
     flex-shrink: 0;
     overflow: hidden;
     position: relative;
-    background: transparent;
+    background: var(--jzsa-mosaic-background, transparent);
     border-radius: var(--jzsa-mosaic-corner-radius, var(--jzsa-corner-radius, 0));
+}
+
+.jzsa-mosaic {
+    background: var(--jzsa-mosaic-background, transparent);
 }
 
 /* Thumbnail slides */
@@ -2756,6 +2760,7 @@ body.jzsa-no-scroll {
     position: absolute;
     z-index: 18;
     overflow: hidden;
+    background: var(--jzsa-mosaic-background, transparent);
     border-radius: var(--jzsa-fullscreen-mosaic-corner-radius, var(--jzsa-mosaic-corner-radius, var(--jzsa-corner-radius, 0)));
 }
 

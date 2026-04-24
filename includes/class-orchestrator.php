@@ -554,11 +554,13 @@ class JZSA_Shared_Albums {
 			'mosaic-count'    => $this->parse_mosaic_count( $atts ),
 			'mosaic-gap'      => $this->parse_mosaic_gap( $atts ),
 			'mosaic-opacity'  => $this->parse_mosaic_opacity( $atts ),
+			'mosaic-background'  => $this->parse_color( $atts, 'mosaic-background', '' ),
 			'fullscreen-mosaic'          => $this->parse_fullscreen_mosaic_enabled( $atts ),
 			'fullscreen-mosaic-position' => $this->parse_mosaic_position( $atts, 'fullscreen-mosaic-position' ),
 			'fullscreen-mosaic-count'    => $this->parse_mosaic_count( $atts, 'fullscreen-mosaic-count' ),
 			'fullscreen-mosaic-gap'      => $this->parse_mosaic_gap( $atts, 'fullscreen-mosaic-gap' ),
 			'fullscreen-mosaic-opacity'  => $this->parse_mosaic_opacity( $atts, 'fullscreen-mosaic-opacity' ),
+			'fullscreen-mosaic-background' => $this->parse_color( $atts, 'fullscreen-mosaic-background', '' ),
 
 			// Visual style
 			'corner-radius'        => $this->parse_corner_radius( $atts ),

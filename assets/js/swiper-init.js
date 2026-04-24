@@ -4977,10 +4977,12 @@
             mosaicCount: parseInt($container.attr('data-mosaic-count'), 10) || 0, // 0 = auto
             mosaicGap: parseInt($container.attr('data-mosaic-gap'), 10) || 8,
             mosaicOpacity: mosaicOpacitySetting,
+            mosaicBackground: $container.attr('data-mosaic-background') || '',
             fullscreenMosaicPosition: $container.attr('data-fullscreen-mosaic-position') || 'bottom',
             fullscreenMosaicCount: parseInt($container.attr('data-fullscreen-mosaic-count'), 10) || 0,
             fullscreenMosaicGap: parseInt($container.attr('data-fullscreen-mosaic-gap'), 10) || 8,
-            fullscreenMosaicOpacity: fullscreenMosaicOpacitySetting
+            fullscreenMosaicOpacity: fullscreenMosaicOpacitySetting,
+            fullscreenMosaicBackground: $container.attr('data-fullscreen-mosaic-background') || ''
         };
 
         // Safe default: show inline play/pause only when normal-mode slideshow is enabled.
@@ -5135,6 +5137,9 @@
 
                 var mosaicGap = config.mosaicGap;
                 $mosaicContainer[0].style.setProperty('--jzsa-mosaic-opacity', mosaicOpacity);
+                if (config.mosaicBackground) {
+                    $mosaicContainer[0].style.setProperty('--jzsa-mosaic-background', config.mosaicBackground);
+                }
                 var MOSAIC_TARGET_THUMB_SIZE = 100; // px – ideal thumb size for auto-count
 
                 // Calculate how many thumbs fit in the available space.
@@ -5294,6 +5299,9 @@
             var fullscreenMosaicThumbCount = allPhotos.length;
             $fullscreenMosaic.find('.swiper-wrapper').html(buildMosaicThumbSlidesHtml(allPhotos));
             $fullscreenMosaic[0].style.setProperty('--jzsa-mosaic-opacity', config.fullscreenMosaicOpacity);
+            if (config.fullscreenMosaicBackground) {
+                $fullscreenMosaic[0].style.setProperty('--jzsa-mosaic-background', config.fullscreenMosaicBackground);
+            }
             var FULLSCREEN_MOSAIC_TARGET_THUMB_SIZE = 86;
             var fullscreenMosaicEffectiveCount = 1;
             var fullscreenMosaicThumbSize = 1;
