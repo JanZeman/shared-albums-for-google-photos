@@ -25,7 +25,7 @@ Shared Albums for Google Photos (by JanZeman) allows you to easily display publi
 * **Download And Link Buttons** - Optional inline and fullscreen action buttons
 * **Performance Features** - Lazy loading, progressive loading, caching, and large album support
 * **Shortcode Playground** - Admin-only sandbox on the Settings page for experimenting with `[jzsa-album]` shortcodes and previews
-* **Mosaic Strip** - Optional mosaic thumbnail strip alongside the main viewer
+* **Mosaic Strip** - Optional mosaic thumbnail strip alongside the main viewer, including a fullscreen mosaic mode
 
 Many more customization parameters and samples are available on the plugin's Settings & Onboarding page.
 

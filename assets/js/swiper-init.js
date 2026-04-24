@@ -4939,6 +4939,7 @@
             interactionLock: $container.attr('data-interaction-lock') === 'true',
             fullscreenToggle:
                 $container.attr('data-fullscreen-toggle') || 'button-only',
+            fullscreenMode: $container.attr('data-fullscreen-mode') || 'default',
             startAt: $container.attr('data-start-at') || '1',
             showNavigation: inlineShowNavigationSetting,
             fullscreenShowNavigation: fullscreenShowNavigationSetting,
@@ -5034,6 +5035,7 @@
         var mosaicPosition = config.mosaicPosition;
         var mosaicCount = config.mosaicCount;
         var mosaicOpacity = config.mosaicOpacity;
+        var fullscreenMode = config.fullscreenMode;
 
         // console.log('📸 Initializing Swiper for gallery:', galleryId);
             // console.log('  - Mode:', mode);
@@ -5243,6 +5245,108 @@
             }
         }
 
+        function buildMosaicThumbSlidesHtml(photos) {
+            var html = '';
+            photos.forEach(function(photo, index) {
+                var thumbUrl = photo.thumb || photo.preview || photo.full;
+                var alt = photo.type === 'video' ? 'Video thumbnail ' : 'Photo thumbnail ';
+                html += '<div class="swiper-slide">' +
+                    '<span class="jzsa-mosaic-thumb-inner">' +
+                    '<img src="' + thumbUrl + '" alt="' + alt + (index + 1) + '" loading="lazy" />' +
+                    '</span></div>';
+            });
+            return html;
+        }
+
+        function setupFullscreenMosaic(swiper) {
+            if (fullscreenMode !== 'mosaic' || !swiper || !allPhotos.length) {
+                return null;
+            }
+
+            var fullscreenMosaicId = galleryId + '-fullscreen-mosaic';
+            var $fullscreenMosaic = $('#' + fullscreenMosaicId);
+            if (!$fullscreenMosaic.length) {
+                $fullscreenMosaic = $(
+                    '<div class="jzsa-fullscreen-mosaic jzsa-mosaic swiper" id="' + fullscreenMosaicId + '" aria-hidden="true">' +
+                        '<div class="swiper-wrapper"></div>' +
+                    '</div>'
+                );
+                $container.append($fullscreenMosaic);
+            }
+
+            $fullscreenMosaic.find('.swiper-wrapper').html(buildMosaicThumbSlidesHtml(allPhotos));
+            $fullscreenMosaic[0].style.setProperty('--jzsa-mosaic-opacity', mosaicOpacity);
+
+            if (!$fullscreenMosaic.find('.jzsa-mosaic-arrow-prev').length) {
+                $fullscreenMosaic.append(
+                    '<button type="button" class="jzsa-mosaic-arrow jzsa-mosaic-arrow-prev swiper-button-prev" aria-label="Previous thumbnails"></button>' +
+                    '<button type="button" class="jzsa-mosaic-arrow jzsa-mosaic-arrow-next swiper-button-next" aria-label="Next thumbnails"></button>'
+                );
+            }
+
+            var fullscreenMosaicSwiper = new Swiper('#' + fullscreenMosaicId, {
+                spaceBetween: config.mosaicGap,
+                freeMode: false,
+                watchSlidesProgress: true,
+                slideToClickedSlide: true,
+                initialSlide: initialSlide,
+                watchOverflow: true,
+                slidesPerView: 'auto',
+                slidesPerGroup: 4,
+                navigation: {
+                    nextEl: '#' + fullscreenMosaicId + ' .jzsa-mosaic-arrow-next',
+                    prevEl: '#' + fullscreenMosaicId + ' .jzsa-mosaic-arrow-prev'
+                }
+            });
+
+            $fullscreenMosaic.on('click', '.swiper-slide', function() {
+                var index = $(this).index();
+                if (index < 0) {
+                    return;
+                }
+                if (swiper.params.loop && typeof swiper.slideToLoop === 'function') {
+                    swiper.slideToLoop(index);
+                } else {
+                    swiper.slideTo(index);
+                }
+            });
+
+            function syncFullscreenMosaic() {
+                if (!fullscreenMosaicSwiper || fullscreenMosaicSwiper.destroyed) {
+                    return;
+                }
+                var activeRealIndex = (typeof swiper.realIndex === 'number') ? swiper.realIndex : swiper.activeIndex;
+                $fullscreenMosaic.find('.swiper-slide').removeClass('swiper-slide-thumb-active')
+                    .eq(activeRealIndex).addClass('swiper-slide-thumb-active');
+                fullscreenMosaicSwiper.slideTo(Math.max(0, activeRealIndex - 2));
+            }
+
+            function updateFullscreenMosaicState() {
+                var isFs = $container.hasClass('jzsa-is-fullscreen') || $container.hasClass('jzsa-pseudo-fullscreen');
+                $fullscreenMosaic.attr('aria-hidden', isFs ? 'false' : 'true');
+                if (isFs) {
+                    window.setTimeout(function() {
+                        fullscreenMosaicSwiper.update();
+                        syncFullscreenMosaic();
+                    }, 0);
+                }
+            }
+
+            swiper.on('slideChange', syncFullscreenMosaic);
+            $container.on('jzsa:fullscreen-state.jzsaFullscreenMosaic-' + galleryId, updateFullscreenMosaicState);
+            $(document).on(
+                'fullscreenchange.jzsaFullscreenMosaic-' + galleryId +
+                ' webkitfullscreenchange.jzsaFullscreenMosaic-' + galleryId +
+                ' mozfullscreenchange.jzsaFullscreenMosaic-' + galleryId +
+                ' MSFullscreenChange.jzsaFullscreenMosaic-' + galleryId,
+                updateFullscreenMosaicState
+            );
+            syncFullscreenMosaic();
+            updateFullscreenMosaicState();
+
+            return fullscreenMosaicSwiper;
+        }
+
         // --------------------------------------------------------------------
         // Loading overlay: show a subtle loader until the first image is ready
         // --------------------------------------------------------------------
@@ -5370,6 +5474,7 @@
             // Initialize Swiper (pass the DOM element directly to avoid selector resolution issues)
             var swiper = new Swiper($container[0], swiperConfig);
             swipers[galleryId] = swiper;
+            setupFullscreenMosaic(swiper);
 
             // Sync mosaic with main gallery: scroll mosaic to keep active thumb visible
             if (mosaicSwiper) {
@@ -5990,6 +6095,7 @@
             'data-album-url',
             'data-image-fit',
             'data-fullscreen-image-fit',
+            'data-fullscreen-mode',
             'data-fullscreen-display-max-width',
             'data-fullscreen-display-max-height',
             'data-background-color',

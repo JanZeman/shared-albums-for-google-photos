@@ -364,6 +364,9 @@ class JZSA_Renderer {
 		if ( ! empty( $config['fullscreen-image-fit'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-image-fit="%s"', esc_attr( $config['fullscreen-image-fit'] ) );
 		}
+		if ( ! empty( $config['fullscreen-mode'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-mode="%s"', esc_attr( $config['fullscreen-mode'] ) );
+		}
 		if ( isset( $config['fullscreen-display-max-width'] ) && null !== $config['fullscreen-display-max-width'] ) {
 			$attrs[] = sprintf( 'data-fullscreen-display-max-width="%d"', intval( $config['fullscreen-display-max-width'] ) );
 		}
@@ -628,6 +631,9 @@ class JZSA_Renderer {
 
 		if ( ! empty( $config['fullscreen-image-fit'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-image-fit="%s"', esc_attr( $config['fullscreen-image-fit'] ) );
+		}
+		if ( ! empty( $config['fullscreen-mode'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-mode="%s"', esc_attr( $config['fullscreen-mode'] ) );
 		}
 		if ( isset( $config['fullscreen-display-max-width'] ) && null !== $config['fullscreen-display-max-width'] ) {
 			$attrs[] = sprintf( 'data-fullscreen-display-max-width="%d"', intval( $config['fullscreen-display-max-width'] ) );

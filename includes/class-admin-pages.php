@@ -1436,6 +1436,24 @@ class JZSA_Admin_Pages {
 						</div>
 					</div>
 
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Fullscreen Mosaic Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Combines the inline mosaic strip with fullscreen-mode="mosaic". In fullscreen, a thumbnail strip remains available for previewing and switching album items while fullscreen slideshow is enabled.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<?php
+							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" mosaic="true" fullscreen-mode="mosaic" mosaic-count="12" fullscreen-slideshow="auto" limit="24"]';
+						?>
+						<div class="jzsa-code-block">
+							<code><?php echo esc_html( $sample_shortcode ); ?></code>
+							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+						<div class="jzsa-preview-container jzsa-preview-container-fullscreen-mosaic">
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( $sample_shortcode );
+							?>
+						</div>
+					</div>
+
 					</div>
 
 				<!-- Start Tutorial -->

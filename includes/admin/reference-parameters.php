@@ -302,6 +302,11 @@
 								<td>contain</td>
 							</tr>
 							<tr>
+								<td><code>fullscreen-mode</code></td>
+								<td>Fullscreen viewer layout: "default" shows only the active media, while "mosaic" adds a thumbnail strip for previewing and switching to other album items.</td>
+								<td>default</td>
+							</tr>
+							<tr>
 								<td><code>fullscreen-background-color</code></td>
 								<td><?php esc_html_e( 'Background color for fullscreen mode. Overrides background-color when viewing in fullscreen. Hex code or "transparent".', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>#000000</td>

@@ -516,6 +516,7 @@ class JZSA_Shared_Albums {
 				'fullscreen-video-controls-color' => $fullscreen_video_controls_color,
 				'image-fit'            => $this->parse_image_fit( $atts ),
 				'fullscreen-image-fit' => $this->parse_fullscreen_image_fit( $atts ),
+				'fullscreen-mode'      => $this->parse_fullscreen_mode( $atts ),
 				'fullscreen-toggle'    => $this->parse_fullscreen_toggle_mode( $atts ),
 				'interaction-lock'     => $this->parse_bool( $atts, 'interaction-lock', false ),
 				'show-navigation'      => $show_navigation,
@@ -890,6 +891,25 @@ class JZSA_Shared_Albums {
 			return 'manual';
 		}
 		return 'disabled';
+	}
+
+	/**
+	 * Parse fullscreen viewer mode.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string 'default' or 'mosaic'.
+	 */
+	private function parse_fullscreen_mode( $atts ) {
+		if ( ! isset( $atts['fullscreen-mode'] ) ) {
+			return 'default';
+		}
+
+		$value = strtolower( trim( (string) $atts['fullscreen-mode'] ) );
+		if ( in_array( $value, array( 'mosaic', 'default' ), true ) ) {
+			return $value;
+		}
+
+		return 'default';
 	}
 
 	/**
