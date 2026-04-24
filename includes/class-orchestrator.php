@@ -516,7 +516,6 @@ class JZSA_Shared_Albums {
 				'fullscreen-video-controls-color' => $fullscreen_video_controls_color,
 				'image-fit'            => $this->parse_image_fit( $atts ),
 				'fullscreen-image-fit' => $this->parse_fullscreen_image_fit( $atts ),
-				'fullscreen-mode'      => $this->parse_fullscreen_mode( $atts ),
 				'fullscreen-toggle'    => $this->parse_fullscreen_toggle_mode( $atts ),
 				'interaction-lock'     => $this->parse_bool( $atts, 'interaction-lock', false ),
 				'show-navigation'      => $show_navigation,
@@ -555,10 +554,16 @@ class JZSA_Shared_Albums {
 			'mosaic-count'    => $this->parse_mosaic_count( $atts ),
 			'mosaic-gap'      => $this->parse_mosaic_gap( $atts ),
 			'mosaic-opacity'  => $this->parse_mosaic_opacity( $atts ),
+			'fullscreen-mosaic'          => $this->parse_fullscreen_mosaic_enabled( $atts ),
+			'fullscreen-mosaic-position' => $this->parse_mosaic_position( $atts, 'fullscreen-mosaic-position' ),
+			'fullscreen-mosaic-count'    => $this->parse_mosaic_count( $atts, 'fullscreen-mosaic-count' ),
+			'fullscreen-mosaic-gap'      => $this->parse_mosaic_gap( $atts, 'fullscreen-mosaic-gap' ),
+			'fullscreen-mosaic-opacity'  => $this->parse_mosaic_opacity( $atts, 'fullscreen-mosaic-opacity' ),
 
 			// Visual style
 			'corner-radius'        => $this->parse_corner_radius( $atts ),
 			'mosaic-corner-radius' => $this->parse_mosaic_corner_radius( $atts ),
+			'fullscreen-mosaic-corner-radius' => $this->parse_mosaic_corner_radius( $atts, 'fullscreen-mosaic-corner-radius' ),
 				'info-font-size'       => $info_font_size,
 				'fullscreen-info-font-size' => $fullscreen_info_font_size,
 				'info-font-family'     => $info_font_family,
@@ -894,25 +899,6 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse fullscreen viewer mode.
-	 *
-	 * @param array $atts Shortcode attributes.
-	 * @return string 'default' or 'mosaic'.
-	 */
-	private function parse_fullscreen_mode( $atts ) {
-		if ( ! isset( $atts['fullscreen-mode'] ) ) {
-			return 'default';
-		}
-
-		$value = strtolower( trim( (string) $atts['fullscreen-mode'] ) );
-		if ( in_array( $value, array( 'mosaic', 'default' ), true ) ) {
-			return $value;
-		}
-
-		return 'default';
-	}
-
-	/**
 	 * Parse slideshow autoresume: a number of seconds, or 'disabled'.
 	 * Checks multiple attribute names for backward compatibility.
 	 *
@@ -1214,12 +1200,12 @@ class JZSA_Shared_Albums {
 	 * @param array $atts Shortcode attributes.
 	 * @return string 'top', 'bottom', 'left', or 'right'.
 	 */
-	private function parse_mosaic_position( $atts ) {
-		if ( ! isset( $atts['mosaic-position'] ) ) {
+	private function parse_mosaic_position( $atts, $key = 'mosaic-position' ) {
+		if ( ! isset( $atts[ $key ] ) ) {
 			return 'bottom';
 		}
 
-		$value = strtolower( trim( (string) $atts['mosaic-position'] ) );
+		$value = strtolower( trim( (string) $atts[ $key ] ) );
 
 		if ( in_array( $value, array( 'top', 'bottom', 'left', 'right' ), true ) ) {
 			return $value;
@@ -1236,16 +1222,16 @@ class JZSA_Shared_Albums {
 	 * @param array $atts Shortcode attributes.
 	 * @return int Mosaic count (0 means auto).
 	 */
-	private function parse_mosaic_count( $atts ) {
-		if ( ! isset( $atts['mosaic-count'] ) ) {
+	private function parse_mosaic_count( $atts, $key = 'mosaic-count' ) {
+		if ( ! isset( $atts[ $key ] ) ) {
 			return 0; // Auto by default: JS will calculate from available space.
 		}
 
-		if ( 'auto' === strtolower( trim( (string) $atts['mosaic-count'] ) ) ) {
+		if ( 'auto' === strtolower( trim( (string) $atts[ $key ] ) ) ) {
 			return 0;
 		}
 
-		$value = intval( $atts['mosaic-count'] );
+		$value = intval( $atts[ $key ] );
 
 		return $value > 0 ? $value : 0;
 	}
@@ -1258,12 +1244,12 @@ class JZSA_Shared_Albums {
 	 * @param array $atts Shortcode attributes.
 	 * @return int Gap in pixels.
 	 */
-	private function parse_mosaic_gap( $atts ) {
-		if ( ! isset( $atts['mosaic-gap'] ) ) {
+	private function parse_mosaic_gap( $atts, $key = 'mosaic-gap' ) {
+		if ( ! isset( $atts[ $key ] ) ) {
 			return 8;
 		}
 
-		$value = intval( $atts['mosaic-gap'] );
+		$value = intval( $atts[ $key ] );
 
 		return ( $value >= 0 && $value <= 100 ) ? $value : 8;
 	}
@@ -1276,14 +1262,24 @@ class JZSA_Shared_Albums {
 	 * @param array $atts Shortcode attributes.
 	 * @return float Opacity value.
 	 */
-	private function parse_mosaic_opacity( $atts ) {
-		if ( ! isset( $atts['mosaic-opacity'] ) ) {
+	private function parse_mosaic_opacity( $atts, $key = 'mosaic-opacity' ) {
+		if ( ! isset( $atts[ $key ] ) ) {
 			return 0.3;
 		}
 
-		$value = floatval( $atts['mosaic-opacity'] );
+		$value = floatval( $atts[ $key ] );
 
 		return max( 0.0, min( 1.0, $value ) );
+	}
+
+	/**
+	 * Parse fullscreen mosaic enabled flag.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return bool Whether fullscreen mosaic is enabled.
+	 */
+	private function parse_fullscreen_mosaic_enabled( $atts ) {
+		return $this->parse_bool( $atts, 'fullscreen-mosaic', false );
 	}
 
 	/**
@@ -1312,12 +1308,12 @@ class JZSA_Shared_Albums {
 	 * @param array $atts Shortcode attributes.
 	 * @return int|null Corner radius in pixels, or null to inherit from corner-radius.
 	 */
-	private function parse_mosaic_corner_radius( $atts ) {
-		if ( ! isset( $atts['mosaic-corner-radius'] ) ) {
+	private function parse_mosaic_corner_radius( $atts, $key = 'mosaic-corner-radius' ) {
+		if ( ! isset( $atts[ $key ] ) ) {
 			return null;
 		}
 
-		$value = intval( $atts['mosaic-corner-radius'] );
+		$value = intval( $atts[ $key ] );
 
 		return max( 0, $value );
 	}

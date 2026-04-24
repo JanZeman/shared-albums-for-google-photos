@@ -302,11 +302,6 @@
 								<td>contain</td>
 							</tr>
 							<tr>
-								<td><code>fullscreen-mode</code></td>
-								<td>Fullscreen viewer layout: "default" shows only the active media, while "mosaic" adds a thumbnail strip for previewing and switching to other album items.</td>
-								<td>default</td>
-							</tr>
-							<tr>
 								<td><code>fullscreen-background-color</code></td>
 								<td><?php esc_html_e( 'Background color for fullscreen mode. Overrides background-color when viewing in fullscreen. Hex code or "transparent".', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>#000000</td>
@@ -395,6 +390,50 @@
 								<td><code>mosaic-corner-radius</code></td>
 								<td><?php esc_html_e( 'Rounded corner radius in pixels for the mosaic strip and its thumbnails. When not set, inherits from corner-radius.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td><?php esc_html_e( 'corner-radius', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+						</tbody>
+					</table>
+
+					<h3><?php esc_html_e( 'Fullscreen Mosaic Thumbnail Strip', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<p><?php esc_html_e( 'Display a thumbnail preview strip only while the viewer is in fullscreen. This can be enabled independently from the inline mosaic strip and has its own layout, count, spacing, opacity, and corner radius settings.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<table class="jzsa-settings-table jzsa-settings-table--params">
+						<thead>
+							<tr>
+								<th><?php esc_html_e( 'Parameter', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Description', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Default', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><code>fullscreen-mosaic</code></td>
+								<td><?php esc_html_e( 'Enable the fullscreen mosaic thumbnail strip: "true" or "false". This is independent from the inline mosaic strip.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>false</td>
+							</tr>
+							<tr>
+								<td><code>fullscreen-mosaic-position</code></td>
+								<td><?php esc_html_e( 'Position of the thumbnail strip in fullscreen: "top", "bottom", "left", or "right".', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>bottom</td>
+							</tr>
+							<tr>
+								<td><code>fullscreen-mosaic-count</code></td>
+								<td><?php esc_html_e( 'Number of thumbnails visible at once in the fullscreen strip. Use an integer or "auto".', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>auto</td>
+							</tr>
+							<tr>
+								<td><code>fullscreen-mosaic-gap</code></td>
+								<td><?php esc_html_e( 'Gap in pixels between thumbnails in the fullscreen mosaic strip.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>8</td>
+							</tr>
+							<tr>
+								<td><code>fullscreen-mosaic-opacity</code></td>
+								<td><?php esc_html_e( 'Opacity of inactive thumbnails in the fullscreen mosaic strip. Accepts a value between 0 and 1.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>0.3</td>
+							</tr>
+							<tr>
+								<td><code>fullscreen-mosaic-corner-radius</code></td>
+								<td><?php esc_html_e( 'Rounded corner radius in pixels for the fullscreen mosaic strip and its thumbnails. When not set, inherits from mosaic-corner-radius, then corner-radius.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'mosaic-corner-radius', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
 						</tbody>
 					</table>

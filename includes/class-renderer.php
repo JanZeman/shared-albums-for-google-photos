@@ -248,6 +248,9 @@ class JZSA_Renderer {
 		if ( isset( $config['mosaic-corner-radius'] ) ) {
 			$styles[] = '--jzsa-mosaic-corner-radius: ' . intval( $config['mosaic-corner-radius'] ) . 'px';
 		}
+		if ( isset( $config['fullscreen-mosaic-corner-radius'] ) ) {
+			$styles[] = '--jzsa-fullscreen-mosaic-corner-radius: ' . intval( $config['fullscreen-mosaic-corner-radius'] ) . 'px';
+		}
 		if ( isset( $config['info-font-size'] ) ) {
 			$styles[] = '--jzsa-info-font-size: ' . intval( $config['info-font-size'] ) . 'px';
 		}
@@ -306,6 +309,7 @@ class JZSA_Renderer {
 			'gallery-info-bottom-halo-effect' => 'data-gallery-info-bottom-halo-effect',
 			'album-title-halo-effect' => 'data-album-title-halo-effect',
 			'mosaic'                  => 'data-mosaic',
+			'fullscreen-mosaic'       => 'data-fullscreen-mosaic',
 		);
 
 		foreach ( $boolean_attrs as $key => $attr_name ) {
@@ -347,6 +351,26 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-mosaic-opacity="%s"', esc_attr( $config['mosaic-opacity'] ) );
 		}
 
+		if ( ! empty( $config['fullscreen-mosaic-position'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-mosaic-position="%s"', esc_attr( $config['fullscreen-mosaic-position'] ) );
+		}
+
+		if ( isset( $config['fullscreen-mosaic-count'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-mosaic-count="%d"', intval( $config['fullscreen-mosaic-count'] ) );
+		}
+
+		if ( isset( $config['fullscreen-mosaic-gap'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-mosaic-gap="%d"', intval( $config['fullscreen-mosaic-gap'] ) );
+		}
+
+		if ( isset( $config['fullscreen-mosaic-opacity'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-mosaic-opacity="%s"', esc_attr( $config['fullscreen-mosaic-opacity'] ) );
+		}
+
+		if ( isset( $config['fullscreen-mosaic-corner-radius'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-mosaic-corner-radius="%d"', intval( $config['fullscreen-mosaic-corner-radius'] ) );
+		}
+
 		// Numeric/string attributes
 		if ( isset( $config['slideshow-delay'] ) ) {
 			$attrs[] = sprintf( 'data-slideshow-delay="%s"', esc_attr( $config['slideshow-delay'] ) );
@@ -363,9 +387,6 @@ class JZSA_Renderer {
 
 		if ( ! empty( $config['fullscreen-image-fit'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-image-fit="%s"', esc_attr( $config['fullscreen-image-fit'] ) );
-		}
-		if ( ! empty( $config['fullscreen-mode'] ) ) {
-			$attrs[] = sprintf( 'data-fullscreen-mode="%s"', esc_attr( $config['fullscreen-mode'] ) );
 		}
 		if ( isset( $config['fullscreen-display-max-width'] ) && null !== $config['fullscreen-display-max-width'] ) {
 			$attrs[] = sprintf( 'data-fullscreen-display-max-width="%d"', intval( $config['fullscreen-display-max-width'] ) );
@@ -584,6 +605,7 @@ class JZSA_Renderer {
 			'info-bottom-halo-effect' => 'data-info-bottom-halo-effect',
 			'gallery-info-bottom-halo-effect' => 'data-gallery-info-bottom-halo-effect',
 			'album-title-halo-effect' => 'data-album-title-halo-effect',
+			'fullscreen-mosaic'       => 'data-fullscreen-mosaic',
 		);
 		foreach ( $slideshow_booleans as $key => $attr_name ) {
 			if ( isset( $config[ $key ] ) ) {
@@ -632,8 +654,20 @@ class JZSA_Renderer {
 		if ( ! empty( $config['fullscreen-image-fit'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-image-fit="%s"', esc_attr( $config['fullscreen-image-fit'] ) );
 		}
-		if ( ! empty( $config['fullscreen-mode'] ) ) {
-			$attrs[] = sprintf( 'data-fullscreen-mode="%s"', esc_attr( $config['fullscreen-mode'] ) );
+		if ( ! empty( $config['fullscreen-mosaic-position'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-mosaic-position="%s"', esc_attr( $config['fullscreen-mosaic-position'] ) );
+		}
+		if ( isset( $config['fullscreen-mosaic-count'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-mosaic-count="%d"', intval( $config['fullscreen-mosaic-count'] ) );
+		}
+		if ( isset( $config['fullscreen-mosaic-gap'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-mosaic-gap="%d"', intval( $config['fullscreen-mosaic-gap'] ) );
+		}
+		if ( isset( $config['fullscreen-mosaic-opacity'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-mosaic-opacity="%s"', esc_attr( $config['fullscreen-mosaic-opacity'] ) );
+		}
+		if ( isset( $config['fullscreen-mosaic-corner-radius'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-mosaic-corner-radius="%d"', intval( $config['fullscreen-mosaic-corner-radius'] ) );
 		}
 		if ( isset( $config['fullscreen-display-max-width'] ) && null !== $config['fullscreen-display-max-width'] ) {
 			$attrs[] = sprintf( 'data-fullscreen-display-max-width="%d"', intval( $config['fullscreen-display-max-width'] ) );
@@ -707,6 +741,9 @@ class JZSA_Renderer {
 		}
 		if ( isset( $config['mosaic-corner-radius'] ) ) {
 			$styles[] = '--jzsa-mosaic-corner-radius: ' . intval( $config['mosaic-corner-radius'] ) . 'px';
+		}
+		if ( isset( $config['fullscreen-mosaic-corner-radius'] ) ) {
+			$styles[] = '--jzsa-fullscreen-mosaic-corner-radius: ' . intval( $config['fullscreen-mosaic-corner-radius'] ) . 'px';
 		}
 		if ( isset( $config['info-font-size'] ) ) {
 			$styles[] = '--jzsa-info-font-size: ' . intval( $config['info-font-size'] ) . 'px';

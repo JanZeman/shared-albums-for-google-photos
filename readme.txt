@@ -140,6 +140,9 @@ The plugin provides clear feedback:
 
 == Changelog ==
 
+= 2.1.8 =
+* Fullscreen support of mosaic. Thanks you `@luisbenitez777` for sharing the idea!
+
 = 2.1.7 =
 * Fixed info-wrap bug
 
@@ -149,7 +152,7 @@ The plugin provides clear feedback:
 = 2.1.5 =
 * Reworked Guide page loading to reduce blocking and improve responsiveness
 * Improved cache/help guidance on the settings page
-* Thanks to `@naveenbachwani` for detailed testing, UX observations, and support-thread feedback
+* Big thanks to `@naveenbachwani` for detailed testing, UX observations, and support-thread feedback
 
 = 2.1.4 =
 * Screenshots added

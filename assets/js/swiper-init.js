@@ -4917,6 +4917,14 @@
             $container.attr('data-fullscreen-slideshow-autoresume'),
             inlineSlideshowAutoresumeSetting
         );
+        var mosaicOpacitySetting = parseFloat($container.attr('data-mosaic-opacity'));
+        if (isNaN(mosaicOpacitySetting)) {
+            mosaicOpacitySetting = 0.3;
+        }
+        var fullscreenMosaicOpacitySetting = parseFloat($container.attr('data-fullscreen-mosaic-opacity'));
+        if (isNaN(fullscreenMosaicOpacitySetting)) {
+            fullscreenMosaicOpacitySetting = 0.3;
+        }
 
         var config = {
             // Photo data
@@ -4939,7 +4947,7 @@
             interactionLock: $container.attr('data-interaction-lock') === 'true',
             fullscreenToggle:
                 $container.attr('data-fullscreen-toggle') || 'button-only',
-            fullscreenMode: $container.attr('data-fullscreen-mode') || 'default',
+            fullscreenMosaic: $container.attr('data-fullscreen-mosaic') === 'true',
             startAt: $container.attr('data-start-at') || '1',
             showNavigation: inlineShowNavigationSetting,
             fullscreenShowNavigation: fullscreenShowNavigationSetting,
@@ -4966,7 +4974,11 @@
             mosaicPosition: $container.attr('data-mosaic-position') || 'right',
             mosaicCount: parseInt($container.attr('data-mosaic-count'), 10) || 0, // 0 = auto
             mosaicGap: parseInt($container.attr('data-mosaic-gap'), 10) || 8,
-            mosaicOpacity: parseFloat($container.attr('data-mosaic-opacity')) || 0.3
+            mosaicOpacity: mosaicOpacitySetting,
+            fullscreenMosaicPosition: $container.attr('data-fullscreen-mosaic-position') || 'bottom',
+            fullscreenMosaicCount: parseInt($container.attr('data-fullscreen-mosaic-count'), 10) || 0,
+            fullscreenMosaicGap: parseInt($container.attr('data-fullscreen-mosaic-gap'), 10) || 8,
+            fullscreenMosaicOpacity: fullscreenMosaicOpacitySetting
         };
 
         // Safe default: show inline play/pause only when normal-mode slideshow is enabled.
@@ -5035,7 +5047,8 @@
         var mosaicPosition = config.mosaicPosition;
         var mosaicCount = config.mosaicCount;
         var mosaicOpacity = config.mosaicOpacity;
-        var fullscreenMode = config.fullscreenMode;
+        var fullscreenMosaic = config.fullscreenMosaic;
+        var fullscreenMosaicPosition = config.fullscreenMosaicPosition;
 
         // console.log('📸 Initializing Swiper for gallery:', galleryId);
             // console.log('  - Mode:', mode);
@@ -5259,7 +5272,7 @@
         }
 
         function setupFullscreenMosaic(swiper) {
-            if (fullscreenMode !== 'mosaic' || !swiper || !allPhotos.length) {
+            if (!fullscreenMosaic || !swiper || !allPhotos.length) {
                 return null;
             }
 
@@ -5274,8 +5287,11 @@
                 $container.append($fullscreenMosaic);
             }
 
+            $container.attr('data-fullscreen-mosaic', 'true');
+            $container.attr('data-fullscreen-mosaic-position', fullscreenMosaicPosition);
             $fullscreenMosaic.find('.swiper-wrapper').html(buildMosaicThumbSlidesHtml(allPhotos));
-            $fullscreenMosaic[0].style.setProperty('--jzsa-mosaic-opacity', mosaicOpacity);
+            $fullscreenMosaic.toggleClass('jzsa-fullscreen-mosaic-auto-size', config.fullscreenMosaicCount <= 0);
+            $fullscreenMosaic[0].style.setProperty('--jzsa-mosaic-opacity', config.fullscreenMosaicOpacity);
 
             if (!$fullscreenMosaic.find('.jzsa-mosaic-arrow-prev').length) {
                 $fullscreenMosaic.append(
@@ -5284,20 +5300,29 @@
                 );
             }
 
-            var fullscreenMosaicSwiper = new Swiper('#' + fullscreenMosaicId, {
-                spaceBetween: config.mosaicGap,
-                freeMode: false,
-                watchSlidesProgress: true,
-                slideToClickedSlide: true,
-                initialSlide: initialSlide,
-                watchOverflow: true,
-                slidesPerView: 'auto',
-                slidesPerGroup: 4,
-                navigation: {
-                    nextEl: '#' + fullscreenMosaicId + ' .jzsa-mosaic-arrow-next',
-                    prevEl: '#' + fullscreenMosaicId + ' .jzsa-mosaic-arrow-prev'
-                }
-            });
+            function buildFullscreenMosaicConfig(startSlide) {
+                var mobile = window.innerWidth <= 480;
+                var vertical = !mobile && (fullscreenMosaicPosition === 'left' || fullscreenMosaicPosition === 'right');
+                $fullscreenMosaic.toggleClass('jzsa-mosaic-vertical', vertical);
+
+                return {
+                    spaceBetween: config.fullscreenMosaicGap,
+                    freeMode: false,
+                    watchSlidesProgress: true,
+                    slideToClickedSlide: true,
+                    initialSlide: startSlide,
+                    watchOverflow: true,
+                    direction: vertical ? 'vertical' : 'horizontal',
+                    slidesPerView: config.fullscreenMosaicCount > 0 ? config.fullscreenMosaicCount : 'auto',
+                    slidesPerGroup: config.fullscreenMosaicCount > 0 ? config.fullscreenMosaicCount : 4,
+                    navigation: {
+                        nextEl: '#' + fullscreenMosaicId + ' .jzsa-mosaic-arrow-next',
+                        prevEl: '#' + fullscreenMosaicId + ' .jzsa-mosaic-arrow-prev'
+                    }
+                };
+            }
+
+            var fullscreenMosaicSwiper = new Swiper('#' + fullscreenMosaicId, buildFullscreenMosaicConfig(initialSlide));
 
             $fullscreenMosaic.on('click', '.swiper-slide', function() {
                 var index = $(this).index();
@@ -5318,7 +5343,13 @@
                 var activeRealIndex = (typeof swiper.realIndex === 'number') ? swiper.realIndex : swiper.activeIndex;
                 $fullscreenMosaic.find('.swiper-slide').removeClass('swiper-slide-thumb-active')
                     .eq(activeRealIndex).addClass('swiper-slide-thumb-active');
-                fullscreenMosaicSwiper.slideTo(Math.max(0, activeRealIndex - 2));
+                if (config.fullscreenMosaicCount > 0) {
+                    var maxStart = Math.max(0, allPhotos.length - config.fullscreenMosaicCount);
+                    var pageStart = Math.floor(activeRealIndex / config.fullscreenMosaicCount) * config.fullscreenMosaicCount;
+                    fullscreenMosaicSwiper.slideTo(Math.min(pageStart, maxStart));
+                } else {
+                    fullscreenMosaicSwiper.slideTo(Math.max(0, activeRealIndex - 2));
+                }
             }
 
             function updateFullscreenMosaicState() {
@@ -5341,6 +5372,20 @@
                 ' MSFullscreenChange.jzsaFullscreenMosaic-' + galleryId,
                 updateFullscreenMosaicState
             );
+            $(window).on('resize.jzsaFullscreenMosaic-' + galleryId, function() {
+                if (!fullscreenMosaicSwiper || fullscreenMosaicSwiper.destroyed) {
+                    return;
+                }
+                var desiredConfig = buildFullscreenMosaicConfig(fullscreenMosaicSwiper.activeIndex || 0);
+                if (fullscreenMosaicSwiper.params.direction !== desiredConfig.direction) {
+                    var currentSlide = fullscreenMosaicSwiper.activeIndex || 0;
+                    fullscreenMosaicSwiper.destroy(true, true);
+                    fullscreenMosaicSwiper = new Swiper('#' + fullscreenMosaicId, buildFullscreenMosaicConfig(currentSlide));
+                    syncFullscreenMosaic();
+                    return;
+                }
+                fullscreenMosaicSwiper.update();
+            });
             syncFullscreenMosaic();
             updateFullscreenMosaicState();
 
@@ -6095,7 +6140,12 @@
             'data-album-url',
             'data-image-fit',
             'data-fullscreen-image-fit',
-            'data-fullscreen-mode',
+            'data-fullscreen-mosaic',
+            'data-fullscreen-mosaic-position',
+            'data-fullscreen-mosaic-count',
+            'data-fullscreen-mosaic-gap',
+            'data-fullscreen-mosaic-opacity',
+            'data-fullscreen-mosaic-corner-radius',
             'data-fullscreen-display-max-width',
             'data-fullscreen-display-max-height',
             'data-background-color',
@@ -6191,6 +6241,15 @@
             var inheritedInfoFontColor = $galleryContainer[0].style.getPropertyValue('--jzsa-info-font-color');
             if (inheritedInfoFontColor) {
                 $slideshow[0].style.setProperty('--jzsa-info-font-color', inheritedInfoFontColor);
+            }
+        }
+        var fullscreenMosaicCornerRadius = parseInt($galleryContainer.attr('data-fullscreen-mosaic-corner-radius'), 10);
+        if (!isNaN(fullscreenMosaicCornerRadius) && fullscreenMosaicCornerRadius >= 0) {
+            $slideshow[0].style.setProperty('--jzsa-fullscreen-mosaic-corner-radius', fullscreenMosaicCornerRadius + 'px');
+        } else {
+            var inheritedFullscreenMosaicCornerRadius = $galleryContainer[0].style.getPropertyValue('--jzsa-fullscreen-mosaic-corner-radius');
+            if (inheritedFullscreenMosaicCornerRadius) {
+                $slideshow[0].style.setProperty('--jzsa-fullscreen-mosaic-corner-radius', inheritedFullscreenMosaicCornerRadius);
             }
         }
 
