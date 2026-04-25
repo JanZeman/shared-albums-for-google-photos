@@ -607,8 +607,8 @@ class JZSA_Data_Provider {
 
 		return array(
 			'camera'       => $this->build_camera_display_name( $make, $model ),
-			'camera_make'  => trim( $make ),
-			'camera_model' => trim( $model ),
+			'camera_make'  => $this->normalize_camera_make_for_display( trim( $make ) ),
+			'camera_model' => $this->normalize_camera_make_for_display( trim( $model ) ),
 			'exif'         => sprintf( "\xC6\x92/%s \xC2\xB7 %s \xC2\xB7 %smm \xC2\xB7 ISO%d", $aperture, $shutter_display, $focal, $iso ),
 			'aperture'     => "\xC6\x92/" . $aperture,
 			'shutter'      => $shutter_display,
@@ -664,8 +664,8 @@ class JZSA_Data_Provider {
 			$meta,
 			array(
 				'camera'       => $this->build_camera_display_name( $make, $model ),
-				'camera_make'  => trim( $make ),
-				'camera_model' => trim( $model ),
+				'camera_make'  => $this->normalize_camera_make_for_display( trim( $make ) ),
+				'camera_model' => $this->normalize_camera_make_for_display( trim( $model ) ),
 				'aperture'     => "\xC6\x92/" . $aperture,
 				'shutter'      => $shutter_display,
 				'focal'        => $focal . 'mm',
@@ -733,13 +733,13 @@ class JZSA_Data_Provider {
 	}
 
 	/**
-	 * Normalize EXIF camera make for display in the derived {camera} placeholder.
+	 * Normalize an EXIF make/model string for display.
 	 *
 	 * Lowercase or mixed-case words are title-cased ("samsung" → "Samsung",
-	 * "inc." → "Inc."). Already-uppercase words stay unchanged ("COMPANY").
-	 * Raw placeholders such as {camera-make} are not modified.
+	 * "inc." → "Inc."). Already-uppercase words stay unchanged ("NIKON").
+	 * Applied to {camera}, {camera-make}, and {camera-model}.
 	 *
-	 * @param string $make Raw EXIF make.
+	 * @param string $make Raw EXIF make or model string.
 	 * @return string
 	 */
 	private function normalize_camera_make_for_display( $make ) {
