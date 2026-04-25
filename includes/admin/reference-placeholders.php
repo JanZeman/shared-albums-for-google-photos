@@ -1,10 +1,5 @@
 					<p><?php esc_html_e( 'Box content is a text string. You can use plain text (as in the preview above) or placeholders like {date}, {item}, and {page} that resolve to per-photo metadata or gallery page state. Placeholders that cannot be resolved (no data available) are silently removed together with any surrounding separator characters. Most placeholders resolve instantly; background metadata appears with a brief delay only the first time and then loads immediately from cache.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
-					<div style="background-color: #fff3cd; border: 3px solid #d32f2f; border-radius: 4px; padding: 16px; margin: 20px 0; font-weight: bold;">
-						<span style="color: #d32f2f; font-size: 1.3em;">⚠️ IMPORTANT LIMITATION — Google Photos Truncates Descriptions:</span><br>
-						<span style="color: #721c24; font-size: 1.1em;">Google Photos limits photo descriptions to <strong>100 characters</strong>. Any description longer than this will be automatically truncated by Google, not by this plugin. If you use the <code>{description}</code> placeholder and your descriptions are longer than 100 characters, enable <code>info-wrap="true"</code> to allow the truncated text to wrap to multiple lines. There is no way to retrieve the full description from Google Photos — this is a limitation of the platform itself.</span>
-					</div>
-
 					<table class="jzsa-settings-table">
 						<thead>
 							<tr>
@@ -83,7 +78,7 @@
 							</tr>
 							<tr>
 								<td><code>{description}</code></td>
-								<td><?php esc_html_e( 'Photo description/caption from Google Photos, when present', 'janzeman-shared-albums-for-google-photos' ); ?><br><br><strong style="color: #d32f2f; font-size: 1.1em;">⚠️ IMPORTANT: Google Photos limits descriptions to 100 characters. Longer descriptions are truncated. Use info-wrap="true" to allow wrapping if you have longer descriptions, but be aware of this hard limit from Google.</strong></td>
+								<td><?php esc_html_e( 'Photo description/caption from Google Photos, when present', 'janzeman-shared-albums-for-google-photos' ); ?><br><br><strong style="color: #d32f2f; font-size: 1.1em;">⚠️ IMPORTANT LIMITATION: Google Photos limits descriptions to 100 characters. Longer descriptions are truncated. Use info-wrap="true" to allow wrapping if you have longer descriptions, but be aware of this hard limit from Google.</strong></td>
 								<td>Tūī bird, New Zealand</td>
 								<td>⏳ <?php esc_html_e( 'May appear with delay', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
