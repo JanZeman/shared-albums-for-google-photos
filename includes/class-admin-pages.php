@@ -1640,7 +1640,7 @@ class JZSA_Admin_Pages {
 							<span><?php esc_html_e( 'EXIF output depends heavily on how complete and clean the metadata is across the photos in your shared album.', 'janzeman-shared-albums-for-google-photos' ); ?></span>
 						</p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $info_sample_link . '" mode="slider" width="512" corner-radius="16" show-link-button="true" show-download-button="true" info-font-size="18" info-font-family="ui-monospace, SFMono-Regular, Consolas, monospace" info-top="{description}" info-top-secondary="{camera}" info-bottom="{aperture} ⸱ {shutter} ⸱ {focal} ⸱ {iso}" start-at="1"]';
+							$sample_shortcode = '[jzsa-album link="' . $info_sample_link . '" mode="slider" width="512" corner-radius="16" show-link-button="true" show-download-button="true" info-font-size="18" info-font-family="ui-monospace, SFMono-Regular, Consolas, monospace" info-top="{description}" info-top-secondary="{camera}" info-bottom="{aperture} ⸱ {shutter} ⸱ {focal} ⸱ {iso}" start-at="1" fullscreen-mosaic="true"]';
 						?>
 						<div class="jzsa-code-block">
 								<code><?php echo esc_html( $sample_shortcode ); ?></code>
