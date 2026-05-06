@@ -1462,7 +1462,7 @@
 					btn.textContent = 'Publish to Community';
 
 					if ( res.success ) {
-						setResult( resultEl, '\u2705 Published! Your shortcode is now live in the directory.', true );
+						setResult( resultEl, '\u2705 Published! Your shortcode is now live in the directory. See the sections below and find it there.', true );
 						// Clear form
 						var fields = [ '#jzsa-pub-title', '#jzsa-pub-description', '#jzsa-pub-tags', '#jzsa-pub-site-url', '#jzsa-pub-photographer-name', '#jzsa-pub-photographer-bio' ];
 						fields.forEach( function ( sel ) {
@@ -1479,11 +1479,6 @@
 						var consentEl = qs( '#jzsa-pub-showcase-consent' );
 						if ( consentEl ) {
 							syncPublishShowcaseConsent( false );
-						}
-						// Close the publish form
-						var publishDetails = qs( '#jzsa-publish-details' );
-						if ( publishDetails ) {
-							publishDetails.open = false;
 						}
 						// Reload browse and my entries so the new entry appears
 						currentPage = 1;
