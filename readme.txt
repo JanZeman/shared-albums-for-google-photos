@@ -4,7 +4,7 @@ Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.0
 Tested up to: 6.9
 Requires PHP: 7.0
-Stable tag: 2.1.8
+Stable tag: 2.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,6 +26,7 @@ Shared Albums for Google Photos (by JanZeman) allows you to easily display publi
 * **Performance Features** - Lazy loading, progressive loading, caching, and large album support
 * **Shortcode Playground** - Admin-only sandbox on the Settings page for experimenting with `[jzsa-album]` shortcodes and previews
 * **Mosaic Strip** - Optional mosaic thumbnail strip alongside the main viewer, including a fullscreen mosaic mode
+* **Community Directory** - Optional "Share Your Shortcode" feature: browse, copy, and publish shortcode configurations to a public community directory at jzsa.janzeman.com
 
 Many more customization parameters and samples are available on the plugin's Settings & Onboarding page.
 
@@ -141,6 +142,18 @@ The plugin provides clear feedback:
 10. Mosaic strip in the overlay mode
 
 == Changelog ==
+
+= 2.2.1 =
+* Preparation of the Community feature for the release
+* Once more thanks to `@naveenbachwani` for valuable discussion about the feature!
+
+= 2.2.0 =
+* New: Community Directory - browse, copy, and publish shortcode configurations and inspire others :-)
+* Privacy by design: your email is never sent; account identity uses one-way hashes, and publishing data is sent only when you choose to share
+* Passwordless authentication: Connect from your WordPress admin, with no email or external account required
+* Interaction points and shortcode ratings are community fun, not a competition
+* Delete your account and all published entries at any time
+* Special thanks to `@naveenbachwani` for the truly inspirational "Gallery links" request!
 
 = 2.1.8 =
 * Fullscreen support of mosaic. Many thanks `@luisbenitez777` for sharing the idea.
@@ -263,13 +276,27 @@ The plugin provides clear feedback:
 
 == Privacy Policy ==
 
-This plugin does not collect or store any user data.
+This plugin does not collect or store any user data for its core gallery functionality.
 
 = Use of external Google services =
 
 * The plugin fetches public Google Photos album pages from `https://photos.google.com` and image files from `*.googleusercontent.com` in order to render the galleries.
 * Only publicly shared album links are supported; the plugin has no access to private albums or any content that is not already available via a public share link.
 * The plugin does not collect, store, or transmit user credentials or personal data. It only caches album HTML and image URLs in WordPress transients for performance, and this cache is stored locally in your WordPress database.
+
+= Community Directory (optional, opt-in) =
+
+The "Share Your Shortcode" community feature is entirely optional. Browsing community examples loads entries from jzsa.janzeman.com. Account, rating, and publishing features are active only when you choose to connect to the community.
+
+* **No email is ever transmitted.** Your WordPress admin email and site URL are combined and hashed on your server using SHA-256 before anything is sent. Only this identity hash - from which the original email cannot be recovered - is transmitted.
+* **Identity stored as a one-way hash.** The backend applies a second cryptographic layer (HMAC-SHA256 with a server-side secret), so the stored value cannot be reversed even with access to the database.
+* **Site verification and correlation.** Your site's home URL is transmitted during connection so the community server can verify that the request really came from that WordPress site. The backend stores only a separate SHA-256 hash of the site URL. This hash cannot be reversed to recover the URL. Its purpose is abuse prevention, such as detecting if multiple accounts originate from the same WordPress installation.
+* **User-provided account and entry data.** If you set a community display name, it is stored and shown as the author name. If you publish an entry, the following is stored on jzsa.janzeman.com: title, shortcode, album link extracted from the shortcode, optional description, optional tags, optional sample page URL, optional photographer / creator name, optional short bio, plugin version, and whether you opted into future public showcase consideration. You control this data.
+* **Album-link masking.** Public community responses show the shared shortcode with the Google Photos URL replaced by `link="[link]"`. The real shared album link is still stored by the community server so previews can render. Authenticated community users may receive a private preview shortcode containing the real link, but the visible shared shortcode remains masked.
+* **Anonymous interaction signals.** When someone copies, applies, rates, or previews a community entry, an interaction event may be recorded. The community backend hashes the request IP it sees each day (SHA-256 of IP + date) and never stores it in plain text. Because WordPress proxies these calls, this is normally the WordPress site's server IP rather than the browser user's direct IP.
+* **Star ratings.** Authenticated community users can rate entries (1-5 stars). The rating is stored linked to the user's identity hash, not to any personal data.
+* **Right to erasure.** You can delete your account and all associated entries and ratings at any time from the plugin's admin page. Deletion is immediate and permanent.
+* **No tracking.** The community backend does not use cookies, analytics, or advertising.
 
 == Support ==
 

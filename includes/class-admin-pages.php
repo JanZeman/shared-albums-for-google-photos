@@ -17,9 +17,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class JZSA_Admin_Pages {
 
-	const MENU_SLUG = 'janzeman-shared-albums-for-google-photos';
+	const MENU_SLUG                 = 'janzeman-shared-albums-for-google-photos';
 	const SHORTCODE_PARAMETERS_SLUG = 'janzeman-shared-albums-for-google-photos-shortcode-parameters';
-	const PLACEHOLDERS_SLUG = 'janzeman-shared-albums-for-google-photos-placeholders';
+	const PLACEHOLDERS_SLUG         = 'janzeman-shared-albums-for-google-photos-placeholders';
+	const COMMUNITY_SLUG            = 'janzeman-shared-albums-for-google-photos-community';
 
 	/**
 	 * Whether Guide-page sample shortcodes should emit lazy placeholders instead
@@ -77,7 +78,7 @@ class JZSA_Admin_Pages {
 		add_menu_page(
 			'Shared Albums for Google Photos (by JanZeman)',
 			'Shared Albums for Google Photos',
-			'manage_options',
+			jzsa_get_admin_capability(),
 			self::MENU_SLUG,
 			array( $this, 'render_guide_page' ),
 			'none'
@@ -87,27 +88,36 @@ class JZSA_Admin_Pages {
 			self::MENU_SLUG,
 			'Shared Albums for Google Photos (by JanZeman)',
 			'Guide',
-			'manage_options',
+			jzsa_get_admin_capability(),
 			self::MENU_SLUG,
 			array( $this, 'render_guide_page' )
 		);
 
 		add_submenu_page(
 			self::MENU_SLUG,
-			'Shortcode Parameters',
+			'Shared Albums Shortcode Parameters',
 			'Parameters',
-			'manage_options',
+			jzsa_get_admin_capability(),
 			self::SHORTCODE_PARAMETERS_SLUG,
 			array( $this, 'render_shortcode_parameters_page' )
 		);
 
 		add_submenu_page(
 			self::MENU_SLUG,
+			'Shared Albums Placeholders',
 			'Placeholders',
-			'Placeholders',
-			'manage_options',
+			jzsa_get_admin_capability(),
 			self::PLACEHOLDERS_SLUG,
 			array( $this, 'render_placeholders_page' )
+		);
+
+		add_submenu_page(
+			self::MENU_SLUG,
+			'Shared Albums Community',
+			'Community',
+			jzsa_get_admin_capability(),
+			self::COMMUNITY_SLUG,
+			array( $this, 'render_community_page' )
 		);
 
 	}
@@ -149,6 +159,15 @@ class JZSA_Admin_Pages {
 	 */
 	public static function get_placeholders_page_url() {
 		return admin_url( 'admin.php?page=' . self::PLACEHOLDERS_SLUG );
+	}
+
+	/**
+	 * Get the Community page URL.
+	 *
+	 * @return string
+	 */
+	public static function get_community_page_url() {
+		return admin_url( 'admin.php?page=' . self::COMMUNITY_SLUG );
 	}
 
 	/**
@@ -202,6 +221,7 @@ class JZSA_Admin_Pages {
 				self::MENU_SLUG,
 				self::SHORTCODE_PARAMETERS_SLUG,
 				self::PLACEHOLDERS_SLUG,
+				self::COMMUNITY_SLUG,
 			),
 			true
 		);
@@ -249,55 +269,6 @@ class JZSA_Admin_Pages {
 	}
 
 	/**
-	 * Render navigation between the plugin admin reference pages.
-	 *
-	 * @param string $current_slug Current page slug.
-	 */
-	private function render_reference_navigation( $current_slug ) {
-			$pages = array(
-			self::MENU_SLUG                 => array(
-				'label' => __( 'Guide', 'janzeman-shared-albums-for-google-photos' ),
-				'url'   => self::get_guide_page_url(),
-			),
-			self::SHORTCODE_PARAMETERS_SLUG => array(
-				'label' => __( 'Shortcode Parameters', 'janzeman-shared-albums-for-google-photos' ),
-				'url'   => self::get_shortcode_parameters_page_url(),
-			),
-			self::PLACEHOLDERS_SLUG         => array(
-				'label' => __( 'Placeholders', 'janzeman-shared-albums-for-google-photos' ),
-				'url'   => self::get_placeholders_page_url(),
-			),
-		);
-		?>
-		<div class="jzsa-section">
-			<p class="jzsa-help-text" style="margin: 0;">
-				<?php
-				$is_first = true;
-
-				foreach ( $pages as $slug => $page ) {
-					if ( ! $is_first ) {
-						echo ' | ';
-					}
-
-					if ( $slug === $current_slug ) {
-						echo '<strong>' . esc_html( $page['label'] ) . '</strong>';
-					} else {
-						printf(
-							'<a href="%s">%s</a>',
-							esc_url( $page['url'] ),
-							esc_html( $page['label'] )
-						);
-					}
-
-					$is_first = false;
-				}
-				?>
-			</p>
-		</div>
-		<?php
-	}
-
-	/**
 	 * Render the Shortcode Parameters reference block.
 	 *
 	 * @param bool $show_detached_link Whether to show the open-in-new-tab link.
@@ -334,11 +305,65 @@ class JZSA_Admin_Pages {
 	}
 
 	/**
+	 * Render the "This Plugin Has Potential" feedback / bug-report section.
+	 */
+	public function render_unhappy_section() {
+		?>
+		<div class="jzsa-section jzsa-help-section">
+			<h2><?php esc_html_e( 'This Plugin Has Potential, But...', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+			<p style="margin: 4px 0 6px; display: flex; align-items: center; gap: 8px;">
+				<span class="dashicons dashicons-warning" style="font-size: 26px; width: 36px; height: 36px; line-height: 36px; text-align: center; color: #d63638; flex-shrink: 0;"></span>
+				<span><?php esc_html_e( 'Found a bug or something not working right?', 'janzeman-shared-albums-for-google-photos' ); ?> <strong><a href="https://github.com/JanZeman/shared-albums-for-google-photos/issues/new" target="_blank" rel="noopener"><?php esc_html_e( 'Report it on GitHub', 'janzeman-shared-albums-for-google-photos' ); ?></a></strong>.</span>
+			</p>
+			<p style="margin: 6px 0 0; display: flex; align-items: center; gap: 8px;">
+				<span class="dashicons dashicons-lightbulb" style="font-size: 26px; width: 36px; height: 36px; line-height: 36px; text-align: center; color: #dba617; flex-shrink: 0;"></span>
+				<span><?php esc_html_e( 'Missing a feature or have an idea for improvement?', 'janzeman-shared-albums-for-google-photos' ); ?> <strong><a href="https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/" target="_blank" rel="noopener"><?php esc_html_e( 'Request it on the support forum', 'janzeman-shared-albums-for-google-photos' ); ?></a></strong>.</span>
+			</p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render the "Enjoying This Plugin" review / coffee section.
+	 */
+	public function render_happy_section() {
+		?>
+		<div class="jzsa-section jzsa-happy-section">
+			<h2><?php esc_html_e( 'Enjoying This Plugin?', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+			<p style="margin: 4px 0 6px; display: flex; align-items: center; gap: 8px;">
+				<span class="dashicons dashicons-star-filled" style="font-size: 26px; width: 36px; height: 36px; line-height: 36px; text-align: center; color: #f0ad4e; flex-shrink: 0;"></span>
+				<span><?php esc_html_e( 'If this plugin saved you time or made your site better, please help others find it too!', 'janzeman-shared-albums-for-google-photos' ); ?> <strong><a href="https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/reviews/#new-post" target="_blank" rel="noopener"><?php esc_html_e( 'Leave a 5-star review', 'janzeman-shared-albums-for-google-photos' ); ?></a></strong>.</span>
+			</p>
+			<p style="margin: 6px 0 0; display: flex; align-items: center; gap: 8px;">
+				<span class="dashicons dashicons-share" style="font-size: 26px; width: 36px; height: 36px; line-height: 36px; text-align: center; color: #1d9bf0; flex-shrink: 0;"></span>
+				<span><?php esc_html_e( 'Spread the word and share on', 'janzeman-shared-albums-for-google-photos' ); ?> <strong><a href="https://twitter.com/intent/tweet?text=My%20website%20now%20shares%20beautiful%20Google%20Photos%20galleries%20thanks%20to%20the%20Shared%20Albums%20for%20Google%20Photos%20plugin%20for%20WordPress!%20%F0%9F%93%B8&url=https%3A%2F%2Fwordpress.org%2Fplugins%2Fjanzeman-shared-albums-for-google-photos%2F" target="_blank" rel="noopener"><?php esc_html_e( 'Twitter/X', 'janzeman-shared-albums-for-google-photos' ); ?></a></strong> <?php esc_html_e( 'or', 'janzeman-shared-albums-for-google-photos' ); ?> <strong><a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwordpress.org%2Fplugins%2Fjanzeman-shared-albums-for-google-photos%2F" target="_blank" rel="noopener"><?php esc_html_e( 'Facebook', 'janzeman-shared-albums-for-google-photos' ); ?></a></strong>.</span>
+			</p>
+			<p style="margin: 6px 0 0; display: flex; align-items: center; gap: 8px;">
+				<img src="<?php echo esc_url( plugins_url( 'assets/BuyMeACoffee_128x128.png', dirname( __FILE__ ) ) ); ?>" alt="" style="width: 36px; height: 36px; flex-shrink: 0;">
+				<span><?php esc_html_e( "I’ll take my family to a local café and somehow justify all the late-night coding ;) ", 'janzeman-shared-albums-for-google-photos' ); ?> <strong><a href="https://www.buymeacoffee.com/janzeman" target="_blank" rel="noopener"><?php esc_html_e( 'Buy me a coffee', 'janzeman-shared-albums-for-google-photos' ); ?></a></strong>.</span>
+			</p>
+			<p style="margin: 6px 0 0; display: flex; align-items: center; gap: 8px;">
+				<img src="<?php echo esc_url( plugins_url( 'assets/Photographer_128x128.png', dirname( __FILE__ ) ) ); ?>" alt="" style="width: 36px; height: 36px; flex-shrink: 0;">
+				<span><?php esc_html_e( 'Made by a hobbyist WordPress developer and occasional photographer. Thank you for using this plugin!', 'janzeman-shared-albums-for-google-photos' ); ?></span>
+			</p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render the Community page.
+	 */
+	public function render_community_page() {
+		$this->render_page_shell_start();
+		JZSA_Community::render_content();
+		$this->render_page_shell_end();
+	}
+
+	/**
 	 * Render the dedicated Shortcode Parameters page.
 	 */
 	public function render_shortcode_parameters_page() {
 		$this->render_page_shell_start();
-		$this->render_reference_navigation( self::SHORTCODE_PARAMETERS_SLUG );
 		$this->render_shortcode_parameters_section();
 		$this->render_page_shell_end();
 	}
@@ -348,7 +373,6 @@ class JZSA_Admin_Pages {
 	 */
 	public function render_placeholders_page() {
 		$this->render_page_shell_start();
-		$this->render_reference_navigation( self::PLACEHOLDERS_SLUG );
 		?>
 		<div class="jzsa-section jzsa-photo-info-section">
 			<?php $this->render_placeholders_reference(); ?>
@@ -363,8 +387,14 @@ class JZSA_Admin_Pages {
 	public function render_guide_page() {
 		$album_sample_link = 'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R';
 		$video_sample_link = 'https://photos.google.com/share/AF1QipM-v19vtjd5NEiD6w40U7XqZoqwMUX4FyPr6p9U-9Ixjw2jy7oYFs7m7vgvvpm3PA?key=ZjhXZDNkc1ZrNmFvZ2tIOW16QXlGal94Y2g2cGJB';
-		$info_sample_link   = 'https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR';
+		$info_sample_link  = 'https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR';
 		$this->lazy_sample_previews = true;
+
+		// Reusable UI strings — define once, echo everywhere below.
+		$s_copy            = esc_html__( 'Copy', 'janzeman-shared-albums-for-google-photos' );
+		$s_apply           = esc_html__( 'Apply', 'janzeman-shared-albums-for-google-photos' );
+		$s_revert          = esc_html__( 'Revert', 'janzeman-shared-albums-for-google-photos' );
+		$s_fullscreen_hint = esc_html__( 'Open fullscreen to see the effect', 'janzeman-shared-albums-for-google-photos' );
 		?>
 		<div class="wrap jzsa-settings-wrap">
 			<h1>
@@ -373,7 +403,6 @@ class JZSA_Admin_Pages {
 			</h1>
 
 			<div class="jzsa-settings-container">
-				<?php $this->render_reference_navigation( self::MENU_SLUG ); ?>
 				<!-- Purpose / Scope Section -->
 						<div class="jzsa-section jzsa-section-purpose">
 							<div class="jzsa-attention-box jzsa-attention-purpose">
@@ -437,41 +466,8 @@ class JZSA_Admin_Pages {
 					</div>
 				</div>
 
-				<div class="jzsa-section jzsa-help-section">
-					<h2><?php esc_html_e( 'This Plugin Has Potential, But...', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
-					<p style="margin: 4px 0 6px; display: flex; align-items: center; gap: 8px;">
-						<span class="dashicons dashicons-warning" style="font-size: 26px; width: 36px; height: 36px; line-height: 36px; text-align: center; color: #d63638; flex-shrink: 0;"></span>
-						<span><?php esc_html_e( 'Found a bug or something not working right?', 'janzeman-shared-albums-for-google-photos' ); ?> <a href="https://github.com/JanZeman/shared-albums-for-google-photos/issues/new" target="_blank" rel="noopener"><?php esc_html_e( 'Report it on GitHub', 'janzeman-shared-albums-for-google-photos' ); ?></a></span>
-					</p>
-					<p style="margin: 6px 0 0; display: flex; align-items: center; gap: 8px;">
-						<span class="dashicons dashicons-lightbulb" style="font-size: 26px; width: 36px; height: 36px; line-height: 36px; text-align: center; color: #dba617; flex-shrink: 0;"></span>
-						<span><?php esc_html_e( 'Missing a feature or have an idea for improvement?', 'janzeman-shared-albums-for-google-photos' ); ?> <a href="https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/" target="_blank" rel="noopener"><?php esc_html_e( 'Request it on the support forum', 'janzeman-shared-albums-for-google-photos' ); ?></a></span>
-					</p>
-				</div>
-
-				<div class="jzsa-section jzsa-happy-section">
-					<h2><?php esc_html_e( 'Enjoying This Plugin?', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
-					<p style="margin: 4px 0 6px; display: flex; align-items: center; gap: 8px;">
-						<span class="dashicons dashicons-star-filled" style="font-size: 26px; width: 36px; height: 36px; line-height: 36px; text-align: center; color: #f0ad4e; flex-shrink: 0;"></span>
-						<span>
-							<?php
-							printf(
-								/* translators: %s: link to WordPress.org reviews. */
-								esc_html__( 'If this plugin saved you time or made your site better, a quick %s would truly make my day. It helps others find the plugin too!', 'janzeman-shared-albums-for-google-photos' ),
-								'<a href="https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/reviews/#new-post" target="_blank" rel="noopener">' . esc_html__( '5-star review', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
-							);
-							?>
-						</span>
-					</p>
-					<p style="margin: 6px 0 0; display: flex; align-items: center; gap: 8px;">
-						<img src="<?php echo esc_url( plugins_url( 'assets/BuyMeACoffee_128x128.png', dirname( __FILE__ ) ) ); ?>" alt="" style="width: 36px; height: 36px; flex-shrink: 0;">
-						<span><?php esc_html_e( 'You can also', 'janzeman-shared-albums-for-google-photos' ); ?> <a href="https://www.buymeacoffee.com/janzeman" target="_blank" rel="noopener"><?php esc_html_e( 'buy me a coffee.', 'janzeman-shared-albums-for-google-photos' ); ?></a> <?php esc_html_e( "I'll take my family to a local café and finally explain why all those late-night coding sessions were somehow worth it ;)", 'janzeman-shared-albums-for-google-photos' ); ?></span>
-					</p>
-					<p style="margin: 6px 0 0; display: flex; align-items: center; gap: 8px;">
-						<img src="<?php echo esc_url( plugins_url( 'assets/Photographer_128x128.png', dirname( __FILE__ ) ) ); ?>" alt="" style="width: 36px; height: 36px; flex-shrink: 0;">
-						<span><?php esc_html_e( 'Made by a hobbyist WordPress developer and occasional photographer. Thank you for using this plugin!', 'janzeman-shared-albums-for-google-photos' ); ?></span>
-					</p>
-				</div>
+				<?php $this->render_unhappy_section(); ?>
+				<?php $this->render_happy_section(); ?>
 
 				<!-- Quick Onboarding Section -->
 				<div class="jzsa-section">
@@ -542,9 +538,9 @@ class JZSA_Admin_Pages {
 							aria-label="<?php esc_attr_e( 'Shortcode to test', 'janzeman-shared-albums-for-google-photos' ); ?>"
 						><?php echo esc_html( $sample_shortcode ); ?></code>
 						<div class="jzsa-code-block-btns">
-							<button type="button" class="jzsa-action-btn" data-jzsa-action="copy"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
-							<button type="button" class="jzsa-action-btn" data-jzsa-action="apply"><?php esc_html_e( 'Apply', 'janzeman-shared-albums-for-google-photos' ); ?></button>
-							<button type="button" class="jzsa-action-btn" data-jzsa-action="revert"><?php esc_html_e( 'Revert', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button type="button" class="jzsa-action-btn" data-jzsa-action="copy"><?php echo $s_copy; ?></button>
+							<button type="button" class="jzsa-action-btn" data-jzsa-action="apply"><?php echo $s_apply; ?></button>
+							<button type="button" class="jzsa-action-btn" data-jzsa-action="revert"><?php echo $s_revert; ?></button>
 						</div>
 					</div>
 
@@ -611,7 +607,7 @@ class JZSA_Admin_Pages {
 				<div class="jzsa-section jzsa-samples-section">
 					<h2><?php esc_html_e( 'Samples', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 
-						<div class="jzsa-example">
+						<div class="jzsa-sample-card">
 							<h3><?php esc_html_e( 'Gallery - Limited Count, No Pagination', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Uses the default "gallery" mode to display album entries as a thumbnail gallery. Every cell has the same size. Tiles stay clean by default, and opening a thumbnail in fullscreen still shows the current item counter. Pagination is not required - all thumbnails are shown at once, limited only by limit.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -619,7 +615,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-gallery-grid" style="height:auto;">
 						<?php
@@ -629,7 +625,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-							<div class="jzsa-example">
+							<div class="jzsa-sample-card">
 									<h3><?php esc_html_e( 'Gallery - Paged (Default Page Counter)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 									<p><?php esc_html_e( 'Use gallery-rows to split the gallery into pages. By default, paginated galleries keep the tiles clean and show the page counter in the navigation bar. Use gallery-sizing="ratio" (default) to keep fixed tile aspect ratio, or gallery-sizing="fill" to stretch row heights and fill explicit control height.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 							<?php
@@ -637,7 +633,7 @@ class JZSA_Admin_Pages {
 							?>
 							<div class="jzsa-code-block">
 								<code><?php echo esc_html( $sample_shortcode ); ?></code>
-								<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+								<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-gallery-paged" style="height:auto;">
 							<?php
@@ -647,7 +643,7 @@ class JZSA_Admin_Pages {
 						</div>
 						</div>
 
-						<div class="jzsa-example">
+						<div class="jzsa-sample-card">
 								<h3><?php esc_html_e( 'Gallery - Paged (Custom Page Counter)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 									<p><?php esc_html_e( 'Same as above but with a custom page counter format in the navigation bar. Use this when you want to include album context such as the album title together with the page count.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 								<?php
@@ -655,7 +651,7 @@ class JZSA_Admin_Pages {
 								?>
 								<div class="jzsa-code-block">
 										<code><?php echo esc_html( $sample_shortcode ); ?></code>
-									<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+									<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 								</div>
 								<div class="jzsa-preview-container jzsa-preview-container-gallery-paged-page-pagination" style="height:auto;">
 									<?php
@@ -665,7 +661,7 @@ class JZSA_Admin_Pages {
 							</div>
 						</div>
 
-							<div class="jzsa-example">
+							<div class="jzsa-sample-card">
 									<h3><?php esc_html_e( 'Gallery - Paged (Tile Counter Override)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 									<p><?php esc_html_e( 'Same paged gallery layout, but with per-tile item numbers instead of the page counter in the navigation bar. Use this when you want to keep pagination while labeling each tile with its item position in the album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 								<?php
@@ -673,7 +669,7 @@ class JZSA_Admin_Pages {
 								?>
 								<div class="jzsa-code-block">
 									<code><?php echo esc_html( $sample_shortcode ); ?></code>
-									<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+									<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 								</div>
 								<div class="jzsa-preview-container jzsa-preview-container-gallery-paged-page-pagination" style="height:auto;">
 									<?php
@@ -683,7 +679,7 @@ class JZSA_Admin_Pages {
 								</div>
 							</div>
 
-						<div class="jzsa-example">
+						<div class="jzsa-sample-card">
 							<h3><?php esc_html_e( 'Gallery - Scrollable Instead Of Paged', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Use gallery-scrollable="true" with gallery-rows to show a fixed-height, vertically scrollable gallery instead of page controls.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -691,7 +687,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-gallery-scrollable" style="height:auto;">
 						<?php
@@ -701,7 +697,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Gallery - Justified Layout', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Uses gallery-layout="justified" so photos keep their natural aspect ratios and fill each row edge-to-edge, similar to Google Photos. Use the fullscreen button on any thumbnail to open it in a fullscreen viewer.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -709,7 +705,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-gallery-justified" style="height:auto;">
 						<?php
@@ -719,7 +715,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Slider - Basic Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'A basic slider example using mode="slider" with rounded corners.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -727,7 +723,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-basic">
 							<?php
@@ -737,7 +733,7 @@ class JZSA_Admin_Pages {
 						</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Custom Size Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Set the preview width and height so they fit your page layout.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -745,7 +741,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-custom-size">
 							<?php
@@ -755,7 +751,7 @@ class JZSA_Admin_Pages {
 						</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Hide Navigation Arrows', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Hides previous/next arrows. Useful for headless slideshows such as digital signage. Swipe and keyboard navigation still work.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -763,7 +759,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 						<div class="jzsa-preview-container jzsa-preview-container-hide-navigation">
 							<?php
@@ -773,7 +769,7 @@ class JZSA_Admin_Pages {
 						</div>
 						</div>
 
-						<div class="jzsa-example">
+						<div class="jzsa-sample-card">
 							<h3><?php esc_html_e( 'Interaction Lock (Controls and Navigation Disabled)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php echo wp_kses( __( 'Uses interaction-lock="true" as a <strong>hard override</strong> for interactions: swipe/drag, keyboard navigation, click/tap navigation, and fullscreen entry are disabled. Notice that all navigation buttons are hidden despite the shortcode explicitly enabling them (show-link-button, show-download-button, fullscreen-toggle). Counter and slideshow countdown stay visible.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
 						<?php
@@ -781,7 +777,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-interaction-lock">
 							<?php
@@ -791,7 +787,7 @@ class JZSA_Admin_Pages {
 						</div>
 						</div>
 
-							<div class="jzsa-example">
+							<div class="jzsa-sample-card">
 								<h3><?php esc_html_e( 'Limit Number of Entries Per Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 								<p><?php esc_html_e( 'Load only a limited number of album entries from a large mixed album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -799,7 +795,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-limit-photos">
 						<?php
@@ -809,7 +805,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Custom Slideshow Speed', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Slideshow here is set to one second. You can easily see the difference in speed compared to the sample above :)', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -817,7 +813,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-slower-autoplay">
 						<?php
@@ -827,7 +823,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Random Start without Slideshow', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Starts at a random photo with slideshow disabled. Each page load shows a different photo, but the viewer stays on it until the user navigates manually.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -835,7 +831,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-no-autoplay">
 						<?php
@@ -845,7 +841,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Disable Cropping and Set Custom Background', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Shows photos fully without cropping by using image-fit="contain". This exposes the background color. Here we set it to yellow to make it very visible.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -853,7 +849,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-no-crop">
 						<?php
@@ -863,15 +859,18 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Custom Background Color for Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Same as above but with fullscreen-background-color="#0000FF" to override the fullscreen background to blue, while the inline background is transparent.', 'janzeman-shared-albums-for-google-photos' ); ?> <strong><?php esc_html_e( 'Open fullscreen to see the effect of this shortcode.', 'janzeman-shared-albums-for-google-photos' ); ?></strong></p>
+					<div class="jzsa-sample-card">
+						<div class="jzsa-sample-card-header">
+							<h3><?php esc_html_e( 'Custom Background Color for Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<span class="jzsa-sample-card-hint"><?php echo $s_fullscreen_hint; ?></span>
+						</div>
+						<p><?php esc_html_e( 'Same as above but with fullscreen-background-color="#0000FF" to override the fullscreen background to blue, while the inline background is transparent.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
 						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" image-fit="contain" background-color="transparent" fullscreen-background-color="#0000FF"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-fs-bg-color">
 						<?php
@@ -881,7 +880,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'High-Resolution Inline Photos', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Compare default resolution (left) with high-resolution source (right). Both use the same container size and image-fit="cover".', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -890,11 +889,11 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $low_res_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $high_res_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-hires-inline" style="display: flex; gap: 20px; justify-content: center;">
 						<div>
@@ -914,15 +913,18 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'High-Resolution Fullscreen Photos', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Request extra-high-resolution photos for fullscreen mode. The default fullscreen resolution is 1920x1440. Increase for 4K displays.', 'janzeman-shared-albums-for-google-photos' ); ?> <strong><?php esc_html_e( 'Open fullscreen to see the effect of this shortcode.', 'janzeman-shared-albums-for-google-photos' ); ?></strong></p>
+					<div class="jzsa-sample-card">
+						<div class="jzsa-sample-card-header">
+							<h3><?php esc_html_e( 'High-Resolution Fullscreen Photos', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<span class="jzsa-sample-card-hint"><?php echo $s_fullscreen_hint; ?></span>
+						</div>
+						<p><?php esc_html_e( 'Request extra-high-resolution photos for fullscreen mode. The default fullscreen resolution is 1920x1440. Increase for 4K displays.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
 						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="400" height="300" corner-radius="16" fullscreen-source-width="2560" fullscreen-source-height="1700"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-hires-fullscreen">
 						<?php
@@ -932,15 +934,18 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Low-Resolution Fullscreen Photos with Limited Display Size', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Combine a smaller fullscreen source image with a smaller centered fullscreen display box. Useful when you want fullscreen mode, but do not want the photo to expand wall-to-wall across the screen.', 'janzeman-shared-albums-for-google-photos' ); ?> <strong><?php esc_html_e( 'Open fullscreen to see the effect of this shortcode.', 'janzeman-shared-albums-for-google-photos' ); ?></strong></p>
+					<div class="jzsa-sample-card">
+						<div class="jzsa-sample-card-header">
+							<h3><?php esc_html_e( 'Low-Resolution Fullscreen Photos with Limited Display Size', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<span class="jzsa-sample-card-hint"><?php echo $s_fullscreen_hint; ?></span>
+						</div>
+						<p><?php esc_html_e( 'Combine a smaller fullscreen source image with a smaller centered fullscreen display box. Useful when you want fullscreen mode, but do not want the photo to expand wall-to-wall across the screen.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
 						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="400" height="300" corner-radius="16" fullscreen-source-width="512" fullscreen-source-height="340" fullscreen-display-max-width="640" fullscreen-display-max-height="425"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-lowres-fullscreen-limited">
 						<?php
@@ -950,7 +955,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Manual Slideshow', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'The play/pause button is shown but the slideshow does not start automatically. The user must press play to begin auto-advancing.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -958,7 +963,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-manual-slideshow">
 						<?php
@@ -968,7 +973,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Slideshow with Autostart and Autoresume', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'When the slideshow is running and you swipe or click to navigate manually, the slideshow is interrupted and pauses. After 20 seconds of inactivity it resumes automatically. Try it: let the slideshow advance, then swipe manually and wait. Note: if you stop the slideshow via the pause button, it stays stopped - autoresume only applies to interruptions by manual navigation.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -976,7 +981,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-autoplay-timeout">
 						<?php
@@ -986,7 +991,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Fullscreen Slideshow Only', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Enables slideshow only in fullscreen mode, keeping inline mode static.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -994,7 +999,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-fullscreen-only">
 						<?php
@@ -1004,7 +1009,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Faster Fullscreen Slideshow', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Uses fullscreen-slideshow-delay to advance photos more quickly in fullscreen slideshow mode.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -1012,7 +1017,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-fast-fullscreen">
 						<?php
@@ -1022,7 +1027,7 @@ class JZSA_Admin_Pages {
 						</div>
 						</div>
 
-						<div class="jzsa-example">
+						<div class="jzsa-sample-card">
 							<h3><?php esc_html_e( 'Fullscreen Fit (Default)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Shows the default fullscreen behavior with no fullscreen-image-fit parameter set. By default, fullscreen uses "contain" to preserve the entire photo while scaling it up to fill at least one axis.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1030,7 +1035,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-fs-fit">
 							<?php
@@ -1040,7 +1045,7 @@ class JZSA_Admin_Pages {
 						</div>
 						</div>
 
-						<div class="jzsa-example">
+						<div class="jzsa-sample-card">
 							<h3><?php esc_html_e( 'Fullscreen Fit (Cover Override)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Overrides the default fullscreen behavior with fullscreen-image-fit="cover". This fills the entire fullscreen area, but parts of the photo may be cropped near the edges.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1048,7 +1053,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-fs-fit">
 							<?php
@@ -1058,7 +1063,7 @@ class JZSA_Admin_Pages {
 						</div>
 						</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Button-Only Fullscreen (Default)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Uses fullscreen-toggle="button-only" (the default) so fullscreen can only be entered via the fullscreen button. Once in fullscreen, click to navigate between photos.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -1066,7 +1071,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-fs-switch-button">
 						<?php
@@ -1076,7 +1081,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Single-Click Fullscreen Toggle', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php echo wp_kses( __( 'Uses fullscreen-toggle="click" so clicking anywhere on the slider enters fullscreen. Trade-off: single-click can no longer navigate between photos in fullscreen - use the arrow buttons or keyboard instead. Exit via the Escape key or the fullscreen button. For a less accidental shortcut that preserves click navigation, <strong>consider double-click instead</strong>.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
 					<?php
@@ -1084,7 +1089,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-fs-switch-single">
 						<?php
@@ -1094,7 +1099,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Double-Click Fullscreen Toggle (Recommended)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php echo wp_kses( __( 'Uses fullscreen-toggle="double-click" so double-click (or double-tap on touch) toggles fullscreen on and off. <strong>Recommended over single-click</strong>: single-click still navigates between photos in fullscreen, and the double-click gesture is less likely to be triggered accidentally. Exit via the Escape key or the fullscreen button as alternatives.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
 					<?php
@@ -1102,7 +1107,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-fs-switch-double">
 						<?php
@@ -1112,7 +1117,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Fullscreen Disabled', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Uses fullscreen-toggle="disabled" to completely prevent fullscreen mode. No fullscreen button is shown and clicks do not enter fullscreen.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -1120,7 +1125,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-fs-disabled">
 						<?php
@@ -1130,7 +1135,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Show "Open in Google Photos" Button', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Enables the show-link-button parameter to display an external link button to the original album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -1138,7 +1143,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-link-button">
 						<?php
@@ -1148,7 +1153,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Show Download Button', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Enables the show-download-button parameter to add a download button for the current media item (photo or video).', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -1156,7 +1161,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-download-button">
 						<?php
@@ -1166,7 +1171,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Show Link and Download Buttons - Gallery Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Gallery mode with link and download buttons on each thumbnail. Hover over a thumbnail to see the download and link buttons (top-left) appear alongside the fullscreen button (top-right).', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -1174,7 +1179,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-download-gallery">
 						<?php
@@ -1184,7 +1189,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Gallery Mode: Link Button in Inline and Fullscreen, Download Button in Fullscreen Only', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Gallery mode where the link button is enabled in both inline and fullscreen views, while the download button is shown only in fullscreen.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -1192,7 +1197,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-download-gallery-fullscreen-only">
 						<?php
@@ -1202,7 +1207,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 							<h3><?php esc_html_e( 'Custom Colors', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Example with a bright yellow controls-color and a separate yellow info-font-color, plus top info text to make the difference clearly visible.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -1210,7 +1215,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-controls-color-custom">
 						<?php
@@ -1220,7 +1225,7 @@ class JZSA_Admin_Pages {
 					</div>
 					</div>
 
-						<div class="jzsa-example">
+						<div class="jzsa-sample-card">
 							<h3><?php esc_html_e( 'Carousel Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Uses mode="carousel" to show multiple photos side by side. On mobile and tablets it shows 2 photos at a time, and on desktop it shows 3 photos. Use the fullscreen button on a photo to open it in a single-photo fullscreen viewer.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1228,7 +1233,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-carousel">
 						<?php
@@ -1238,7 +1243,7 @@ class JZSA_Admin_Pages {
 						</div>
 						</div>
 
-						<div class="jzsa-example">
+						<div class="jzsa-sample-card">
 							<h3><?php esc_html_e( 'Video (Blue Accent)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Baseline video sample in slider mode with videos enabled and blue accent color.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1246,7 +1251,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-video-slider">
 							<?php
@@ -1256,7 +1261,7 @@ class JZSA_Admin_Pages {
 						</div>
 						</div>
 
-						<div class="jzsa-example">
+						<div class="jzsa-sample-card">
 							<h3><?php esc_html_e( 'Video in Carousel (Auto-Hide Controls)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Demonstrates carousel mode with video controls auto-hiding after inactivity.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1264,7 +1269,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-video-carousel">
 							<?php
@@ -1274,7 +1279,7 @@ class JZSA_Admin_Pages {
 						</div>
 						</div>
 
-						<div class="jzsa-example">
+						<div class="jzsa-sample-card">
 							<h3><?php esc_html_e( 'Video in Gallery (Button-only to Fullscreen)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Gallery mode with videos included. Fullscreen opens via the fullscreen button only. Once in fullscreen, click left or right to navigate between items.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1282,7 +1287,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-video-gallery">
 							<?php
@@ -1292,7 +1297,7 @@ class JZSA_Admin_Pages {
 						</div>
 						</div>
 
-						<div class="jzsa-example">
+						<div class="jzsa-sample-card">
 							<h3><?php esc_html_e( 'Video in Gallery (Single-click to Fullscreen)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php echo wp_kses( __( 'Single-click on any thumbnail opens fullscreen. Trade-off: click can no longer navigate between items in fullscreen - use the arrow buttons instead. <strong>Consider double-click instead</strong> to keep click navigation available.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
 						<?php
@@ -1300,7 +1305,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-video-gallery-click">
 							<?php
@@ -1310,7 +1315,7 @@ class JZSA_Admin_Pages {
 						</div>
 						</div>
 
-						<div class="jzsa-example">
+						<div class="jzsa-sample-card">
 							<h3><?php esc_html_e( 'Video in Gallery (Double-click to Fullscreen)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php echo wp_kses( __( 'Double-click (or double-tap) on any thumbnail opens fullscreen; double-click again to exit. <strong>Recommended over single-click</strong>: click still navigates between items in fullscreen, and the gesture is less likely to be triggered accidentally.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
 						<?php
@@ -1318,7 +1323,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-video-gallery-dblclick">
 							<?php
@@ -1328,7 +1333,7 @@ class JZSA_Admin_Pages {
 						</div>
 						</div>
 
-						<div class="jzsa-example">
+						<div class="jzsa-sample-card">
 							<h3><?php esc_html_e( 'Photos-Only Sample (Videos Disabled)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Uses show-videos="false" to filter out videos from the same mixed album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1336,7 +1341,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-video-disabled">
 							<?php
@@ -1346,7 +1351,7 @@ class JZSA_Admin_Pages {
 						</div>
 						</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Slider - Mosaic Strip at the Bottom', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Slider with a horizontal thumbnail strip below the main photo. Click any thumbnail to jump to that photo. By default, the thumbnails apply the same corner radius as the main photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1354,7 +1359,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-mosaic-bottom">
 							<?php
@@ -1364,7 +1369,7 @@ class JZSA_Admin_Pages {
 						</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Slider - Mosaic Strip With Explicit Rounded Corners', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Same as above, but with square slider corners via corner-radius="0" and rounded corners only on the thumbnail strip via mosaic-corner-radius="16".', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1372,7 +1377,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-mosaic-rounded">
 							<?php
@@ -1382,7 +1387,7 @@ class JZSA_Admin_Pages {
 						</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Slider - Mosaic Strip on the Right', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Slider with a vertical thumbnail strip on the right side. Great for landscape photos where the strip can use the full height.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1390,7 +1395,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-mosaic-right">
 							<?php
@@ -1400,7 +1405,7 @@ class JZSA_Admin_Pages {
 						</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Mosaic Strip with Carousel', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Carousel mode with a thumbnail strip at the bottom. The carousel shows multiple photos at once; the mosaic strip provides an overview of the full album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1408,7 +1413,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-mosaic-carousel" style="height:auto;">
 							<?php
@@ -1418,7 +1423,7 @@ class JZSA_Admin_Pages {
 						</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Slider - Mosaic Strip with Custom Gap and Opacity', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Demonstrates mosaic-gap and mosaic-opacity together. A tighter gap between thumbnails and a lower inactive opacity create a stronger visual contrast between the active and inactive thumbnails.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1426,7 +1431,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-mosaic-gap-opacity" style="height:auto;">
 							<?php
@@ -1436,15 +1441,18 @@ class JZSA_Admin_Pages {
 						</div>
 					</div>
 
-					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Fullscreen Mosaic Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Combines the inline mosaic strip with fullscreen-mosaic="true". In fullscreen, the default layout now reserves a dedicated rail for the thumbnail strip so it no longer sits on top of the photo.', 'janzeman-shared-albums-for-google-photos' ); ?> <strong><?php esc_html_e( 'Open fullscreen to see the effect of this shortcode.', 'janzeman-shared-albums-for-google-photos' ); ?></strong></p>
+					<div class="jzsa-sample-card">
+						<div class="jzsa-sample-card-header">
+							<h3><?php esc_html_e( 'Fullscreen Mosaic Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<span class="jzsa-sample-card-hint"><?php echo $s_fullscreen_hint; ?></span>
+						</div>
+						<p><?php esc_html_e( 'Combines the inline mosaic strip with fullscreen-mosaic="true". In fullscreen, the default layout now reserves a dedicated rail for the thumbnail strip so it no longer sits on top of the photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
 							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" mosaic="true" fullscreen-mosaic="true" mosaic-count="8" fullscreen-mosaic-count="16" fullscreen-slideshow="auto" limit="24"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-fullscreen-mosaic">
 							<?php
@@ -1454,15 +1462,18 @@ class JZSA_Admin_Pages {
 						</div>
 					</div>
 
-					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Fullscreen Mosaic - Overlay Layout', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Adds fullscreen-mosaic-layout="overlay" and fullscreen-image-fit="cover". The thumbnail strip floats on top of the photo in fullscreen instead of occupying a separate rail, and the photo fills the full screen behind it for a cinema-style experience.', 'janzeman-shared-albums-for-google-photos' ); ?> <strong><?php esc_html_e( 'Open fullscreen to see the effect of this shortcode.', 'janzeman-shared-albums-for-google-photos' ); ?></strong></p>
+					<div class="jzsa-sample-card">
+						<div class="jzsa-sample-card-header">
+							<h3><?php esc_html_e( 'Fullscreen Mosaic - Overlay Layout', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<span class="jzsa-sample-card-hint"><?php echo $s_fullscreen_hint; ?></span>
+						</div>
+						<p><?php esc_html_e( 'Adds fullscreen-mosaic-layout="overlay" and fullscreen-image-fit="cover". The thumbnail strip floats on top of the photo in fullscreen instead of occupying a separate rail, and the photo fills the full screen behind it for a cinema-style experience.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
 							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" mosaic="true" fullscreen-mosaic="true" mosaic-count="8" fullscreen-mosaic-count="16" fullscreen-slideshow="auto" limit="24" fullscreen-image-fit="cover" fullscreen-mosaic-layout="overlay"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-fullscreen-mosaic-overlay" style="height:auto;">
 							<?php
@@ -1531,7 +1542,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 							<p class="jzsa-help-text"><?php esc_html_e( 'Replace YOUR_LINK_HERE with the full link you copied from Google Photos.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
@@ -1563,7 +1574,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $info_boxes_demo_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container" style="max-width: 400px; margin-left: auto; margin-right: auto;">
 						<?php
@@ -1578,7 +1589,7 @@ class JZSA_Admin_Pages {
 
 					<h3 style="margin-top: 28px;"><?php esc_html_e( 'Example Shortcodes', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Slider with Photo Info', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Shows per-photo info overlays in slider mode.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1586,7 +1597,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-info-slider">
 							<?php
@@ -1596,7 +1607,7 @@ class JZSA_Admin_Pages {
 						</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Carousel with Photo Info', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Shows per-photo info overlays in carousel mode.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1604,7 +1615,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-info-carousel">
 							<?php
@@ -1614,7 +1625,7 @@ class JZSA_Admin_Pages {
 						</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Gallery with Photo Info', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Shows per-photo info overlays on gallery thumbnails.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1622,7 +1633,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-info-gallery" style="height:auto;">
 							<?php
@@ -1632,7 +1643,7 @@ class JZSA_Admin_Pages {
 						</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Description & EXIF Info', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Demonstrates a Google Photos description together with EXIF-derived photo information in slider mode with a larger custom monospace font. These values may appear with a brief delay the first time and then load immediately from cache.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<p style="margin: 8px 0 0 0; display: flex; align-items: flex-start; gap: 8px;">
@@ -1644,7 +1655,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 								<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-info-exif">
 							<?php
@@ -1654,7 +1665,7 @@ class JZSA_Admin_Pages {
 						</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'EXIF Camera Info', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Shows the raw EXIF camera make and model separately, with {camera} underneath as the plugin\'s best-guess combined display value. Use the raw placeholders when you need exact source values and {camera} only when the combined output looks right for your album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1662,7 +1673,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-info-exif">
 							<?php
@@ -1672,7 +1683,7 @@ class JZSA_Admin_Pages {
 						</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Long Text: Truncated (Default)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'When text is too long it is cut off with "..." by default. Notice that info-top is intentionally narrower than info-top-secondary: it shares the top corners with action buttons (such as the fullscreen toggle), so space is reserved on both sides to avoid overlap. info-top-secondary and info-bottom have no such constraint and can use the full width.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1680,7 +1691,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container">
 							<?php
@@ -1690,7 +1701,7 @@ class JZSA_Admin_Pages {
 						</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Long Text: Wrapped (info-wrap="true")', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'The same shortcode with info-wrap="true" added. Long text breaks to a new line instead of being cut off; the pill expands vertically to fit all content. Consider reducing info-font-size slightly if the result feels too large. Note that {description} is capped at 100 characters by Google - see the placeholder reference.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1698,7 +1709,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container">
 							<?php
@@ -1708,7 +1719,7 @@ class JZSA_Admin_Pages {
 						</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Long Text: Wrapped with Link and Download Buttons', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'The same wrapped shortcode, but with show-link-button="true" and show-download-button="true" added. Both buttons appear in the top-left corner, so the plugin now reserves two slots on each side, making info-top noticeably shorter than in the previous example. This is intentional: without the extra reservation, info-top would overlap the buttons. Note that {description} is capped at 100 characters by Google - see the placeholder reference.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1716,7 +1727,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container">
 							<?php
@@ -1726,7 +1737,7 @@ class JZSA_Admin_Pages {
 						</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Text Halo Effect Per-Box Override', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'This sample keeps the global halo enabled, then disables it only for info-top-secondary with info-top-secondary-halo-effect="false". That lets you compare both treatments on the same photo while the bottom counter stays at its normal halo-enabled default.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1734,7 +1745,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container">
 							<?php
@@ -1744,7 +1755,7 @@ class JZSA_Admin_Pages {
 						</div>
 					</div>
 
-				  <div class="jzsa-example">
+				  <div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Per-Box Text Alignment', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Each info box can have its own alignment using info-top-text-align, info-top-secondary-text-align, and info-bottom-text-align. These override the global info-text-align for that box only. Here info-top is left-aligned, info-top-secondary is centered, and info-bottom is right-aligned.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1752,7 +1763,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 						</div>
 						<div class="jzsa-preview-container">
 							<?php
@@ -1777,7 +1788,7 @@ class JZSA_Admin_Pages {
 							<li><?php esc_html_e( 'Check that the album contains at least one photo.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 						</ul>
 
-						<div class="jzsa-example">
+						<div class="jzsa-sample-card">
 							<h3><?php esc_html_e( 'Sample "Unable to Load Album" Error', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'This example intentionally uses an invalid link to demonstrate the red error message visitors will see when the album cannot be loaded.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 							<?php
@@ -1785,7 +1796,7 @@ class JZSA_Admin_Pages {
 							?>
 							<div class="jzsa-code-block">
 								<code><?php echo esc_html( $sample_shortcode ); ?></code>
-								<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+								<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 							</div>
 							<div class="jzsa-preview-container jzsa-preview-container-error-sample">
 								<?php
@@ -1804,7 +1815,7 @@ class JZSA_Admin_Pages {
 							<li><?php esc_html_e( 'Only logged-in administrators see this warning. For best reliability, update the shortcode to use the full https://photos.google.com/share/... link from your browser\'s address bar.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 						</ul>
 
-						<div class="jzsa-example">
+						<div class="jzsa-sample-card">
 							<h3><?php esc_html_e( 'Basic Album with Deprecated Link Format (Admin-Only Warning)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Same as above, but using the older short link format. Visitors will NOT see this warning, but you as an administrator should update the link to the new format.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 							<?php
@@ -1812,7 +1823,7 @@ class JZSA_Admin_Pages {
 							?>
 							<div class="jzsa-code-block">
 									<code><?php echo esc_html( $sample_shortcode ); ?></code>
-								<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+								<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 							</div>
 							<div class="jzsa-preview-container jzsa-preview-container-basic-deprecated">
 								<?php
@@ -1832,41 +1843,8 @@ class JZSA_Admin_Pages {
 					</div>
 				</div>
 
-				<div class="jzsa-section jzsa-help-section">
-					<h2><?php esc_html_e( 'This Plugin Has Potential, But...', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
-					<p style="margin: 4px 0 6px; display: flex; align-items: center; gap: 8px;">
-						<span class="dashicons dashicons-warning" style="font-size: 26px; width: 36px; height: 36px; line-height: 36px; text-align: center; color: #d63638; flex-shrink: 0;"></span>
-						<span><?php esc_html_e( 'Found a bug or something not working right?', 'janzeman-shared-albums-for-google-photos' ); ?> <a href="https://github.com/JanZeman/shared-albums-for-google-photos/issues/new" target="_blank" rel="noopener"><?php esc_html_e( 'Report it on GitHub', 'janzeman-shared-albums-for-google-photos' ); ?></a></span>
-					</p>
-					<p style="margin: 6px 0 0; display: flex; align-items: center; gap: 8px;">
-						<span class="dashicons dashicons-lightbulb" style="font-size: 26px; width: 36px; height: 36px; line-height: 36px; text-align: center; color: #dba617; flex-shrink: 0;"></span>
-						<span><?php esc_html_e( 'Missing a feature or have an idea for improvement?', 'janzeman-shared-albums-for-google-photos' ); ?> <a href="https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/" target="_blank" rel="noopener"><?php esc_html_e( 'Request it on the support forum', 'janzeman-shared-albums-for-google-photos' ); ?></a></span>
-					</p>
-				</div>
-
-				<div class="jzsa-section jzsa-happy-section">
-					<h2><?php esc_html_e( 'Enjoying This Plugin?', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
-					<p style="margin: 4px 0 6px; display: flex; align-items: center; gap: 8px;">
-						<span class="dashicons dashicons-star-filled" style="font-size: 26px; width: 36px; height: 36px; line-height: 36px; text-align: center; color: #f0ad4e; flex-shrink: 0;"></span>
-						<span>
-							<?php
-							printf(
-								/* translators: %s: link to WordPress.org reviews. */
-								esc_html__( 'If this plugin saved you time or made your site better, a quick %s would truly make my day. It helps others find the plugin too!', 'janzeman-shared-albums-for-google-photos' ),
-								'<a href="https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/reviews/#new-post" target="_blank" rel="noopener">' . esc_html__( '5-star review', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
-							);
-							?>
-						</span>
-					</p>
-					<p style="margin: 6px 0 0; display: flex; align-items: center; gap: 8px;">
-						<img src="<?php echo esc_url( plugins_url( 'assets/BuyMeACoffee_128x128.png', dirname( __FILE__ ) ) ); ?>" alt="" style="width: 36px; height: 36px; flex-shrink: 0;">
-						<span><?php esc_html_e( 'You can also', 'janzeman-shared-albums-for-google-photos' ); ?> <a href="https://www.buymeacoffee.com/janzeman" target="_blank" rel="noopener"><?php esc_html_e( 'buy me a coffee.', 'janzeman-shared-albums-for-google-photos' ); ?></a> <?php esc_html_e( "I'll take my family to a local café and finally explain why all those late-night coding sessions were somehow worth it ;)", 'janzeman-shared-albums-for-google-photos' ); ?></span>
-					</p>
-					<p style="margin: 6px 0 0; display: flex; align-items: center; gap: 8px;">
-						<img src="<?php echo esc_url( plugins_url( 'assets/Photographer_128x128.png', dirname( __FILE__ ) ) ); ?>" alt="" style="width: 36px; height: 36px; flex-shrink: 0;">
-						<span><?php esc_html_e( 'Made by a hobbyist WordPress developer and occasional photographer. Thank you for using this plugin!', 'janzeman-shared-albums-for-google-photos' ); ?></span>
-					</p>
-				</div>
+				<?php $this->render_unhappy_section(); ?>
+				<?php $this->render_happy_section(); ?>
 			</div>
 		</div>
 		<?php

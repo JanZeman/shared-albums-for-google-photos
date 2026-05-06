@@ -1,6 +1,6 @@
 # Shared Albums for Google Photos (by JanZeman)
 
-[![WordPress Plugin Version](https://img.shields.io/badge/version-2.1.8-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
+[![WordPress Plugin Version](https://img.shields.io/badge/version-2.2.1-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
 [![WordPress Compatibility](https://img.shields.io/badge/wordpress-5.0%2B-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
 [![PHP Version](https://img.shields.io/badge/php-7.0%2B-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
 [![License](https://img.shields.io/badge/license-GPL--2.0%2B-blue.svg)](LICENSE)
@@ -112,10 +112,11 @@ janzeman-shared-albums-for-google-photos/
 │   ├── class-data-provider.php    # Fetches Google Photos data
 │   ├── class-orchestrator.php     # Main plugin orchestrator
 │   ├── class-renderer.php         # HTML rendering
-│   └── class-admin-pages.php      # Admin guide and reference pages
+│   ├── class-admin-pages.php      # Admin guide and reference pages
+│   └── class-community.php        # Community directory feature
 ├── LICENSE
 ├── README.md             # This file (GitHub overview)
-├── readme.txt           # WordPress.org official documentation ⭐
+├── readme.txt            # WordPress.org official documentation ⭐
 └── janzeman-shared-albums-for-google-photos.php       # Main plugin file
 ```
 

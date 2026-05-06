@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/JanZeman/shared-albums-for-google-photos
  * Author URI: https://github.com/JanZeman
  * Description: Display publicly shared Google Photos albums with a modern Swiper-based gallery viewer. Not affiliated with or endorsed by Google LLC.
- * Version: 2.1.8
+ * Version: 2.2.1
  * Requires at least: 5.0
  * Requires PHP: 7.0
  * Author: Jan Zeman
@@ -22,11 +22,52 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'JZSA_VERSION', '2.1.8' );
+define( 'JZSA_VERSION', '2.2.1' );
+
+// Community API URL. Local development can override this constant before the plugin loads:
+// define( 'JZSA_COMMUNITY_API_URL', 'http://localhost:3000' );
+if ( ! defined( 'JZSA_COMMUNITY_API_URL' ) ) {
+	define( 'JZSA_COMMUNITY_API_URL', 'https://jzsa.janzeman.com' );
+}
+
 define( 'JZSA_PLUGIN_FILE', __FILE__ );
 define( 'JZSA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'JZSA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'JZSA_VERSION_OPTION', 'jzsa_plugin_version' );
+
+/**
+ * Get the capability required to access plugin admin pages and admin AJAX actions.
+ *
+ * Defaulting to edit_pages allows Administrators and Editors on standard
+ * WordPress installs, while keeping Authors, Contributors, and Subscribers out.
+ *
+ * @return string
+ */
+function jzsa_get_admin_capability() {
+	return apply_filters( 'jzsa_admin_capability', 'edit_pages' );
+}
+
+/**
+ * Shared frontend UI strings used by PHP-rendered markup and JS-rendered markup.
+ *
+ * @return array<string,string>
+ */
+function jzsa_get_frontend_i18n_strings() {
+	return array(
+		'playPauseSpace'        => __( 'Play/Pause (Space)', 'janzeman-shared-albums-for-google-photos' ),
+		'playPause'             => __( 'Play/Pause', 'janzeman-shared-albums-for-google-photos' ),
+		'pauseSlideshow'        => __( 'Pause slideshow', 'janzeman-shared-albums-for-google-photos' ),
+		'resumeSlideshow'       => __( 'Resume slideshow', 'janzeman-shared-albums-for-google-photos' ),
+		'previousGalleryPage'   => __( 'Previous gallery page', 'janzeman-shared-albums-for-google-photos' ),
+		'nextGalleryPage'       => __( 'Next gallery page', 'janzeman-shared-albums-for-google-photos' ),
+		'openInGooglePhotos'    => __( 'Open in Google Photos', 'janzeman-shared-albums-for-google-photos' ),
+		'openAlbumGooglePhotos' => __( 'Open album in Google Photos', 'janzeman-shared-albums-for-google-photos' ),
+		'openMediaFullscreen'   => __( 'Open media %d in fullscreen', 'janzeman-shared-albums-for-google-photos' ),
+		'downloadCurrentMedia'  => __( 'Download current media', 'janzeman-shared-albums-for-google-photos' ),
+		'downloadMedia'         => __( 'Download media %d', 'janzeman-shared-albums-for-google-photos' ),
+		'largeDownloadWarning'  => __( 'This file is larger than the configured download warning threshold.', 'janzeman-shared-albums-for-google-photos' ),
+	);
+}
 
 /**
  * Load plugin classes
@@ -35,6 +76,7 @@ require_once JZSA_PLUGIN_DIR . 'includes/class-data-provider.php';
 require_once JZSA_PLUGIN_DIR . 'includes/class-renderer.php';
 require_once JZSA_PLUGIN_DIR . 'includes/class-orchestrator.php';
 require_once JZSA_PLUGIN_DIR . 'includes/class-admin-pages.php';
+require_once JZSA_PLUGIN_DIR . 'includes/class-community.php';
 
 /**
  * Clear album-level plugin-managed caches.
@@ -51,7 +93,7 @@ function jzsa_clear_album_caches() {
 	// Direct database queries are safe here as we are deleting only this plugin's own cache keys.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	$deleted_album_rows = (int) $wpdb->query(
-		"DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_jzsa_album_%' OR option_name LIKE '_transient_timeout_jzsa_album_%'"
+		"DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_jzsa_album_%' OR option_name LIKE '_transient_timeout_jzsa_album_%' OR option_name LIKE '_transient_jzsa_backup_album_%' OR option_name LIKE '_transient_timeout_jzsa_backup_album_%'"
 	);
 
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -109,11 +151,48 @@ function jzsa_clear_all_plugin_caches() {
 }
 
 /**
+ * Contribute this plugin's data practices to the site's Privacy Policy draft
+ * (Tools → Privacy → Policy in wp-admin). Site owners can then review and
+ * incorporate the text when publishing their own privacy page.
+ */
+function jzsa_add_privacy_policy_content() {
+	if ( ! function_exists( 'wp_add_privacy_policy_content' ) ) {
+		return;
+	}
+
+	$content  = '<h3>' . esc_html__( 'Core gallery feature', 'janzeman-shared-albums-for-google-photos' ) . '</h3>';
+	$content .= '<p>' . esc_html__( 'The core gallery feature does not collect, store, or transmit any visitor data. It fetches publicly shared Google Photos albums from photos.google.com and image files from *.googleusercontent.com and caches the result locally in WordPress transients. No personal information is involved.', 'janzeman-shared-albums-for-google-photos' ) . '</p>';
+
+	$content .= '<h3>' . esc_html__( 'Community Directory (optional, opt-in)', 'janzeman-shared-albums-for-google-photos' ) . '</h3>';
+	$content .= '<p>' . esc_html__( 'The Community Directory is entirely optional. Browsing community examples makes read-only requests to jzsa.janzeman.com. Account, publishing, and rating features are active only when a WordPress administrator explicitly connects to the community.', 'janzeman-shared-albums-for-google-photos' ) . '</p>';
+
+	$content .= '<ul>';
+	$content .= '<li><strong>' . esc_html__( 'No email is transmitted.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'The WordPress admin email and site URL are combined and hashed on your server with SHA-256. Only this one-way hash is sent; the original email cannot be recovered from it.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
+	$content .= '<li><strong>' . esc_html__( 'Double-hashed identity.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'The community server applies a second cryptographic layer (HMAC-SHA256 with a server-side secret) before storing the hash, so the value stored in the database cannot be reversed even with direct database access.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
+	$content .= '<li><strong>' . esc_html__( 'Site verification.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'Your site home URL is transmitted during connection for verification purposes. The community server stores only a SHA-256 hash of the URL for abuse prevention (detecting multiple accounts from the same installation). The hash cannot be reversed.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
+	$content .= '<li><strong>' . esc_html__( 'Published entry data.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'If you publish an entry, the following is stored on jzsa.janzeman.com: title, shortcode settings, the extracted Google Photos album link, optional description, optional tags, optional sample page URL, optional photographer or creator name, optional short bio, plugin version, and whether you opted into public showcase consideration. You control all of this data.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
+	$content .= '<li><strong>' . esc_html__( 'Display name.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'If you set a community display name, it is stored and shown as the author name on your entries. You can change or remove it at any time.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
+	$content .= '<li><strong>' . esc_html__( 'Album-link masking.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'Public community responses replace the Google Photos URL in the shortcode with [link]. The real album link is retained by the community server so authenticated users can render a live preview. It is never shown in plain text on the public browse page.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
+	$content .= '<li><strong>' . esc_html__( 'Anonymous interaction signals.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'When a community entry is previewed, copied, or rated, an event may be recorded. The community server hashes the IP address it sees together with the current date (SHA-256) and never stores it in plain text. Because requests are proxied through WordPress, this is normally the WordPress server\'s IP, not a visitor\'s browser IP.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
+	$content .= '<li><strong>' . esc_html__( 'Star ratings.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'Ratings are stored linked to the user\'s identity hash, not to any directly personal data.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
+	$content .= '<li><strong>' . esc_html__( 'Right to erasure.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'You can delete your community account and all associated entries and ratings at any time from the plugin admin page. Deletion is immediate and permanent.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
+	$content .= '<li><strong>' . esc_html__( 'No tracking.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'The community server does not use cookies, analytics, or advertising.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
+	$content .= '</ul>';
+
+	wp_add_privacy_policy_content(
+		__( 'Shared Albums for Google Photos', 'janzeman-shared-albums-for-google-photos' ),
+		wp_kses_post( $content )
+	);
+}
+add_action( 'admin_init', 'jzsa_add_privacy_policy_content' );
+
+/**
  * Initialize the plugin
  */
 function jzsa_init_plugin() {
 	// Initialize the main orchestrator with plugin file path
 	new JZSA_Shared_Albums( JZSA_PLUGIN_FILE );
+	new JZSA_Community();
 
 	// Initialize admin pages (admin only).
 	if ( is_admin() ) {

@@ -22,6 +22,22 @@
 
 	jzsaDebug('✅ Shared Albums for Google Photos (by JanZeman) loaded');
 
+	function jzsaI18n(key) {
+		return (typeof jzsaAjax !== 'undefined' && jzsaAjax.i18n && jzsaAjax.i18n[key]) || '';
+	}
+
+	function jzsaFormatI18n(key, value) {
+		return jzsaI18n(key).replace('%d', String(value));
+	}
+
+	function jzsaEscapeAttr(value) {
+		return String(value)
+			.replace(/&/g, '&amp;')
+			.replace(/"/g, '&quot;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;');
+	}
+
 	/**
 	 * Recolor inline-SVG icon pseudo-elements for a scoped container.
 	 * Data-URI SVGs cannot reference CSS variables, so we inject a scoped
@@ -2642,11 +2658,11 @@
                 if (showCarouselTileFullscreenButtons) {
                     tileOverlayButtons +=
                         '<button class="swiper-button-fullscreen jzsa-gallery-thumb-fs-btn jzsa-carousel-slide-overlay-btn jzsa-carousel-slide-fs-btn" type="button" ' +
-                        'aria-label="Open media ' + (index + 1) + ' in fullscreen"></button>';
+                        'aria-label="' + jzsaEscapeAttr(jzsaFormatI18n('openMediaFullscreen', index + 1)) + '"></button>';
                 }
                 if (showTileLink) {
                     tileOverlayButtons +=
-                        '<a href="' + carouselAlbumUrl + '" target="_blank" rel="noopener noreferrer" class="swiper-button-external-link jzsa-carousel-slide-overlay-btn jzsa-carousel-slide-link-btn jzsa-carousel-slide-left-primary" title="Open in Google Photos" aria-label="Open album in Google Photos"></a>';
+                        '<a href="' + carouselAlbumUrl + '" target="_blank" rel="noopener noreferrer" class="swiper-button-external-link jzsa-carousel-slide-overlay-btn jzsa-carousel-slide-link-btn jzsa-carousel-slide-left-primary" title="' + jzsaEscapeAttr(jzsaI18n('openInGooglePhotos')) + '" aria-label="' + jzsaEscapeAttr(jzsaI18n('openAlbumGooglePhotos')) + '"></a>';
                 }
                 if (showTileDownload) {
                     var downloadUrl = isVideo
@@ -2654,7 +2670,7 @@
                         : (photo.full || photo.preview || '');
                     var downloadPosClass = showTileLink ? 'jzsa-carousel-slide-left-secondary' : 'jzsa-carousel-slide-left-primary';
                     tileOverlayButtons +=
-                        '<button class="swiper-button-download jzsa-carousel-slide-overlay-btn jzsa-carousel-slide-download-btn ' + downloadPosClass + '" type="button" data-download-url="' + downloadUrl + '" data-download-type="' + (isVideo ? 'video' : 'photo') + '" data-download-index="' + (globalIndex + 1) + '" title="Download current media" aria-label="Download media ' + (globalIndex + 1) + '"></button>';
+                        '<button class="swiper-button-download jzsa-carousel-slide-overlay-btn jzsa-carousel-slide-download-btn ' + downloadPosClass + '" type="button" data-download-url="' + downloadUrl + '" data-download-type="' + (isVideo ? 'video' : 'photo') + '" data-download-index="' + (globalIndex + 1) + '" title="' + jzsaEscapeAttr(jzsaI18n('downloadCurrentMedia')) + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n('downloadMedia', globalIndex + 1)) + '"></button>';
                 }
 
                 tileInfoHtml = buildCarouselTileInfoHtml(photo, carouselZoneFormats, $.extend(
@@ -2687,7 +2703,7 @@
                     '<div class="swiper-zoom-container">' +
                     '<img src="' + previewUrl + '" ' +
                     (previewUrl !== fullUrl ? 'data-full-src="' + fullUrl + '" ' : '') +
-                    'alt="' + escapeHtml(altText) + '" class="jzsa-progressive-image"' + loadingAttr + ' decoding="async" />' +
+                    'alt="' + escapeHtml(altText) + '" class="jzsa-progressive-image"' + loadingAttr + ' decoding="async" referrerpolicy="no-referrer" />' +
                     '</div>' +
                     tileInfoHtml +
                     tileOverlayButtons +
@@ -3545,7 +3561,7 @@
         }
         details.push('Do you want to continue downloading this file?');
 
-        var baseMessage = errorData.message || 'This file is larger than the configured download warning threshold.';
+        var baseMessage = errorData.message || jzsaI18n('largeDownloadWarning');
         return window.confirm(baseMessage + '\n\n' + details.join('\n'));
     }
 
@@ -4463,6 +4479,7 @@
             fullImageRegistry[fullSrc] = entry;
 
             var tempImg = new Image();
+            tempImg.referrerPolicy = 'no-referrer';
             tempImg.onload = function() {
                 entry.state = 'loaded';
                 entry.onLoad.forEach(function(cb) {
@@ -5131,7 +5148,7 @@
                     var thumbUrl = photo.thumb || photo.preview || photo.full;
                     thumbSlidesHtml += '<div class="swiper-slide">' +
                         '<span class="jzsa-mosaic-thumb-inner">' +
-                        '<img src="' + thumbUrl + '" alt="Thumb" loading="lazy" />' +
+                        '<img src="' + thumbUrl + '" alt="Thumb" loading="lazy" referrerpolicy="no-referrer" />' +
                         '</span></div>';
                 });
                 $mosaicContainer.find('.swiper-wrapper').html(thumbSlidesHtml);
@@ -5273,7 +5290,7 @@
                 var alt = photo.type === 'video' ? 'Video thumbnail ' : 'Photo thumbnail ';
                 html += '<div class="swiper-slide">' +
                     '<span class="jzsa-mosaic-thumb-inner">' +
-                    '<img src="' + thumbUrl + '" alt="' + alt + (index + 1) + '" loading="lazy" />' +
+                    '<img src="' + thumbUrl + '" alt="' + alt + (index + 1) + '" loading="lazy" referrerpolicy="no-referrer" />' +
                     '</span></div>';
             });
             return html;
@@ -6229,7 +6246,7 @@
                 '<div class="swiper-button-prev"></div>' +
                 '<div class="swiper-button-next"></div>' +
                 '<div class="swiper-pagination"></div>' +
-                '<button class="swiper-button-play-pause" title="Play/Pause (Space)"></button>' +
+                '<button class="swiper-button-play-pause" title="' + jzsaEscapeAttr(jzsaI18n('playPauseSpace')) + '"></button>' +
                 '<div class="swiper-slideshow-progress"><div class="swiper-slideshow-progress-bar"></div></div>';
 
         // External link button (render if enabled in either inline or fullscreen contexts;
@@ -6243,7 +6260,7 @@
         var albumUrl = $galleryContainer.attr('data-album-url') || '';
         if ((showLink || showFullscreenLink) && albumUrl) {
             html += '<a href="' + albumUrl + '" target="_blank" rel="noopener noreferrer" ' +
-                'class="swiper-button-external-link" title="Open in Google Photos"></a>';
+                'class="swiper-button-external-link" title="' + jzsaEscapeAttr(jzsaI18n('openInGooglePhotos')) + '"></a>';
         }
 
         // Download button (same visibility split logic as link button).
@@ -6254,7 +6271,7 @@
             showDownload
         );
         if (showDownload || showFullscreenDownload) {
-            html += '<button class="swiper-button-download" title="Download current media"></button>';
+            html += '<button class="swiper-button-download" title="' + jzsaEscapeAttr(jzsaI18n('downloadCurrentMedia')) + '"></button>';
         }
 
         html += '<div class="swiper-button-fullscreen"></div>';
@@ -6526,12 +6543,13 @@
                     ' alt="' + mediaLabel.charAt(0).toUpperCase() + mediaLabel.slice(1) + ' ' + (globalIndex + 1) + '"' +
                     ' draggable="false"' +
                     (IS_IOS ? '' : ' loading="lazy"') +
-                    ' decoding="' + (IS_IOS ? 'sync' : 'async') + '"' + tileStyleAttr + '>';
+                    ' decoding="' + (IS_IOS ? 'sync' : 'async') + '"' +
+                    ' referrerpolicy="no-referrer"' + tileStyleAttr + '>';
             }
 
             var thumbOverlayBtns = '';
             if (showThumbLink && thumbAlbumUrl) {
-                thumbOverlayBtns += '<a href="' + thumbAlbumUrl + '" target="_blank" rel="noopener noreferrer" class="jzsa-gallery-thumb-link-btn swiper-button-external-link" tabindex="0" aria-label="Open album in Google Photos"></a>';
+                thumbOverlayBtns += '<a href="' + thumbAlbumUrl + '" target="_blank" rel="noopener noreferrer" class="jzsa-gallery-thumb-link-btn swiper-button-external-link" tabindex="0" aria-label="' + jzsaEscapeAttr(jzsaI18n('openAlbumGooglePhotos')) + '"></a>';
             }
             if (showThumbDownload) {
                 thumbOverlayBtns += '<div class="jzsa-gallery-thumb-download-btn swiper-button-download" role="button" tabindex="0" data-index="' + globalIndex + '" data-media-type="' + mediaLabel + '" aria-label="Download ' + mediaLabel + ' ' + (globalIndex + 1) + '"></div>';
@@ -6646,12 +6664,13 @@
                         ' draggable="false"' +
                         (IS_IOS ? '' : ' loading="lazy"') +
                         ' decoding="' + (IS_IOS ? 'sync' : 'async') + '"' +
+                        ' referrerpolicy="no-referrer"' +
                         ' style="width:100%;height:100%;">';
                 }
 
                 var thumbOverlayBtns = '';
                 if (showThumbLink && thumbAlbumUrl) {
-                    thumbOverlayBtns += '<a href="' + thumbAlbumUrl + '" target="_blank" rel="noopener noreferrer" class="jzsa-gallery-thumb-link-btn swiper-button-external-link" tabindex="0" aria-label="Open album in Google Photos"></a>';
+                    thumbOverlayBtns += '<a href="' + thumbAlbumUrl + '" target="_blank" rel="noopener noreferrer" class="jzsa-gallery-thumb-link-btn swiper-button-external-link" tabindex="0" aria-label="' + jzsaEscapeAttr(jzsaI18n('openAlbumGooglePhotos')) + '"></a>';
                 }
                 if (showThumbDownload) {
                     thumbOverlayBtns += '<div class="jzsa-gallery-thumb-download-btn swiper-button-download" role="button" tabindex="0" data-index="' + item.index + '" data-media-type="' + mediaLabel + '" aria-label="Download ' + mediaLabel + ' ' + (item.index + 1) + '"></div>';
@@ -6826,11 +6845,11 @@
         if (!$controls.length) {
             var html =
                 '<div id="' + controlsId + '" class="jzsa-gallery-controls jzsa-album" data-info-halo-effect="' + (infoHaloEffect ? 'true' : 'false') + '" role="group" aria-label="Gallery page navigation">' +
-                    '<div class="swiper-button-prev" role="button" tabindex="0" aria-label="Previous gallery page"></div>' +
+                    '<div class="swiper-button-prev" role="button" tabindex="0" aria-label="' + jzsaEscapeAttr(jzsaI18n('previousGalleryPage')) + '"></div>' +
                     '<div class="swiper-pagination" aria-live="polite"></div>' +
-                    '<button class="swiper-button-play-pause" title="Play/Pause" aria-label="Pause slideshow"></button>' +
+                    '<button class="swiper-button-play-pause" title="' + jzsaEscapeAttr(jzsaI18n('playPause')) + '" aria-label="' + jzsaEscapeAttr(jzsaI18n('pauseSlideshow')) + '"></button>' +
                     '<div class="swiper-slideshow-progress" aria-hidden="true"><div class="swiper-slideshow-progress-bar"></div></div>' +
-                    '<div class="swiper-button-next" role="button" tabindex="0" aria-label="Next gallery page"></div>' +
+                    '<div class="swiper-button-next" role="button" tabindex="0" aria-label="' + jzsaEscapeAttr(jzsaI18n('nextGalleryPage')) + '"></div>' +
                 '</div>';
 
             $shell.append(html);
@@ -6915,8 +6934,8 @@
         if (showSlideshowControls) {
             var running = isAutoplayRunning ? isAutoplayRunning() : false;
             $playPause.toggleClass('playing', !!running);
-            $playPause.attr('aria-label', running ? 'Pause slideshow' : 'Resume slideshow');
-            $playPause.attr('title', running ? 'Pause slideshow' : 'Resume slideshow');
+            $playPause.attr('aria-label', running ? jzsaI18n('pauseSlideshow') : jzsaI18n('resumeSlideshow'));
+            $playPause.attr('title', running ? jzsaI18n('pauseSlideshow') : jzsaI18n('resumeSlideshow'));
 
             $playPause.off('click.jzsaGallery keydown.jzsaGallery');
             $playPause.on('click.jzsaGallery keydown.jzsaGallery', function(e) {

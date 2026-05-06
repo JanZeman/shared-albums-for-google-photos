@@ -28,13 +28,13 @@ class JZSA_Renderer {
 
 		$html = '';
 
-		// Add deprecation warning if needed (admins only)
-		if ( ! empty( $config['show-deprecation-warning'] ) && is_user_logged_in() && current_user_can( 'manage_options' ) ) {
+		// Add deprecation warning for users who can access the plugin admin UI.
+		if ( ! empty( $config['show-deprecation-warning'] ) && is_user_logged_in() && current_user_can( jzsa_get_admin_capability() ) ) {
 			$html .= $this->render_deprecation_notice();
 		}
 
-		// Warn admins if mosaic is used with an incompatible mode
-		if ( ! empty( $config['mosaic'] ) && 'gallery' === $config['mode'] && is_user_logged_in() && current_user_can( 'manage_options' ) ) {
+		// Warn privileged users if mosaic is used with an incompatible mode.
+		if ( ! empty( $config['mosaic'] ) && 'gallery' === $config['mode'] && is_user_logged_in() && current_user_can( jzsa_get_admin_capability() ) ) {
 			$html .= $this->render_mosaic_mode_notice();
 		}
 
@@ -129,6 +129,7 @@ class JZSA_Renderer {
 	private function build_gallery_container( $gallery_id, $config ) {
 		$styles = $this->build_container_styles( $config );
 		$attrs  = $this->build_data_attributes( $config );
+		$i18n   = jzsa_get_frontend_i18n_strings();
 
 		$mosaic_enabled    = ! empty( $config['mosaic'] );
 		$mosaic_pos        = ! empty( $config['mosaic-position'] ) ? $config['mosaic-position'] : 'right';
@@ -159,7 +160,7 @@ class JZSA_Renderer {
 		$html .= '<div class="swiper-pagination"></div>';
 		$html .= sprintf(
 			'<button class="swiper-button-play-pause" title="%s"></button>',
-			esc_attr__( 'Play/Pause (Space)', 'janzeman-shared-albums-for-google-photos' )
+			esc_attr( $i18n['playPauseSpace'] )
 		);
 		$html .= '<div class="swiper-slideshow-progress"><div class="swiper-slideshow-progress-bar"></div></div>';
 
@@ -173,7 +174,7 @@ class JZSA_Renderer {
 			$html .= sprintf(
 				'<a href="%s" target="_blank" rel="noopener noreferrer" class="swiper-button-external-link" title="%s"></a>',
 				esc_url( $config['album-url'] ),
-				esc_attr__( 'Open in Google Photos', 'janzeman-shared-albums-for-google-photos' )
+				esc_attr( $i18n['openInGooglePhotos'] )
 			);
 		}
 
@@ -181,7 +182,7 @@ class JZSA_Renderer {
 		if ( $show_inline_download_button || $show_fullscreen_download_button ) {
 			$html .= sprintf(
 				'<button class="swiper-button-download" title="%s"></button>',
-				esc_attr__( 'Download current media', 'janzeman-shared-albums-for-google-photos' )
+				esc_attr( $i18n['downloadCurrentMedia'] )
 			);
 		}
 

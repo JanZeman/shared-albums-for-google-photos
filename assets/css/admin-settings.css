@@ -453,29 +453,51 @@
 
 /* Heading suffix is now rendered in the default heading color only. */
 
-/* Examples */
-.jzsa-example {
+/* Sample cards */
+.jzsa-sample-card {
     margin-bottom: 24px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid #f0f0f1;
-}
-
-.jzsa-example:last-child {
+    padding: 16px 18px 24px;
     border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
+    border-radius: 6px;
 }
 
-.jzsa-example h3 {
-    margin-top: 0;
-    margin-bottom: 8px;
+.jzsa-sample-card:last-child {
+    margin-bottom: 0;
+    padding-bottom: 16px;
+}
+
+.jzsa-sample-card h3 {
+    margin-top: 4px;
+    margin-bottom: 12px;
     color: #1d2327;
     font-size: 16px;
 }
 
-.jzsa-example p {
-    margin: 4px 0 8px 0;
+.jzsa-sample-card p {
+    margin: 4px 0 16px 0;
     color: #50575e;
+}
+
+.jzsa-sample-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+}
+
+.jzsa-sample-card-header h3 {
+    margin: 0;
+    flex: 1;
+}
+
+.jzsa-sample-card-hint {
+    font-size: 11px;
+    color: #8c8f94;
+    white-space: nowrap;
+    margin-left: auto;
+    flex-shrink: 0;
 }
 
 /* Settings Table */

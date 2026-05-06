@@ -50,6 +50,39 @@ function jzsaGetPreviewAjaxConfig() {
 
 var jzsaLazyPreviewObserver = null;
 var jzsaLazyPreviewBackgroundStarted = false;
+var jzsaLazyPreviewShortcodes = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
+
+function jzsaSetLazyPreviewShortcode( lazyPreviewEl, shortcode ) {
+	if ( ! lazyPreviewEl ) {
+		return;
+	}
+	if ( jzsaLazyPreviewShortcodes ) {
+		jzsaLazyPreviewShortcodes.set( lazyPreviewEl, shortcode );
+		return;
+	}
+	lazyPreviewEl.jzsaInitialShortcode = shortcode;
+}
+
+function jzsaGetLazyPreviewShortcode( lazyPreviewEl ) {
+	if ( ! lazyPreviewEl ) {
+		return '';
+	}
+	if ( jzsaLazyPreviewShortcodes && jzsaLazyPreviewShortcodes.has( lazyPreviewEl ) ) {
+		return jzsaLazyPreviewShortcodes.get( lazyPreviewEl ) || '';
+	}
+	return lazyPreviewEl.jzsaInitialShortcode ||
+		lazyPreviewEl.getAttribute( 'data-initial-shortcode' ) ||
+		'';
+}
+
+function jzsaClearLazyPreviewShortcode( lazyPreviewEl ) {
+	if ( jzsaLazyPreviewShortcodes && lazyPreviewEl ) {
+		jzsaLazyPreviewShortcodes.delete( lazyPreviewEl );
+	}
+	if ( lazyPreviewEl ) {
+		delete lazyPreviewEl.jzsaInitialShortcode;
+	}
+}
 
 function jzsaInitializeInjectedPreview( mountEl ) {
 	if ( ! mountEl || ! window.SharedGooglePhotos ) {
@@ -204,7 +237,7 @@ function jzsaLoadLazyPreview( lazyPreviewEl ) {
 		return Promise.resolve();
 	}
 
-	var shortcode = lazyPreviewEl.getAttribute( 'data-initial-shortcode' ) || '';
+	var shortcode = jzsaGetLazyPreviewShortcode( lazyPreviewEl );
 	var ajaxConfig = jzsaGetPreviewAjaxConfig();
 	if ( ! shortcode || ! ajaxConfig || ! ajaxConfig.ajaxUrl || ! ajaxConfig.previewNonce ) {
 		return Promise.resolve();
@@ -242,6 +275,7 @@ function jzsaLoadLazyPreview( lazyPreviewEl ) {
 				return;
 			}
 
+			jzsaClearLazyPreviewShortcode( lazyPreviewEl );
 			lazyPreviewEl.removeAttribute( 'data-initial-shortcode' );
 			lazyPreviewEl.setAttribute( 'data-lazy-state', 'loaded' );
 			lazyPreviewEl.classList.remove( 'jzsa-lazy-preview', 'jzsa-lazy-preview--loading', 'jzsa-lazy-preview--error' );
@@ -272,7 +306,13 @@ function jzsaStartBackgroundLazyPreviewQueue() {
 	var betweenLoadsMs = 700;
 
 	var loadNext = function () {
-		var nextPreview = document.querySelector( '.jzsa-lazy-preview[data-initial-shortcode][data-lazy-state="pending"]' );
+		var pendingPreviews = document.querySelectorAll( '.jzsa-lazy-preview[data-lazy-state="pending"]' );
+		var nextPreview = null;
+		pendingPreviews.forEach( function ( preview ) {
+			if ( ! nextPreview && jzsaGetLazyPreviewShortcode( preview ) ) {
+				nextPreview = preview;
+			}
+		} );
 		if ( ! nextPreview ) {
 			return;
 		}
@@ -309,27 +349,53 @@ function jzsaScheduleBackgroundLazyPreviews() {
 	window.addEventListener( 'load', startQueue, { once: true } );
 }
 
+function jzsaEnsureLazyPreviewObserver() {
+	if ( jzsaLazyPreviewObserver ) {
+		return true;
+	}
+	if ( ! ( 'IntersectionObserver' in window ) ) {
+		return false;
+	}
+	jzsaLazyPreviewObserver = new IntersectionObserver( function ( entries ) {
+		entries.forEach( function ( entry ) {
+			if ( ! entry.isIntersecting ) {
+				return;
+			}
+			jzsaLazyPreviewObserver.unobserve( entry.target );
+			jzsaLoadLazyPreview( entry.target );
+		} );
+	}, {
+		rootMargin: '300px 0px',
+		threshold: 0.01,
+	} );
+	return true;
+}
+
+/**
+ * Register a single element for lazy-loading.
+ * Safe to call for dynamically inserted preview containers.
+ * Falls back to immediate load when IntersectionObserver is unavailable.
+ *
+ * @param {HTMLElement} el
+ */
+function jzsaObserveLazyPreview( el ) {
+	if ( jzsaEnsureLazyPreviewObserver() ) {
+		jzsaLazyPreviewObserver.observe( el );
+		jzsaScheduleBackgroundLazyPreviews();
+	} else {
+		jzsaLoadLazyPreview( el );
+	}
+}
+
 function jzsaSetupLazyPreviews() {
 	var lazyPreviews = document.querySelectorAll( '.jzsa-lazy-preview[data-initial-shortcode]' );
 	if ( ! lazyPreviews.length ) {
 		return;
 	}
 
-	if ( 'IntersectionObserver' in window ) {
-		jzsaLazyPreviewObserver = new IntersectionObserver( function ( entries ) {
-			entries.forEach( function ( entry ) {
-				if ( ! entry.isIntersecting ) {
-					return;
-				}
+	jzsaEnsureLazyPreviewObserver();
 
-				jzsaLazyPreviewObserver.unobserve( entry.target );
-				jzsaLoadLazyPreview( entry.target );
-			} );
-		}, {
-			rootMargin: '300px 0px',
-			threshold: 0.01,
-		} );
-
+	if ( jzsaLazyPreviewObserver ) {
 		lazyPreviews.forEach( function ( lazyPreview ) {
 			jzsaLazyPreviewObserver.observe( lazyPreview );
 		} );
@@ -343,100 +409,115 @@ function jzsaSetupLazyPreviews() {
 }
 
 /**
+ * Set up Copy/Apply/Revert on a single .jzsa-code-block.
+ * Safe to call on dynamically created blocks after page load.
+ *
+ * @param {HTMLElement} block
+ */
+function jzsaSetupCodeBlock( block ) {
+	var codeEl = block.querySelector( 'code' );
+	if ( ! codeEl ) {
+		return;
+	}
+
+	var previewContainer = block.nextElementSibling;
+	var hasPreview = previewContainer && previewContainer.classList.contains( 'jzsa-preview-container' );
+	var originalText = codeEl.textContent || '';
+
+	// Make editable if there's a preview to update.
+	if ( hasPreview ) {
+		codeEl.contentEditable = 'true';
+		codeEl.spellcheck = false;
+		codeEl.classList.add( 'jzsa-editable-code' );
+	}
+
+	// Build button column: Copy + (Apply + Revert if preview exists).
+	var btnCol = block.querySelector( '.jzsa-code-block-btns' );
+	var copyBtn = btnCol ? btnCol.querySelector( '[data-jzsa-action="copy"]' ) : null;
+
+	var applyBtn = null;
+	var revertBtn = null;
+
+	if ( ! btnCol ) {
+		btnCol = document.createElement( 'div' );
+		btnCol.className = 'jzsa-code-block-btns';
+		block.appendChild( btnCol );
+	}
+
+	if ( ! copyBtn ) {
+		copyBtn = document.createElement( 'button' );
+		copyBtn.type = 'button';
+		copyBtn.className = 'jzsa-action-btn';
+		copyBtn.textContent = 'Copy';
+		if ( ! btnCol.contains( copyBtn ) ) {
+			btnCol.appendChild( copyBtn );
+		}
+	}
+
+	if ( hasPreview ) {
+		applyBtn = btnCol.querySelector( '[data-jzsa-action="apply"]' );
+		revertBtn = btnCol.querySelector( '[data-jzsa-action="revert"]' );
+
+		if ( ! applyBtn ) {
+			applyBtn = document.createElement( 'button' );
+			applyBtn.type = 'button';
+			applyBtn.className = 'jzsa-action-btn';
+			applyBtn.textContent = 'Apply';
+			btnCol.appendChild( applyBtn );
+		}
+
+		if ( ! revertBtn ) {
+			revertBtn = document.createElement( 'button' );
+			revertBtn.type = 'button';
+			revertBtn.className = 'jzsa-action-btn';
+			revertBtn.textContent = 'Revert';
+			btnCol.appendChild( revertBtn );
+		}
+	}
+
+	// Copy handler.
+	copyBtn.addEventListener( 'click', function () {
+		jzsaCopyToClipboard( copyBtn, codeEl.textContent || '' );
+	} );
+
+	if ( ! hasPreview ) {
+		return;
+	}
+
+	// Keep placeholder highlighting live while editing.
+	codeEl.addEventListener( 'input', function () {
+		jzsaHighlightPlaceholders( codeEl );
+	} );
+
+	// Highlight placeholders on initial load.
+	jzsaHighlightPlaceholders( codeEl );
+
+	// Revert: restore original shortcode, re-highlight placeholders, and re-apply the preview.
+	revertBtn.addEventListener( 'click', function () {
+		codeEl.textContent = originalText;
+		jzsaHighlightPlaceholders( codeEl );
+		jzsaApplyPreview( codeEl, revertBtn, previewContainer, 'Reverted!' );
+	} );
+
+	// Apply: AJAX preview.
+	applyBtn.addEventListener( 'click', function () {
+		jzsaApplyPreview( codeEl, applyBtn, previewContainer );
+	} );
+}
+
+/**
  * Bind click handlers to copy buttons and wire up the Playground preview.
  */
 document.addEventListener( 'DOMContentLoaded', function () {
 	var blocks = document.querySelectorAll( '.jzsa-code-block' );
 
 	blocks.forEach( function ( block ) {
-		var codeEl = block.querySelector( 'code' );
-		if ( ! codeEl ) {
-			return;
-		}
+		jzsaSetupCodeBlock( block );
+	} );
 
-		var previewContainer = block.nextElementSibling;
-		var hasPreview = previewContainer && previewContainer.classList.contains( 'jzsa-preview-container' );
-		var originalText = codeEl.textContent || '';
-
-		// Make editable if there's a preview to update.
-		if ( hasPreview ) {
-			codeEl.contentEditable = 'true';
-			codeEl.spellcheck = false;
-			codeEl.classList.add( 'jzsa-editable-code' );
-		}
-
-		// Build button column: Copy + (Apply + Revert if preview exists).
-		var btnCol = block.querySelector( '.jzsa-code-block-btns' );
-		var copyBtn = btnCol ? btnCol.querySelector( '[data-jzsa-action="copy"]' ) : null;
-
-		var applyBtn = null;
-		var revertBtn = null;
-
-		if ( ! btnCol ) {
-			btnCol = document.createElement( 'div' );
-			btnCol.className = 'jzsa-code-block-btns';
-			block.appendChild( btnCol );
-		}
-
-		if ( ! copyBtn ) {
-			copyBtn = document.createElement( 'button' );
-			copyBtn.type = 'button';
-			copyBtn.className = 'jzsa-action-btn';
-			copyBtn.textContent = 'Copy';
-			if ( ! btnCol.contains( copyBtn ) ) {
-				btnCol.appendChild( copyBtn );
-			}
-		}
-
-		if ( hasPreview ) {
-			applyBtn = btnCol.querySelector( '[data-jzsa-action="apply"]' );
-			revertBtn = btnCol.querySelector( '[data-jzsa-action="revert"]' );
-
-			if ( ! applyBtn ) {
-				applyBtn = document.createElement( 'button' );
-				applyBtn.type = 'button';
-				applyBtn.className = 'jzsa-action-btn';
-				applyBtn.textContent = 'Apply';
-				btnCol.appendChild( applyBtn );
-			}
-
-			if ( ! revertBtn ) {
-				revertBtn = document.createElement( 'button' );
-				revertBtn.type = 'button';
-				revertBtn.className = 'jzsa-action-btn';
-				revertBtn.textContent = 'Revert';
-				btnCol.appendChild( revertBtn );
-			}
-		}
-
-		// Copy handler.
-		copyBtn.addEventListener( 'click', function () {
-			jzsaCopyToClipboard( copyBtn, codeEl.textContent || '' );
-		} );
-
-		if ( ! hasPreview ) {
-			return;
-		}
-
-		// Keep placeholder highlighting live while editing.
-		codeEl.addEventListener( 'input', function () {
-			jzsaHighlightPlaceholders( codeEl );
-		} );
-
-		// Highlight placeholders on initial load.
-		jzsaHighlightPlaceholders( codeEl );
-
-		// Revert: restore original shortcode, re-highlight placeholders, and re-apply the preview.
-		revertBtn.addEventListener( 'click', function () {
-			codeEl.textContent = originalText;
-			jzsaHighlightPlaceholders( codeEl );
-			jzsaApplyPreview( codeEl, revertBtn, previewContainer, 'Reverted!' );
-		} );
-
-		// Apply: AJAX preview.
-		applyBtn.addEventListener( 'click', function () {
-			jzsaApplyPreview( codeEl, applyBtn, previewContainer );
-		} );
+	// Apply random pastel backgrounds to guide-page sample blocks.
+	document.querySelectorAll( '.jzsa-sample-card' ).forEach( function ( el ) {
+		el.style.background = 'hsl(' + Math.floor( Math.random() * 360 ) + ', 55%, 95%)';
 	} );
 
 	// Wire the Clear Cache buttons.

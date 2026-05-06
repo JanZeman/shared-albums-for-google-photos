@@ -42,7 +42,18 @@ class JZSA_Shared_Albums {
 	 *
 	 * @var int
 	 */
-	const PHOTO_META_CACHE_TTL = 2592000; // 30 days.
+	const PHOTO_META_CACHE_TTL = 30 * DAY_IN_SECONDS;
+
+	/**
+	 * TTL in seconds for the stale-backup album transient.
+	 *
+	 * The backup is served when a live Google Photos fetch fails so visitors
+	 * never see an empty gallery due to a temporary outage. 7 days matches
+	 * the default primary cache refresh interval (DEFAULT_CACHE_REFRESH).
+	 *
+	 * @var int
+	 */
+	const BACKUP_CACHE_TTL = 7 * DAY_IN_SECONDS;
 
 	/**
 	 * Default gallery dimensions
@@ -207,7 +218,8 @@ class JZSA_Shared_Albums {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only admin page routing check.
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 
-		if ( ! class_exists( 'JZSA_Admin_Pages' ) || JZSA_Admin_Pages::MENU_SLUG !== $page ) {
+		$preview_pages = array( JZSA_Admin_Pages::MENU_SLUG, JZSA_Admin_Pages::COMMUNITY_SLUG );
+		if ( ! class_exists( 'JZSA_Admin_Pages' ) || ! in_array( $page, $preview_pages, true ) ) {
 			return;
 		}
 
@@ -289,6 +301,7 @@ class JZSA_Shared_Albums {
 				'chunkNonce'     => $chunk_nonce,
 				'photoMetaNonce' => $photo_meta_nonce,
 				'plyrSvgUrl'     => plugins_url( 'assets/vendor/plyr/plyr.svg', $this->plugin_file ),
+				'i18n'           => jzsa_get_frontend_i18n_strings(),
 			)
 		);
 	}
@@ -375,20 +388,55 @@ class JZSA_Shared_Albums {
 		$result = $this->provider->fetch_album( $album_url );
 
 		if ( ! $result['success'] ) {
+			// Before surfacing an error, try the long-lived stale backup so a
+			// temporary Google Photos outage never empties the gallery for visitors.
+			$backup_data = get_transient( $this->get_backup_cache_key( $album_url ) );
+			if ( is_array( $backup_data ) && ! empty( $backup_data['photos'] ) ) {
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+					error_log( 'JZSA: Fresh fetch failed (' . $result['error'] . '), serving stale backup for: ' . $album_url );
+				}
+				// Restore the primary cache so subsequent requests use it directly.
+				set_transient( $cache_key, $backup_data, $cache_duration );
+				update_option( $expiry_key, $cache_duration, false );
+
+				$hydrated_backup_items = $this->hydrate_cached_photo_meta(
+					$backup_data['photos'],
+					$album_url,
+					$config['limit'],
+					$config['show-videos']
+				);
+				$config['photos'] = $this->prepare_photo_urls(
+					$hydrated_backup_items,
+					$config['fullscreen-source-width'],
+					$config['fullscreen-source-height'],
+					$config['source-width'],
+					$config['source-height'],
+					$config['limit'],
+					$config['show-videos']
+				);
+				$config['album-title']              = $backup_data['title'] ?? null;
+				$config['show-deprecation-warning'] = $backup_data['is_deprecated'];
+				$config                            = $this->apply_progressive_slider_loading_config( $config );
+
+				return $this->renderer->render( $config );
+			}
+
 			return $this->render_fetch_error( $result['error'] );
 		}
 
-		// Cache the fetched BASE photo URLs (without dimensions) and title
-		// This allows re-rendering with different sizes without re-fetching
-		set_transient(
-			$cache_key,
-			array(
-				'title'         => $result['data']['title'] ?? null,
-				'photos'        => $result['data']['photos'], // Base URLs without dimensions
-				'is_deprecated' => $result['is_deprecated'],
-			),
-			$cache_duration
+		$fresh_cache_data = array(
+			'title'         => $result['data']['title'] ?? null,
+			'photos'        => $result['data']['photos'], // Base URLs without dimensions
+			'is_deprecated' => $result['is_deprecated'],
 		);
+
+		// Cache the fetched BASE photo URLs (without dimensions) and title.
+		// This allows re-rendering with different sizes without re-fetching.
+		set_transient( $cache_key, $fresh_cache_data, $cache_duration );
+
+		// Keep a long-lived backup so a temporary future failure can still serve data.
+		set_transient( $this->get_backup_cache_key( $album_url ), $fresh_cache_data, self::BACKUP_CACHE_TTL );
 
 		// Store expiration duration for tracking
 		update_option( $expiry_key, $cache_duration, false );
@@ -1680,6 +1728,15 @@ class JZSA_Shared_Albums {
 	 * @return string HTML
 	 */
 	private function render_fetch_error( $error ) {
+		// Signal to page-caching plugins that they must not store this transient
+		// failure response. The next visitor should always get a fresh attempt.
+		if ( ! headers_sent() && ! wp_doing_ajax() ) {
+			nocache_headers();
+			if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+				define( 'DONOTCACHEPAGE', true );
+			}
+		}
+
 		if ( strpos( $error, 'Invalid' ) !== false ) {
 			return $this->renderer->render_error(
 				__( 'Invalid Google Photos URL', 'janzeman-shared-albums-for-google-photos' ),
@@ -1726,6 +1783,20 @@ class JZSA_Shared_Albums {
 	 */
 	private function get_expiration_key( $url ) {
 		return 'jzsa_expiry_' . md5( $url );
+	}
+
+	/**
+	 * Get long-lived stale-backup cache key for an album URL.
+	 *
+	 * A backup copy is stored with a 30-day TTL alongside the primary transient.
+	 * When a fresh fetch fails, the backup is served instead so a temporary Google
+	 * Photos outage never empties the gallery for visitors.
+	 *
+	 * @param string $url Album URL.
+	 * @return string Cache key.
+	 */
+	private function get_backup_cache_key( $url ) {
+		return 'jzsa_backup_album_' . md5( $url );
 	}
 
 	/**
@@ -1791,6 +1862,7 @@ class JZSA_Shared_Albums {
 		$media_ids = $this->get_album_media_ids( $album_url );
 
 		delete_transient( $this->get_cache_key( $album_url ) );
+		delete_transient( $this->get_backup_cache_key( $album_url ) );
 		delete_option( $this->get_expiration_key( $album_url ) );
 
 		foreach ( $media_ids as $media_id ) {
@@ -2052,8 +2124,8 @@ class JZSA_Shared_Albums {
 	 * initialize Swiper on the result or keep it as a static preview.
 	 */
 	public function handle_shortcode_preview() {
-		// Only allow logged-in administrators.
-		if ( ! current_user_can( 'manage_options' ) ) {
+		// Only allow users with access to the plugin admin UI.
+		if ( ! current_user_can( jzsa_get_admin_capability() ) ) {
 			wp_send_json_error( __( 'Insufficient permissions', 'janzeman-shared-albums-for-google-photos' ) );
 		}
 
@@ -2093,7 +2165,7 @@ class JZSA_Shared_Albums {
 	 * expiry options so the next page load fetches fresh data from Google Photos.
 	 */
 	public function handle_clear_cache() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( jzsa_get_admin_capability() ) ) {
 			wp_send_json_error( __( 'Insufficient permissions', 'janzeman-shared-albums-for-google-photos' ) );
 		}
 
@@ -2444,6 +2516,17 @@ class JZSA_Shared_Albums {
 			$cache_duration
 		);
 
+		// Keep the long-lived backup in sync so future fallbacks stay fresh.
+		set_transient(
+			$this->get_backup_cache_key( $album_url ),
+			array(
+				'title'         => $result['data']['title'] ?? null,
+				'photos'        => $result['data']['photos'],
+				'is_deprecated' => $result['is_deprecated'],
+			),
+			self::BACKUP_CACHE_TTL
+		);
+
 		// Prepare URLs with standard dimensions.
 		$hydrated_items = $this->hydrate_cached_photo_meta(
 			$result['data']['photos'],
@@ -2578,6 +2661,7 @@ class JZSA_Shared_Albums {
 
 		$content_length = wp_remote_retrieve_header( $response, 'content-length' );
 		$content_length = $content_length ? intval( $content_length ) : 0;
+		$i18n           = jzsa_get_frontend_i18n_strings();
 
 		if ( $hard_max_size_bytes > 0 && $content_length > $hard_max_size_bytes ) {
 			wp_send_json_error(
@@ -2595,7 +2679,7 @@ class JZSA_Shared_Albums {
 		if ( $warning_size_bytes > 0 && $content_length > $warning_size_bytes && ! $allow_large_download ) {
 			wp_send_json_error(
 				array(
-					'message' => __( 'This file is larger than the configured download warning threshold.', 'janzeman-shared-albums-for-google-photos' ),
+					'message' => $i18n['largeDownloadWarning'],
 					'requires_large_download_confirmation' => true,
 					'actual_size_bytes' => $content_length,
 					'warning_size_bytes' => $warning_size_bytes,
@@ -2626,7 +2710,7 @@ class JZSA_Shared_Albums {
 		if ( $warning_size_bytes > 0 && $actual_size_bytes > $warning_size_bytes && ! $allow_large_download ) {
 			wp_send_json_error(
 				array(
-					'message' => __( 'This file is larger than the configured download warning threshold.', 'janzeman-shared-albums-for-google-photos' ),
+					'message' => $i18n['largeDownloadWarning'],
 					'requires_large_download_confirmation' => true,
 					'actual_size_bytes' => $actual_size_bytes,
 					'warning_size_bytes' => $warning_size_bytes,
