@@ -167,8 +167,16 @@ function jzsaHighlightPlaceholders( codeEl ) {
 	} catch ( e ) { /* ignore */ }
 }
 
-function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel ) {
-	var shortcode = ( codeEl.textContent || '' ).trim();
+function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel, shortcodeOverride ) {
+	var shortcode = shortcodeOverride || ( codeEl.textContent || '' ).trim();
+	// Community browse cards display link="[link]" to mask the real URL.
+	// Substitute the real URL back before sending to the preview AJAX endpoint.
+	if ( ! shortcodeOverride && shortcode.indexOf( '[link]' ) !== -1 && codeEl && codeEl.dataset && codeEl.dataset.revertShortcode ) {
+		var urlMatch = codeEl.dataset.revertShortcode.match( /\blink\s*=\s*["']([^"']+)["']/i );
+		if ( urlMatch ) {
+			shortcode = shortcode.replace( '[link]', urlMatch[ 1 ] );
+		}
+	}
 	var ajaxConfig = jzsaGetPreviewAjaxConfig();
 	if ( ! shortcode ) {
 		return;
@@ -496,7 +504,8 @@ function jzsaSetupCodeBlock( block ) {
 	revertBtn.addEventListener( 'click', function () {
 		codeEl.textContent = originalText;
 		jzsaHighlightPlaceholders( codeEl );
-		jzsaApplyPreview( codeEl, revertBtn, previewContainer, 'Reverted!' );
+		var revertOverride = codeEl.dataset.revertShortcode || undefined;
+		jzsaApplyPreview( codeEl, revertBtn, previewContainer, 'Reverted!', revertOverride );
 	} );
 
 	// Apply: AJAX preview.

@@ -512,6 +512,7 @@
 			var preview = document.createElement( 'div' );
 			preview.className = 'jzsa-preview-container jzsa-lazy-preview';
 			var previewShortcode = entry.preview_shortcode || entry.shortcode;
+			codeEl.dataset.revertShortcode = previewShortcode;
 			if ( typeof jzsaSetLazyPreviewShortcode === 'function' ) {
 				jzsaSetLazyPreviewShortcode( preview, previewShortcode );
 			} else {
