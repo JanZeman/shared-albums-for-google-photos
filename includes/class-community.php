@@ -287,6 +287,25 @@ class JZSA_Community {
 	}
 
 	/**
+	 * Return any community JWT stored on this site, regardless of which admin connected.
+	 * Used for read-only browse requests so all WP admins can see entry previews even
+	 * when they haven't personally connected to the community.
+	 *
+	 * @return string
+	 */
+	public static function get_any_site_jwt() {
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$result = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = %s AND meta_value != '' LIMIT 1",
+				self::OPT_JWT
+			)
+		);
+		return (string) ( $result ?? '' );
+	}
+
+	/**
 	 * Cached result of verify_connection() for the current request.
 	 * Prevents the double HTTP call that happens when enqueue_scripts() and
 	 * render_content() both call verify_connection() on the same page load.
@@ -925,7 +944,10 @@ class JZSA_Community {
 		$request_args = array(
 			'timeout' => 10,
 		);
-		$jwt          = self::get_jwt();
+		$jwt = self::get_jwt();
+		if ( empty( $jwt ) ) {
+			$jwt = self::get_any_site_jwt();
+		}
 		if ( ! empty( $jwt ) ) {
 			$request_args['headers'] = array(
 				'Authorization' => 'Bearer ' . $jwt,
