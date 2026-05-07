@@ -30,6 +30,13 @@ if ( ! defined( 'JZSA_COMMUNITY_API_URL' ) ) {
 	define( 'JZSA_COMMUNITY_API_URL', 'https://jzsa.janzeman.com' );
 }
 
+// Shared plugin-level read key. Sent by the WP admin proxy with every browse
+// request so the community server can return preview_shortcode to all WP admins,
+// regardless of whether they have personally connected to the community.
+if ( ! defined( 'JZSA_COMMUNITY_PLUGIN_READ_KEY' ) ) {
+	define( 'JZSA_COMMUNITY_PLUGIN_READ_KEY', 'bbeacfbe4c938d8216231bb5029ed18808eeecbc37d09a7b1503ba8bc7e7ead4' );
+}
+
 define( 'JZSA_PLUGIN_FILE', __FILE__ );
 define( 'JZSA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'JZSA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
