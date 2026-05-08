@@ -1221,21 +1221,33 @@
 		var statusEl = qs( '.jzsa-community-auth-status' );
 		var displayNameEl = qs( '#jzsa-connect-display-name' );
 		var displayUrlEl = qs( '#jzsa-connect-display-url' );
+		var generateBtn = qs( '#jzsa-connect-display-name-generate-btn' );
 
 		if ( ! btn ) {
 			return;
 		}
 
-		if ( displayNameEl && countLetters( displayNameEl.value.trim() ) < 3 ) {
-			displayNameEl.value = generateNickname();
+		// Generate nickname button click handler
+		if ( generateBtn ) {
+			generateBtn.addEventListener( 'click', function () {
+				displayNameEl.value = generateNickname();
+				displayNameEl.focus();
+			} );
 		}
 
 		btn.addEventListener( 'click', function () {
 			var displayName = displayNameEl ? displayNameEl.value.trim() : '';
 			var displayUrl = displayUrlEl ? normalizeUrlInput( displayUrlEl.value ) : '';
-			if ( displayName && countLetters( displayName ) < 3 ) {
+			if ( ! displayName || countLetters( displayName ) < 3 ) {
 				if ( statusEl ) {
-					statusEl.textContent = '\u274c Display name must contain at least 3 letters.';
+					statusEl.textContent = '\u274c Display name is required, minimum 3 letters.';
+					statusEl.className = 'jzsa-community-auth-status is-error';
+				}
+				return;
+			}
+			if ( displayName.length > 50 ) {
+				if ( statusEl ) {
+					statusEl.textContent = '\u274c Display name must be 50 characters or fewer.';
 					statusEl.className = 'jzsa-community-auth-status is-error';
 				}
 				return;
@@ -1657,12 +1669,9 @@
 		if ( saveBtn ) {
 			saveBtn.addEventListener( 'click', function () {
 				var name = input.value.trim();
-				if ( ! name ) {
-					setResult( resultEl, 'Display name cannot be empty.', false );
-					return;
-				}
-				if ( countLetters( name ) < 3 ) {
-					setResult( resultEl, 'Must contain at least 3 letters.', false );
+				
+				if ( ! name || countLetters( name ) < 3 ) {
+					setResult( resultEl, 'Required, minimum 3 letters.', false );
 					return;
 				}
 				if ( name.length > 50 ) {

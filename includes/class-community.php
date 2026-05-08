@@ -622,6 +622,7 @@ class JZSA_Community {
 						<button type="button" class="button button-link" id="jzsa-display-name-generate-btn" title="<?php esc_attr_e( 'Generate a random nickname', 'janzeman-shared-albums-for-google-photos' ); ?>">
 							<?php esc_html_e( '🎲 Generate nickname', 'janzeman-shared-albums-for-google-photos' ); ?>
 						</button>
+						<span class="description" style="font-size:12px; color:#666; margin-top:4px; display:block;"><?php esc_html_e( 'Required, minimum 3 letters.', 'janzeman-shared-albums-for-google-photos' ); ?></span>
 						<span id="jzsa-display-name-result" class="jzsa-community-result" aria-live="polite"></span>
 					</span>
 				</div>
@@ -668,17 +669,20 @@ class JZSA_Community {
 				$suggested_connect_name = self::truncate_string( $suggested_connect_name, 50 );
 				$suggested_connect_url  = self::normalize_display_url( home_url() );
 				?>
-				<p class="jzsa-community-display-name-row" style="margin-top:10px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
-					<label for="jzsa-connect-display-name" style="font-size:13px; color:#50575e;">
+				<p class="jzsa-community-display-name-row" style="margin-top:10px; display:flex; align-items:center; flex-wrap:nowrap; gap:6px;">
+					<label for="jzsa-connect-display-name" style="font-size:13px; color:#50575e; white-space:nowrap;">
 						<?php esc_html_e( 'Community display name:', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</label>
 					<input type="text" id="jzsa-connect-display-name" maxlength="50"
 						value="<?php echo esc_attr( $suggested_connect_name ); ?>"
-						placeholder="<?php esc_attr_e( 'Optional public name or nickname…', 'janzeman-shared-albums-for-google-photos' ); ?>"
+						placeholder="<?php esc_attr_e( 'Your name or nickname…', 'janzeman-shared-albums-for-google-photos' ); ?>"
 						style="width:220px;">
-					<span class="description">
-						<?php esc_html_e( 'Optional public name. It is saved only after your community account has been identified.', 'janzeman-shared-albums-for-google-photos' ); ?>
+					<span class="description" style="white-space:nowrap;">
+						<?php esc_html_e( 'Required, minimum 3 letters.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</span>
+					<button type="button" class="button button-link" id="jzsa-connect-display-name-generate-btn" style="white-space:nowrap;" title="<?php esc_attr_e( 'Generate a random nickname', 'janzeman-shared-albums-for-google-photos' ); ?>">
+						<?php esc_html_e( '🎲 Generate nickname', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</button>
 				</p>
 				<p class="jzsa-community-display-url-row" style="margin-top:10px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
 					<label for="jzsa-connect-display-url" style="font-size:13px; color:#50575e;">
@@ -689,7 +693,7 @@ class JZSA_Community {
 						placeholder="<?php esc_attr_e( 'Optional public URL…', 'janzeman-shared-albums-for-google-photos' ); ?>"
 						style="width:260px;">
 					<span class="description">
-						<?php esc_html_e( 'Optional public URL. Clear it before connecting to disable it.', 'janzeman-shared-albums-for-google-photos' ); ?>
+						<?php esc_html_e( 'Optional display URL for your community profile.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</span>
 				</p>
 				<p style="margin-top:12px;">
@@ -942,7 +946,7 @@ class JZSA_Community {
 		$display_name  = sanitize_text_field( wp_unslash( $_POST['display_name'] ?? '' ) );
 		$display_url   = self::normalize_display_url( wp_unslash( $_POST['display_url'] ?? '' ) );
 
-		if ( '' !== $display_name && self::letter_count( $display_name ) < 3 ) {
+		if ( empty( $display_name ) || self::letter_count( $display_name ) < 3 ) {
 			wp_send_json_error( __( 'Display name must contain at least 3 letters.', 'janzeman-shared-albums-for-google-photos' ) );
 			return;
 		}
