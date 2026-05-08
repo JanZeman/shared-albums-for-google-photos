@@ -33,7 +33,6 @@ class JZSA_Community {
 
 		// Auth flow
 		add_action( 'wp_ajax_jzsa_community_request_magic_link', array( $this, 'ajax_request_magic_link' ) );
-		add_action( 'wp_ajax_jzsa_community_disconnect',         array( $this, 'ajax_disconnect' ) );
 
 		// Browse & write
 		add_action( 'wp_ajax_jzsa_community_browse',               array( $this, 'ajax_browse' ) );
@@ -1061,20 +1060,6 @@ class JZSA_Community {
 			delete_user_meta( get_current_user_id(), self::OPT_DISPLAY_URL );
 		}
 
-		wp_send_json_success();
-	}
-
-	/**
-	 * Disconnect: remove stored JWT.
-	 */
-	public function ajax_disconnect() {
-		check_ajax_referer( 'jzsa_community', 'nonce' );
-
-		if ( ! current_user_can( jzsa_get_admin_capability() ) ) {
-			wp_send_json_error( 'Unauthorized.', 403 );
-		}
-
-		delete_user_meta( get_current_user_id(), self::OPT_JWT );
 		wp_send_json_success();
 	}
 

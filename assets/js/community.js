@@ -1304,39 +1304,6 @@
 	 * -------------------------------------------------------------------- */
 
 	function initDisconnect() {
-		var btn = qs( '.jzsa-community-disconnect-btn' );
-		if ( ! btn ) {
-			return;
-		}
-
-		btn.addEventListener( 'click', function () {
-			if ( ! confirm( 'Disconnect from the community? You can reconnect anytime.' ) ) {
-				return;
-			}
-
-			btn.disabled = true;
-
-			ajaxPost( 'jzsa_community_disconnect', {} )
-				.then( function ( res ) {
-					if ( res.success ) {
-						window.location.reload();
-					} else {
-						btn.disabled = false;
-						alert( res.data || 'Could not disconnect.' );
-					}
-				} )
-				.catch( function () {
-					btn.disabled = false;
-					alert( 'Could not reach the server.' );
-				} );
-		} );
-	}
-
-	/* -----------------------------------------------------------------------
-	 * Auth — Delete account
-	 * -------------------------------------------------------------------- */
-
-	function initDeleteAccount() {
 		var disconnectBtn = qs( '.jzsa-community-disconnect-btn' );
 		var deleteEntriesBtn = qs( '.jzsa-community-delete-account-entries-btn' );
 		if ( ! disconnectBtn && ! deleteEntriesBtn ) {
@@ -1926,7 +1893,7 @@
 		initSearch();
 		initSort();
 		initConnect();
-		initDeleteAccount();
+		initDisconnect();
 		initPublish();
 		initDisplayName();
 		initDisplayUrl();
