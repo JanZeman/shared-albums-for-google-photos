@@ -1338,20 +1338,20 @@
 	 * -------------------------------------------------------------------- */
 
 	function initDeleteAccount() {
-		var keepEntriesBtn = qs( '.jzsa-community-delete-account-btn' );
+		var disconnectBtn = qs( '.jzsa-community-disconnect-btn' );
 		var deleteEntriesBtn = qs( '.jzsa-community-delete-account-entries-btn' );
-		if ( ! keepEntriesBtn && ! deleteEntriesBtn ) {
+		if ( ! disconnectBtn && ! deleteEntriesBtn ) {
 			return;
 		}
 
-		function deleteAccount( btn, deleteEntries ) {
+		function disconnect( btn, deleteEntries ) {
 			if ( ! confirm(
 				(
 					deleteEntries ?
-						'This will delete your community account, anonymize your profile, remove ratings you submitted, and hide all your published entries.\n\n' :
-						'This will delete your community account, anonymize your profile, and remove ratings you submitted. Published entries are preserved as community examples.\n\n'
+						'This will disconnect your community account and soft-delete all your published entries.\n\n' :
+						'This will disconnect your community account. Published entries are preserved as community examples.\n\n'
 				) +
-				'You will need to reconnect if you want to publish or manage entries again. Continue?'
+				'You can reconnect anytime. Continue?'
 			) ) {
 				return;
 			}
@@ -1364,7 +1364,7 @@
 						window.location.reload();
 					} else {
 						btn.disabled = false;
-						alert( res.data || 'Could not delete account.' );
+						alert( res.data || 'Could not disconnect.' );
 					}
 				} )
 				.catch( function () {
@@ -1373,15 +1373,15 @@
 				} );
 		}
 
-		if ( keepEntriesBtn ) {
-			keepEntriesBtn.addEventListener( 'click', function () {
-				deleteAccount( keepEntriesBtn, false );
+		if ( disconnectBtn ) {
+			disconnectBtn.addEventListener( 'click', function () {
+				disconnect( disconnectBtn, false );
 			} );
 		}
 
 		if ( deleteEntriesBtn ) {
 			deleteEntriesBtn.addEventListener( 'click', function () {
-				deleteAccount( deleteEntriesBtn, true );
+				disconnect( deleteEntriesBtn, true );
 			} );
 		}
 	}
@@ -1907,11 +1907,13 @@
 			var scEl    = qs( '#jzsa-pub-shortcode' );
 			var descEl  = qs( '#jzsa-pub-description' );
 			var tagsEl  = qs( '#jzsa-pub-tags' );
+			var resultEl = qs( '#jzsa-publish-result' );
 
 			if ( titleEl ) titleEl.value = title;
 			if ( scEl )    setPublishShortcode( shortcode );
 			if ( descEl )  descEl.value  = description;
 			if ( tagsEl )  tagsEl.value  = tags;
+			if ( resultEl ) resultEl.innerHTML = '';
 
 		} );
 	}
@@ -1925,7 +1927,6 @@
 		initSearch();
 		initSort();
 		initConnect();
-		initDisconnect();
 		initDeleteAccount();
 		initPublish();
 		initDisplayName();

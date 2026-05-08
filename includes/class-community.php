@@ -585,11 +585,8 @@ class JZSA_Community {
 					<button type="button" class="button button-link jzsa-community-disconnect-btn" style="margin-left:14px; color:#d63638;">
 						<?php esc_html_e( 'Disconnect', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</button>
-					<button type="button" class="button button-link jzsa-community-delete-account-btn" style="margin-left:8px; color:#d63638;">
-						<?php esc_html_e( 'Delete account', 'janzeman-shared-albums-for-google-photos' ); ?>
-					</button>
 					<button type="button" class="button button-link jzsa-community-delete-account-entries-btn" style="margin-left:8px; color:#d63638;">
-						<?php esc_html_e( 'Delete account &amp; all my entries', 'janzeman-shared-albums-for-google-photos' ); ?>
+						<?php esc_html_e( 'Disconnect and delete all my entries', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</button>
 				</div>
 				<!-- Display name row -->
