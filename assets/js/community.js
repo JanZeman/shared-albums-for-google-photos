@@ -123,6 +123,27 @@
 		}
 	}
 
+	function isValidDisplayUrl( value ) {
+		if ( ! value ) {
+			return true;
+		}
+		try {
+			var parsed = new URL( value );
+			return /^https?:$/i.test( parsed.protocol ) && !! parsed.hostname;
+		} catch ( e ) {
+			return false;
+		}
+	}
+
+	function formatDisplayUrl( value ) {
+		return String( value || '' ).replace( /^https?:\/\//, '' ).replace( /\/$/, '' );
+	}
+
+	function countLetters( value ) {
+		var matches = String( value || '' ).match( /\p{L}/gu );
+		return matches ? matches.length : 0;
+	}
+
 	function extractCommunityAlbumLink( shortcode ) {
 		shortcode = String( shortcode || '' ).trim();
 		if ( ! /^\[jzsa-album\b[^\]]*\]$/i.test( shortcode ) ) {
@@ -415,20 +436,22 @@
 		}
 
 		if ( ! isMyEntry ) {
-			var authorName = ( entry.author && entry.author.display_name ) ? entry.author.display_name : 'Anonymous';
+			var authorName = entry.photographer_name ||
+				( ( entry.author && entry.author.display_name ) ? entry.author.display_name : 'Anonymous' );
 			var authorEl = document.createElement( 'span' );
 			authorEl.className = 'jzsa-community-entry-author';
 
 			var authorLabel = document.createTextNode( 'Author: ' + authorName );
 			authorEl.appendChild( authorLabel );
 
-			if ( entry.site_url ) {
+			var authorUrl = entry.site_url || ( entry.author && entry.author.display_url ? entry.author.display_url : '' );
+			if ( authorUrl ) {
 				var entrySep = document.createTextNode( ' · ' );
 				var entryLink = document.createElement( 'a' );
-				entryLink.href = entry.site_url;
+				entryLink.href = authorUrl;
 				entryLink.target = '_blank';
 				entryLink.rel = 'noopener noreferrer';
-				entryLink.textContent = entry.site_url.replace( /^https?:\/\//, '' ).replace( /\/$/, '' );
+				entryLink.textContent = formatDisplayUrl( authorUrl );
 				entryLink.className = 'jzsa-community-entry-site-link';
 				authorEl.appendChild( entrySep );
 				authorEl.appendChild( entryLink );
@@ -1196,12 +1219,42 @@
 	function initConnect() {
 		var btn = qs( '.jzsa-community-connect-btn' );
 		var statusEl = qs( '.jzsa-community-auth-status' );
+		var displayNameEl = qs( '#jzsa-connect-display-name' );
+		var displayUrlEl = qs( '#jzsa-connect-display-url' );
 
 		if ( ! btn ) {
 			return;
 		}
 
+		if ( displayNameEl && countLetters( displayNameEl.value.trim() ) < 3 ) {
+			displayNameEl.value = generateNickname();
+		}
+
 		btn.addEventListener( 'click', function () {
+			var displayName = displayNameEl ? displayNameEl.value.trim() : '';
+			var displayUrl = displayUrlEl ? normalizeUrlInput( displayUrlEl.value ) : '';
+			if ( displayName && countLetters( displayName ) < 3 ) {
+				if ( statusEl ) {
+					statusEl.textContent = '\u274c Display name must contain at least 3 letters.';
+					statusEl.className = 'jzsa-community-auth-status is-error';
+				}
+				return;
+			}
+			if ( displayName.length > 50 ) {
+				if ( statusEl ) {
+					statusEl.textContent = '\u274c Display name must be 50 characters or fewer.';
+					statusEl.className = 'jzsa-community-auth-status is-error';
+				}
+				return;
+			}
+			if ( displayUrl && ! isValidDisplayUrl( displayUrl ) ) {
+				if ( statusEl ) {
+					statusEl.textContent = '\u274c Please enter a valid display URL, or leave it empty.';
+					statusEl.className = 'jzsa-community-auth-status is-error';
+				}
+				return;
+			}
+
 			btn.disabled = true;
 			btn.textContent = 'Connecting\u2026';
 			if ( statusEl ) {
@@ -1209,7 +1262,7 @@
 				statusEl.className = 'jzsa-community-auth-status';
 			}
 
-			ajaxPost( 'jzsa_community_request_magic_link', {} )
+			ajaxPost( 'jzsa_community_request_magic_link', { display_name: displayName, display_url: displayUrl } )
 				.then( function ( res ) {
 					if ( res.success ) {
 						var url = new URL( window.location.href );
@@ -1273,22 +1326,27 @@
 	 * -------------------------------------------------------------------- */
 
 	function initDeleteAccount() {
-		var btn = qs( '.jzsa-community-delete-account-btn' );
-		if ( ! btn ) {
+		var keepEntriesBtn = qs( '.jzsa-community-delete-account-btn' );
+		var deleteEntriesBtn = qs( '.jzsa-community-delete-account-entries-btn' );
+		if ( ! keepEntriesBtn && ! deleteEntriesBtn ) {
 			return;
 		}
 
-		btn.addEventListener( 'click', function () {
+		function deleteAccount( btn, deleteEntries ) {
 			if ( ! confirm(
-				'This will permanently delete your community account and ALL your published entries.\n\n' +
-				'This cannot be undone. Continue?'
+				(
+					deleteEntries ?
+						'This will delete your community account, anonymize your profile, remove ratings you submitted, and hide all your published entries.\n\n' :
+						'This will delete your community account, anonymize your profile, and remove ratings you submitted. Published entries are preserved as community examples.\n\n'
+				) +
+				'You will need to reconnect if you want to publish or manage entries again. Continue?'
 			) ) {
 				return;
 			}
 
 			btn.disabled = true;
 
-			ajaxPost( 'jzsa_community_delete_account', {} )
+			ajaxPost( 'jzsa_community_delete_account', { delete_entries: deleteEntries } )
 				.then( function ( res ) {
 					if ( res.success ) {
 						window.location.reload();
@@ -1301,7 +1359,19 @@
 					btn.disabled = false;
 					alert( 'Could not reach the server.' );
 				} );
-		} );
+		}
+
+		if ( keepEntriesBtn ) {
+			keepEntriesBtn.addEventListener( 'click', function () {
+				deleteAccount( keepEntriesBtn, false );
+			} );
+		}
+
+		if ( deleteEntriesBtn ) {
+			deleteEntriesBtn.addEventListener( 'click', function () {
+				deleteAccount( deleteEntriesBtn, true );
+			} );
+		}
 	}
 
 	/* -----------------------------------------------------------------------
@@ -1591,6 +1661,10 @@
 					setResult( resultEl, 'Display name cannot be empty.', false );
 					return;
 				}
+				if ( countLetters( name ) < 3 ) {
+					setResult( resultEl, 'Must contain at least 3 letters.', false );
+					return;
+				}
 				if ( name.length > 50 ) {
 					setResult( resultEl, 'Must be 50 characters or fewer.', false );
 					return;
@@ -1627,6 +1701,111 @@
 		}
 	}
 
+	function initDisplayUrl() {
+		var editBtn   = qs( '#jzsa-display-url-edit-btn' );
+		var editRow   = qs( '#jzsa-display-url-edit-row' );
+		var viewSpan  = qs( '#jzsa-display-url-view' );
+		var input     = qs( '#jzsa-display-url-input' );
+		var saveBtn   = qs( '#jzsa-display-url-save-btn' );
+		var clearBtn  = qs( '#jzsa-display-url-clear-btn' );
+		var cancelBtn = qs( '#jzsa-display-url-cancel-btn' );
+		var resultEl  = qs( '#jzsa-display-url-result' );
+
+		if ( ! editBtn || ! editRow || ! viewSpan || ! input ) {
+			return;
+		}
+
+		function showEdit() {
+			editBtn.style.display = 'none';
+			editRow.style.display = 'inline-flex';
+			input.focus();
+			input.select();
+		}
+
+		function hideEdit() {
+			editRow.style.display = 'none';
+			editBtn.style.display = '';
+			if ( resultEl ) {
+				resultEl.textContent = '';
+				resultEl.className = 'jzsa-community-result';
+			}
+		}
+
+		function setDisplayUrlView( value ) {
+			if ( value ) {
+				viewSpan.textContent = formatDisplayUrl( value );
+			} else {
+				viewSpan.innerHTML = '<em style="color:#999;">Not set</em>';
+			}
+		}
+
+		function saveDisplayUrl( value ) {
+			value = normalizeUrlInput( value );
+			if ( value && ! isValidDisplayUrl( value ) ) {
+				setResult( resultEl, 'Please enter a valid display URL, or leave it empty.', false );
+				return;
+			}
+
+			if ( saveBtn ) {
+				saveBtn.disabled = true;
+				saveBtn.textContent = 'Saving\u2026';
+			}
+
+			ajaxPost( 'jzsa_community_update_display_url', { display_url: value } )
+				.then( function ( res ) {
+					if ( saveBtn ) {
+						saveBtn.disabled = false;
+						saveBtn.textContent = 'Save';
+					}
+
+					if ( res.success ) {
+						var saved = ( res.data && res.data.display_url ) ? res.data.display_url : '';
+						jzsaCommunity.displayUrl = saved;
+						input.value = saved;
+						setDisplayUrlView( saved );
+						setResult( resultEl, '\u2705 Saved!', true );
+						setTimeout( hideEdit, 1500 );
+					} else {
+						setResult( resultEl, '\u274c ' + ( res.data || 'Could not save.' ), false );
+					}
+				} )
+				.catch( function () {
+					if ( saveBtn ) {
+						saveBtn.disabled = false;
+						saveBtn.textContent = 'Save';
+					}
+					setResult( resultEl, '\u274c Could not reach the server.', false );
+				} );
+		}
+
+		editBtn.addEventListener( 'click', showEdit );
+
+		if ( saveBtn ) {
+			saveBtn.addEventListener( 'click', function () {
+				saveDisplayUrl( input.value );
+			} );
+		}
+		if ( clearBtn ) {
+			clearBtn.addEventListener( 'click', function () {
+				input.value = '';
+				saveDisplayUrl( '' );
+			} );
+		}
+		if ( cancelBtn ) {
+			cancelBtn.addEventListener( 'click', function () {
+				input.value = jzsaCommunity.displayUrl || '';
+				hideEdit();
+			} );
+		}
+		input.addEventListener( 'keydown', function ( e ) {
+			if ( e.key === 'Enter' ) {
+				if ( saveBtn ) saveBtn.click();
+			} else if ( e.key === 'Escape' ) {
+				if ( cancelBtn ) cancelBtn.click();
+			}
+		} );
+	}
+
 	function initSort() {
 		var sortBtns = document.querySelectorAll( '.jzsa-community-sort-btn' );
 		sortBtns.forEach( function ( btn ) {
@@ -1646,7 +1825,7 @@
 	}
 
 	/* -----------------------------------------------------------------------
-	 * Dev helper — fill form with random data and publish immediately
+	 * Dev helper — fill form with random data
 	 * -------------------------------------------------------------------- */
 
 	var DEV_ALBUM_LINKS = [
@@ -1725,11 +1904,6 @@
 			if ( descEl )  descEl.value  = description;
 			if ( tagsEl )  tagsEl.value  = tags;
 
-			// Trigger the real publish button
-			var publishBtn = qs( '#jzsa-community-publish-btn' );
-			if ( publishBtn ) {
-				publishBtn.click();
-			}
 		} );
 	}
 
@@ -1746,6 +1920,7 @@
 		initDeleteAccount();
 		initPublish();
 		initDisplayName();
+		initDisplayUrl();
 		initDevFill();
 
 		// Load the current user's own entries when connected

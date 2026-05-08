@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/JanZeman/shared-albums-for-google-photos
  * Author URI: https://github.com/JanZeman
  * Description: Display publicly shared Google Photos albums with a modern Swiper-based gallery viewer. Not affiliated with or endorsed by Google LLC.
- * Version: 2.2.1
+ * Version: 2.2.2
  * Requires at least: 5.0
  * Requires PHP: 7.0
  * Author: Jan Zeman
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'JZSA_VERSION', '2.2.1' );
+define( 'JZSA_VERSION', '2.2.2' );
 
 // Community API URL. Local development can override this constant before the plugin loads:
 // define( 'JZSA_COMMUNITY_API_URL', 'http://localhost:3000' );
@@ -177,12 +177,13 @@ function jzsa_add_privacy_policy_content() {
 	$content .= '<li><strong>' . esc_html__( 'No email is transmitted.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'The WordPress admin email and site URL are combined and hashed on your server with SHA-256. Only this one-way hash is sent; the original email cannot be recovered from it.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
 	$content .= '<li><strong>' . esc_html__( 'Double-hashed identity.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'The community server applies a second cryptographic layer (HMAC-SHA256 with a server-side secret) before storing the hash, so the value stored in the database cannot be reversed even with direct database access.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
 	$content .= '<li><strong>' . esc_html__( 'Site verification.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'Your site home URL is transmitted during connection for verification purposes. The community server stores only a SHA-256 hash of the URL for abuse prevention (detecting multiple accounts from the same installation). The hash cannot be reversed.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
+	$content .= '<li><strong>' . esc_html__( 'Community profile.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'If you provide a community display name or display URL while connecting or later editing your community profile, those values are stored by the community server and may be shown publicly with your shared entries. These fields are optional and can be changed or cleared.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
 	$content .= '<li><strong>' . esc_html__( 'Published entry data.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'If you publish an entry, the following is stored on jzsa.janzeman.com: title, shortcode settings, the extracted Google Photos album link, optional description, optional tags, optional sample page URL, optional photographer or creator name, optional short bio, plugin version, and whether you opted into public showcase consideration. You control all of this data.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
-	$content .= '<li><strong>' . esc_html__( 'Display name.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'If you set a community display name, it is stored and shown as the author name on your entries. You can change or remove it at any time.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
+	$content .= '<li><strong>' . esc_html__( 'Author display.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'If you provide a photographer or creator name for an entry, it is shown as that entry\'s author. Otherwise, if you set a community display name, that display name is shown as the author. Entry sample URLs are shown when provided; otherwise, your community display URL may be shown. You can change or remove these values at any time.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
 	$content .= '<li><strong>' . esc_html__( 'Album-link masking.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'Public community responses replace the Google Photos URL in the shortcode with [link]. The real album link is retained by the community server so authenticated users can render a live preview. It is never shown in plain text on the public browse page.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
 	$content .= '<li><strong>' . esc_html__( 'Anonymous interaction signals.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'When a community entry is previewed, copied, or rated, an event may be recorded. The community server hashes the IP address it sees together with the current date (SHA-256) and never stores it in plain text. Because requests are proxied through WordPress, this is normally the WordPress server\'s IP, not a visitor\'s browser IP.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
 	$content .= '<li><strong>' . esc_html__( 'Star ratings.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'Ratings are stored linked to the user\'s identity hash, not to any directly personal data.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
-	$content .= '<li><strong>' . esc_html__( 'Right to erasure.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'You can delete your community account and all associated entries and ratings at any time from the plugin admin page. Deletion is immediate and permanent.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
+	$content .= '<li><strong>' . esc_html__( 'Account deletion.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'You can delete your community account at any time from the plugin admin page. Account deletion removes the stored identity hash, site hash, display name, display URL, and ratings you submitted. You can choose whether published entries are preserved as community examples or hidden at the same time.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
 	$content .= '<li><strong>' . esc_html__( 'No tracking.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'The community server does not use cookies, analytics, or advertising.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
 	$content .= '</ul>';
 

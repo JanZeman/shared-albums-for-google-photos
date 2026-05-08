@@ -20,6 +20,7 @@ class JZSA_Community {
 
 	const OPT_JWT           = 'jzsa_community_jwt';
 	const OPT_DISPLAY_NAME  = 'jzsa_community_display_name';
+	const OPT_DISPLAY_URL   = 'jzsa_community_display_url';
 	const NONCE_NOTICE_KEY  = 'jzsa_community_notice_';
 	const AUTH_CHALLENGE_PREFIX = 'jzsa_community_auth_challenge_';
 
@@ -40,6 +41,7 @@ class JZSA_Community {
 		add_action( 'wp_ajax_jzsa_community_delete_entry',         array( $this, 'ajax_delete_entry' ) );
 		add_action( 'wp_ajax_jzsa_community_delete_account',       array( $this, 'ajax_delete_account' ) );
 		add_action( 'wp_ajax_jzsa_community_update_display_name',  array( $this, 'ajax_update_display_name' ) );
+		add_action( 'wp_ajax_jzsa_community_update_display_url',   array( $this, 'ajax_update_display_url' ) );
 		add_action( 'wp_ajax_jzsa_community_load_my_entries',      array( $this, 'ajax_load_my_entries' ) );
 		add_action( 'wp_ajax_jzsa_community_update_entry',         array( $this, 'ajax_update_entry' ) );
 		add_action( 'wp_ajax_jzsa_community_interact',             array( $this, 'ajax_interact' ) );
@@ -95,6 +97,20 @@ class JZSA_Community {
 	}
 
 	/**
+	 * Count letters in a string.
+	 *
+	 * @param string $value String to inspect.
+	 * @return int
+	 */
+	private static function letter_count( $value ) {
+		if ( preg_match_all( '/\p{L}/u', $value, $matches ) ) {
+			return count( $matches[0] );
+		}
+
+		return 0;
+	}
+
+	/**
 	 * Extract the Google Photos album link from a community shortcode.
 	 *
 	 * @param string $shortcode Shortcode text.
@@ -146,6 +162,47 @@ class JZSA_Community {
 		$host   = $parts['host'] ?? '';
 
 		return in_array( $scheme, array( 'http', 'https' ), true ) && false !== strpos( $host, '.' );
+	}
+
+	/**
+	 * Normalize an optional display URL. Empty value disables the public URL.
+	 *
+	 * @param string $url Raw URL.
+	 * @return string
+	 */
+	private static function normalize_display_url( $url ) {
+		$url = trim( $url );
+		if ( '' === $url ) {
+			return '';
+		}
+
+		if ( ! preg_match( '#^https?://#i', $url ) ) {
+			$url = 'https://' . $url;
+		}
+
+		return sanitize_url( $url );
+	}
+
+	/**
+	 * Whether a display URL is valid or empty.
+	 *
+	 * @param string $url URL to validate.
+	 * @return bool
+	 */
+	private static function is_valid_display_url( $url ) {
+		if ( '' === $url ) {
+			return true;
+		}
+
+		if ( ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
+			return false;
+		}
+
+		$parts  = wp_parse_url( $url );
+		$scheme = strtolower( $parts['scheme'] ?? '' );
+		$host   = $parts['host'] ?? '';
+
+		return in_array( $scheme, array( 'http', 'https' ), true ) && '' !== $host;
 	}
 
 	/**
@@ -402,6 +459,7 @@ class JZSA_Community {
 				'nonce'       => wp_create_nonce( 'jzsa_community' ),
 				'isConnected' => 'connected' === self::verify_connection(),
 				'displayName' => get_user_meta( get_current_user_id(), self::OPT_DISPLAY_NAME, true ) ?: '',
+				'displayUrl'  => get_user_meta( get_current_user_id(), self::OPT_DISPLAY_URL, true ) ?: '',
 				'isLocalEnv'  => function_exists( 'wp_get_environment_type' ) && 'local' === wp_get_environment_type(),
 				'i18n'        => self::get_i18n_strings(),
 			)
@@ -528,12 +586,15 @@ class JZSA_Community {
 						<?php esc_html_e( 'Disconnect', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</button>
 					<button type="button" class="button button-link jzsa-community-delete-account-btn" style="margin-left:8px; color:#d63638;">
+						<?php esc_html_e( 'Delete account', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</button>
+					<button type="button" class="button button-link jzsa-community-delete-account-entries-btn" style="margin-left:8px; color:#d63638;">
 						<?php esc_html_e( 'Delete account &amp; all my entries', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</button>
 				</div>
 				<!-- Display name row -->
 				<div class="jzsa-community-display-name-row" style="margin-top:10px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
-					<span style="font-size:13px; color:#50575e;"><?php esc_html_e( 'Display name:', 'janzeman-shared-albums-for-google-photos' ); ?></span>
+					<span style="font-size:13px; color:#50575e;"><?php esc_html_e( 'Display author name:', 'janzeman-shared-albums-for-google-photos' ); ?></span>
 					<span id="jzsa-display-name-view" style="font-weight:600;">
 						<?php
 						$saved_name = get_user_meta( get_current_user_id(), self::OPT_DISPLAY_NAME, true ) ?: '';
@@ -564,9 +625,72 @@ class JZSA_Community {
 						<span id="jzsa-display-name-result" class="jzsa-community-result" aria-live="polite"></span>
 					</span>
 				</div>
+				<!-- Display URL row -->
+				<div class="jzsa-community-display-url-row" style="margin-top:10px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
+					<span style="font-size:13px; color:#50575e;"><?php esc_html_e( 'Display site URL:', 'janzeman-shared-albums-for-google-photos' ); ?></span>
+					<span id="jzsa-display-url-view" style="font-weight:600;">
+						<?php
+						$saved_url = get_user_meta( get_current_user_id(), self::OPT_DISPLAY_URL, true ) ?: '';
+						if ( $saved_url ) {
+							echo esc_html( preg_replace( '#^https?://#i', '', untrailingslashit( $saved_url ) ) );
+						} else {
+							echo '<em style="color:#999;">' . esc_html__( 'Not set', 'janzeman-shared-albums-for-google-photos' ) . '</em>';
+						}
+						?>
+					</span>
+					<button type="button" class="button button-link" id="jzsa-display-url-edit-btn" style="font-size:13px;">
+						<?php esc_html_e( 'Edit', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</button>
+					<span id="jzsa-display-url-edit-row" style="display:none; align-items:center; gap:6px; flex-wrap:wrap;">
+						<input type="url" id="jzsa-display-url-input" maxlength="2048"
+							value="<?php echo esc_attr( get_user_meta( get_current_user_id(), self::OPT_DISPLAY_URL, true ) ?: '' ); ?>"
+							placeholder="<?php esc_attr_e( 'https://example.com', 'janzeman-shared-albums-for-google-photos' ); ?>"
+							style="width:260px;">
+						<button type="button" class="button button-primary" id="jzsa-display-url-save-btn">
+							<?php esc_html_e( 'Save', 'janzeman-shared-albums-for-google-photos' ); ?>
+						</button>
+						<button type="button" class="button" id="jzsa-display-url-clear-btn">
+							<?php esc_html_e( 'Disable', 'janzeman-shared-albums-for-google-photos' ); ?>
+						</button>
+						<button type="button" class="button" id="jzsa-display-url-cancel-btn">
+							<?php esc_html_e( 'Cancel', 'janzeman-shared-albums-for-google-photos' ); ?>
+						</button>
+						<span id="jzsa-display-url-result" class="jzsa-community-result" aria-live="polite"></span>
+					</span>
+				</div>
 			<?php else : ?>
 				<p class="jzsa-help-text" style="margin-top:6px;">
 					<?php esc_html_e( 'Privacy: Your email is never sent. Your site URL is verified, then stored only as a one-way hash.', 'janzeman-shared-albums-for-google-photos' ); ?>
+				</p>
+				<?php
+				$current_user           = wp_get_current_user();
+				$suggested_connect_name = sanitize_text_field( $current_user->display_name ?? '' );
+				$suggested_connect_name = self::truncate_string( $suggested_connect_name, 50 );
+				$suggested_connect_url  = self::normalize_display_url( home_url() );
+				?>
+				<p class="jzsa-community-display-name-row" style="margin-top:10px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
+					<label for="jzsa-connect-display-name" style="font-size:13px; color:#50575e;">
+						<?php esc_html_e( 'Community display name:', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</label>
+					<input type="text" id="jzsa-connect-display-name" maxlength="50"
+						value="<?php echo esc_attr( $suggested_connect_name ); ?>"
+						placeholder="<?php esc_attr_e( 'Optional public name or nickname…', 'janzeman-shared-albums-for-google-photos' ); ?>"
+						style="width:220px;">
+					<span class="description">
+						<?php esc_html_e( 'Optional public name. It is saved only after your community account has been identified.', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</span>
+				</p>
+				<p class="jzsa-community-display-url-row" style="margin-top:10px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
+					<label for="jzsa-connect-display-url" style="font-size:13px; color:#50575e;">
+						<?php esc_html_e( 'Community display URL:', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</label>
+					<input type="url" id="jzsa-connect-display-url" maxlength="2048"
+						value="<?php echo esc_attr( $suggested_connect_url ); ?>"
+						placeholder="<?php esc_attr_e( 'Optional public URL…', 'janzeman-shared-albums-for-google-photos' ); ?>"
+						style="width:260px;">
+					<span class="description">
+						<?php esc_html_e( 'Optional public URL. Clear it before connecting to disable it.', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</span>
 				</p>
 				<p style="margin-top:12px;">
 					<button type="button" class="button button-primary jzsa-community-connect-btn">
@@ -727,8 +851,8 @@ class JZSA_Community {
 					<?php esc_html_e( 'Publish to Community', 'janzeman-shared-albums-for-google-photos' ); ?>
 				</button>
 				<?php if ( function_exists( 'wp_get_environment_type' ) && 'local' === wp_get_environment_type() ) : ?>
-				<button type="button" class="button button-secondary" id="jzsa-community-dev-fill-btn" style="margin-left:8px;" title="Dev only: fills the form with random data and submits">
-					🎲 <?php esc_html_e( 'Fill &amp; Publish Random', 'janzeman-shared-albums-for-google-photos' ); ?>
+				<button type="button" class="button button-secondary" id="jzsa-community-dev-fill-btn" style="margin-left:8px;" title="Dev only: fills the form with random data">
+					🎲 <?php esc_html_e( 'Fill Random', 'janzeman-shared-albums-for-google-photos' ); ?>
 				</button>
 				<?php endif; ?>
 				<span id="jzsa-publish-result" class="jzsa-community-result" aria-live="polite" style="margin-left:12px;"></span>
@@ -815,8 +939,34 @@ class JZSA_Community {
 		$challenge     = wp_generate_password( 40, false, false );
 		$transient_key = self::AUTH_CHALLENGE_PREFIX . hash( 'sha256', $challenge );
 		$identity_hash = hash( 'sha256', $user->user_email . '|' . $site_url );
+		$display_name  = sanitize_text_field( wp_unslash( $_POST['display_name'] ?? '' ) );
+		$display_url   = self::normalize_display_url( wp_unslash( $_POST['display_url'] ?? '' ) );
+
+		if ( '' !== $display_name && self::letter_count( $display_name ) < 3 ) {
+			wp_send_json_error( __( 'Display name must contain at least 3 letters.', 'janzeman-shared-albums-for-google-photos' ) );
+			return;
+		}
+
+		if ( self::string_length( $display_name ) > 50 ) {
+			wp_send_json_error( __( 'Display name must be 50 characters or fewer.', 'janzeman-shared-albums-for-google-photos' ) );
+			return;
+		}
+
+		if ( ! self::is_valid_display_url( $display_url ) ) {
+			wp_send_json_error( __( 'Please enter a valid display URL, or leave it empty.', 'janzeman-shared-albums-for-google-photos' ) );
+			return;
+		}
 
 		set_transient( $transient_key, $challenge, 5 * MINUTE_IN_SECONDS );
+
+		// Keep mutable profile data out of the auth/connect request. Display
+		// names are updated only through /v1/me/display-name after auth.
+		$connect_payload = array(
+			'identity_hash'    => $identity_hash,
+			'site_url'         => $site_url,
+			'verification_url' => rest_url( 'jzsa/v1/community-challenge' ),
+			'challenge'        => $challenge,
+		);
 
 		$response = wp_remote_post(
 			JZSA_COMMUNITY_API_URL . '/v1/auth/connect',
@@ -824,14 +974,7 @@ class JZSA_Community {
 				'headers' => array(
 					'Content-Type' => 'application/json',
 				),
-				'body'    => wp_json_encode(
-					array(
-						'identity_hash'    => $identity_hash,
-						'site_url'         => $site_url,
-						'verification_url' => rest_url( 'jzsa/v1/community-challenge' ),
-						'challenge'        => $challenge,
-					)
-				),
+				'body'    => wp_json_encode( $connect_payload ),
 				'timeout' => 10,
 			)
 		);
@@ -867,9 +1010,54 @@ class JZSA_Community {
 
 		update_user_meta( get_current_user_id(), self::OPT_JWT, $jwt );
 
-		$display_name = $body['display_name'] ?? '';
-		if ( ! empty( $display_name ) ) {
-			update_user_meta( get_current_user_id(), self::OPT_DISPLAY_NAME, sanitize_text_field( $display_name ) );
+		$server_display_name = sanitize_text_field( $body['display_name'] ?? '' );
+		if ( '' !== $display_name && $display_name !== $server_display_name ) {
+			$display_name_response = wp_remote_request(
+				JZSA_COMMUNITY_API_URL . '/v1/me/display-name',
+				array(
+					'method'  => 'PUT',
+					'headers' => array(
+						'Content-Type'  => 'application/json',
+						'Authorization' => 'Bearer ' . $jwt,
+					),
+					'body'    => wp_json_encode( array( 'display_name' => $display_name ) ),
+					'timeout' => 10,
+				)
+			);
+
+			if ( ! is_wp_error( $display_name_response ) && 200 === wp_remote_retrieve_response_code( $display_name_response ) ) {
+				$display_name_body  = json_decode( wp_remote_retrieve_body( $display_name_response ), true );
+				$server_display_name = sanitize_text_field( $display_name_body['display_name'] ?? $display_name );
+			}
+		}
+
+		if ( '' !== $server_display_name ) {
+			update_user_meta( get_current_user_id(), self::OPT_DISPLAY_NAME, $server_display_name );
+		}
+
+		$server_display_url = '';
+		$display_url_response = wp_remote_request(
+			JZSA_COMMUNITY_API_URL . '/v1/me/display-url',
+			array(
+				'method'  => 'PUT',
+				'headers' => array(
+					'Content-Type'  => 'application/json',
+					'Authorization' => 'Bearer ' . $jwt,
+				),
+				'body'    => wp_json_encode( array( 'display_url' => $display_url ) ),
+				'timeout' => 10,
+			)
+		);
+
+		if ( ! is_wp_error( $display_url_response ) && 200 === wp_remote_retrieve_response_code( $display_url_response ) ) {
+			$display_url_body  = json_decode( wp_remote_retrieve_body( $display_url_response ), true );
+			$server_display_url = sanitize_url( $display_url_body['display_url'] ?? '' );
+		}
+
+		if ( '' !== $server_display_url ) {
+			update_user_meta( get_current_user_id(), self::OPT_DISPLAY_URL, $server_display_url );
+		} else {
+			delete_user_meta( get_current_user_id(), self::OPT_DISPLAY_URL );
 		}
 
 		wp_send_json_success();
@@ -1103,11 +1291,17 @@ class JZSA_Community {
 			return;
 		}
 
+		$delete_entries = filter_var( wp_unslash( $_POST['delete_entries'] ?? false ), FILTER_VALIDATE_BOOLEAN );
+
 		$response = wp_remote_request(
 			JZSA_COMMUNITY_API_URL . '/v1/me',
 			array(
 				'method'  => 'DELETE',
-				'headers' => array( 'Authorization' => 'Bearer ' . $jwt ),
+				'headers' => array(
+					'Authorization' => 'Bearer ' . $jwt,
+					'Content-Type'  => 'application/json',
+				),
+				'body'    => wp_json_encode( array( 'delete_entries' => $delete_entries ) ),
 				'timeout' => 10,
 			)
 		);
@@ -1121,6 +1315,7 @@ class JZSA_Community {
 		if ( 204 === $code || 200 === $code ) {
 			delete_user_meta( get_current_user_id(), self::OPT_JWT );
 			delete_user_meta( get_current_user_id(), self::OPT_DISPLAY_NAME );
+			delete_user_meta( get_current_user_id(), self::OPT_DISPLAY_URL );
 			set_transient( self::NONCE_NOTICE_KEY . get_current_user_id(), 'disconnected', 60 );
 			wp_send_json_success();
 		} else {
@@ -1300,6 +1495,11 @@ class JZSA_Community {
 			return;
 		}
 
+		if ( self::letter_count( $display_name ) < 3 ) {
+			wp_send_json_error( __( 'Display name must contain at least 3 letters.', 'janzeman-shared-albums-for-google-photos' ) );
+			return;
+		}
+
 		if ( self::string_length( $display_name ) > 50 ) {
 			wp_send_json_error( __( 'Display name must be 50 characters or fewer.', 'janzeman-shared-albums-for-google-photos' ) );
 			return;
@@ -1330,6 +1530,68 @@ class JZSA_Community {
 			// Mirror in user meta so we can display it without a round-trip
 			update_user_meta( get_current_user_id(), self::OPT_DISPLAY_NAME, sanitize_text_field( $body['display_name'] ?? $display_name ) );
 			wp_send_json_success( array( 'display_name' => $body['display_name'] ?? $display_name ) );
+		} else {
+			$msg = $body['error'] ?? sprintf(
+				/* translators: %d: HTTP status code */
+				__( 'Server error (%d).', 'janzeman-shared-albums-for-google-photos' ),
+				$code
+			);
+			wp_send_json_error( $msg );
+		}
+	}
+
+	/**
+	 * Update display URL: save to backend and mirror to user meta.
+	 */
+	public function ajax_update_display_url() {
+		check_ajax_referer( 'jzsa_community', 'nonce' );
+
+		if ( ! current_user_can( jzsa_get_admin_capability() ) ) {
+			wp_send_json_error( 'Unauthorized.', 403 );
+		}
+
+		$jwt = self::get_jwt();
+		if ( empty( $jwt ) ) {
+			wp_send_json_error( __( 'Not connected.', 'janzeman-shared-albums-for-google-photos' ) );
+			return;
+		}
+
+		$display_url = self::normalize_display_url( wp_unslash( $_POST['display_url'] ?? '' ) );
+
+		if ( ! self::is_valid_display_url( $display_url ) ) {
+			wp_send_json_error( __( 'Please enter a valid display URL, or leave it empty.', 'janzeman-shared-albums-for-google-photos' ) );
+			return;
+		}
+
+		$response = wp_remote_request(
+			JZSA_COMMUNITY_API_URL . '/v1/me/display-url',
+			array(
+				'method'  => 'PUT',
+				'headers' => array(
+					'Content-Type'  => 'application/json',
+					'Authorization' => 'Bearer ' . $jwt,
+				),
+				'body'    => wp_json_encode( array( 'display_url' => $display_url ) ),
+				'timeout' => 10,
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			self::json_error_server_unreachable();
+			return;
+		}
+
+		$code = wp_remote_retrieve_response_code( $response );
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( 200 === $code ) {
+			$saved_url = sanitize_url( $body['display_url'] ?? '' );
+			if ( '' !== $saved_url ) {
+				update_user_meta( get_current_user_id(), self::OPT_DISPLAY_URL, $saved_url );
+			} else {
+				delete_user_meta( get_current_user_id(), self::OPT_DISPLAY_URL );
+			}
+			wp_send_json_success( array( 'display_url' => $saved_url ) );
 		} else {
 			$msg = $body['error'] ?? sprintf(
 				/* translators: %d: HTTP status code */

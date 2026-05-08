@@ -4,7 +4,7 @@ Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.0
 Tested up to: 6.9
 Requires PHP: 7.0
-Stable tag: 2.2.1
+Stable tag: 2.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -142,6 +142,9 @@ The plugin provides clear feedback:
 10. Mosaic strip in the overlay mode
 
 == Changelog ==
+
+= 2.2.2 =
+* Community feature bugfixes
 
 = 2.2.1 =
 * Preparation of the Community feature for the release
@@ -291,11 +294,12 @@ The "Share Your Shortcode" community feature is entirely optional. Browsing comm
 * **No email is ever transmitted.** Your WordPress admin email and site URL are combined and hashed on your server using SHA-256 before anything is sent. Only this identity hash - from which the original email cannot be recovered - is transmitted.
 * **Identity stored as a one-way hash.** The backend applies a second cryptographic layer (HMAC-SHA256 with a server-side secret), so the stored value cannot be reversed even with access to the database.
 * **Site verification and correlation.** Your site's home URL is transmitted during connection so the community server can verify that the request really came from that WordPress site. The backend stores only a separate SHA-256 hash of the site URL. This hash cannot be reversed to recover the URL. Its purpose is abuse prevention, such as detecting if multiple accounts originate from the same WordPress installation.
-* **User-provided account and entry data.** If you set a community display name, it is stored and shown as the author name. If you publish an entry, the following is stored on jzsa.janzeman.com: title, shortcode, album link extracted from the shortcode, optional description, optional tags, optional sample page URL, optional photographer / creator name, optional short bio, plugin version, and whether you opted into future public showcase consideration. You control this data.
+* **Community profile.** If you provide a community display name or display URL while connecting or later editing your community profile, those values are stored by the community server and may be shown publicly with your shared entries. These fields are optional and can be changed or cleared.
+* **User-provided account and entry data.** If you publish an entry, the following is stored on jzsa.janzeman.com: title, shortcode, album link extracted from the shortcode, optional description, optional tags, optional sample page URL, optional photographer / creator name, optional short bio, plugin version, and whether you opted into future public showcase consideration. If you provide a photographer / creator name, it is shown as the entry author; otherwise, an explicitly set community display name may be shown. Entry sample URLs are shown when provided; otherwise, your community display URL may be shown. You control this data.
 * **Album-link masking.** Public community responses show the shared shortcode with the Google Photos URL replaced by `link="[link]"`. The real shared album link is still stored by the community server so previews can render. Authenticated community users may receive a private preview shortcode containing the real link, but the visible shared shortcode remains masked.
 * **Anonymous interaction signals.** When someone copies, applies, rates, or previews a community entry, an interaction event may be recorded. The community backend hashes the request IP it sees each day (SHA-256 of IP + date) and never stores it in plain text. Because WordPress proxies these calls, this is normally the WordPress site's server IP rather than the browser user's direct IP.
 * **Star ratings.** Authenticated community users can rate entries (1-5 stars). The rating is stored linked to the user's identity hash, not to any personal data.
-* **Right to erasure.** You can delete your account and all associated entries and ratings at any time from the plugin's admin page. Deletion is immediate and permanent.
+* **Account deletion.** You can delete your community account at any time from the plugin's admin page. Account deletion removes the stored identity hash, site hash, display name, display URL, and ratings you submitted. You can choose whether published entries are preserved as community examples or hidden at the same time.
 * **No tracking.** The community backend does not use cookies, analytics, or advertising.
 
 == Support ==
