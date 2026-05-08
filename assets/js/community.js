@@ -968,12 +968,11 @@
 			var ratingWrapEl = starsEl.closest( '.jzsa-community-entry-rating' );
 			if ( ratingWrapEl ) {
 				ratingWrapEl.addEventListener( 'click', function ( event ) {
-					if ( isCommunityConnected() ) {
-						return;
+					if ( ! isCommunityConnected() ) {
+						event.preventDefault();
+						event.stopPropagation();
+						showRatingTooltip( starsEl, 'Connect first to rate samples.' );
 					}
-					event.preventDefault();
-					event.stopPropagation();
-					showRatingTooltip( starsEl, 'Connect first to rate samples.' );
 				}, true );
 			}
 			starsEl.addEventListener( 'mouseleave', function () {
@@ -983,7 +982,7 @@
 			} );
 			starsEl.addEventListener( 'click', function ( event ) {
 				var clickedStar = event.target.closest( '.jzsa-star' );
-				if ( ( ! clickedStar || ! starsEl.contains( clickedStar ) ) && isCommunityConnected() ) {
+				if ( ! clickedStar || ! starsEl.contains( clickedStar ) ) {
 					return;
 				}
 				if ( ! isCommunityConnected() ) {
