@@ -186,7 +186,10 @@ class JZSA_Renderer {
 			);
 		}
 
-		if ( empty( $config['fullscreen-toggle'] ) || 'disabled' !== $config['fullscreen-toggle'] ) {
+		// The corner "expand" button drives native fullscreen OR the lightbox
+		// overlay (whichever is active). Render it whenever either is enabled.
+		$fullscreen_enabled = empty( $config['fullscreen-toggle'] ) || 'disabled' !== $config['fullscreen-toggle'];
+		if ( $fullscreen_enabled || $this->lightbox_enabled( $config ) ) {
 			$html .= '<div class="swiper-button-fullscreen"></div>';
 		}
 		$html .= '</div>'; // Close .jzsa-album
@@ -263,6 +266,62 @@ class JZSA_Renderer {
 		}
 
 		return implode( '; ', $styles );
+	}
+
+	/**
+	 * Build the data-lightbox-* attribute strings.
+	 *
+	 * The lightbox is an alternative to native fullscreen: when enabled (any
+	 * value other than 'disabled') the album opens in a dimmed overlay on top of
+	 * the page at a bounded size, and native fullscreen is suppressed for it.
+	 * The overlay markup is built entirely in JavaScript, which reads these
+	 * attributes from the source album container.
+	 *
+	 * @param array $config Configuration.
+	 * @return string[] Array of `name="value"` attribute strings.
+	 */
+	private function build_lightbox_data_attributes( $config ) {
+		$attrs = array();
+
+		$mode = isset( $config['lightbox'] ) ? $config['lightbox'] : 'disabled';
+		// interaction-lock is a hard override for all interactions (same as fullscreen).
+		if ( ! empty( $config['interaction-lock'] ) ) {
+			$mode = 'disabled';
+		}
+		// Always emit data-lightbox so JS can branch deterministically.
+		$attrs[] = sprintf( 'data-lightbox="%s"', esc_attr( $mode ) );
+
+		if ( 'disabled' === $mode ) {
+			return $attrs;
+		}
+
+		if ( ! empty( $config['lightbox-image-fit'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-image-fit="%s"', esc_attr( $config['lightbox-image-fit'] ) );
+		}
+		if ( isset( $config['lightbox-max-width'] ) && null !== $config['lightbox-max-width'] ) {
+			$attrs[] = sprintf( 'data-lightbox-max-width="%d"', intval( $config['lightbox-max-width'] ) );
+		}
+		if ( isset( $config['lightbox-max-height'] ) && null !== $config['lightbox-max-height'] ) {
+			$attrs[] = sprintf( 'data-lightbox-max-height="%d"', intval( $config['lightbox-max-height'] ) );
+		}
+		if ( ! empty( $config['lightbox-background-color'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-background-color="%s"', esc_attr( $config['lightbox-background-color'] ) );
+		}
+		if ( ! empty( $config['lightbox-corner-radius'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-corner-radius="%d"', intval( $config['lightbox-corner-radius'] ) );
+		}
+
+		return $attrs;
+	}
+
+	/**
+	 * Whether the album expands into the JS lightbox overlay (vs native fullscreen / nothing).
+	 *
+	 * @param array $config Configuration.
+	 * @return bool
+	 */
+	private function lightbox_enabled( $config ) {
+		return ! empty( $config['lightbox'] ) && 'disabled' !== $config['lightbox'] && empty( $config['interaction-lock'] );
 	}
 
 	/**
@@ -502,6 +561,9 @@ class JZSA_Renderer {
 		if ( $this->has_explicit_responsive_aspect_ratio( $config ) ) {
 			$attrs[] = 'data-responsive-ar="true"';
 		}
+
+		// Lightbox (alternative to native fullscreen).
+		$attrs = array_merge( $attrs, $this->build_lightbox_data_attributes( $config ) );
 
 		return implode( ' ', $attrs );
 	}
@@ -747,6 +809,9 @@ class JZSA_Renderer {
 			if ( ! empty( $config['fullscreen-info-font-color'] ) ) {
 				$attrs[] = sprintf( 'data-fullscreen-info-font-color="%s"', esc_attr( $config['fullscreen-info-font-color'] ) );
 			}
+
+			// Lightbox (alternative to native fullscreen).
+			$attrs = array_merge( $attrs, $this->build_lightbox_data_attributes( $config ) );
 
 			// Gallery mode should keep responsive sizing unless width/height
 		// were explicitly provided in shortcode.

@@ -784,6 +784,124 @@ body.jzsa-no-scroll {
     height: 100%;
 }
 
+/* ============================================================================
+   Lightbox (alternative to native fullscreen): a dimmed overlay on top of the
+   page that shows the album in a bounded box rather than taking over the screen.
+   JS moves the album element into .jzsa-lightbox-backdrop and tags it with
+   .jzsa-lightbox-active .jzsa-is-fullscreen, so it reuses all the fullscreen
+   chrome while these rules constrain its size and dim the page behind it.
+   ============================================================================ */
+
+.jzsa-lightbox-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: none; /* JS sets display:flex when open */
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: clamp(8px, 4vh, 48px);
+    background: rgba(0, 0, 0, 0.92);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    overscroll-behavior: contain;
+}
+.jzsa-lightbox-backdrop.jzsa-lightbox-visible {
+    opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+    .jzsa-lightbox-backdrop {
+        transition: none;
+    }
+}
+
+/* Lock the page behind an open lightbox even if jzsa-no-scroll is not enough. */
+html.jzsa-lightbox-open,
+html.jzsa-lightbox-open body {
+    overflow: hidden;
+}
+
+/* The album, while inside the lightbox: a centered, size-capped box.
+   !important overrides the inline width/height on slider albums and the
+   off-screen positioning of .jzsa-gallery-slideshow. */
+.jzsa-album.jzsa-lightbox-active {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    margin: auto !important;
+    width: min(100%, var(--jzsa-lightbox-max-width, 100%)) !important;
+    height: min(100%, var(--jzsa-lightbox-max-height, 100dvh)) !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    aspect-ratio: auto !important;
+    border-radius: var(--jzsa-lightbox-corner-radius, 0) !important;
+    overflow: hidden;
+    box-sizing: border-box;
+    background-color: var(--gallery-bg-color, #000);
+    animation: jzsa-pseudo-fs-in 0.2s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+    .jzsa-album.jzsa-lightbox-active {
+        animation: none;
+    }
+}
+
+/* Image fit inside the lightbox box (overrides the inline/fullscreen fit). */
+.jzsa-album.jzsa-lightbox-active[data-lightbox-image-fit="contain"] .swiper-slide img,
+.jzsa-album.jzsa-lightbox-active[data-lightbox-image-fit="contain"] .swiper-zoom-container img {
+    object-fit: contain;
+}
+.jzsa-album.jzsa-lightbox-active[data-lightbox-image-fit="cover"] .swiper-slide img,
+.jzsa-album.jzsa-lightbox-active[data-lightbox-image-fit="cover"] .swiper-zoom-container img {
+    object-fit: cover;
+}
+
+/* Close button: top-right of the lightbox box; hidden unless the album is in the lightbox. */
+.jzsa-album .jzsa-lightbox-close {
+    display: none;
+}
+.jzsa-album.jzsa-lightbox-active > .jzsa-lightbox-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: var(--jzsa-controls-circle-size-fs, 55px);
+    height: var(--jzsa-controls-circle-size-fs, 55px);
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.45);
+    color: var(--jzsa-lightbox-controls-color, #fff);
+    cursor: pointer;
+    z-index: 30;
+    -webkit-appearance: none;
+    appearance: none;
+}
+.jzsa-album.jzsa-lightbox-active > .jzsa-lightbox-close::before,
+.jzsa-album.jzsa-lightbox-active > .jzsa-lightbox-close::after {
+    content: "";
+    position: absolute;
+    width: 44%;
+    height: 2.5px;
+    background: currentColor;
+    border-radius: 2px;
+}
+.jzsa-album.jzsa-lightbox-active > .jzsa-lightbox-close::before {
+    transform: rotate(45deg);
+}
+.jzsa-album.jzsa-lightbox-active > .jzsa-lightbox-close::after {
+    transform: rotate(-45deg);
+}
+.jzsa-album.jzsa-lightbox-active > .jzsa-lightbox-close:hover,
+.jzsa-album.jzsa-lightbox-active > .jzsa-lightbox-close:focus-visible {
+    background: rgba(0, 0, 0, 0.7);
+}
+
 /* Album title */
 .jzsa-album .swiper-album-title {
     position: absolute;

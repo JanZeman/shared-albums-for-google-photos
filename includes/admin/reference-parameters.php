@@ -293,7 +293,7 @@
 							</tr>
 							<tr>
 								<td><code>fullscreen-toggle</code></td>
-								<td>How fullscreen is toggled: "button-only" (default) requires the fullscreen button, "click" enters fullscreen on a single click, "double-click" toggles fullscreen on double-click, or "disabled" to prevent fullscreen entirely. Note: "click" disables single-click navigation in fullscreen mode, so mouse users lose the ability to click left/right to browse. <strong>"double-click" is recommended</strong> - it keeps single-click navigation in fullscreen while still offering a gesture shortcut to enter and exit.</td>
+								<td><?php echo wp_kses_post( __( 'How fullscreen is toggled: "button-only" (default) requires the fullscreen button, "click" enters fullscreen on a single click, "double-click" toggles fullscreen on double-click, or "disabled" to prevent fullscreen entirely. Note: "click" disables single-click navigation in fullscreen mode, so mouse users lose the ability to click left/right to browse. <strong>"double-click" is recommended</strong> - it keeps single-click navigation in fullscreen while still offering a gesture shortcut to enter and exit. If <code>lightbox</code> is enabled it takes precedence and this setting is ignored (see Lightbox Settings below).', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 								<td>button-only</td>
 							</tr>
 							<tr>
@@ -347,6 +347,50 @@
 							<tr><td><code>fullscreen-info-font-size</code></td><td><?php esc_html_e( 'Font size for all info boxes in fullscreen, including fullscreen-info-bottom (pixels). Defaults to info-font-size when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-font-size', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
 							<tr><td><code>fullscreen-info-font-family</code></td><td><?php echo wp_kses_post( __( 'Fullscreen override for the info box font family stack, including fullscreen-info-bottom. Uses the same comma-separated CSS <code>font-family</code> syntax as <code>info-font-family</code> and defaults to <code>info-font-family</code> when omitted.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><?php esc_html_e( 'inherits info-font-family', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
 							<tr><td><code>fullscreen-info-font-color</code></td><td><?php echo wp_kses_post( __( 'Fullscreen override for the info box text color, including fullscreen-info-bottom. Uses the same 6-digit hex syntax as <code>info-font-color</code>. If omitted, it inherits <code>info-font-color</code>; if neither is set, fullscreen info text follows <code>fullscreen-controls-color</code>, then <code>controls-color</code>, then white.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><?php esc_html_e( 'inherits info-font-color', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
+						</tbody>
+					</table>
+
+					<h3><?php esc_html_e( 'Lightbox Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<p><?php echo wp_kses_post( __( 'The lightbox is an alternative to native fullscreen. Instead of the browser taking over the whole screen, clicking a photo opens it in a dimmed overlay <strong>on top of the page</strong>, in a size-capped box. Enabling it (any <code>lightbox</code> value other than <code>disabled</code>) replaces native fullscreen for that album, and <code>interaction-lock="true"</code> disables it too. While the lightbox is open it reuses the album\'s <code>fullscreen-*</code> settings (controls, navigation, slideshow, info boxes); the parameters below are the lightbox-specific extras.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+					<table class="jzsa-settings-table jzsa-settings-table--params">
+						<thead>
+							<tr>
+								<th>Parameter</th>
+								<th>Description</th>
+								<th>Default</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><code>lightbox</code></td>
+								<td><?php echo wp_kses_post( __( 'How the lightbox is opened: <code>disabled</code> (default, feature off - native fullscreen behaviour is unchanged), <code>button-only</code> (only the corner button opens it), <code>click</code> (a single click on the photo opens it), or <code>double-click</code> (a double-click opens and closes it). Any value other than <code>disabled</code> enables the lightbox and disables native fullscreen for this album. Note: like <code>fullscreen-toggle</code>, <code>click</code> uses clicks to close the lightbox, so click-to-navigate is unavailable in that mode - <code>double-click</code> is the friendlier choice when visitors also click to browse.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+								<td>disabled</td>
+							</tr>
+							<tr>
+								<td><code>lightbox-max-width</code></td>
+								<td><?php echo wp_kses_post( __( 'Maximum width of the lightbox box, in pixels. The photo is centered and preserves its aspect ratio inside the capped box. This is the answer to "open it at a fixed size instead of full screen". Does not change the fetched image resolution.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+								<td><em>viewport</em></td>
+							</tr>
+							<tr>
+								<td><code>lightbox-max-height</code></td>
+								<td><?php esc_html_e( 'Maximum height of the lightbox box, in pixels. Same semantics as lightbox-max-width.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><em>viewport</em></td>
+							</tr>
+							<tr>
+								<td><code>lightbox-image-fit</code></td>
+								<td><?php esc_html_e( 'How photos fit the box in the lightbox: "contain" (default, show the whole image, no cropping) or "cover" (fill the box and crop the edges).', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>contain</td>
+							</tr>
+							<tr>
+								<td><code>lightbox-background-color</code></td>
+								<td><?php echo wp_kses_post( __( 'Colour of the dimmed backdrop behind the lightbox box. Accepts a hex code, <code>transparent</code>, or an <code>rgba()</code>/<code>hsla()</code> value (semi-transparent is typical so the page shows through).', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+								<td>rgba(0,0,0,0.92)</td>
+							</tr>
+							<tr>
+								<td><code>lightbox-corner-radius</code></td>
+								<td><?php esc_html_e( 'Corner radius of the floating lightbox box, in pixels.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>0</td>
+							</tr>
 						</tbody>
 					</table>
 

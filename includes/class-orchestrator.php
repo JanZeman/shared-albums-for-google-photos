@@ -522,6 +522,8 @@ class JZSA_Shared_Albums {
 		$fullscreen_info_font_color = isset( $atts['fullscreen-info-font-color'] ) ? $this->parse_color( $atts, 'fullscreen-info-font-color', '' ) : $info_font_color;
 		$fullscreen_slideshow_autoresume = isset( $atts['fullscreen-slideshow-autoresume'] ) ? $this->parse_slideshow_autoresume( $atts, array( 'fullscreen-slideshow-autoresume' ) ) : $slideshow_autoresume;
 
+		$lightbox_mode = $this->parse_lightbox_toggle_mode( $atts );
+
 		$config = array(
 			// URL
 			'album-url' => $url,
@@ -573,6 +575,18 @@ class JZSA_Shared_Albums {
 				'fullscreen-show-link-button'     => $fullscreen_show_link_button,
 				'fullscreen-show-download-button' => $fullscreen_show_download_button,
 				'download-size-warning' => $this->parse_download_warning_size_mb( $atts ),
+
+				// Lightbox: an alternative to native fullscreen. Instead of the browser
+				// taking over the screen, the album opens in a dimmed overlay on top of
+				// the page, in a size-capped box. While open it reuses the album's
+				// fullscreen-* settings (controls, navigation, slideshow, info boxes);
+				// the knobs below are the lightbox-specific extras.
+				'lightbox'                  => $lightbox_mode,
+				'lightbox-image-fit'        => $this->parse_lightbox_image_fit( $atts ),
+				'lightbox-max-width'        => $this->parse_optional_positive_int( $atts, 'lightbox-max-width' ),
+				'lightbox-max-height'       => $this->parse_optional_positive_int( $atts, 'lightbox-max-height' ),
+				'lightbox-background-color' => $this->parse_color( $atts, 'lightbox-background-color', '' ),
+				'lightbox-corner-radius'    => isset( $atts['lightbox-corner-radius'] ) ? max( 0, intval( $atts['lightbox-corner-radius'] ) ) : 0,
 
 				// Entry count
 				'limit'                => $this->parse_limit( $atts ),
@@ -1428,6 +1442,61 @@ class JZSA_Shared_Albums {
 
 		// Default fallback
 		return 'button-only';
+	}
+
+	/**
+	 * Parse lightbox trigger mode attribute.
+	 *
+	 * The lightbox is an alternative to native fullscreen: instead of the browser
+	 * taking over the screen, the album opens in a dimmed overlay on top of the
+	 * page at a bounded size. When enabled (any value other than 'disabled') it
+	 * replaces native fullscreen for the album. Defaults to 'disabled' so the
+	 * feature is opt-in and the existing fullscreen behavior is unchanged.
+	 *
+	 * @param array $atts Attributes
+	 * @return string Lightbox trigger mode: 'disabled', 'button-only', 'click', or 'double-click'
+	 */
+	private function parse_lightbox_toggle_mode( $atts ) {
+		if ( ! isset( $atts['lightbox'] ) ) {
+			return 'disabled';
+		}
+
+		$mode = strtolower( trim( (string) $atts['lightbox'] ) );
+
+		// Accept "true"/"on" as a friendly alias for the default trigger.
+		if ( in_array( $mode, array( 'true', 'on', 'yes', '1' ), true ) ) {
+			return 'click';
+		}
+		if ( in_array( $mode, array( 'false', 'off', 'no', '0' ), true ) ) {
+			return 'disabled';
+		}
+
+		$valid_modes = array( 'disabled', 'button-only', 'click', 'double-click' );
+
+		if ( in_array( $mode, $valid_modes, true ) ) {
+			return $mode;
+		}
+
+		return 'disabled';
+	}
+
+	/**
+	 * Parse lightbox-image-fit attribute.
+	 *
+	 * Defaults to 'contain' when not explicitly provided.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string One of 'contain' or 'cover'.
+	 */
+	private function parse_lightbox_image_fit( $atts ) {
+		if ( isset( $atts['lightbox-image-fit'] ) ) {
+			$value = strtolower( trim( (string) $atts['lightbox-image-fit'] ) );
+			if ( in_array( $value, array( 'contain', 'cover' ), true ) ) {
+				return $value;
+			}
+		}
+
+		return 'contain';
 	}
 
 	/**
