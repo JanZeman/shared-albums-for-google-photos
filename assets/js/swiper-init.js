@@ -72,6 +72,7 @@
 			s + ':fullscreen .swiper-button-fullscreen:after,' +
 			s + ':-webkit-full-screen .swiper-button-fullscreen:after{background-image:' + svgs.exitFs + '}' +
 			s + ' .swiper-button-lightbox:after{background-image:' + svgs.enterLightbox + '}' +
+			s + '[data-lightbox-toggle]:not([data-lightbox-toggle="disabled"]) .jzsa-gallery-thumb-fs-btn:after{background-image:' + svgs.enterLightbox + '}' +
 			s + '.jzsa-lightbox-active>.jzsa-lightbox-close::after{background-image:' + svgs.exitLightbox + '}' +
 			s + ' .swiper-button-external-link:after{background-image:' + svgs.link + '}' +
 			s + ' .swiper-button-download:after{background-image:' + svgs.download + '}';
