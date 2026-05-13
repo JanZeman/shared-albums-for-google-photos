@@ -275,6 +275,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 .jzsa-album[data-interaction-lock="true"] .swiper-button-next,
 .jzsa-album[data-interaction-lock="true"] .swiper-button-play-pause,
 .jzsa-album[data-interaction-lock="true"] .swiper-button-fullscreen,
+.jzsa-album[data-interaction-lock="true"] .swiper-button-lightbox,
 .jzsa-album[data-interaction-lock="true"] .swiper-button-external-link,
 .jzsa-album[data-interaction-lock="true"] .swiper-button-download,
 .jzsa-album[data-interaction-lock="true"] .swiper-album-title,
@@ -305,7 +306,8 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 .jzsa-album .swiper-button-external-link:after,
 .jzsa-album .swiper-button-download:after,
 .jzsa-album .swiper-button-play-pause:after,
-.jzsa-album .swiper-button-fullscreen:after {
+.jzsa-album .swiper-button-fullscreen:after,
+.jzsa-album .swiper-button-lightbox:after {
     transition: transform 0.15s ease;
 }
 
@@ -313,6 +315,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 .jzsa-album .swiper-button-prev:hover:after,
 .jzsa-album .swiper-button-play-pause:hover:after,
 .jzsa-album .swiper-button-fullscreen:hover:after,
+.jzsa-album .swiper-button-lightbox:hover:after,
 .jzsa-album .swiper-button-external-link:hover:after,
 .jzsa-album .swiper-button-download:hover:after {
     transform: scale(1.1);
@@ -689,6 +692,54 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     transform-origin: top right;
 }
 
+/* Lightbox button: mirrors the fullscreen button but opens the CSS lightbox overlay. */
+.jzsa-album .swiper-button-lightbox {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: var(--jzsa-controls-circle-size);
+    height: var(--jzsa-controls-circle-size);
+    background: transparent !important;
+    border-radius: 0;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* When both lightbox and fullscreen buttons are shown, offset the lightbox button left. */
+.jzsa-album.jzsa-has-dual-expand .swiper-button-lightbox {
+    right: var(--jzsa-controls-circle-size);
+}
+
+.jzsa-album .swiper-button-lightbox:after {
+    content: '';
+    display: block;
+    width: 26px;
+    height: 26px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5zM10.5 10.5h3v3h-3z' fill='%23ffffff' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Hide lightbox button when the lightbox is already open */
+.jzsa-album.jzsa-lightbox-active > .swiper-button-lightbox {
+    display: none;
+}
+
+/* Hide lightbox button in native/pseudo fullscreen */
+.jzsa-album:fullscreen > .swiper-button-lightbox,
+.jzsa-album:-webkit-full-screen > .swiper-button-lightbox,
+.jzsa-album.jzsa-pseudo-fullscreen > .swiper-button-lightbox,
+.jzsa-album.jzsa-is-fullscreen > .swiper-button-lightbox {
+    display: none;
+}
+
 .jzsa-album:fullscreen .swiper-button-external-link,
 .jzsa-album:-webkit-full-screen .swiper-button-external-link,
 .jzsa-album.jzsa-pseudo-fullscreen .swiper-button-external-link,
@@ -858,13 +909,6 @@ html.jzsa-lightbox-open body {
     object-fit: cover;
 }
 
-/* The corner "expand" button, while a lightbox album sits inline, shows a
-   dedicated "enter lightbox" icon (⛶ brackets + center square) instead of
-   the fullscreen brackets. Higher specificity (3 classes) beats the default
-   fullscreen icon (1 class); JS injection handles custom controls-color. */
-.jzsa-album[data-lightbox-toggle]:not([data-lightbox-toggle="disabled"]):not(.jzsa-lightbox-active) .swiper-button-fullscreen:after {
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5zM10.5 10.5h3v3h-3z' fill='%23ffffff' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>");
-}
 
 /* Fullscreen button inside the lightbox: anchored to the top-right corner
    (right: 0), scaled and aligned to match the close button beside it. */
@@ -1263,6 +1307,7 @@ html.jzsa-lightbox-open body {
 .jzsa-album.jzsa-fullscreen-waiting .swiper-button-next,
 .jzsa-album.jzsa-fullscreen-waiting .swiper-pagination,
 .jzsa-album.jzsa-fullscreen-waiting .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
+.jzsa-album.jzsa-fullscreen-waiting .swiper-button-lightbox,
 .jzsa-album.jzsa-fullscreen-waiting .swiper-button-play-pause,
 .jzsa-album.jzsa-fullscreen-waiting .swiper-button-download,
 .jzsa-album.jzsa-fullscreen-waiting .swiper-button-external-link,
@@ -1279,6 +1324,7 @@ html.jzsa-lightbox-open body {
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-next,
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-pagination,
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-lightbox,
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-play-pause,
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-download,
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-external-link,
@@ -1299,6 +1345,7 @@ html.jzsa-lightbox-open body {
 .jzsa-album.jzsa-loader-pending .swiper-button-next,
 .jzsa-album.jzsa-loader-pending .swiper-pagination,
 .jzsa-album.jzsa-loader-pending .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
+.jzsa-album.jzsa-loader-pending .swiper-button-lightbox,
 .jzsa-album.jzsa-loader-pending .swiper-button-play-pause,
 .jzsa-album.jzsa-loader-pending .swiper-button-download,
 .jzsa-album.jzsa-loader-pending .swiper-button-external-link,
@@ -1313,6 +1360,7 @@ html.jzsa-lightbox-open body {
 .jzsa-album.jzsa-loaded .swiper-button-next,
 .jzsa-album.jzsa-loaded .swiper-pagination,
 .jzsa-album.jzsa-loaded .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
+.jzsa-album.jzsa-loaded .swiper-button-lightbox,
 .jzsa-album.jzsa-loaded .swiper-button-play-pause,
 .jzsa-album.jzsa-loaded .swiper-button-download:not(.jzsa-gallery-thumb-download-btn):not(.jzsa-carousel-slide-overlay-btn),
 .jzsa-album.jzsa-loaded .swiper-button-external-link:not(.jzsa-gallery-thumb-link-btn):not(.jzsa-carousel-slide-overlay-btn),
@@ -2200,6 +2248,7 @@ html.jzsa-lightbox-open body {
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-prev,
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-next,
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-lightbox,
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-play-pause,
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-external-link:not(.jzsa-carousel-slide-overlay-btn),
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-download:not(.jzsa-carousel-slide-overlay-btn) {
@@ -2211,12 +2260,14 @@ html.jzsa-lightbox-open body {
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-prev,
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-next,
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-lightbox,
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-play-pause,
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-external-link:not(.jzsa-carousel-slide-overlay-btn),
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-download:not(.jzsa-carousel-slide-overlay-btn),
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-prev,
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-next,
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-lightbox,
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-play-pause,
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-external-link:not(.jzsa-carousel-slide-overlay-btn),
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-download:not(.jzsa-carousel-slide-overlay-btn) {
@@ -2355,7 +2406,8 @@ html.jzsa-lightbox-open body {
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-play-pause,
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-external-link:not(.jzsa-carousel-slide-overlay-btn),
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-download:not(.jzsa-carousel-slide-overlay-btn),
-    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn):not(.jzsa-carousel-slide-overlay-btn) {
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn):not(.jzsa-carousel-slide-overlay-btn),
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-lightbox {
         opacity: 0;
         pointer-events: none;
         animation: none;
@@ -2367,7 +2419,8 @@ html.jzsa-lightbox-open body {
     .jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-play-pause,
     .jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-external-link:not(.jzsa-carousel-slide-overlay-btn),
     .jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-download:not(.jzsa-carousel-slide-overlay-btn),
-    .jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn):not(.jzsa-carousel-slide-overlay-btn) {
+    .jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn):not(.jzsa-carousel-slide-overlay-btn),
+    .jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-lightbox {
         opacity: var(--jzsa-controls-visible-opacity);
         pointer-events: auto;
     }

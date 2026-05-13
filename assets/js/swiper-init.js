@@ -71,7 +71,7 @@
 			s + ' .swiper-button-fullscreen:after{background-image:' + svgs.fullscreen + '}' +
 			s + ':fullscreen .swiper-button-fullscreen:after,' +
 			s + ':-webkit-full-screen .swiper-button-fullscreen:after{background-image:' + svgs.exitFs + '}' +
-			s + '[data-lightbox-toggle]:not([data-lightbox-toggle="disabled"]):not(.jzsa-lightbox-active) .swiper-button-fullscreen:after{background-image:' + svgs.enterLightbox + '}' +
+			s + ' .swiper-button-lightbox:after{background-image:' + svgs.enterLightbox + '}' +
 			s + '.jzsa-lightbox-active>.jzsa-lightbox-close::after{background-image:' + svgs.exitLightbox + '}' +
 			s + ' .swiper-button-external-link:after{background-image:' + svgs.link + '}' +
 			s + ' .swiper-button-download:after{background-image:' + svgs.download + '}';
@@ -139,13 +139,9 @@
     // ============================================================================
 
     // Fullscreen toggle function (with iPhone pseudo-fullscreen fallback).
-    // When the album opts into the lightbox (data-lightbox != "disabled"), the
-    // dimmed-overlay lightbox replaces native fullscreen for that element.
+    // Always enters/exits native (or pseudo) fullscreen — lightbox is handled
+    // separately via toggleLightbox() and the dedicated .swiper-button-lightbox.
     function toggleFullscreen(element, showHints) {
-        if (elementUsesLightbox(element) && !isLightboxActive(element)) {
-            toggleLightbox(element);
-            return;
-        }
         var showHintsFn = showHints;
         stopAllManagedVideos();
         // When already in the lightbox, isFullscreen() treats lightbox-active as
@@ -703,7 +699,7 @@
 
     // Helper: Check if click should be ignored (clicked on UI element)
     function shouldIgnoreClick(target) {
-        return $(target).closest('.swiper-button-next, .swiper-button-prev, .swiper-button-fullscreen, .swiper-button-external-link, .swiper-button-download, .swiper-button-play-pause, .swiper-pagination, .plyr__controls, .plyr__control').length > 0;
+        return $(target).closest('.swiper-button-next, .swiper-button-prev, .swiper-button-fullscreen, .swiper-button-lightbox, .swiper-button-external-link, .swiper-button-download, .swiper-button-play-pause, .swiper-pagination, .plyr__controls, .plyr__control').length > 0;
     }
 
     // Helper: Read gallery mode data attributes.
@@ -3690,9 +3686,15 @@
             return;
         }
 
+        // Dedicated lightbox button — opens the lightbox overlay directly.
+        $container.find('.swiper-button-lightbox').on('click', function(e) {
+            e.stopPropagation();
+            toggleLightbox($container[0]);
+        });
+
         var $fullscreenBtn = $container.find('.swiper-button-fullscreen');
-			$fullscreenBtn.on('click', function(e) {
-				e.stopPropagation();
+		$fullscreenBtn.on('click', function(e) {
+			e.stopPropagation();
 
 			// Check if we're entering or exiting fullscreen
 			var isCurrentlyFullscreen = isFullscreen();
@@ -4364,78 +4366,103 @@
             }
         }
 
-        // FULLSCREEN SWITCH HANDLERS
-        // When the album opts into the lightbox, the lightbox trigger mode
-        // (data-lightbox) replaces the fullscreen-toggle mode. toggleFullscreen()
-        // itself then routes to the lightbox, so the bodies below are unchanged.
-        var expandToggle = (params.lightboxToggle && params.lightboxToggle !== 'disabled') ? params.lightboxToggle : params.fullscreenToggle;
-		if (expandToggle === 'click') {
-			// Single-click toggles fullscreen (enter and exit)
-			$container.on('click', function(e) {
-				if (!shouldIgnoreClick(e.target)) {
-					e.preventDefault();
+        // EXPAND GESTURE HANDLERS
+        // Lightbox and fullscreen gestures are wired independently.
+        // Lightbox handlers are bound first; stopImmediatePropagation prevents
+        // the fullscreen handler from also firing when both use the same gesture.
+        var lightboxGesture  = params.lightboxToggle  || 'disabled';
+        var fullscreenGesture = params.fullscreenToggle || 'button-only';
 
-					if (!isFullscreen()) {
-						focusClickedSlide(e);
-						jzsaDebug('🔍 Single-click entering fullscreen');
-						applyFullscreenAutoplaySettings(swiper, {
-							fullscreenSlideshow: params.fullscreenSlideshow,
-							fullscreenSlideshowDelay: params.fullscreenSlideshowDelay,
-							slideshowPausedByInteraction: params.slideshowPausedByInteraction
-						});
-					} else {
-						jzsaDebug('🔍 Single-click exiting fullscreen');
-					}
-
-					toggleFullscreen($container[0], params.showHintsOnFullscreen);
+        // ── Lightbox gestures ────────────────────────────────────────────────
+        if (lightboxGesture === 'click') {
+            $container.on('click', function(e) {
+                if (!shouldIgnoreClick(e.target)) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    jzsaDebug('🔍 Single-click toggling lightbox');
+                    toggleLightbox($container[0]);
                 }
             });
-		} else if (expandToggle === 'double-click') {
-			// Double-click toggles fullscreen (both enter and exit)
-			$container.on('dblclick', function(e) {
-				if (!shouldIgnoreClick(e.target)) {
-					e.preventDefault();
-					clearPendingNavClick();
+        } else if (lightboxGesture === 'double-click') {
+            $container.on('dblclick', function(e) {
+                if (!shouldIgnoreClick(e.target)) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    clearPendingNavClick();
+                    jzsaDebug('🔍 Double-click toggling lightbox');
+                    toggleLightbox($container[0]);
+                }
+            });
+            $container.on('touchend', function(e) {
+                if (!shouldIgnoreClick(e.target)) {
+                    handleDoubleTap(e, function() {
+                        clearPendingNavClick();
+                        jzsaDebug('🔍 Double-tap toggling lightbox');
+                        toggleLightbox($container[0]);
+                    });
+                }
+            });
+        }
 
-					if (!isFullscreen()) {
-						focusClickedSlide(e);
-						jzsaDebug('🔍 Double-click entering fullscreen');
-						applyFullscreenAutoplaySettings(swiper, {
-							fullscreenSlideshow: params.fullscreenSlideshow,
-							fullscreenSlideshowDelay: params.fullscreenSlideshowDelay,
-							slideshowPausedByInteraction: params.slideshowPausedByInteraction
-						});
-					} else {
-						jzsaDebug('🔍 Double-click exiting fullscreen');
-					}
-
-					toggleFullscreen($container[0], params.showHintsOnFullscreen);
-				}
-			});
-
-			// Mobile double-tap
-			$container.on('touchend', function(e) {
-				if (!shouldIgnoreClick(e.target)) {
-					handleDoubleTap(e, function(evt) {
-						clearPendingNavClick();
-
-						if (!isFullscreen()) {
-							focusClickedSlide(evt);
-							jzsaDebug('🔍 Double-tap entering fullscreen');
-							applyFullscreenAutoplaySettings(swiper, {
-								fullscreenSlideshow: params.fullscreenSlideshow,
-								fullscreenSlideshowDelay: params.fullscreenSlideshowDelay,
-								slideshowPausedByInteraction: params.slideshowPausedByInteraction
-							});
-						} else {
-							jzsaDebug('🔍 Double-tap exiting fullscreen');
-						}
-
-						toggleFullscreen($container[0], params.showHintsOnFullscreen);
-					});
-				}
-			});
-		}
+        // ── Fullscreen gestures (skip when lightbox is open) ─────────────────
+        if (fullscreenGesture === 'click') {
+            $container.on('click', function(e) {
+                if (!shouldIgnoreClick(e.target) && !isLightboxActive($container[0])) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    if (!isFullscreen()) {
+                        focusClickedSlide(e);
+                        jzsaDebug('🔍 Single-click entering fullscreen');
+                        applyFullscreenAutoplaySettings(swiper, {
+                            fullscreenSlideshow: params.fullscreenSlideshow,
+                            fullscreenSlideshowDelay: params.fullscreenSlideshowDelay,
+                            slideshowPausedByInteraction: params.slideshowPausedByInteraction
+                        });
+                    } else {
+                        jzsaDebug('🔍 Single-click exiting fullscreen');
+                    }
+                    toggleFullscreen($container[0], params.showHintsOnFullscreen);
+                }
+            });
+        } else if (fullscreenGesture === 'double-click') {
+            $container.on('dblclick', function(e) {
+                if (!shouldIgnoreClick(e.target) && !isLightboxActive($container[0])) {
+                    e.preventDefault();
+                    clearPendingNavClick();
+                    if (!isFullscreen()) {
+                        focusClickedSlide(e);
+                        jzsaDebug('🔍 Double-click entering fullscreen');
+                        applyFullscreenAutoplaySettings(swiper, {
+                            fullscreenSlideshow: params.fullscreenSlideshow,
+                            fullscreenSlideshowDelay: params.fullscreenSlideshowDelay,
+                            slideshowPausedByInteraction: params.slideshowPausedByInteraction
+                        });
+                    } else {
+                        jzsaDebug('🔍 Double-click exiting fullscreen');
+                    }
+                    toggleFullscreen($container[0], params.showHintsOnFullscreen);
+                }
+            });
+            $container.on('touchend', function(e) {
+                if (!shouldIgnoreClick(e.target) && !isLightboxActive($container[0])) {
+                    handleDoubleTap(e, function(evt) {
+                        clearPendingNavClick();
+                        if (!isFullscreen()) {
+                            focusClickedSlide(evt);
+                            jzsaDebug('🔍 Double-tap entering fullscreen');
+                            applyFullscreenAutoplaySettings(swiper, {
+                                fullscreenSlideshow: params.fullscreenSlideshow,
+                                fullscreenSlideshowDelay: params.fullscreenSlideshowDelay,
+                                slideshowPausedByInteraction: params.slideshowPausedByInteraction
+                            });
+                        } else {
+                            jzsaDebug('🔍 Double-tap exiting fullscreen');
+                        }
+                        toggleFullscreen($container[0], params.showHintsOnFullscreen);
+                    });
+                }
+            });
+        }
 
 		// TOUCH BUTTON REVEAL: show link/download on tap; ignore scroll/swipe gestures.
 		// Passive listeners so iOS never has to wait for JS before committing a scroll frame.
@@ -4472,8 +4499,11 @@
 		var CURSOR_PREV = 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'22\' height=\'22\'%3E%3Cpath d=\'M14 5.6L8.4 11.2l5.6 5.6\' fill=\'none\' stroke=\'black\' stroke-width=\'2.8\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3Cpath d=\'M14 5.6L8.4 11.2l5.6 5.6\' fill=\'none\' stroke=\'white\' stroke-width=\'1.4\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E") 11 11, w-resize';
 		var CURSOR_NEXT = 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'22\' height=\'22\'%3E%3Cpath d=\'M8.4 5.6l5.6 5.6-5.6 5.6\' fill=\'none\' stroke=\'black\' stroke-width=\'2.8\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3Cpath d=\'M8.4 5.6l5.6 5.6-5.6 5.6\' fill=\'none\' stroke=\'white\' stroke-width=\'1.4\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E") 11 11, e-resize';
 		var navCursorActive = false;
+		// When both lightbox and fullscreen gestures are set, lightbox takes priority
+		// for the purpose of nav cursor and click-delay logic (matches original precedence).
+		var activeExpandGesture = (lightboxGesture !== 'disabled') ? lightboxGesture : fullscreenGesture;
 
-		if (expandToggle !== 'click' && expandToggle !== 'disabled') {
+		if (activeExpandGesture !== 'click' && activeExpandGesture !== 'disabled') {
 			var lastMouseX = -1;
 			var cursorStyleEl = document.createElement('style');
 			$container[0].appendChild(cursorStyleEl);
@@ -4533,7 +4563,7 @@
 		// When fullscreenToggle is double-click, delay navigation so a double-click
 		// to exit fullscreen does not trigger a spurious navigate first.
 		var navClickTimer = null;
-		var NAV_CLICK_DELAY = expandToggle === 'double-click' ? 250 : 0;
+		var NAV_CLICK_DELAY = (lightboxGesture === 'double-click' || fullscreenGesture === 'double-click') ? 250 : 0;
 
 		function clearPendingNavClick() {
 			if (navClickTimer) {
@@ -4551,7 +4581,7 @@
 		$container.on('click', function(e) {
 				if (!shouldIgnoreClick(e.target) && isFullscreen()) {
 					// Single-click mode uses click to exit the expanded view, not navigate.
-					if (expandToggle === 'click') {
+					if (activeExpandGesture === 'click') {
 						return;
 					}
 
@@ -6570,7 +6600,19 @@
             html += '<button class="swiper-button-download" title="' + jzsaEscapeAttr(jzsaI18n('downloadCurrentMedia')) + '"></button>';
         }
 
-        html += '<div class="swiper-button-fullscreen"></div>';
+        // Mirror PHP renderer logic: lightbox button and/or fullscreen button.
+        var galLightboxToggle = $galleryContainer.attr('data-lightbox-toggle') || 'disabled';
+        var galLightboxOn     = galLightboxToggle !== 'disabled';
+        var galFsToggle       = $galleryContainer.attr('data-fullscreen-toggle') || 'button-only';
+        var galFsEnabled      = galFsToggle && galFsToggle !== 'disabled';
+        var galFsExplicit     = $galleryContainer.attr('data-fullscreen-toggle-explicit') === 'true';
+        var galShowFullscreen = galFsEnabled && (!galLightboxOn || galFsExplicit);
+        if (galLightboxOn) {
+            html += '<div class="swiper-button-lightbox" title="' + jzsaEscapeAttr(jzsaI18n('openLightbox')) + '"></div>';
+        }
+        if (galShowFullscreen) {
+            html += '<div class="swiper-button-fullscreen"></div>';
+        }
         html += '</div>';
 
         // Insert player after the gallery shell when present so controls can stay
@@ -6583,6 +6625,10 @@
         }
 
         var $slideshow = $('#' + slideshowId);
+
+        if (galLightboxOn && galShowFullscreen) {
+            $slideshow.addClass('jzsa-has-dual-expand');
+        }
 
         // Copy data attributes for initializeSwiper
         $slideshow.attr('data-all-photos', $galleryContainer.attr('data-all-photos'));
@@ -6599,6 +6645,7 @@
             'data-slideshow-autoresume',
             'data-fullscreen-slideshow-autoresume',
             'data-fullscreen-toggle',
+            'data-fullscreen-toggle-explicit',
             'data-interaction-lock',
             'data-show-navigation',
             'data-fullscreen-show-navigation',
@@ -8737,10 +8784,6 @@
         if (interactionLock) {
             fullscreenToggle = 'disabled';
         }
-        // When the lightbox is enabled it replaces native fullscreen: the trigger
-        // mode comes from data-lightbox-toggle, and toggleFullscreen() (called below)
-        // routes to the lightbox automatically because the slideshow element
-        // carries data-lightbox-toggle (forwarded in buildGallerySlideshow).
         var lightboxMode = interactionLock ? 'disabled' : ($container.attr('data-lightbox-toggle') || 'disabled');
         var expandToggle = (lightboxMode !== 'disabled') ? lightboxMode : fullscreenToggle;
 
@@ -8759,7 +8802,11 @@
                 }
             }
             clearGalleryAutoplayTimer();
-            toggleFullscreen($slideshow[0]);
+            if (elementUsesLightbox($slideshow[0])) {
+                toggleLightbox($slideshow[0]);
+            } else {
+                toggleFullscreen($slideshow[0]);
+            }
         }
 
         function getGalleryPhotoIndexFromElement(targetEl) {
