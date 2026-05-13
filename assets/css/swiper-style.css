@@ -873,8 +873,9 @@ html.jzsa-lightbox-open body {
     display: none !important;
 }
 
-/* Close button: top-left of the lightbox box (away from where a fullscreen
-   corner button would sit); hidden unless the album is in the lightbox. */
+/* Close button: mirrors the fullscreen button in fullscreen mode — top-right
+   corner, transparent background, same size and hover behaviour. Hidden
+   unless the album is in the lightbox. */
 .jzsa-album .jzsa-lightbox-close {
     display: none;
 }
@@ -883,18 +884,19 @@ html.jzsa-lightbox-open body {
     align-items: center;
     justify-content: center;
     position: absolute;
-    top: 12px;
-    left: 12px;
+    top: 0;
+    right: 0;
     width: var(--jzsa-controls-circle-size-fs, 55px);
     height: var(--jzsa-controls-circle-size-fs, 55px);
     padding: 0;
     margin: 0;
     border: none;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.45);
-    color: #fff;
+    border-radius: 0;
+    background: transparent;
     cursor: pointer;
-    z-index: 30;
+    z-index: 10;
+    outline: none;
+    box-shadow: none;
     -webkit-appearance: none;
     appearance: none;
 }
@@ -907,10 +909,10 @@ html.jzsa-lightbox-open body {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
+    transition: transform 0.15s ease;
 }
-.jzsa-album.jzsa-lightbox-active > .jzsa-lightbox-close:hover,
-.jzsa-album.jzsa-lightbox-active > .jzsa-lightbox-close:focus-visible {
-    background: rgba(0, 0, 0, 0.7);
+.jzsa-album.jzsa-lightbox-active > .jzsa-lightbox-close:hover::after {
+    transform: scale(1.1);
 }
 
 /* Album title */
