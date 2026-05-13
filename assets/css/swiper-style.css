@@ -866,11 +866,18 @@ html.jzsa-lightbox-open body {
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5zM10.5 10.5h3v3h-3z' fill='%23ffffff' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>");
 }
 
-/* Inside the lightbox the corner fullscreen button is hidden - closing is the
-   job of the dedicated close button (top-left), Escape, or a backdrop click,
-   which keeps the actions unambiguous. */
+/* Fullscreen button inside the lightbox: anchored to the top-right corner
+   (right: 0), scaled and aligned to match the close button beside it. */
 .jzsa-album.jzsa-lightbox-active > .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn) {
-    display: none !important;
+    right: 0;
+    transform: scale(var(--jzsa-controls-fs-scale));
+    transform-origin: top right;
+}
+/* Hide the lightbox close button in native fullscreen — Esc (or the fullscreen
+   button) exits back to the lightbox; no need for a separate close affordance. */
+.jzsa-album.jzsa-lightbox-active:fullscreen > .jzsa-lightbox-close,
+.jzsa-album.jzsa-lightbox-active:-webkit-full-screen > .jzsa-lightbox-close {
+    display: none;
 }
 
 /* Close button: mirrors the fullscreen button in fullscreen mode — top-right
@@ -885,7 +892,7 @@ html.jzsa-lightbox-open body {
     justify-content: center;
     position: absolute;
     top: 0;
-    right: 0;
+    right: var(--jzsa-controls-circle-size-fs, 55px);
     width: var(--jzsa-controls-circle-size-fs, 55px);
     height: var(--jzsa-controls-circle-size-fs, 55px);
     padding: 0;
@@ -2322,6 +2329,21 @@ html.jzsa-lightbox-open body {
         opacity: var(--jzsa-controls-visible-opacity) !important;
         visibility: visible !important;
         pointer-events: auto !important;
+    }
+
+    /* Lightbox close button: same hide-until-hover behaviour as the fullscreen button. */
+    .jzsa-album.swiper.jzsa-lightbox-active > .jzsa-lightbox-close {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        animation: none;
+    }
+
+    .jzsa-album.swiper.jzsa-lightbox-active:hover > .jzsa-lightbox-close,
+    .jzsa-album.swiper.jzsa-lightbox-active:focus-within > .jzsa-lightbox-close {
+        opacity: var(--jzsa-controls-visible-opacity);
+        visibility: visible;
+        pointer-events: auto;
     }
 
 }

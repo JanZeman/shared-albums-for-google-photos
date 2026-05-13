@@ -142,13 +142,21 @@
     // When the album opts into the lightbox (data-lightbox != "disabled"), the
     // dimmed-overlay lightbox replaces native fullscreen for that element.
     function toggleFullscreen(element, showHints) {
-        if (elementUsesLightbox(element)) {
+        if (elementUsesLightbox(element) && !isLightboxActive(element)) {
             toggleLightbox(element);
             return;
         }
         var showHintsFn = showHints;
         stopAllManagedVideos();
-        var currentlyFullscreen = isFullscreen(element);
+        // When already in the lightbox, isFullscreen() treats lightbox-active as
+        // fullscreen, which would wrongly prevent entering native fullscreen from
+        // within the lightbox. Use the native API directly for the check instead.
+        var inLightbox = isLightboxActive(element);
+        var nativeFsEl = document.fullscreenElement || document.webkitFullscreenElement ||
+                         document.mozFullScreenElement || document.msFullscreenElement;
+        var currentlyFullscreen = inLightbox
+            ? (nativeFsEl === element || $(element).hasClass('jzsa-pseudo-fullscreen'))
+            : isFullscreen(element);
         var pseudoActive = $(element).hasClass('jzsa-pseudo-fullscreen');
 
         if (!currentlyFullscreen) {
@@ -162,8 +170,11 @@
                 // Native fullscreen events do not fire for pseudo fullscreen.
                 $(element).trigger('jzsa:fullscreen-state', [true]);
             } else {
-                // Save scroll position so we can restore it when exiting
-                $(element).data('jzsa-scroll-y', window.scrollY || window.pageYOffset);
+                // Save scroll position so we can restore it when exiting.
+                // Skip when in lightbox — openLightbox already saved the scroll.
+                if (!inLightbox) {
+                    $(element).data('jzsa-scroll-y', window.scrollY || window.pageYOffset);
+                }
                 // Enter native fullscreen where supported
                 if (element.requestFullscreen) {
                     element.requestFullscreen();
@@ -342,6 +353,14 @@
 
         _jzsaLightboxKeyHandler = function(e) {
             if (e.key === 'Escape' || e.keyCode === 27) {
+                // When in native fullscreen from within the lightbox, let the
+                // browser handle Esc; handleFullscreenChange will return us to
+                // the lightbox rather than closing it entirely.
+                var nativeFsEl = document.fullscreenElement || document.webkitFullscreenElement ||
+                                 document.mozFullScreenElement || document.msFullscreenElement;
+                if (nativeFsEl === element) {
+                    return;
+                }
                 e.preventDefault();
                 closeLightbox(element);
             }
@@ -349,6 +368,11 @@
         document.addEventListener('keydown', _jzsaLightboxKeyHandler, true);
         $backdrop.off('click.jzsaLightbox').on('click.jzsaLightbox', function(e) {
             if (e.target === backdrop) {
+                var nativeFsEl = document.fullscreenElement || document.webkitFullscreenElement ||
+                                 document.mozFullScreenElement || document.msFullscreenElement;
+                if (nativeFsEl === element) {
+                    return;
+                }
                 closeLightbox(element);
             }
         });
@@ -3517,27 +3541,54 @@
                 setTimeout(tryFix, interval);
             })();
 
-            // Restore original background color
-            if (params._originalBgColor !== undefined) {
+            // When the user entered native fullscreen from within the lightbox,
+            // exit should land back in the lightbox, not inline.
+            var isReturningToLightbox = $(containerElement).hasClass('jzsa-lightbox-active');
+
+            // Restore original background color.
+            // Skip for lightbox return — the lightbox manages the bg itself.
+            if (!isReturningToLightbox && params._originalBgColor !== undefined) {
                 if (params._originalBgColor) {
                     containerElement.style.setProperty('--gallery-bg-color', params._originalBgColor);
                 } else {
                     containerElement.style.removeProperty('--gallery-bg-color');
                 }
-                delete params._originalBgColor;
             }
+            delete params._originalBgColor;
 
-	            // Remove fullscreen class
-	            $(containerElement).removeClass('jzsa-is-fullscreen');
-	            $(containerElement).removeClass('jzsa-fullscreen-waiting');
-            applyFullscreenDisplayOverrides(containerElement, swiper, params, false);
-	            clearCountdownRing($(containerElement));
+            $(containerElement).removeClass('jzsa-fullscreen-waiting');
 
-            notifyGalleryOnFullscreenExit(containerElement, swiper);
+            if (!isReturningToLightbox) {
+                // Standard exit: remove fs class, revert display overrides, restore scroll.
+                $(containerElement).removeClass('jzsa-is-fullscreen');
+                applyFullscreenDisplayOverrides(containerElement, swiper, params, false);
+                clearCountdownRing($(containerElement));
+                notifyGalleryOnFullscreenExit(containerElement, swiper);
+            } else {
+                // Back in lightbox: keep jzsa-is-fullscreen (lightbox uses it),
+                // re-apply fullscreen display settings, skip scroll restore.
+                applyFullscreenDisplayOverrides(containerElement, swiper, params, true);
+                clearCountdownRing($(containerElement));
+            }
 
             params.slideshowPausedByInteraction = false;
 
-            if (params.slideshow === 'auto') {
+            if (isReturningToLightbox) {
+                // Restore fullscreen-mode slideshow — lightbox always uses fs settings.
+                if (swiper.autoplay && swiper.autoplay.running) {
+                    swiper.autoplay.stop();
+                }
+                if (params.fullscreenSlideshow !== 'disabled') {
+                    var lbDelay = params.fullscreenSlideshowDelay * MILLISECONDS_PER_SECOND;
+                    swiper.params.autoplay.delay = lbDelay;
+                    if (swiper.autoplay) {
+                        swiper.autoplay.delay = lbDelay;
+                    }
+                    if (params.fullscreenSlideshow === 'auto') {
+                        swiper.autoplay.start();
+                    }
+                }
+            } else if (params.slideshow === 'auto') {
                 // Stop current autoplay if running
                 if (swiper.autoplay && swiper.autoplay.running) {
                     swiper.autoplay.stop();
