@@ -1183,9 +1183,9 @@ class JZSA_Admin_Pages {
 							<h3><?php esc_html_e( 'Lightbox - Button Only, Rounded Box, Lighter Backdrop', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<span class="jzsa-sample-card-hint"><?php esc_html_e( 'Use the corner button to open the lightbox', 'janzeman-shared-albums-for-google-photos' ); ?></span>
 						</div>
-						<p><?php esc_html_e( 'lightbox-toggle="button-only" opens the lightbox only via the corner button (clicking the photo does nothing extra). lightbox-corner-radius rounds the floating box and lightbox-background-color="rgba(0,0,0,0.7)" dims the page more gently so it shows through.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<p><?php esc_html_e( 'lightbox-toggle="button-only" opens the lightbox only via the corner button (clicking the photo does nothing extra). lightbox-corner-radius rounds the floating box and lightbox-background-color="rgba(0,128,0,0.7)" dims the page more gently so it shows through.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" lightbox-toggle="button-only" lightbox-corner-radius="16" lightbox-max-width="1100" lightbox-max-height="750" lightbox-background-color="rgba(0,0,0,0.7)"]';
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" lightbox-toggle="button-only" lightbox-corner-radius="16" lightbox-max-width="1100" lightbox-max-height="750" lightbox-background-color="rgba(0,128,0,0.7)"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1234,6 +1234,27 @@ class JZSA_Admin_Pages {
 						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-fs-switch-double">
+						<?php
+							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo do_shortcode( $sample_shortcode );
+						?>
+					</div>
+					</div>
+
+					<div class="jzsa-sample-card">
+						<div class="jzsa-sample-card-header">
+							<h3><?php esc_html_e( 'Lightbox + Fullscreen - Both Buttons Side by Side', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<span class="jzsa-sample-card-hint"><?php esc_html_e( 'Left button opens lightbox, right button enters fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?></span>
+						</div>
+						<p><?php echo wp_kses( __( 'When both <code>lightbox-toggle</code> and <code>fullscreen-toggle</code> are set, two buttons appear side by side in the top-right corner. The left button (with the center-square icon) opens the CSS lightbox overlay; the right button enters native fullscreen. Your visitor chooses which experience they prefer. Inside the lightbox a fullscreen button is also available, so they can escalate from lightbox to fullscreen without closing first.', 'janzeman-shared-albums-for-google-photos' ), array( 'code' => array(), 'strong' => array() ) ); ?></p>
+					<?php
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" lightbox-toggle="button-only" lightbox-max-width="1100" lightbox-max-height="750" fullscreen-toggle="button-only"]';
+					?>
+					<div class="jzsa-code-block">
+						<code><?php echo esc_html( $sample_shortcode ); ?></code>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+					</div>
+					<div class="jzsa-preview-container jzsa-preview-container-dual-expand">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 							echo do_shortcode( $sample_shortcode );
