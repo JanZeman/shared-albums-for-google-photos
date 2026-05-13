@@ -936,7 +936,7 @@ html.jzsa-lightbox-open body {
     justify-content: center;
     position: absolute;
     top: 0;
-    right: var(--jzsa-controls-circle-size-fs, 55px);
+    right: 0;
     width: var(--jzsa-controls-circle-size-fs, 55px);
     height: var(--jzsa-controls-circle-size-fs, 55px);
     padding: 0;
@@ -950,6 +950,11 @@ html.jzsa-lightbox-open body {
     box-shadow: none;
     -webkit-appearance: none;
     appearance: none;
+}
+/* When both lightbox and fullscreen buttons coexist, the fullscreen button sits at
+   right: 0 inside the lightbox, so the close button steps left to make room. */
+.jzsa-album.jzsa-has-dual-expand.jzsa-lightbox-active > .jzsa-lightbox-close {
+    right: var(--jzsa-controls-circle-size-fs, 55px);
 }
 .jzsa-album.jzsa-lightbox-active > .jzsa-lightbox-close::after {
     content: "";
