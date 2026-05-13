@@ -2902,6 +2902,7 @@
         var showCarouselTileFullscreenButtons = !!config.showCarouselTileFullscreenButtons;
         var showCarouselTileLinkButtons = !!config.showCarouselTileLinkButtons;
         var showCarouselTileDownloadButtons = !!config.showCarouselTileDownloadButtons;
+        var carouselLightboxEnabled = !!config.carouselLightboxEnabled;
         var carouselAlbumUrl = config.carouselAlbumUrl || '';
         var carouselZoneFormats = config.carouselZoneFormats || null;
         var carouselTotalCount = parseInt(config.carouselTotalCount, 10) || photos.length || 0;
@@ -2918,7 +2919,7 @@
                 if (showCarouselTileFullscreenButtons) {
                     tileOverlayButtons +=
                         '<button class="swiper-button-fullscreen jzsa-gallery-thumb-fs-btn jzsa-carousel-slide-overlay-btn jzsa-carousel-slide-fs-btn" type="button" ' +
-                        'aria-label="' + jzsaEscapeAttr(jzsaFormatI18n('openMediaFullscreen', index + 1)) + '"></button>';
+                        'aria-label="' + jzsaEscapeAttr(jzsaFormatI18n(carouselLightboxEnabled ? 'openMediaLightbox' : 'openMediaFullscreen', index + 1)) + '"></button>';
                 }
                 if (showTileLink) {
                     tileOverlayButtons +=
@@ -5393,6 +5394,7 @@
         var slidesRenderOptions = {
             mode: mode,
             showCarouselTileFullscreenButtons: showCarouselTileFullscreenButtons,
+            carouselLightboxEnabled: lightboxEnabled,
             showCarouselTileLinkButtons: showCarouselTileLinkButtons,
             showCarouselTileDownloadButtons: showCarouselTileDownloadButtons,
             carouselAlbumUrl: albumUrl,
@@ -6819,7 +6821,7 @@
                 $container.attr('data-fullscreen-toggle') !== 'disabled' ||
                 ($container.attr('data-lightbox-toggle') && $container.attr('data-lightbox-toggle') !== 'disabled')
             );
-        var thumbExpandWord = ($container.attr('data-lightbox-toggle') && $container.attr('data-lightbox-toggle') !== 'disabled') ? 'lightbox' : 'fullscreen';
+        var thumbExpandI18nKey = ($container.attr('data-lightbox-toggle') && $container.attr('data-lightbox-toggle') !== 'disabled') ? 'openMediaLightbox' : 'openMediaFullscreen';
         var showThumbLink = $container.attr('data-show-link-button') === 'true' &&
             $container.attr('data-interaction-lock') !== 'true';
         var showThumbDownload = $container.attr('data-show-download-button') === 'true' &&
@@ -6857,10 +6859,10 @@
                 thumbOverlayBtns += '<a href="' + thumbAlbumUrl + '" target="_blank" rel="noopener noreferrer" class="jzsa-gallery-thumb-link-btn swiper-button-external-link" tabindex="0" aria-label="' + jzsaEscapeAttr(jzsaI18n('openAlbumGooglePhotos')) + '"></a>';
             }
             if (showThumbDownload) {
-                thumbOverlayBtns += '<div class="jzsa-gallery-thumb-download-btn swiper-button-download" role="button" tabindex="0" data-index="' + globalIndex + '" data-media-type="' + mediaLabel + '" aria-label="Download ' + mediaLabel + ' ' + (globalIndex + 1) + '"></div>';
+                thumbOverlayBtns += '<div class="jzsa-gallery-thumb-download-btn swiper-button-download" role="button" tabindex="0" data-index="' + globalIndex + '" data-media-type="' + mediaLabel + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n('downloadMedia', globalIndex + 1)) + '"></div>';
             }
             if (allowThumbFullscreen) {
-                thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open ' + mediaLabel + ' ' + (globalIndex + 1) + ' in ' + thumbExpandWord + '"></div>';
+                thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n(thumbExpandI18nKey, globalIndex + 1)) + '"></div>';
             }
 
             // Info box overlays for gallery thumbnails.
@@ -6939,7 +6941,7 @@
                 $container.attr('data-fullscreen-toggle') !== 'disabled' ||
                 ($container.attr('data-lightbox-toggle') && $container.attr('data-lightbox-toggle') !== 'disabled')
             );
-        var thumbExpandWord = ($container.attr('data-lightbox-toggle') && $container.attr('data-lightbox-toggle') !== 'disabled') ? 'lightbox' : 'fullscreen';
+        var thumbExpandI18nKey = ($container.attr('data-lightbox-toggle') && $container.attr('data-lightbox-toggle') !== 'disabled') ? 'openMediaLightbox' : 'openMediaFullscreen';
         var showThumbLink = $container.attr('data-show-link-button') === 'true' &&
             $container.attr('data-interaction-lock') !== 'true';
         var showThumbDownload = $container.attr('data-show-download-button') === 'true' &&
@@ -6982,10 +6984,10 @@
                     thumbOverlayBtns += '<a href="' + thumbAlbumUrl + '" target="_blank" rel="noopener noreferrer" class="jzsa-gallery-thumb-link-btn swiper-button-external-link" tabindex="0" aria-label="' + jzsaEscapeAttr(jzsaI18n('openAlbumGooglePhotos')) + '"></a>';
                 }
                 if (showThumbDownload) {
-                    thumbOverlayBtns += '<div class="jzsa-gallery-thumb-download-btn swiper-button-download" role="button" tabindex="0" data-index="' + item.index + '" data-media-type="' + mediaLabel + '" aria-label="Download ' + mediaLabel + ' ' + (item.index + 1) + '"></div>';
+                    thumbOverlayBtns += '<div class="jzsa-gallery-thumb-download-btn swiper-button-download" role="button" tabindex="0" data-index="' + item.index + '" data-media-type="' + mediaLabel + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n('downloadMedia', item.index + 1)) + '"></div>';
                 }
                 if (allowThumbFullscreen) {
-                    thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open ' + mediaLabel + ' ' + (item.index + 1) + ' in ' + thumbExpandWord + '"></div>';
+                    thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n(thumbExpandI18nKey, item.index + 1)) + '"></div>';
                 }
 
                 // Info box overlays for justified thumbnails.
