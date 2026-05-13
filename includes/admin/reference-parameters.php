@@ -293,7 +293,7 @@
 							</tr>
 							<tr>
 								<td><code>fullscreen-toggle</code></td>
-								<td><?php echo wp_kses_post( __( 'How fullscreen is toggled: "button-only" (default) requires the fullscreen button, "click" enters fullscreen on a single click, "double-click" toggles fullscreen on double-click, or "disabled" to prevent fullscreen entirely. Note: "click" disables single-click navigation in fullscreen mode, so mouse users lose the ability to click left/right to browse. <strong>"double-click" is recommended</strong> - it keeps single-click navigation in fullscreen while still offering a gesture shortcut to enter and exit. Both <code>lightbox-toggle</code> and <code>fullscreen-toggle</code> can be active at the same time — the visitor sees both buttons and chooses which expanded view to open. Set <code>fullscreen-toggle="disabled"</code> to hide the fullscreen button when you want lightbox-only behaviour (see Lightbox Settings below).', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+								<td><?php echo wp_kses_post( __( 'How fullscreen is toggled: "button-only" (default) requires the fullscreen button, "click" enters fullscreen on a single click, "double-click" toggles fullscreen on double-click, or "disabled" to prevent fullscreen entirely. Note: "click" disables single-click navigation in fullscreen mode, so mouse users lose the ability to click left/right to browse. <strong>"double-click" is recommended</strong> - it keeps single-click navigation in fullscreen while still offering a gesture shortcut to enter and exit. Both <code>lightbox-toggle</code> and <code>fullscreen-toggle</code> can be active at the same time; the visitor sees both buttons and chooses which expanded view to open. Set <code>fullscreen-toggle="disabled"</code> to hide the fullscreen button when you want lightbox-only behaviour (see Lightbox Settings below).', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 								<td>button-only</td>
 							</tr>
 							<tr>
@@ -363,7 +363,7 @@
 						<tbody>
 							<tr>
 								<td><code>lightbox-toggle</code></td>
-								<td><?php echo wp_kses_post( __( 'How the lightbox is opened: <code>disabled</code> (default, feature off - native fullscreen behaviour is unchanged), <code>button-only</code> (only the corner button opens it), <code>click</code> (a single click on the photo opens it), or <code>double-click</code> (a double-click opens and closes it). Any value other than <code>disabled</code> enables the lightbox. The fullscreen button remains visible alongside it by default — add <code>fullscreen-toggle="disabled"</code> if you want lightbox-only with no native fullscreen option. Note: like <code>fullscreen-toggle</code>, <code>click</code> uses clicks to close the lightbox, so click-to-navigate is unavailable in that mode - <code>double-click</code> is the friendlier choice when visitors also click to browse.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+								<td><?php echo wp_kses_post( __( 'How the lightbox is opened: <code>disabled</code> (default, feature off - native fullscreen behaviour is unchanged), <code>button-only</code> (only the corner button opens it), <code>click</code> (a single click on the photo opens it), or <code>double-click</code> (a double-click opens and closes it). Any value other than <code>disabled</code> enables the lightbox. The fullscreen button remains visible alongside it by default; add <code>fullscreen-toggle="disabled"</code> if you want lightbox-only with no native fullscreen option. Note: like <code>fullscreen-toggle</code>, <code>click</code> uses clicks to close the lightbox, so click-to-navigate is unavailable in that mode - <code>double-click</code> is the friendlier choice when visitors also click to browse.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 								<td>disabled</td>
 							</tr>
 							<tr>
@@ -538,7 +538,7 @@
 						<tbody>
 							<tr>
 								<td><code>album-cache-refresh</code></td>
-								<td>How often the album's photo list is re-fetched from Google Photos, in hours. Only the album listing is affected — per-photo metadata (EXIF, description, etc.) is cached separately and is not cleared by this setting. Useful for albums that are updated frequently (e.g. live event albums). Example: album-cache-refresh="1" to refresh every hour. The old name <code>cache-refresh</code> still works for backward compatibility.</td>
+								<td>How often the album's photo list is re-fetched from Google Photos, in hours. Only the album listing is affected; per-photo metadata (EXIF, description, etc.) is cached separately and is not cleared by this setting. Useful for albums that are updated frequently (e.g. live event albums). Example: album-cache-refresh="1" to refresh every hour. The old name <code>cache-refresh</code> still works for backward compatibility.</td>
 								<td>168 (7 days)</td>
 							</tr>
 							<tr>
