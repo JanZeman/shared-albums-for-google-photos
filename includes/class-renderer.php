@@ -149,7 +149,7 @@ class JZSA_Renderer {
 
 		$lightbox_on      = $this->lightbox_enabled( $config );
 		$fullscreen_enabled = ! empty( $config['fullscreen-toggle'] ) && 'disabled' !== $config['fullscreen-toggle'];
-		$show_fullscreen  = $fullscreen_enabled && ( ! $lightbox_on || ! empty( $config['fullscreen-toggle-explicit'] ) );
+		$show_fullscreen  = $fullscreen_enabled;
 		$album_classes    = 'jzsa-album swiper jzsa-loader-pending';
 		if ( $lightbox_on && $show_fullscreen ) {
 			$album_classes .= ' jzsa-has-dual-expand';
@@ -524,9 +524,7 @@ class JZSA_Renderer {
 		if ( ! empty( $config['fullscreen-toggle'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-toggle="%s"', esc_attr( $config['fullscreen-toggle'] ) );
 		}
-		if ( ! empty( $config['fullscreen-toggle-explicit'] ) ) {
-			$attrs[] = 'data-fullscreen-toggle-explicit="true"';
-		}
+
 
 		if ( ! empty( $config['album-url'] ) ) {
 			$attrs[] = sprintf( 'data-album-url="%s"', esc_url( $config['album-url'] ) );
@@ -736,9 +734,7 @@ class JZSA_Renderer {
 		if ( ! empty( $config['fullscreen-toggle'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-toggle="%s"', esc_attr( $config['fullscreen-toggle'] ) );
 		}
-		if ( ! empty( $config['fullscreen-toggle-explicit'] ) ) {
-			$attrs[] = 'data-fullscreen-toggle-explicit="true"';
-		}
+
 
 		if ( ! empty( $config['image-fit'] ) ) {
 			$attrs[] = sprintf( 'data-image-fit="%s"', esc_attr( $config['image-fit'] ) );

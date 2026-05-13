@@ -567,7 +567,6 @@ class JZSA_Shared_Albums {
 				'image-fit'            => $this->parse_image_fit( $atts ),
 				'fullscreen-image-fit' => $this->parse_fullscreen_image_fit( $atts ),
 				'fullscreen-toggle'          => $this->parse_fullscreen_toggle_mode( $atts ),
-				'fullscreen-toggle-explicit' => isset( $atts['fullscreen-toggle'] ),
 				'interaction-lock'     => $this->parse_bool( $atts, 'interaction-lock', false ),
 				'show-navigation'      => $show_navigation,
 				'fullscreen-show-navigation' => $fullscreen_show_navigation,

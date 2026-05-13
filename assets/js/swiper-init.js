@@ -6606,8 +6606,7 @@
         var galLightboxOn     = galLightboxToggle !== 'disabled';
         var galFsToggle       = $galleryContainer.attr('data-fullscreen-toggle') || 'button-only';
         var galFsEnabled      = galFsToggle && galFsToggle !== 'disabled';
-        var galFsExplicit     = $galleryContainer.attr('data-fullscreen-toggle-explicit') === 'true';
-        var galShowFullscreen = galFsEnabled && (!galLightboxOn || galFsExplicit);
+        var galShowFullscreen = galFsEnabled;
         if (galLightboxOn) {
             html += '<div class="swiper-button-lightbox" title="' + jzsaEscapeAttr(jzsaI18n('openLightbox')) + '"></div>';
         }
@@ -6646,7 +6645,6 @@
             'data-slideshow-autoresume',
             'data-fullscreen-slideshow-autoresume',
             'data-fullscreen-toggle',
-            'data-fullscreen-toggle-explicit',
             'data-interaction-lock',
             'data-show-navigation',
             'data-fullscreen-show-navigation',
