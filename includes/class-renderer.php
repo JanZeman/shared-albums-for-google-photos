@@ -189,7 +189,7 @@ class JZSA_Renderer {
 		// The corner "expand" button drives native fullscreen OR the lightbox
 		// overlay (whichever is active). Render it whenever either is enabled.
 		// When the album opens the lightbox, give the button a matching tooltip
-		// (the icon itself is swapped via CSS based on data-lightbox).
+		// (the icon itself is swapped via CSS based on data-lightbox-toggle).
 		$fullscreen_enabled = empty( $config['fullscreen-toggle'] ) || 'disabled' !== $config['fullscreen-toggle'];
 		if ( $this->lightbox_enabled( $config ) ) {
 			$html .= sprintf( '<div class="swiper-button-fullscreen" title="%s"></div>', esc_attr( $i18n['openLightbox'] ) );
@@ -287,13 +287,13 @@ class JZSA_Renderer {
 	private function build_lightbox_data_attributes( $config ) {
 		$attrs = array();
 
-		$mode = isset( $config['lightbox'] ) ? $config['lightbox'] : 'disabled';
+		$mode = isset( $config['lightbox-toggle'] ) ? $config['lightbox-toggle'] : 'disabled';
 		// interaction-lock is a hard override for all interactions (same as fullscreen).
 		if ( ! empty( $config['interaction-lock'] ) ) {
 			$mode = 'disabled';
 		}
-		// Always emit data-lightbox so JS can branch deterministically.
-		$attrs[] = sprintf( 'data-lightbox="%s"', esc_attr( $mode ) );
+		// Always emit data-lightbox-toggle so JS can branch deterministically.
+		$attrs[] = sprintf( 'data-lightbox-toggle="%s"', esc_attr( $mode ) );
 
 		if ( 'disabled' === $mode ) {
 			return $attrs;
@@ -325,7 +325,7 @@ class JZSA_Renderer {
 	 * @return bool
 	 */
 	private function lightbox_enabled( $config ) {
-		return ! empty( $config['lightbox'] ) && 'disabled' !== $config['lightbox'] && empty( $config['interaction-lock'] );
+		return ! empty( $config['lightbox-toggle'] ) && 'disabled' !== $config['lightbox-toggle'] && empty( $config['interaction-lock'] );
 	}
 
 	/**

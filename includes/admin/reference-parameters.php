@@ -293,7 +293,7 @@
 							</tr>
 							<tr>
 								<td><code>fullscreen-toggle</code></td>
-								<td><?php echo wp_kses_post( __( 'How fullscreen is toggled: "button-only" (default) requires the fullscreen button, "click" enters fullscreen on a single click, "double-click" toggles fullscreen on double-click, or "disabled" to prevent fullscreen entirely. Note: "click" disables single-click navigation in fullscreen mode, so mouse users lose the ability to click left/right to browse. <strong>"double-click" is recommended</strong> - it keeps single-click navigation in fullscreen while still offering a gesture shortcut to enter and exit. If <code>lightbox</code> is enabled it takes precedence and this setting is ignored (see Lightbox Settings below).', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+								<td><?php echo wp_kses_post( __( 'How fullscreen is toggled: "button-only" (default) requires the fullscreen button, "click" enters fullscreen on a single click, "double-click" toggles fullscreen on double-click, or "disabled" to prevent fullscreen entirely. Note: "click" disables single-click navigation in fullscreen mode, so mouse users lose the ability to click left/right to browse. <strong>"double-click" is recommended</strong> - it keeps single-click navigation in fullscreen while still offering a gesture shortcut to enter and exit. If <code>lightbox-toggle</code> is enabled it takes precedence and this setting is ignored (see Lightbox Settings below).', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 								<td>button-only</td>
 							</tr>
 							<tr>
@@ -351,7 +351,7 @@
 					</table>
 
 					<h3><?php esc_html_e( 'Lightbox Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<p><?php echo wp_kses_post( __( 'The lightbox is an alternative to native fullscreen. Instead of the browser taking over the whole screen, clicking a photo opens it in a dimmed overlay <strong>on top of the page</strong>, in a size-capped box. Enabling it (any <code>lightbox</code> value other than <code>disabled</code>) replaces native fullscreen for that album, and <code>interaction-lock="true"</code> disables it too. While the lightbox is open it reuses the album\'s <code>fullscreen-*</code> settings (controls, navigation, slideshow, info boxes); the parameters below are the lightbox-specific extras.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+					<p><?php echo wp_kses_post( __( 'The lightbox is an alternative to native fullscreen. Instead of the browser taking over the whole screen, clicking a photo opens it in a dimmed overlay <strong>on top of the page</strong>, in a size-capped box. Enabling it (any <code>lightbox-toggle</code> value other than <code>disabled</code>) replaces native fullscreen for that album, and <code>interaction-lock="true"</code> disables it too. While the lightbox is open it reuses the album\'s <code>fullscreen-*</code> settings (controls, navigation, slideshow, info boxes); the parameters below are the lightbox-specific extras.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 					<table class="jzsa-settings-table jzsa-settings-table--params">
 						<thead>
 							<tr>
@@ -362,7 +362,7 @@
 						</thead>
 						<tbody>
 							<tr>
-								<td><code>lightbox</code></td>
+								<td><code>lightbox-toggle</code></td>
 								<td><?php echo wp_kses_post( __( 'How the lightbox is opened: <code>disabled</code> (default, feature off - native fullscreen behaviour is unchanged), <code>button-only</code> (only the corner button opens it), <code>click</code> (a single click on the photo opens it), or <code>double-click</code> (a double-click opens and closes it). Any value other than <code>disabled</code> enables the lightbox and disables native fullscreen for this album. Note: like <code>fullscreen-toggle</code>, <code>click</code> uses clicks to close the lightbox, so click-to-navigate is unavailable in that mode - <code>double-click</code> is the friendlier choice when visitors also click to browse.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 								<td>disabled</td>
 							</tr>

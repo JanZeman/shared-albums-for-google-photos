@@ -581,7 +581,7 @@ class JZSA_Shared_Albums {
 				// the page, in a size-capped box. While open it reuses the album's
 				// fullscreen-* settings (controls, navigation, slideshow, info boxes);
 				// the knobs below are the lightbox-specific extras.
-				'lightbox'                  => $lightbox_mode,
+				'lightbox-toggle'           => $lightbox_mode,
 				'lightbox-image-fit'        => $this->parse_lightbox_image_fit( $atts ),
 				'lightbox-max-width'        => $this->parse_optional_positive_int( $atts, 'lightbox-max-width' ),
 				'lightbox-max-height'       => $this->parse_optional_positive_int( $atts, 'lightbox-max-height' ),
@@ -1457,11 +1457,11 @@ class JZSA_Shared_Albums {
 	 * @return string Lightbox trigger mode: 'disabled', 'button-only', 'click', or 'double-click'
 	 */
 	private function parse_lightbox_toggle_mode( $atts ) {
-		if ( ! isset( $atts['lightbox'] ) ) {
+		if ( ! isset( $atts['lightbox-toggle'] ) ) {
 			return 'disabled';
 		}
 
-		$mode = strtolower( trim( (string) $atts['lightbox'] ) );
+		$mode = strtolower( trim( (string) $atts['lightbox-toggle'] ) );
 
 		// Accept "true"/"on" as a friendly alias for the default trigger.
 		if ( in_array( $mode, array( 'true', 'on', 'yes', '1' ), true ) ) {

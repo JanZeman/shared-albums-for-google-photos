@@ -71,7 +71,7 @@
 			s + ' .swiper-button-fullscreen:after{background-image:' + svgs.fullscreen + '}' +
 			s + ':fullscreen .swiper-button-fullscreen:after,' +
 			s + ':-webkit-full-screen .swiper-button-fullscreen:after{background-image:' + svgs.exitFs + '}' +
-			s + '[data-lightbox]:not([data-lightbox="disabled"]):not(.jzsa-lightbox-active) .swiper-button-fullscreen:after{background-image:' + svgs.enterLightbox + '}' +
+			s + '[data-lightbox-toggle]:not([data-lightbox-toggle="disabled"]):not(.jzsa-lightbox-active) .swiper-button-fullscreen:after{background-image:' + svgs.enterLightbox + '}' +
 			s + '.jzsa-lightbox-active>.jzsa-lightbox-close::after{background-image:' + svgs.exitLightbox + '}' +
 			s + ' .swiper-button-external-link:after{background-image:' + svgs.link + '}' +
 			s + ' .swiper-button-download:after{background-image:' + svgs.download + '}';
@@ -233,7 +233,7 @@
         if (!element || !element.getAttribute) {
             return false;
         }
-        var mode = element.getAttribute('data-lightbox');
+        var mode = element.getAttribute('data-lightbox-toggle');
         return !!mode && mode !== 'disabled';
     }
 
@@ -4367,7 +4367,7 @@
         // When the album opts into the lightbox, the lightbox trigger mode
         // (data-lightbox) replaces the fullscreen-toggle mode. toggleFullscreen()
         // itself then routes to the lightbox, so the bodies below are unchanged.
-        var expandToggle = (params.lightbox && params.lightbox !== 'disabled') ? params.lightbox : params.fullscreenToggle;
+        var expandToggle = (params.lightboxToggle && params.lightboxToggle !== 'disabled') ? params.lightboxToggle : params.fullscreenToggle;
 		if (expandToggle === 'click') {
 			// Single-click toggles fullscreen (enter and exit)
 			$container.on('click', function(e) {
@@ -5257,7 +5257,7 @@
             interactionLock: $container.attr('data-interaction-lock') === 'true',
             fullscreenToggle:
                 $container.attr('data-fullscreen-toggle') || 'button-only',
-            lightbox: $container.attr('data-lightbox') || 'disabled',
+            lightboxToggle: $container.attr('data-lightbox-toggle') || 'disabled',
             fullscreenMosaic: $container.attr('data-fullscreen-mosaic') === 'true',
             startAt: $container.attr('data-start-at') || '1',
             showNavigation: inlineShowNavigationSetting,
@@ -5380,7 +5380,7 @@
         // Keep slider mode one-pass for stable rendering.
         var useDeferredSingleFirstPaint = false;
         var shouldUseLazyHints = mode === 'slider';
-        var lightboxEnabled = !interactionLock && !!config.lightbox && config.lightbox !== 'disabled';
+        var lightboxEnabled = !interactionLock && !!config.lightboxToggle && config.lightboxToggle !== 'disabled';
         var showCarouselTileFullscreenButtons =
             mode === 'carousel' && !interactionLock && (fullscreenToggle !== 'disabled' || lightboxEnabled);
         var showCarouselTileLinkButtons =
@@ -6213,7 +6213,7 @@
             var fullscreenParams = {
                 mode: mode,
                 fullscreenToggle: fullscreenToggle,
-                lightbox: interactionLock ? 'disabled' : (config.lightbox || 'disabled'),
+                lightboxToggle: interactionLock ? 'disabled' : (config.lightboxToggle || 'disabled'),
                 interactionLock: interactionLock,
                 fullscreenSlideshow: fullscreenSlideshow,
                 fullscreenSlideshowDelay: fullscreenSlideshowDelay,
@@ -6650,7 +6650,7 @@
             'data-fullscreen-info-bottom',
             'data-has-active-bottom-center',
             // Lightbox (alternative to native fullscreen).
-            'data-lightbox',
+            'data-lightbox-toggle',
             'data-lightbox-image-fit',
             'data-lightbox-max-width',
             'data-lightbox-max-height',
@@ -6817,9 +6817,9 @@
             $container.attr('data-interaction-lock') !== 'true' &&
             (
                 $container.attr('data-fullscreen-toggle') !== 'disabled' ||
-                ($container.attr('data-lightbox') && $container.attr('data-lightbox') !== 'disabled')
+                ($container.attr('data-lightbox-toggle') && $container.attr('data-lightbox-toggle') !== 'disabled')
             );
-        var thumbExpandWord = ($container.attr('data-lightbox') && $container.attr('data-lightbox') !== 'disabled') ? 'lightbox' : 'fullscreen';
+        var thumbExpandWord = ($container.attr('data-lightbox-toggle') && $container.attr('data-lightbox-toggle') !== 'disabled') ? 'lightbox' : 'fullscreen';
         var showThumbLink = $container.attr('data-show-link-button') === 'true' &&
             $container.attr('data-interaction-lock') !== 'true';
         var showThumbDownload = $container.attr('data-show-download-button') === 'true' &&
@@ -6937,9 +6937,9 @@
             $container.attr('data-interaction-lock') !== 'true' &&
             (
                 $container.attr('data-fullscreen-toggle') !== 'disabled' ||
-                ($container.attr('data-lightbox') && $container.attr('data-lightbox') !== 'disabled')
+                ($container.attr('data-lightbox-toggle') && $container.attr('data-lightbox-toggle') !== 'disabled')
             );
-        var thumbExpandWord = ($container.attr('data-lightbox') && $container.attr('data-lightbox') !== 'disabled') ? 'lightbox' : 'fullscreen';
+        var thumbExpandWord = ($container.attr('data-lightbox-toggle') && $container.attr('data-lightbox-toggle') !== 'disabled') ? 'lightbox' : 'fullscreen';
         var showThumbLink = $container.attr('data-show-link-button') === 'true' &&
             $container.attr('data-interaction-lock') !== 'true';
         var showThumbDownload = $container.attr('data-show-download-button') === 'true' &&
@@ -8736,10 +8736,10 @@
             fullscreenToggle = 'disabled';
         }
         // When the lightbox is enabled it replaces native fullscreen: the trigger
-        // mode comes from data-lightbox, and toggleFullscreen() (called below)
+        // mode comes from data-lightbox-toggle, and toggleFullscreen() (called below)
         // routes to the lightbox automatically because the slideshow element
-        // carries data-lightbox (forwarded in buildGallerySlideshow).
-        var lightboxMode = interactionLock ? 'disabled' : ($container.attr('data-lightbox') || 'disabled');
+        // carries data-lightbox-toggle (forwarded in buildGallerySlideshow).
+        var lightboxMode = interactionLock ? 'disabled' : ($container.attr('data-lightbox-toggle') || 'disabled');
         var expandToggle = (lightboxMode !== 'disabled') ? lightboxMode : fullscreenToggle;
 
         function openGalleryPlayerAtIndex(index) {
