@@ -858,7 +858,23 @@ html.jzsa-lightbox-open body {
     object-fit: cover;
 }
 
-/* Close button: top-right of the lightbox box; hidden unless the album is in the lightbox. */
+/* The corner "expand" button, while a lightbox album sits inline, shows a
+   dedicated "enter lightbox" icon (⛶ brackets + center square) instead of
+   the fullscreen brackets. Higher specificity (3 classes) beats the default
+   fullscreen icon (1 class); JS injection handles custom controls-color. */
+.jzsa-album[data-lightbox]:not([data-lightbox="disabled"]):not(.jzsa-lightbox-active) .swiper-button-fullscreen:after {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5zM10.5 10.5h3v3h-3z' fill='%23ffffff' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>");
+}
+
+/* Inside the lightbox the corner fullscreen button is hidden - closing is the
+   job of the dedicated close button (top-left), Escape, or a backdrop click,
+   which keeps the actions unambiguous. */
+.jzsa-album.jzsa-lightbox-active > .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn) {
+    display: none !important;
+}
+
+/* Close button: top-left of the lightbox box (away from where a fullscreen
+   corner button would sit); hidden unless the album is in the lightbox. */
 .jzsa-album .jzsa-lightbox-close {
     display: none;
 }
@@ -868,7 +884,7 @@ html.jzsa-lightbox-open body {
     justify-content: center;
     position: absolute;
     top: 12px;
-    right: 12px;
+    left: 12px;
     width: var(--jzsa-controls-circle-size-fs, 55px);
     height: var(--jzsa-controls-circle-size-fs, 55px);
     padding: 0;
@@ -876,26 +892,21 @@ html.jzsa-lightbox-open body {
     border: none;
     border-radius: 50%;
     background: rgba(0, 0, 0, 0.45);
-    color: var(--jzsa-lightbox-controls-color, #fff);
+    color: #fff;
     cursor: pointer;
     z-index: 30;
     -webkit-appearance: none;
     appearance: none;
 }
-.jzsa-album.jzsa-lightbox-active > .jzsa-lightbox-close::before,
 .jzsa-album.jzsa-lightbox-active > .jzsa-lightbox-close::after {
     content: "";
-    position: absolute;
-    width: 44%;
-    height: 2.5px;
-    background: currentColor;
-    border-radius: 2px;
-}
-.jzsa-album.jzsa-lightbox-active > .jzsa-lightbox-close::before {
-    transform: rotate(45deg);
-}
-.jzsa-album.jzsa-lightbox-active > .jzsa-lightbox-close::after {
-    transform: rotate(-45deg);
+    display: block;
+    width: 26px;
+    height: 26px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3zM10.5 10.5h3v3h-3z' fill='%23ffffff' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 .jzsa-album.jzsa-lightbox-active > .jzsa-lightbox-close:hover,
 .jzsa-album.jzsa-lightbox-active > .jzsa-lightbox-close:focus-visible {

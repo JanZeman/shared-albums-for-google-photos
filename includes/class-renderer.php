@@ -188,8 +188,12 @@ class JZSA_Renderer {
 
 		// The corner "expand" button drives native fullscreen OR the lightbox
 		// overlay (whichever is active). Render it whenever either is enabled.
+		// When the album opens the lightbox, give the button a matching tooltip
+		// (the icon itself is swapped via CSS based on data-lightbox).
 		$fullscreen_enabled = empty( $config['fullscreen-toggle'] ) || 'disabled' !== $config['fullscreen-toggle'];
-		if ( $fullscreen_enabled || $this->lightbox_enabled( $config ) ) {
+		if ( $this->lightbox_enabled( $config ) ) {
+			$html .= sprintf( '<div class="swiper-button-fullscreen" title="%s"></div>', esc_attr( $i18n['openLightbox'] ) );
+		} elseif ( $fullscreen_enabled ) {
 			$html .= '<div class="swiper-button-fullscreen"></div>';
 		}
 		$html .= '</div>'; // Close .jzsa-album

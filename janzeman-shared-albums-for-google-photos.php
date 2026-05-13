@@ -73,6 +73,7 @@ function jzsa_get_frontend_i18n_strings() {
 		'downloadCurrentMedia'  => __( 'Download current media', 'janzeman-shared-albums-for-google-photos' ),
 		'downloadMedia'         => __( 'Download media %d', 'janzeman-shared-albums-for-google-photos' ),
 		'largeDownloadWarning'  => __( 'This file is larger than the configured download warning threshold.', 'janzeman-shared-albums-for-google-photos' ),
+		'openLightbox'          => __( 'Open in lightbox', 'janzeman-shared-albums-for-google-photos' ),
 		'openMediaLightbox'     => __( 'Open media %d in lightbox', 'janzeman-shared-albums-for-google-photos' ),
 		'closeLightbox'         => __( 'Close', 'janzeman-shared-albums-for-google-photos' ),
 		'lightboxDialogLabel'   => __( 'Photo viewer', 'janzeman-shared-albums-for-google-photos' ),
