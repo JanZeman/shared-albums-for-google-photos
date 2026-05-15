@@ -73,6 +73,7 @@
 			s + ':-webkit-full-screen .swiper-button-fullscreen:after{background-image:' + svgs.exitFs + '}' +
 			s + ' .swiper-button-lightbox:after{background-image:' + svgs.enterLightbox + '}' +
 			s + '[data-lightbox-toggle]:not([data-lightbox-toggle="disabled"]) .jzsa-gallery-thumb-fs-btn:after{background-image:' + svgs.enterLightbox + '}' +
+			s + '.jzsa-gallery-album.jzsa-has-dual-expand .jzsa-gallery-item .jzsa-gallery-thumb-fs-btn.swiper-button-fullscreen:after{background-image:' + svgs.fullscreen + '}' +
 			s + '.jzsa-lightbox-active>.jzsa-lightbox-close::after{background-image:' + svgs.exitLightbox + '}' +
 			s + ' .swiper-button-external-link:after{background-image:' + svgs.link + '}' +
 			s + ' .swiper-button-download:after{background-image:' + svgs.download + '}';
@@ -6861,17 +6862,15 @@
         $container[0].style.setProperty('--jzsa-gallery-columns-tablet', columnsTablet);
         $container[0].style.setProperty('--jzsa-gallery-columns-mobile', columnsMobile);
         $container[0].style.setProperty('--jzsa-gallery-gap',            galleryGap + 'px');
-        var allowThumbFullscreen =
-            $container.attr('data-interaction-lock') !== 'true' &&
-            (
-                $container.attr('data-fullscreen-toggle') !== 'disabled' ||
-                ($container.attr('data-lightbox-toggle') && $container.attr('data-lightbox-toggle') !== 'disabled')
-            );
-        var thumbExpandI18nKey = ($container.attr('data-lightbox-toggle') && $container.attr('data-lightbox-toggle') !== 'disabled') ? 'openMediaLightbox' : 'openMediaFullscreen';
-        var showThumbLink = $container.attr('data-show-link-button') === 'true' &&
-            $container.attr('data-interaction-lock') !== 'true';
-        var showThumbDownload = $container.attr('data-show-download-button') === 'true' &&
-            $container.attr('data-interaction-lock') !== 'true';
+        var notLocked = $container.attr('data-interaction-lock') !== 'true';
+        var thumbLightboxOn = notLocked && !!$container.attr('data-lightbox-toggle') && $container.attr('data-lightbox-toggle') !== 'disabled';
+        var thumbFsOn = notLocked && $container.attr('data-fullscreen-toggle') !== 'disabled';
+        var thumbDualExpand = thumbLightboxOn && thumbFsOn;
+        var allowThumbFullscreen = thumbLightboxOn || thumbFsOn;
+        var thumbExpandI18nKey = thumbLightboxOn ? 'openMediaLightbox' : 'openMediaFullscreen';
+        $container.toggleClass('jzsa-has-dual-expand', thumbDualExpand);
+        var showThumbLink = $container.attr('data-show-link-button') === 'true' && notLocked;
+        var showThumbDownload = $container.attr('data-show-download-button') === 'true' && notLocked;
         var thumbAlbumUrl = $container.attr('data-album-url') || '';
 
         var html = '';
@@ -6908,7 +6907,12 @@
                 thumbOverlayBtns += '<div class="jzsa-gallery-thumb-download-btn swiper-button-download" role="button" tabindex="0" data-index="' + globalIndex + '" data-media-type="' + mediaLabel + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n('downloadMedia', globalIndex + 1)) + '"></div>';
             }
             if (allowThumbFullscreen) {
-                thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n(thumbExpandI18nKey, globalIndex + 1)) + '"></div>';
+                if (thumbDualExpand) {
+                    thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-lightbox" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n('openMediaLightbox', globalIndex + 1)) + '"></div>';
+                    thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n('openMediaFullscreen', globalIndex + 1)) + '"></div>';
+                } else {
+                    thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n(thumbExpandI18nKey, globalIndex + 1)) + '"></div>';
+                }
             }
 
             // Info box overlays for gallery thumbnails.
@@ -6981,17 +6985,15 @@
      * @param {number} gap             Gap between thumbnails in pixels.
      */
     function renderJustifiedRows($container, rows, containerWidth, targetHeight, gap) {
-        var allowThumbFullscreen =
-            $container.attr('data-interaction-lock') !== 'true' &&
-            (
-                $container.attr('data-fullscreen-toggle') !== 'disabled' ||
-                ($container.attr('data-lightbox-toggle') && $container.attr('data-lightbox-toggle') !== 'disabled')
-            );
-        var thumbExpandI18nKey = ($container.attr('data-lightbox-toggle') && $container.attr('data-lightbox-toggle') !== 'disabled') ? 'openMediaLightbox' : 'openMediaFullscreen';
-        var showThumbLink = $container.attr('data-show-link-button') === 'true' &&
-            $container.attr('data-interaction-lock') !== 'true';
-        var showThumbDownload = $container.attr('data-show-download-button') === 'true' &&
-            $container.attr('data-interaction-lock') !== 'true';
+        var notLocked = $container.attr('data-interaction-lock') !== 'true';
+        var thumbLightboxOn = notLocked && !!$container.attr('data-lightbox-toggle') && $container.attr('data-lightbox-toggle') !== 'disabled';
+        var thumbFsOn = notLocked && $container.attr('data-fullscreen-toggle') !== 'disabled';
+        var thumbDualExpand = thumbLightboxOn && thumbFsOn;
+        var allowThumbFullscreen = thumbLightboxOn || thumbFsOn;
+        var thumbExpandI18nKey = thumbLightboxOn ? 'openMediaLightbox' : 'openMediaFullscreen';
+        $container.toggleClass('jzsa-has-dual-expand', thumbDualExpand);
+        var showThumbLink = $container.attr('data-show-link-button') === 'true' && notLocked;
+        var showThumbDownload = $container.attr('data-show-download-button') === 'true' && notLocked;
         var thumbAlbumUrl = $container.attr('data-album-url') || '';
         var html = '';
         rows.forEach(function(row) {
@@ -7033,7 +7035,12 @@
                     thumbOverlayBtns += '<div class="jzsa-gallery-thumb-download-btn swiper-button-download" role="button" tabindex="0" data-index="' + item.index + '" data-media-type="' + mediaLabel + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n('downloadMedia', item.index + 1)) + '"></div>';
                 }
                 if (allowThumbFullscreen) {
-                    thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n(thumbExpandI18nKey, item.index + 1)) + '"></div>';
+                    if (thumbDualExpand) {
+                        thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-lightbox" role="button" tabindex="0" data-index="' + item.index + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n('openMediaLightbox', item.index + 1)) + '"></div>';
+                        thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n('openMediaFullscreen', item.index + 1)) + '"></div>';
+                    } else {
+                        thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n(thumbExpandI18nKey, item.index + 1)) + '"></div>';
+                    }
                 }
 
                 // Info box overlays for justified thumbnails.
@@ -8786,7 +8793,7 @@
         var lightboxMode = interactionLock ? 'disabled' : ($container.attr('data-lightbox-toggle') || 'disabled');
         var expandToggle = (lightboxMode !== 'disabled') ? lightboxMode : fullscreenToggle;
 
-        function openGalleryPlayerAtIndex(index) {
+        function openGalleryPlayerAtIndex(index, forcedMode) {
             if (interactionLock) {
                 return;
             }
@@ -8801,7 +8808,11 @@
                 }
             }
             clearGalleryAutoplayTimer();
-            if (elementUsesLightbox($slideshow[0])) {
+            if (forcedMode === 'lightbox') {
+                toggleLightbox($slideshow[0]);
+            } else if (forcedMode === 'fullscreen') {
+                toggleFullscreen($slideshow[0]);
+            } else if (elementUsesLightbox($slideshow[0])) {
                 toggleLightbox($slideshow[0]);
             } else {
                 toggleFullscreen($slideshow[0]);
@@ -8825,7 +8836,14 @@
 
         function openGalleryPlayerFromThumb(targetEl) {
             var index = getGalleryPhotoIndexFromElement(targetEl);
-            openGalleryPlayerAtIndex(index);
+            var $btn = $(targetEl).closest('.jzsa-gallery-thumb-fs-btn');
+            var forcedMode;
+            if ($btn.hasClass('swiper-button-lightbox')) {
+                forcedMode = 'lightbox';
+            } else if ($container.hasClass('jzsa-has-dual-expand')) {
+                forcedMode = 'fullscreen';
+            }
+            openGalleryPlayerAtIndex(index, forcedMode);
         }
 
         function isGalleryVideoInteractionTarget(targetEl) {

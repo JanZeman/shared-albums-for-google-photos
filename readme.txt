@@ -147,7 +147,7 @@ The plugin provides clear feedback:
 * New: Lightbox - an alternative to native fullscreen. With `lightbox="click"` (or `button-only` / `double-click`) clicking a photo opens it in a dimmed overlay *on top of the page* instead of taking over the screen
 * New: `lightbox-max-width` / `lightbox-max-height` - open photos at a predetermined size instead of wall-to-wall
 * New: `lightbox-image-fit`, `lightbox-background-color`, `lightbox-corner-radius` for tuning the lightbox box and backdrop
-* When the lightbox is enabled it replaces native fullscreen for that album and reuses its `fullscreen-*` settings; `interaction-lock="true"` disables it too
+* When the lightbox is enabled it reuses the album's `fullscreen-*` settings; by default it replaces the fullscreen button, but both can be shown side by side by keeping `fullscreen-toggle` enabled; `interaction-lock="true"` disables both
 * Thanks to `@valterbruno` for the feature request that started this!
 
 = 2.2.2 =

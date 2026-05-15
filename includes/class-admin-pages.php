@@ -1263,6 +1263,27 @@ class JZSA_Admin_Pages {
 					</div>
 
 					<div class="jzsa-sample-card">
+						<div class="jzsa-sample-card-header">
+							<h3><?php esc_html_e( 'Lightbox + Fullscreen - Both Buttons in Gallery Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<span class="jzsa-sample-card-hint"><?php esc_html_e( 'Hover a photo to reveal both buttons in its top-right corner', 'janzeman-shared-albums-for-google-photos' ); ?></span>
+						</div>
+						<p><?php echo wp_kses( __( 'Gallery mode also supports having both a lightbox button and a fullscreen button at the same time. Set <code>lightbox-toggle="button-only"</code> and <code>fullscreen-toggle="button-only"</code> together: hovering any photo reveals two expand buttons in its top-right corner. The left button opens the lightbox overlay; the right button enters native fullscreen. Your visitor picks whichever experience they prefer, photo by photo.', 'janzeman-shared-albums-for-google-photos' ), array( 'code' => array() ) ); ?></p>
+					<?php
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" mode="gallery" gallery-layout="justified" limit="9" gallery-gap="8" lightbox-toggle="button-only" fullscreen-toggle="button-only" lightbox-max-width="1000" lightbox-max-height="700"]';
+					?>
+					<div class="jzsa-code-block">
+						<code><?php echo esc_html( $sample_shortcode ); ?></code>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+					</div>
+					<div class="jzsa-preview-container jzsa-preview-container-gallery-dual-expand">
+						<?php
+							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo do_shortcode( $sample_shortcode );
+						?>
+					</div>
+					</div>
+
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Show "Open in Google Photos" Button', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Enables the show-link-button parameter to display an external link button to the original album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php

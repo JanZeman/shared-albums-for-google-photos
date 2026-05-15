@@ -351,7 +351,7 @@
 					</table>
 
 					<h3><?php esc_html_e( 'Lightbox Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<p><?php echo wp_kses_post( __( 'The lightbox is an alternative to native fullscreen. Instead of the browser taking over the whole screen, clicking a photo opens it in a dimmed overlay <strong>on top of the page</strong>, in a size-capped box. Enabling it (any <code>lightbox-toggle</code> value other than <code>disabled</code>) replaces native fullscreen for that album, and <code>interaction-lock="true"</code> disables it too. While the lightbox is open it reuses the album\'s <code>fullscreen-*</code> settings (controls, navigation, slideshow, info boxes); the parameters below are the lightbox-specific extras.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+					<p><?php echo wp_kses_post( __( 'The lightbox is an alternative to native fullscreen. Instead of the browser taking over the whole screen, clicking a photo opens it in a dimmed overlay <strong>on top of the page</strong>, in a size-capped box. By default, enabling <code>lightbox-toggle</code> replaces the fullscreen button — but you can show both side by side by keeping <code>fullscreen-toggle</code> enabled at the same time; visitors then choose which experience they prefer. <code>interaction-lock="true"</code> disables both. While the lightbox is open it reuses the album\'s <code>fullscreen-*</code> settings (controls, navigation, slideshow, info boxes); the parameters below are the lightbox-specific extras.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 					<table class="jzsa-settings-table jzsa-settings-table--params">
 						<thead>
 							<tr>
