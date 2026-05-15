@@ -361,6 +361,20 @@
                 }
                 e.preventDefault();
                 closeLightbox(element);
+                return;
+            }
+            if (e.key === 'Tab') {
+                var focusable = Array.prototype.slice.call(
+                    backdrop.querySelectorAll('button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')
+                ).filter(function(el) { return el.offsetParent !== null; });
+                if (focusable.length < 2) { e.preventDefault(); return; }
+                var first = focusable[0];
+                var last = focusable[focusable.length - 1];
+                if (e.shiftKey) {
+                    if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+                } else {
+                    if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+                }
             }
         };
         document.addEventListener('keydown', _jzsaLightboxKeyHandler, true);
