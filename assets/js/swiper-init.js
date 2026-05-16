@@ -3716,8 +3716,7 @@
 			var isCurrentlyFullscreen = isFullscreen();
 
 			if (!isCurrentlyFullscreen) {
-				// In carousel mode, a per-tile fullscreen button should open the
-				// exact clicked tile in fullscreen (not whichever slide is active).
+				// In carousel mode, navigate to the exact clicked tile first.
 				if (params.mode === 'carousel') {
 					var $clickedSlide = $(e.target).closest('.swiper-slide');
 					if ($clickedSlide.length) {
@@ -3730,6 +3729,13 @@
 								swiper.slideTo(realIndex, 0, false);
 							}
 						}
+					}
+					// Per-tile button: open lightbox when lightbox is the active toggle.
+					var isTileBtn = $(this).hasClass('jzsa-gallery-thumb-fs-btn');
+					var lightboxActive = params.lightboxToggle && params.lightboxToggle !== 'disabled';
+					if (isTileBtn && lightboxActive) {
+						toggleLightbox($container[0]);
+						return;
 					}
 				}
 

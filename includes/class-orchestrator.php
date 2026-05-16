@@ -1437,7 +1437,15 @@ class JZSA_Shared_Albums {
 	 */
 	private function parse_fullscreen_toggle_mode( $atts ) {
 		if ( ! isset( $atts['fullscreen-toggle'] ) ) {
-			// Default to 'button-only'
+			// When lightbox is explicitly enabled, default fullscreen to disabled so
+			// lightbox replaces the fullscreen button. Authors who want both side-by-side
+			// must set fullscreen-toggle explicitly (e.g. fullscreen-toggle="button-only").
+			if ( isset( $atts['lightbox-toggle'] ) ) {
+				$lb = strtolower( trim( (string) $atts['lightbox-toggle'] ) );
+				if ( 'disabled' !== $lb ) {
+					return 'disabled';
+				}
+			}
 			return 'button-only';
 		}
 

@@ -150,8 +150,11 @@ class JZSA_Renderer {
 		$lightbox_on      = $this->lightbox_enabled( $config );
 		$fullscreen_enabled = ! empty( $config['fullscreen-toggle'] ) && 'disabled' !== $config['fullscreen-toggle'];
 		$show_fullscreen  = $fullscreen_enabled;
+		$is_carousel      = isset( $config['mode'] ) && 'carousel' === $config['mode'];
 		$album_classes    = 'jzsa-album swiper jzsa-loader-pending';
-		if ( $lightbox_on && $show_fullscreen ) {
+		// jzsa-has-dual-expand only applies to slider mode: in carousel, the per-tile
+		// button handles lightbox so there is never a global lightbox button to offset.
+		if ( $lightbox_on && $show_fullscreen && ! $is_carousel ) {
 			$album_classes .= ' jzsa-has-dual-expand';
 		}
 
@@ -198,7 +201,9 @@ class JZSA_Renderer {
 		// Dedicated lightbox and fullscreen buttons — each independently rendered.
 		// Both appear when the author explicitly sets both (jzsa-has-dual-expand
 		// class added above shifts the lightbox button left of the fullscreen one).
-		if ( $lightbox_on ) {
+		// Carousel omits the global lightbox button: per-tile buttons (jzsa-carousel-tile-fs-enabled)
+		// already handle lightbox triggering on each slide.
+		if ( $lightbox_on && ! $is_carousel ) {
 			$html .= sprintf( '<div class="swiper-button-lightbox" title="%s"></div>', esc_attr( $i18n['openLightbox'] ) );
 		}
 		if ( $show_fullscreen ) {

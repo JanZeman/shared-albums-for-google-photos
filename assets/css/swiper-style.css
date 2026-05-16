@@ -1245,7 +1245,7 @@ html.jzsa-lightbox-open body {
     }
 
     .jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide:hover .jzsa-carousel-slide-overlay-btn,
-    .jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide:focus-within .jzsa-carousel-slide-overlay-btn {
+    .jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide:has(:focus-visible) .jzsa-carousel-slide-overlay-btn {
         opacity: var(--jzsa-controls-visible-opacity) !important;
         pointer-events: auto !important;
     }
