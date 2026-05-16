@@ -41,12 +41,12 @@
 							</tr>
 							<tr>
 								<td><code>source-width</code></td>
-								<td>Photo width to fetch from Google for inline mode</td>
+								<td>Photo width to fetch from Google for inline mode. Directly affects photo quality: higher values load sharper images.</td>
 								<td>800</td>
 							</tr>
 							<tr>
 								<td><code>source-height</code></td>
-								<td>Photo height to fetch from Google for inline mode</td>
+								<td>Photo height to fetch from Google for inline mode. Directly affects photo quality: higher values load sharper images.</td>
 								<td>600</td>
 							</tr>
 						</tbody>
@@ -263,12 +263,12 @@
 						<tbody>
 							<tr>
 								<td><code>fullscreen-source-width</code></td>
-								<td>Photo width to fetch from Google for fullscreen mode</td>
+								<td>Photo width to fetch from Google for fullscreen mode. Directly affects photo quality: higher values load sharper images.</td>
 								<td>1920</td>
 							</tr>
 							<tr>
 								<td><code>fullscreen-source-height</code></td>
-								<td>Photo height to fetch from Google for fullscreen mode</td>
+								<td>Photo height to fetch from Google for fullscreen mode. Directly affects photo quality: higher values load sharper images.</td>
 								<td>1440</td>
 							</tr>
 							<tr>
