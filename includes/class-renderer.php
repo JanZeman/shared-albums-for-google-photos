@@ -152,9 +152,7 @@ class JZSA_Renderer {
 		$show_fullscreen  = $fullscreen_enabled;
 		$is_carousel      = isset( $config['mode'] ) && 'carousel' === $config['mode'];
 		$album_classes    = 'jzsa-album swiper jzsa-loader-pending';
-		// jzsa-has-dual-expand only applies to slider mode: in carousel, the per-tile
-		// button handles lightbox so there is never a global lightbox button to offset.
-		if ( $lightbox_on && $show_fullscreen && ! $is_carousel ) {
+		if ( $lightbox_on && $show_fullscreen ) {
 			$album_classes .= ' jzsa-has-dual-expand';
 		}
 

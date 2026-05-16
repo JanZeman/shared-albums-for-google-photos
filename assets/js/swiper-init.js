@@ -74,6 +74,7 @@
 			s + ' .swiper-button-lightbox:after{background-image:' + svgs.enterLightbox + '}' +
 			s + '[data-lightbox-toggle]:not([data-lightbox-toggle="disabled"]) .jzsa-gallery-thumb-fs-btn:after{background-image:' + svgs.enterLightbox + '}' +
 			s + '.jzsa-gallery-album.jzsa-has-dual-expand .jzsa-gallery-item .jzsa-gallery-thumb-fs-btn.swiper-button-fullscreen:after{background-image:' + svgs.fullscreen + '}' +
+			s + '[data-mode="carousel"].jzsa-has-dual-expand .jzsa-gallery-thumb-fs-btn.swiper-button-fullscreen:after{background-image:' + svgs.fullscreen + '}' +
 			s + '.jzsa-lightbox-active>.jzsa-lightbox-close::after{background-image:' + svgs.exitLightbox + '}' +
 			s + ' .swiper-button-external-link:after{background-image:' + svgs.link + '}' +
 			s + ' .swiper-button-download:after{background-image:' + svgs.download + '}';
@@ -2915,6 +2916,8 @@
         var showCarouselTileLinkButtons = !!config.showCarouselTileLinkButtons;
         var showCarouselTileDownloadButtons = !!config.showCarouselTileDownloadButtons;
         var carouselLightboxEnabled = !!config.carouselLightboxEnabled;
+        var carouselFsEnabled = !!config.carouselFsEnabled;
+        var carouselDualExpand = carouselLightboxEnabled && carouselFsEnabled;
         var carouselAlbumUrl = config.carouselAlbumUrl || '';
         var carouselZoneFormats = config.carouselZoneFormats || null;
         var carouselTotalCount = parseInt(config.carouselTotalCount, 10) || photos.length || 0;
@@ -2929,9 +2932,20 @@
                 var showTileLink = showCarouselTileLinkButtons && !!carouselAlbumUrl;
                 var showTileDownload = showCarouselTileDownloadButtons;
                 if (showCarouselTileFullscreenButtons) {
-                    tileOverlayButtons +=
-                        '<button class="swiper-button-fullscreen jzsa-gallery-thumb-fs-btn jzsa-carousel-slide-overlay-btn jzsa-carousel-slide-fs-btn" type="button" ' +
-                        'aria-label="' + jzsaEscapeAttr(jzsaFormatI18n(carouselLightboxEnabled ? 'openMediaLightbox' : 'openMediaFullscreen', index + 1)) + '"></button>';
+                    if (carouselDualExpand) {
+                        tileOverlayButtons +=
+                            '<button class="swiper-button-lightbox jzsa-gallery-thumb-fs-btn jzsa-carousel-slide-overlay-btn" type="button" ' +
+                            'aria-label="' + jzsaEscapeAttr(jzsaFormatI18n('openMediaLightbox', index + 1)) + '"></button>';
+                        tileOverlayButtons +=
+                            '<button class="swiper-button-fullscreen jzsa-gallery-thumb-fs-btn jzsa-carousel-slide-overlay-btn jzsa-carousel-slide-fs-btn" type="button" ' +
+                            'aria-label="' + jzsaEscapeAttr(jzsaFormatI18n('openMediaFullscreen', index + 1)) + '"></button>';
+                    } else {
+                        var tileClass = carouselLightboxEnabled ? 'swiper-button-lightbox' : 'swiper-button-fullscreen';
+                        var tileAriaKey = carouselLightboxEnabled ? 'openMediaLightbox' : 'openMediaFullscreen';
+                        tileOverlayButtons +=
+                            '<button class="' + tileClass + ' jzsa-gallery-thumb-fs-btn jzsa-carousel-slide-overlay-btn jzsa-carousel-slide-fs-btn" type="button" ' +
+                            'aria-label="' + jzsaEscapeAttr(jzsaFormatI18n(tileAriaKey, index + 1)) + '"></button>';
+                    }
                 }
                 if (showTileLink) {
                     tileOverlayButtons +=
@@ -3705,6 +3719,21 @@
         // Dedicated lightbox button — opens the lightbox overlay directly.
         $container.find('.swiper-button-lightbox').on('click', function(e) {
             e.stopPropagation();
+            // For carousel per-tile lightbox buttons, navigate to the exact clicked tile first.
+            if (params.mode === 'carousel' && $(this).hasClass('jzsa-gallery-thumb-fs-btn')) {
+                var $clickedSlide = $(this).closest('.swiper-slide');
+                if ($clickedSlide.length) {
+                    var realIndexAttr = $clickedSlide.attr('data-swiper-slide-index');
+                    var realIndex = realIndexAttr != null ? parseInt(realIndexAttr, 10) : NaN;
+                    if (!isNaN(realIndex) && realIndex >= 0) {
+                        if (swiper.params.loop && typeof swiper.slideToLoop === 'function') {
+                            swiper.slideToLoop(realIndex, 0, false);
+                        } else {
+                            swiper.slideTo(realIndex, 0, false);
+                        }
+                    }
+                }
+            }
             toggleLightbox($container[0]);
         });
 
@@ -3730,14 +3759,7 @@
 							}
 						}
 					}
-					// Per-tile button: open lightbox when lightbox is the active toggle.
-					var isTileBtn = $(this).hasClass('jzsa-gallery-thumb-fs-btn');
-					var lightboxActive = params.lightboxToggle && params.lightboxToggle !== 'disabled';
-					if (isTileBtn && lightboxActive) {
-						toggleLightbox($container[0]);
-						return;
 					}
-				}
 
 				// About to enter fullscreen - apply fullscreen autoplay settings immediately (Android workaround)
 				jzsaDebug('🔍 Fullscreen button clicked - entering fullscreen');
@@ -5434,8 +5456,9 @@
         var useDeferredSingleFirstPaint = false;
         var shouldUseLazyHints = mode === 'slider';
         var lightboxEnabled = !interactionLock && !!config.lightboxToggle && config.lightboxToggle !== 'disabled';
+        var carouselFsEnabled = fullscreenToggle !== 'disabled';
         var showCarouselTileFullscreenButtons =
-            mode === 'carousel' && !interactionLock && (fullscreenToggle !== 'disabled' || lightboxEnabled);
+            mode === 'carousel' && !interactionLock && (carouselFsEnabled || lightboxEnabled);
         var showCarouselTileLinkButtons =
             mode === 'carousel' && !interactionLock && showLinkButton && !!albumUrl;
         var showCarouselTileDownloadButtons =
@@ -5447,6 +5470,7 @@
             mode: mode,
             showCarouselTileFullscreenButtons: showCarouselTileFullscreenButtons,
             carouselLightboxEnabled: lightboxEnabled,
+            carouselFsEnabled: carouselFsEnabled,
             showCarouselTileLinkButtons: showCarouselTileLinkButtons,
             showCarouselTileDownloadButtons: showCarouselTileDownloadButtons,
             carouselAlbumUrl: albumUrl,
