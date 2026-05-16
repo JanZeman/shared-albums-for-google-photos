@@ -344,6 +344,16 @@
         _jzsaLightboxTriggerEl = document.activeElement;
 
         var swiper = swipers[element.id];
+        if (swiper && $el.attr('data-mode') === 'carousel') {
+            if (swiper._jzsaLightboxOriginalSlidesPerView == null) {
+                swiper._jzsaLightboxOriginalSlidesPerView = swiper.params.slidesPerView;
+                swiper._jzsaLightboxOriginalBreakpoints   = swiper.params.breakpoints;
+                swiper._jzsaLightboxOriginalCenteredSlides = swiper.params.centeredSlides;
+            }
+            swiper.params.slidesPerView = 1;
+            swiper.params.centeredSlides = true;
+            swiper.params.breakpoints = undefined;
+        }
         if (swiper && typeof swiper.update === 'function') {
             swiper.update();
         }
@@ -439,7 +449,23 @@
         }
 
         var swiper = swipers[element.id];
-        if (swiper && typeof swiper.update === 'function') {
+        if (swiper && swiper._jzsaLightboxOriginalSlidesPerView != null) {
+            var targetIndex = (typeof swiper.realIndex === 'number') ? swiper.realIndex : swiper.activeIndex;
+            swiper.params.slidesPerView  = swiper._jzsaLightboxOriginalSlidesPerView;
+            swiper.params.centeredSlides = swiper._jzsaLightboxOriginalCenteredSlides;
+            swiper.params.breakpoints    = swiper._jzsaLightboxOriginalBreakpoints;
+            swiper._jzsaLightboxOriginalSlidesPerView  = null;
+            swiper._jzsaLightboxOriginalBreakpoints    = null;
+            swiper._jzsaLightboxOriginalCenteredSlides = null;
+            if (swiper && typeof swiper.update === 'function') {
+                swiper.update();
+            }
+            if (swiper.params.loop && typeof swiper.slideToLoop === 'function') {
+                swiper.slideToLoop(targetIndex, 0, false);
+            } else {
+                swiper.slideTo(targetIndex, 0, false);
+            }
+        } else if (swiper && typeof swiper.update === 'function') {
             swiper.update();
         }
 
