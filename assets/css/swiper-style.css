@@ -2066,14 +2066,14 @@ html.jzsa-lightbox-open body {
     }
 }
 
-.jzsa-gallery-album .jzsa-gallery-item:focus-within .jzsa-gallery-thumb-fs-btn,
-.jzsa-gallery-album .jzsa-gallery-item:focus-within .jzsa-gallery-thumb-link-btn,
-.jzsa-gallery-album .jzsa-gallery-item:focus-within .jzsa-gallery-thumb-download-btn {
+.jzsa-gallery-album .jzsa-gallery-item:has(:focus-visible) .jzsa-gallery-thumb-fs-btn,
+.jzsa-gallery-album .jzsa-gallery-item:has(:focus-visible) .jzsa-gallery-thumb-link-btn,
+.jzsa-gallery-album .jzsa-gallery-item:has(:focus-visible) .jzsa-gallery-thumb-download-btn {
     opacity: var(--jzsa-controls-visible-opacity);
     pointer-events: auto;
 }
 
-.jzsa-gallery-album .jzsa-gallery-item:focus-within .jzsa-info-stack-top {
+.jzsa-gallery-album .jzsa-gallery-item:has(:focus-visible) .jzsa-info-stack-top {
     position: absolute;
     left: 0;
     right: 0;
@@ -2085,11 +2085,11 @@ html.jzsa-lightbox-open body {
     z-index: 10;
 }
 
-.jzsa-gallery-album .jzsa-gallery-item:focus-within .jzsa-info-stack-top {
+.jzsa-gallery-album .jzsa-gallery-item:has(:focus-visible) .jzsa-info-stack-top {
     top: 4px;
 }
 
-.jzsa-gallery-album .jzsa-gallery-item:focus-within .jzsa-info-stack-top .jzsa-info-box {
+.jzsa-gallery-album .jzsa-gallery-item:has(:focus-visible) .jzsa-info-stack-top .jzsa-info-box {
     position: relative;
     top: auto;
     right: auto;
