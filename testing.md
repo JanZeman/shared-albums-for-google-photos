@@ -1,164 +1,149 @@
-# Automated Testing Plan
+# Testing
 
-## Assessment
+## Current state
 
-Most bugs found during lightbox development were interaction bugs: wrong button shown,
-wrong handler fired, wrong CSS state after close. These map well to browser-level E2E
-tests. A smaller but useful category (shortcode parsing, config defaults) maps to PHP
-unit tests that need no browser at all.
+Both layers are operational. Run everything with:
 
-**Recommendation for now:** start with PHP unit tests only (low setup cost, immediate
-value). Add Playwright E2E when a second developer joins or when v3 introduces major
-new UI surface.
+```bash
+./test.sh           # PHPUnit + Playwright
+./test.sh --unit    # PHPUnit only
+./test.sh --e2e     # Playwright only
+```
+
+### What exists
+
+**PHPUnit** (`tests/Unit/`) -- 18 tests
+
+- `OrchestratorToggleModeTest.php` -- toggle mode resolution, paired-key fallback
+
+**Playwright** (`tests/e2e/`) -- 17 tests
+
+- `lightbox.spec.ts` -- slider click/button-only trigger, dual expand, gallery lightbox
+
+### Infrastructure
+
+- `playwright.config.ts` -- Chromium only, 1 worker, retries: 1, globalSetup validates fixture page
+- `tests/e2e/global-setup.ts` -- checks `/?pagename=lightbox-fixture` returns 200 with 5 albums
+- `tests/e2e/README.md` -- documents the 5 shortcodes required on the fixture page
+- PHPUnit bootstrap stubs all WordPress functions so unit tests run without WordPress
 
 ---
 
-## Layer 1: PHP Unit Tests (PHPUnit)
+## Full plan
 
-### What they cover
-- Shortcode attribute parsing and default resolution
-- Config assembly logic (the class-orchestrator.php layer)
-- HTML output structure from class-renderer.php
+### Unit tests to write (PHPUnit)
 
-### Why useful
-These tests would have caught the bug where `fullscreen-toggle` defaulted to
-`button-only` even when `lightbox-toggle` was explicitly set, causing dual buttons
-to appear unexpectedly.
+| File | What it covers |
+|---|---|
+| `RendererSliderTest.php` | Every slider/carousel parameter maps to the correct `data-*` attribute or CSS custom property |
+| `RendererGalleryTest.php` | Every gallery-specific parameter (`gallery-columns`, `gallery-layout`, `gallery-rows`, etc.) |
+| `RendererButtonsTest.php` | Which buttons render under which conditions (fullscreen, lightbox, download, link, dual-expand class) |
+| `RendererMosaicTest.php` | Mosaic parameters (`mosaic-position`, `mosaic-count`, `fullscreen-mosaic-layout`, etc.) |
+| `RendererInfoBoxTest.php` | All `info-*` parameters, per-box halo overrides, font/color/align inheritance |
+| `OrchestratorCacheTest.php` | Cache key generation (MD5 of URL), TTL edge cases, paired-key additional coverage |
+| `CommunityValidationTest.php` | All 8 field validators: title (3-120), tags (max 5, 2-30 chars), display name (3+ letters), URLs, description length |
 
-### Setup
-1. Add `phpunit/phpunit` to `composer.json` (dev dependency)
-2. Add a `phpunit.xml` config pointing at a `tests/` directory
-3. Bootstrap WordPress via `yoast/wp-test-utils` or a minimal stub
-4. No browser, no running server needed — runs in CI in seconds
+The renderer tests are the highest-value target. With 80+ parameters each mapping to a `data-*` attribute, parametrized PHPUnit tests can cover the full surface cheaply. A renderer bug that misconfigures a `data-lightbox-max-width` attribute would never show up in the current test suite.
 
-### Test cases to write
+### E2E tests to write (Playwright)
 
-**Config defaults**
-- `lightbox-toggle` set, `fullscreen-toggle` not set: config must have `fullscreen-toggle = disabled`
-- `fullscreen-toggle` explicitly set alongside `lightbox-toggle`: both respected
-- `interaction-lock="true"`: both lightbox and fullscreen report disabled regardless of other params
+| File | What it covers | Fixture page slug |
+|---|---|---|
+| `fullscreen.spec.ts` | button-only / click / double-click triggers, native fullscreen API, close methods (Esc, click) | `fullscreen-fixture` |
+| `gallery.spec.ts` | Grid and justified layouts, opening the slideshow player, navigating within it, close | `gallery-fixture` |
+| `slideshow.spec.ts` | Auto-advance, play/pause button, autoresume after interaction | `slideshow-fixture` |
+| `navigation.spec.ts` | Arrow buttons, keyboard arrows, mousewheel, interaction-lock disables all of these | `feature-fixture` |
+| `mosaic.spec.ts` | Clicking a mosaic thumbnail advances the main slider, all four positions | `mosaic-fixture` |
+| `info-overlay.spec.ts` | `{item}`, `{items}`, `{album-title}` substitution visible in rendered text | `info-fixture` |
+| `community.spec.ts` | Browse list loads, search/filter, connect flow, publish form validation | WordPress admin URL |
+| `admin.spec.ts` | Guide page loads previews, Parameters page renders the table | WordPress admin URL |
 
-**HTML output assertions**
-- Slider + lightbox only: rendered HTML contains `.swiper-button-lightbox`, does NOT contain `.swiper-button-fullscreen`
-- Slider + dual expand: rendered HTML contains both buttons, container has class `jzsa-has-dual-expand`
-- Carousel + lightbox only: rendered HTML does NOT contain `.swiper-button-lightbox` at container level (per-tile only)
-- Gallery + lightbox only: `data-lightbox-toggle` attribute present, `data-fullscreen-toggle="disabled"`
+### Fixture pages needed
 
-**Attribute parsing edge cases**
-- Invalid `lightbox-toggle` value falls back to `disabled`
-- `lightbox-max-width` with non-numeric value is ignored
-- `lightbox-corner-radius` negative value clamped to 0
+Each e2e spec file lists its own `FIXTURE_URL` constant at the top. The `globalSetup` in `global-setup.ts` must be extended to verify each fixture exists before that spec runs (or each spec file gets its own setup check).
 
-### Effort estimate
-Setup: 4-6 hours. Writing the test cases above: 3-4 hours. Total: roughly one day.
+| Slug | Shortcodes | Purpose |
+|---|---|---|
+| `lightbox-fixture` | 5 (exists) | lightbox tests |
+| `fullscreen-fixture` | 4: button-only, click, double-click, disabled (control) | fullscreen tests |
+| `gallery-fixture` | 4: grid, justified, scrollable, paginated (gallery-rows) | gallery interaction tests |
+| `slideshow-fixture` | 3: auto delay=1, manual, disabled (control) | slideshow tests; use `slideshow-delay="1"` so tests don't wait 5s |
+| `mosaic-fixture` | 4: bottom, top, left, right | mosaic strip tests |
+| `info-fixture` | 3: various info-top/info-bottom format strings | placeholder rendering tests |
+| `feature-fixture` | 3-4: navigation, download, link, interaction-lock | feature flag tests |
 
----
-
-## Layer 2: E2E Tests (Playwright)
-
-### What they cover
-All 13 cases in `lightbox-manual-test.md`, plus regression checks for:
-- Ghost button visibility after close
-- Carousel layout restore after lightbox close
-- Focus trap behavior
-- Scroll position restore
-
-### Why useful
-These would have caught every bug found in this session automatically on each commit.
-
-### Setup requirements
-1. A WordPress instance accessible to Playwright (Docker is ideal, same setup already used)
-2. A fixture WordPress page containing all test shortcodes with known album links
-3. A cached album response (or a dedicated test album that never changes)
-4. Playwright installed as a dev dependency (`npm install --save-dev @playwright/test`)
-5. A `playwright.config.ts` pointing at the local WordPress URL
-
-### Architecture
-```
-tests/
-  e2e/
-    fixtures/
-      album-cache.json        # pre-cached album data so tests don't hit Google
-    lightbox-slider.spec.ts
-    lightbox-gallery.spec.ts
-    lightbox-carousel.spec.ts
-    lightbox-close.spec.ts
-    lightbox-keyboard.spec.ts
-    lightbox-dual-expand.spec.ts
-```
-
-### Example test (Playwright)
-```typescript
-test('gallery: no ghost button after lightbox close', async ({ page }) => {
-  await page.goto('/test-fixtures/lightbox-gallery');
-  const items = page.locator('.jzsa-gallery-item');
-
-  // Open lightbox on first item
-  await items.nth(0).hover();
-  await items.nth(0).locator('.jzsa-gallery-thumb-fs-btn').first().click();
-  await expect(page.locator('.jzsa-lightbox-backdrop')).toBeVisible();
-
-  // Close via Esc
-  await page.keyboard.press('Escape');
-  await expect(page.locator('.jzsa-lightbox-backdrop')).not.toBeVisible();
-
-  // No other item should show its button
-  for (let i = 1; i < 9; i++) {
-    await expect(items.nth(i).locator('.jzsa-gallery-thumb-fs-btn')).not.toBeVisible();
-  }
-});
-```
-
-### Album caching strategy
-The biggest test fragility risk is depending on a live Google Photos URL. Two options:
-
-**Option A (simpler):** Use a dedicated private test album that you control. If it ever
-breaks tests, you know why.
-
-**Option B (robust):** Intercept the album fetch in Playwright using `page.route()` to
-return a fixture JSON response. Requires understanding the internal fetch format but
-makes tests fully offline and deterministic.
-
-### Effort estimate
-- WordPress + Playwright scaffolding: 1-2 days
-- Writing all 13 test cases: 1 day
-- Album caching / fixture setup: half a day
-- CI via GitHub Actions: half a day
-- Total: roughly 3-4 days
-
-### When to do it
-Consider starting when any of these are true:
-- A second developer contributes to the plugin
-- A release introduces major new UI surface (e.g. v3)
-- A regression ships to production that a test would have caught
-- The manual test plan grows beyond 20 cases
+Community and admin tests use WordPress admin URLs directly, no shortcode fixture page needed.
 
 ---
 
-## CI integration (both layers)
+## Priority order
 
-Once either layer exists, add a GitHub Actions workflow:
+### Phase 1 -- high value, low friction
+
+1. `RendererSliderTest.php` and `RendererGalleryTest.php` -- pure PHP, highest parameter density
+2. `CommunityValidationTest.php` -- pure PHP, guards brittle validation rules
+3. `fullscreen.spec.ts` -- mirrors lightbox structure, reuses `waitForAlbum`, just different triggers
+
+### Phase 2 -- medium friction
+
+1. `gallery.spec.ts` -- gallery player open/close, navigation inside the player
+2. `slideshow.spec.ts` -- use `delay="1"` shortcode attribute to keep tests fast
+3. `navigation.spec.ts` -- arrows, keyboard, interaction-lock
+
+### Phase 3 -- higher effort
+
+1. `RendererButtonsTest.php`, `RendererMosaicTest.php`, `RendererInfoBoxTest.php`
+2. `mosaic.spec.ts` -- thumbnail-to-slide sync assertions
+3. `info-overlay.spec.ts` -- placeholder substitution in rendered DOM
+4. `community.spec.ts` -- most complex; needs a test account or mocked HTTP responses
+5. `admin.spec.ts` -- requires WordPress admin credentials in the test config
+
+---
+
+## Community e2e strategy
+
+The community feature calls an external API. Two options:
+
+**Real API (simpler):** use a dedicated connected test account. Tests are honest but fragile on network issues. Good for a small number of smoke tests run manually.
+
+**WordPress filter mock (robust):** add a filter hook that substitutes a fake HTTP response in test mode. Fully offline, deterministic. Slightly more setup but makes the full community flow testable in CI.
+
+Recommendation: filter mock for the full publish/browse/rate flow, one real-API smoke test for the connect (magic link) flow.
+
+---
+
+## Known assertions to be careful about
+
+- **Opacity-based hiding:** gallery buttons use `opacity: 0` with `display: flex` always set. Playwright's `toBeVisible()` does not check opacity. Use `toHaveCSS('opacity', '0')` to assert hidden state, not `not.toBeVisible()`.
+- **IntersectionObserver lazy init:** gallery albums only initialize when scrolled into the viewport. Always call `await album.scrollIntoViewIfNeeded()` before asserting on gallery state (already handled in `waitForAlbum`).
+- **DOM move on lightbox open:** `openLightbox` moves the album element into the backdrop div. Any locator that was resolved before open will point to the wrong element after the move. Assert inside `backdrop(page).locator(...)` instead.
+- **`force: true` for lightbox button clicks:** the cover-fit slide image overlaps the button bounding box. Playwright's pointer-events hit-test fails without `{ force: true }`.
+- **Slideshow delay in tests:** use `slideshow-delay="1"` on fixture shortcodes so auto-advance tests complete in ~1 second instead of 5.
+
+---
+
+## CI (not yet configured)
+
+When ready, add a GitHub Actions workflow:
 
 ```yaml
-# .github/workflows/test.yml
 on: [push, pull_request]
 jobs:
-  php-unit:
+  unit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: composer install
+      - run: composer install --no-interaction
       - run: vendor/bin/phpunit
 
   e2e:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker compose up -d   # start WordPress
+      - run: docker compose up -d
       - run: npm ci
-      - run: npx playwright install --with-deps
+      - run: npx playwright install --with-deps chromium
       - run: npx playwright test
 ```
 
-PHP unit tests run in under 10 seconds. Playwright tests for 13 cases run in under
-2 minutes. Both can block merging a PR if they fail.
+PHPUnit runs in under 10 seconds. Playwright for the current 17 tests runs in under 20 seconds. Both should block merging if they fail.
