@@ -12,27 +12,38 @@ Both layers are operational. Run everything with:
 
 ### What exists
 
-**PHPUnit** (`tests/Unit/`) -- 245 tests
+**PHPUnit** (`tests/Unit/`) -- 297 tests
 
 - `OrchestratorToggleModeTest.php` -- toggle mode resolution, paired-key fallback
+- `OrchestratorCacheTest.php` -- cache/expiry/backup key generation, TTL constants, cache-refresh parsing
 - `RendererSliderTest.php` -- inline styles, data attributes for slider/carousel mode
 - `RendererGalleryTest.php` -- gallery-mode container and all gallery-specific parameters
 - `RendererButtonsTest.php` -- lightbox/fullscreen button render conditions, dual-expand class
 - `RendererMosaicTest.php` -- mosaic wrapper positions, strip element, mosaic data attributes
 - `RendererInfoBoxTest.php` -- info-box format strings, typography CSS props, halo effects
+- `RendererLightboxAttrTest.php` -- all lightbox data attributes, interaction-lock suppression
 - `CommunityValidationTest.php` -- all 8 field validators, URL helpers, tag normalization
 
-**Playwright** (`tests/e2e/`) -- 30 tests
+**Playwright** (`tests/e2e/`) -- 126 tests
 
 - `lightbox.spec.ts` -- slider click/button-only trigger, dual expand, gallery lightbox
 - `fullscreen.spec.ts` -- fullscreen button presence, dual-expand interaction, close methods
+- `slideshow.spec.ts` -- data attributes, play/pause button, auto-advance and manual-hold
+- `gallery.spec.ts` -- data attributes (layout/columns/scrollable/rows), items, hover button
+- `navigation.spec.ts` -- arrow visibility, slide advance, keyboard, interaction-lock, download/link buttons
+- `mosaic.spec.ts` -- wrapper position classes, strip presence, data attributes, thumbnail-to-slide sync
+- `info-overlay.spec.ts` -- pagination text substitution ({item}/{items}/{album-title}), info-top box
+- `admin.spec.ts` -- Guide page lazy previews, Parameters table rows, Community page structure
+- `community.spec.ts` -- page structure, account disconnected state, browse AJAX, sort/search UI
 
 ### Infrastructure
 
-- `playwright.config.ts` -- Chromium only, 1 worker, retries: 1, globalSetup validates fixture page
-- `tests/e2e/global-setup.ts` -- checks `/?pagename=lightbox-fixture` returns 200 with 5 albums
-- `tests/e2e/README.md` -- documents the 5 shortcodes required on the fixture page
+- `playwright.config.ts` -- Chromium only, 1 worker, retries: 1, globalSetup validates all fixture pages
+- `tests/e2e/global-setup.ts` -- validates 6 fixture pages (lightbox, slideshow, gallery, mosaic, info, feature)
+- `tests/e2e/README.md` -- documents the shortcodes required on the lightbox fixture page
 - PHPUnit bootstrap stubs all WordPress functions so unit tests run without WordPress
+- Fixture pages (all require `mode="slider"` for slider-mode features): slideshow-fixture, mosaic-fixture, feature-fixture, info-fixture; gallery-fixture uses default gallery mode
+- Admin/community tests use WordPress admin credentials: user `dev`, password `test123` (local dev only)
 
 ---
 
@@ -62,8 +73,8 @@ The renderer tests are the highest-value target. With 80+ parameters each mappin
 | `navigation.spec.ts` | Arrow buttons, keyboard arrows, mousewheel, interaction-lock disables all of these | `feature-fixture` |
 | `mosaic.spec.ts` | Clicking a mosaic thumbnail advances the main slider, all four positions | `mosaic-fixture` |
 | `info-overlay.spec.ts` | `{item}`, `{items}`, `{album-title}` substitution visible in rendered text | `info-fixture` |
-| `community.spec.ts` | Browse list loads, search/filter, connect flow, publish form validation | WordPress admin URL |
-| `admin.spec.ts` | Guide page loads previews, Parameters page renders the table | WordPress admin URL |
+| `community.spec.ts` (done) | Browse list loads, search/filter, connect flow, publish form validation | WordPress admin URL |
+| `admin.spec.ts` (done) | Guide page loads previews, Parameters page renders the table | WordPress admin URL |
 
 ### Fixture pages needed
 
