@@ -1,11 +1,11 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
 
-// gallery-fixture contains 4 albums in this order:
-//   #0  mode="gallery"  gallery-columns-desktop="3"  (grid, default layout)
-//   #1  mode="gallery"  gallery-layout="justified"
-//   #2  mode="gallery"  gallery-scrollable="true"
-//   #3  mode="gallery"  gallery-rows="2"
-// All four have fullscreen-toggle="button-only".
+// gallery-fixture contains 5 albums in this order:
+//   #0  mode="gallery"  gallery-columns="3"  (grid, default layout)      fullscreen-toggle="button-only"
+//   #1  mode="gallery"  gallery-layout="justified"                        fullscreen-toggle="button-only"
+//   #2  mode="gallery"  gallery-scrollable="true"                         fullscreen-toggle="button-only"
+//   #3  mode="gallery"  gallery-rows="2"                                  fullscreen-toggle="button-only"
+//   #4  mode="gallery"  lightbox-toggle="click"  fullscreen-toggle="disabled"  (gallery player tests)
 const FIXTURE_URL = '/?pagename=gallery-fixture';
 
 async function waitForAlbum(page: Page, index: number): Promise<Locator> {
@@ -120,5 +120,126 @@ test.describe('Gallery - hover button', () => {
 
         // First item button must be hidden after focus moves away.
         await expect(first.locator('.jzsa-gallery-thumb-fs-btn')).toHaveCSS('opacity', '0');
+    });
+});
+
+// Album #4 uses lightbox-toggle="click" so clicking a gallery item opens the
+// gallery slideshow player inside the lightbox backdrop (testable in headless).
+function backdrop(page: Page): Locator {
+    return page.locator('.jzsa-lightbox-backdrop');
+}
+
+test.describe('Gallery - slideshow player opens on click', () => {
+    test.beforeEach(async ({ page }) => {
+        await page.goto(FIXTURE_URL);
+    });
+
+    test('clicking a gallery item opens the lightbox backdrop', async ({ page }) => {
+        const album = await waitForAlbum(page, 4);
+        const item = album.locator('.jzsa-gallery-item').first();
+        await item.waitFor({ state: 'visible', timeout: 10_000 });
+        await item.locator('.jzsa-gallery-thumb').click();
+        await expect(backdrop(page)).toBeVisible({ timeout: 5_000 });
+    });
+
+    test('gallery slideshow player element is inside the backdrop', async ({ page }) => {
+        const album = await waitForAlbum(page, 4);
+        const item = album.locator('.jzsa-gallery-item').first();
+        await item.waitFor({ state: 'visible', timeout: 10_000 });
+        await item.locator('.jzsa-gallery-thumb').click();
+        await expect(backdrop(page)).toBeVisible({ timeout: 5_000 });
+        await expect(backdrop(page).locator('.jzsa-gallery-slideshow')).toBeAttached();
+    });
+
+    test('album 4 has data-lightbox-toggle="click"', async ({ page }) => {
+        const album = await waitForAlbum(page, 4);
+        await expect(album).toHaveAttribute('data-lightbox-toggle', 'click');
+    });
+
+    test('album 4 has data-fullscreen-toggle="disabled"', async ({ page }) => {
+        const album = await waitForAlbum(page, 4);
+        await expect(album).toHaveAttribute('data-fullscreen-toggle', 'disabled');
+    });
+});
+
+test.describe('Gallery - slideshow player navigation', () => {
+    test.beforeEach(async ({ page }) => {
+        await page.goto(FIXTURE_URL);
+    });
+
+    test('player next arrow advances to a different slide', async ({ page }) => {
+        const album = await waitForAlbum(page, 4);
+        const items = album.locator('.jzsa-gallery-item');
+        await items.first().waitFor({ state: 'visible', timeout: 10_000 });
+
+        // Open the player on the first item.
+        await items.first().locator('.jzsa-gallery-thumb').click();
+        const player = backdrop(page).locator('.jzsa-gallery-slideshow');
+        await expect(player).toBeAttached({ timeout: 5_000 });
+
+        const initialIdx = await player.locator('.swiper-slide-active').getAttribute('data-swiper-slide-index');
+
+        await player.locator('.swiper-button-next').click({ force: true });
+
+        await expect(async () => {
+            const newIdx = await player.locator('.swiper-slide-active').getAttribute('data-swiper-slide-index');
+            expect(newIdx).not.toBe(initialIdx);
+        }).toPass({ timeout: 2_000 });
+    });
+
+    test('opening on the second item starts the player at index 1', async ({ page }) => {
+        const album = await waitForAlbum(page, 4);
+        const items = album.locator('.jzsa-gallery-item');
+        await items.nth(1).waitFor({ state: 'visible', timeout: 10_000 });
+        await items.nth(1).scrollIntoViewIfNeeded();
+
+        await items.nth(1).locator('.jzsa-gallery-thumb').click();
+        const player = backdrop(page).locator('.jzsa-gallery-slideshow');
+        await expect(player).toBeAttached({ timeout: 5_000 });
+
+        await expect(async () => {
+            const idx = await player.locator('.swiper-slide-active').getAttribute('data-swiper-slide-index');
+            expect(idx).toBe('1');
+        }).toPass({ timeout: 2_000 });
+    });
+});
+
+test.describe('Gallery - slideshow player close', () => {
+    test.beforeEach(async ({ page }) => {
+        await page.goto(FIXTURE_URL);
+    });
+
+    test('Escape closes the gallery player', async ({ page }) => {
+        const album = await waitForAlbum(page, 4);
+        const item = album.locator('.jzsa-gallery-item').first();
+        await item.waitFor({ state: 'visible', timeout: 10_000 });
+        await item.locator('.jzsa-gallery-thumb').click();
+        await expect(backdrop(page)).toBeVisible({ timeout: 5_000 });
+
+        await page.keyboard.press('Escape');
+        await expect(backdrop(page)).not.toBeVisible();
+    });
+
+    test('close button closes the gallery player', async ({ page }) => {
+        const album = await waitForAlbum(page, 4);
+        const item = album.locator('.jzsa-gallery-item').first();
+        await item.waitFor({ state: 'visible', timeout: 10_000 });
+        await item.locator('.jzsa-gallery-thumb').click();
+        await expect(backdrop(page)).toBeVisible({ timeout: 5_000 });
+
+        await backdrop(page).locator('.jzsa-lightbox-close').click();
+        await expect(backdrop(page)).not.toBeVisible();
+    });
+
+    test('clicking the backdrop edge closes the gallery player', async ({ page }) => {
+        const album = await waitForAlbum(page, 4);
+        const item = album.locator('.jzsa-gallery-item').first();
+        await item.waitFor({ state: 'visible', timeout: 10_000 });
+        await item.locator('.jzsa-gallery-thumb').click();
+        await expect(backdrop(page)).toBeVisible({ timeout: 5_000 });
+
+        // Click top-left corner of the backdrop (outside the player).
+        await backdrop(page).click({ position: { x: 10, y: 10 } });
+        await expect(backdrop(page)).not.toBeVisible();
     });
 });

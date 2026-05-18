@@ -24,12 +24,12 @@ Both layers are operational. Run everything with:
 - `RendererLightboxAttrTest.php` -- all lightbox data attributes, interaction-lock suppression
 - `CommunityValidationTest.php` -- all 8 field validators, URL helpers, tag normalization
 
-**Playwright** (`tests/e2e/`) -- 126 tests
+**Playwright** (`tests/e2e/`) -- 135 tests
 
 - `lightbox.spec.ts` -- slider click/button-only trigger, dual expand, gallery lightbox
 - `fullscreen.spec.ts` -- fullscreen button presence, dual-expand interaction, close methods
 - `slideshow.spec.ts` -- data attributes, play/pause button, auto-advance and manual-hold
-- `gallery.spec.ts` -- data attributes (layout/columns/scrollable/rows), items, hover button
+- `gallery.spec.ts` -- data attributes (layout/columns/scrollable/rows), items, hover button, slideshow player open/navigate/close
 - `navigation.spec.ts` -- arrow visibility, slide advance, keyboard, interaction-lock, download/link buttons
 - `mosaic.spec.ts` -- wrapper position classes, strip presence, data attributes, thumbnail-to-slide sync
 - `info-overlay.spec.ts` -- pagination text substitution ({item}/{items}/{album-title}), info-top box
