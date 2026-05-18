@@ -1,0 +1,15 @@
+{
+    "name": "janzeman/shared-albums-for-google-photos",
+    "description": "WordPress plugin for Google Photos albums",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Jan Zeman",
+            "email": "jan.zeman@gmail.com"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^11"
+    }
+}

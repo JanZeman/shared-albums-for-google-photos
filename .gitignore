@@ -189,5 +189,8 @@ yarn-error.log
 /vendor/
 composer.lock
 
+# PHPUnit
+.phpunit.result.cache
+
 # Release directory and zip files
 /release/
