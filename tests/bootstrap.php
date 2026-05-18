@@ -82,6 +82,54 @@ if ( ! function_exists( 'wp_kses_post' ) ) {
 if ( ! function_exists( 'current_user_can' ) ) {
     function current_user_can( $capability ) { return false; }
 }
+if ( ! function_exists( 'is_user_logged_in' ) ) {
+    function is_user_logged_in() { return false; }
+}
+if ( ! function_exists( 'apply_filters' ) ) {
+    function apply_filters( $hook, $value ) { return $value; }
+}
+if ( ! function_exists( 'wp_unique_id' ) ) {
+    function wp_unique_id( $prefix = '' ) {
+        static $counter = 0;
+        return $prefix . ( ++$counter );
+    }
+}
+if ( ! function_exists( 'wp_parse_url' ) ) {
+    function wp_parse_url( $url, $component = -1 ) {
+        return parse_url( $url, $component );
+    }
+}
+if ( ! function_exists( 'sanitize_url' ) ) {
+    function sanitize_url( $url ) { return filter_var( $url, FILTER_SANITIZE_URL ); }
+}
+if ( ! function_exists( 'sanitize_text_field' ) ) {
+    function sanitize_text_field( $str ) { return trim( strip_tags( (string) $str ) ); }
+}
+if ( ! function_exists( 'jzsa_get_admin_capability' ) ) {
+    function jzsa_get_admin_capability() { return 'edit_pages'; }
+}
+if ( ! function_exists( 'jzsa_get_frontend_i18n_strings' ) ) {
+    function jzsa_get_frontend_i18n_strings() {
+        return array(
+            'playPauseSpace'        => 'Play/Pause (Space)',
+            'playPause'             => 'Play/Pause',
+            'openInGooglePhotos'    => 'Open in Google Photos',
+            'openAlbumGooglePhotos' => 'Open album in Google Photos',
+            'openMediaFullscreen'   => 'Open media %d in fullscreen',
+            'downloadCurrentMedia'  => 'Download current media',
+            'downloadMedia'         => 'Download media %d',
+            'largeDownloadWarning'  => 'This file is larger than the configured download warning threshold.',
+            'openLightbox'          => 'Open in lightbox',
+            'openMediaLightbox'     => 'Open media %d in lightbox',
+            'closeLightbox'         => 'Close',
+            'lightboxDialogLabel'   => 'Photo viewer',
+            'pauseSlideshow'        => 'Pause slideshow',
+            'resumeSlideshow'       => 'Resume slideshow',
+            'previousGalleryPage'   => 'Previous gallery page',
+            'nextGalleryPage'       => 'Next gallery page',
+        );
+    }
+}
 if ( ! function_exists( 'md5' ) ) {
     // md5 is a PHP built-in; only here to document the dependency.
 }

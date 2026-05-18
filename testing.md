@@ -12,13 +12,20 @@ Both layers are operational. Run everything with:
 
 ### What exists
 
-**PHPUnit** (`tests/Unit/`) -- 18 tests
+**PHPUnit** (`tests/Unit/`) -- 245 tests
 
 - `OrchestratorToggleModeTest.php` -- toggle mode resolution, paired-key fallback
+- `RendererSliderTest.php` -- inline styles, data attributes for slider/carousel mode
+- `RendererGalleryTest.php` -- gallery-mode container and all gallery-specific parameters
+- `RendererButtonsTest.php` -- lightbox/fullscreen button render conditions, dual-expand class
+- `RendererMosaicTest.php` -- mosaic wrapper positions, strip element, mosaic data attributes
+- `RendererInfoBoxTest.php` -- info-box format strings, typography CSS props, halo effects
+- `CommunityValidationTest.php` -- all 8 field validators, URL helpers, tag normalization
 
-**Playwright** (`tests/e2e/`) -- 17 tests
+**Playwright** (`tests/e2e/`) -- 30 tests
 
 - `lightbox.spec.ts` -- slider click/button-only trigger, dual expand, gallery lightbox
+- `fullscreen.spec.ts` -- fullscreen button presence, dual-expand interaction, close methods
 
 ### Infrastructure
 

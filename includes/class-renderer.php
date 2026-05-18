@@ -34,12 +34,12 @@ class JZSA_Renderer {
 		}
 
 		// Warn privileged users if mosaic is used with an incompatible mode.
-		if ( ! empty( $config['mosaic'] ) && 'gallery' === $config['mode'] && is_user_logged_in() && current_user_can( jzsa_get_admin_capability() ) ) {
+		if ( ! empty( $config['mosaic'] ) && isset( $config['mode'] ) && 'gallery' === $config['mode'] && is_user_logged_in() && current_user_can( jzsa_get_admin_capability() ) ) {
 			$html .= $this->render_mosaic_mode_notice();
 		}
 
 		// Gallery mode: plain thumbnail gallery, no Swiper structure
-		if ( 'gallery' === $config['mode'] ) {
+		if ( isset( $config['mode'] ) && 'gallery' === $config['mode'] ) {
 			$html .= $this->build_thumbnail_gallery_container( $gallery_id, $config );
 			return $html;
 		}
