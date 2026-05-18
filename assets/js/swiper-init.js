@@ -226,6 +226,16 @@
     var _jzsaLightboxActiveEl = null;
     var _jzsaLightboxTriggerEl = null;
     var _jzsaLightboxKeyHandler = null;
+    // Whether the lightbox was opened via keyboard (Enter/Space) rather than mouse.
+    // Used in closeLightbox to decide whether to restore focus (keyboard a11y only).
+    var _jzsaLightboxOpenedByKeyboard = false;
+    // Last known cursor position, kept in sync by a single global mousemove listener.
+    var _jzsaLastMouseClientX = 0;
+    var _jzsaLastMouseClientY = 0;
+    document.addEventListener('mousemove', function(e) {
+        _jzsaLastMouseClientX = e.clientX;
+        _jzsaLastMouseClientY = e.clientY;
+    }, { passive: true, capture: true });
 
     // Whether an album opts into the lightbox instead of native fullscreen.
     function elementUsesLightbox(element) {
@@ -342,6 +352,18 @@
 
         _jzsaLightboxActiveEl = element;
         _jzsaLightboxTriggerEl = document.activeElement;
+        // Record whether the trigger element was keyboard-focused (not mouse-clicked).
+        // Only restore focus on close when keyboard opened, to prevent :focus-visible
+        // from making gallery thumbnail buttons appear stale after a mouse-driven close.
+        try {
+            _jzsaLightboxOpenedByKeyboard = !!(
+                _jzsaLightboxTriggerEl &&
+                typeof _jzsaLightboxTriggerEl.matches === 'function' &&
+                _jzsaLightboxTriggerEl.matches(':focus-visible')
+            );
+        } catch (e) {
+            _jzsaLightboxOpenedByKeyboard = false;
+        }
 
         var swiper = swipers[element.id];
         if (swiper && $el.attr('data-mode') === 'carousel') {
@@ -356,6 +378,52 @@
         }
         if (swiper && typeof swiper.update === 'function') {
             swiper.update();
+        }
+
+        // Apply lightbox-specific display settings (controls color, navigation, video controls).
+        // Reads data-lightbox-* attrs (pre-resolved with bidirectional fallback by PHP).
+        var fsParams = swiper && swiper._jzsaFullscreenParams;
+        if (fsParams) {
+            var lbControlsColor = $el.attr('data-lightbox-controls-color') || '';
+            var lbVideoColor    = $el.attr('data-lightbox-video-controls-color') || '';
+            var lbShowNavAttr   = $el.attr('data-lightbox-show-navigation');
+            var lbShowNav       = lbShowNavAttr !== undefined ? (lbShowNavAttr === 'true') : fsParams.showNavigation;
+            var lbVcaAttr       = $el.attr('data-lightbox-video-controls-autohide');
+            var lbVca           = lbVcaAttr !== undefined ? (lbVcaAttr === 'true') : fsParams.videoControlsAutohide;
+            var lbShowLink      = $el.attr('data-lightbox-show-link-button') || 'false';
+            var lbShowDl        = $el.attr('data-lightbox-show-download-button') || 'false';
+
+            // Build one-shot params object: "fullscreen" slots carry lightbox values.
+            var lbDisplayParams = {
+                galleryId:                    fsParams.galleryId,
+                showNavigation:               fsParams.showNavigation,
+                fullscreenShowNavigation:     lbShowNav,
+                controlsColor:                fsParams.controlsColor,
+                fullscreenControlsColor:      lbControlsColor,
+                videoControlsColor:           fsParams.videoControlsColor,
+                fullscreenVideoControlsColor: lbVideoColor,
+                videoControlsAutohide:        fsParams.videoControlsAutohide,
+                fullscreenVideoControlsAutohide: lbVca,
+                infoFontSize:           fsParams.infoFontSize,
+                fullscreenInfoFontSize: fsParams.infoFontSize,
+                infoFontFamily:           fsParams.infoFontFamily,
+                fullscreenInfoFontFamily: fsParams.infoFontFamily,
+                infoFontColor:           fsParams.infoFontColor,
+                fullscreenInfoFontColor: fsParams.infoFontColor,
+                fullscreenDisplayMaxWidth:  null,
+                fullscreenDisplayMaxHeight: null,
+                inlineSlideshowAutoresume:    fsParams.inlineSlideshowAutoresume || fsParams.slideshowAutoresume,
+                fullscreenSlideshowAutoresume: fsParams.fullscreenSlideshowAutoresume
+            };
+            applyFullscreenDisplayOverrides(element, swiper, lbDisplayParams, true);
+            swiper._jzsaLightboxDisplayParams = lbDisplayParams;
+
+            // Swap fullscreen-show-link/download-button to lightbox values so the existing
+            // CSS rules (.jzsa-is-fullscreen[data-fullscreen-show-*="true"]) render correctly.
+            $el.data('jzsa-orig-fs-show-link', $el.attr('data-fullscreen-show-link-button') || 'false');
+            $el.data('jzsa-orig-fs-show-dl',   $el.attr('data-fullscreen-show-download-button') || 'false');
+            $el.attr('data-fullscreen-show-link-button',     lbShowLink);
+            $el.attr('data-fullscreen-show-download-button', lbShowDl);
         }
 
         $el.trigger('jzsa:fullscreen-state', [true]);
@@ -448,6 +516,19 @@
             backdrop.style.display = 'none';
         }
 
+        // Force the browser to re-evaluate :hover after the backdrop disappears.
+        // Without this, the gallery item under the cursor position can stay "stuck"
+        // in :hover state because browsers only update hover on pointer movement.
+        try {
+            document.dispatchEvent(new MouseEvent('mousemove', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+                clientX: _jzsaLastMouseClientX,
+                clientY: _jzsaLastMouseClientY
+            }));
+        } catch (e) { /* ignore */ }
+
         var swiper = swipers[element.id];
         if (swiper && swiper._jzsaLightboxOriginalSlidesPerView != null) {
             var targetIndex = (typeof swiper.realIndex === 'number') ? swiper.realIndex : swiper.activeIndex;
@@ -469,16 +550,34 @@
             swiper.update();
         }
 
+        // Restore inline display settings (controls color, navigation, video controls).
+        var fsParams = swiper && swiper._jzsaFullscreenParams;
+        if (fsParams) {
+            applyFullscreenDisplayOverrides(element, swiper, fsParams, false);
+            swiper._jzsaLightboxDisplayParams = null;
+        }
+
+        // Restore fullscreen-show-link/download-button to their pre-lightbox values.
+        var origFsLink = $el.data('jzsa-orig-fs-show-link');
+        var origFsDl   = $el.data('jzsa-orig-fs-show-dl');
+        if (origFsLink !== undefined) { $el.attr('data-fullscreen-show-link-button', origFsLink); }
+        if (origFsDl   !== undefined) { $el.attr('data-fullscreen-show-download-button', origFsDl); }
+        $el.removeData('jzsa-orig-fs-show-link jzsa-orig-fs-show-dl');
+
         $el.trigger('jzsa:fullscreen-state', [false]);
         notifyGalleryOnFullscreenExit(element, swiper);
 
         _jzsaLightboxActiveEl = null;
-        if (_jzsaLightboxTriggerEl && typeof _jzsaLightboxTriggerEl.focus === 'function') {
+        // Only restore focus when the lightbox was opened via keyboard. For mouse-
+        // opened lightboxes, restoring focus causes :focus-visible to appear on the
+        // gallery thumbnail button, making it look stale after close.
+        if (_jzsaLightboxOpenedByKeyboard && _jzsaLightboxTriggerEl && typeof _jzsaLightboxTriggerEl.focus === 'function') {
             try {
                 _jzsaLightboxTriggerEl.focus();
             } catch (err) { /* ignore */ }
         }
         _jzsaLightboxTriggerEl = null;
+        _jzsaLightboxOpenedByKeyboard = false;
     }
 
     function toggleLightbox(element) {
@@ -6276,6 +6375,9 @@
             };
             applyFullscreenDisplayOverrides($container[0], swiper, fullscreenChangeParams, false);
 
+            // Store on swiper so openLightbox / closeLightbox can apply and restore display settings.
+            swiper._jzsaFullscreenParams = fullscreenChangeParams;
+
             // Fullscreen change event listeners - Standard API (Chrome, Firefox, Edge)
             document.addEventListener('fullscreenchange', function() {
                 fullscreenChangeParams.browserPrefix = null;
@@ -6647,16 +6749,17 @@
                 '<button class="swiper-button-play-pause" title="' + jzsaEscapeAttr(jzsaI18n('playPauseSpace')) + '"></button>' +
                 '<div class="swiper-slideshow-progress"><div class="swiper-slideshow-progress-bar"></div></div>';
 
-        // External link button (render if enabled in either inline or fullscreen contexts;
-        // CSS decides visibility based on current fullscreen state).
+        // External link button (render if enabled in inline, fullscreen, or lightbox contexts;
+        // CSS decides visibility based on current fullscreen/lightbox state).
         var showLink = $galleryContainer.attr('data-show-link-button') === 'true';
         var showFullscreenLink = readBooleanDataAttr(
             $galleryContainer,
             'data-fullscreen-show-link-button',
             showLink
         );
+        var showLightboxLink = $galleryContainer.attr('data-lightbox-show-link-button') === 'true';
         var albumUrl = $galleryContainer.attr('data-album-url') || '';
-        if ((showLink || showFullscreenLink) && albumUrl) {
+        if ((showLink || showFullscreenLink || showLightboxLink) && albumUrl) {
             html += '<a href="' + albumUrl + '" target="_blank" rel="noopener noreferrer" ' +
                 'class="swiper-button-external-link" title="' + jzsaEscapeAttr(jzsaI18n('openInGooglePhotos')) + '"></a>';
         }
@@ -6668,7 +6771,8 @@
             'data-fullscreen-show-download-button',
             showDownload
         );
-        if (showDownload || showFullscreenDownload) {
+        var showLightboxDownload = $galleryContainer.attr('data-lightbox-show-download-button') === 'true';
+        if (showDownload || showFullscreenDownload || showLightboxDownload) {
             html += '<button class="swiper-button-download" title="' + jzsaEscapeAttr(jzsaI18n('downloadCurrentMedia')) + '"></button>';
         }
 
@@ -6774,7 +6878,18 @@
             'data-lightbox-max-width',
             'data-lightbox-max-height',
             'data-lightbox-background-color',
-            'data-lightbox-corner-radius'
+            'data-lightbox-corner-radius',
+            'data-lightbox-controls-color',
+            'data-lightbox-video-controls-color',
+            'data-lightbox-video-controls-autohide',
+            'data-lightbox-show-navigation',
+            'data-lightbox-show-link-button',
+            'data-lightbox-show-download-button',
+            'data-lightbox-slideshow',
+            'data-lightbox-slideshow-delay',
+            'data-lightbox-slideshow-autoresume',
+            'data-lightbox-source-width',
+            'data-lightbox-source-height'
         ];
         for (var i = 0; i < forwardAttrs.length; i++) {
             var val = $galleryContainer.attr(forwardAttrs[i]);

@@ -1284,6 +1284,27 @@ class JZSA_Admin_Pages {
 					</div>
 
 					<div class="jzsa-sample-card">
+						<div class="jzsa-sample-card-header">
+							<h3><?php esc_html_e( 'Lightbox + Fullscreen - Shared Display Settings via One Param', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<span class="jzsa-sample-card-hint"><?php esc_html_e( 'Open lightbox or fullscreen to see the effect', 'janzeman-shared-albums-for-google-photos' ); ?></span>
+						</div>
+						<p><?php echo wp_kses( __( '<strong>Interchangeability rule:</strong> every <code>fullscreen-*</code> display param is bidirectionally paired with its <code>lightbox-*</code> counterpart (and vice versa). Set only one of the pair and the other inherits it automatically; set both to give each mode a distinct value. Here only <code>fullscreen-controls-color="#E63946"</code> is written. Because no separate <code>lightbox-controls-color</code> is given, lightbox inherits the same red color. Open either the lightbox (left button) or native fullscreen (right button): both show the same red controls from a single param. The paired params are: controls-color, video-controls-color, video-controls-autohide, show-navigation, show-link-button, show-download-button, slideshow, slideshow-delay, slideshow-autoresume, source-width, source-height, and image-fit.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array(), 'code' => array() ) ); ?></p>
+					<?php
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" lightbox-toggle="button-only" fullscreen-toggle="button-only" lightbox-max-width="1100" lightbox-max-height="750" fullscreen-controls-color="#E63946"]';
+					?>
+					<div class="jzsa-code-block">
+						<code><?php echo esc_html( $sample_shortcode ); ?></code>
+						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+					</div>
+					<div class="jzsa-preview-container jzsa-preview-container-dual-expand">
+						<?php
+							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo do_shortcode( $sample_shortcode );
+						?>
+					</div>
+					</div>
+
+					<div class="jzsa-sample-card">
 						<h3><?php esc_html_e( 'Show "Open in Google Photos" Button', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Enables the show-link-button parameter to display an external link button to the original album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php

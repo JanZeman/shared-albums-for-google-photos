@@ -178,9 +178,11 @@ class JZSA_Renderer {
 		$show_inline_download_button     = ! empty( $config['show-download-button'] );
 		$show_fullscreen_link_button     = ! empty( $config['fullscreen-show-link-button'] );
 		$show_fullscreen_download_button = ! empty( $config['fullscreen-show-download-button'] );
+		$show_lightbox_link_button       = ! empty( $config['lightbox-show-link-button'] );
+		$show_lightbox_download_button   = ! empty( $config['lightbox-show-download-button'] );
 
-		// External link button (if enabled in inline and/or fullscreen modes)
-		if ( ( $show_inline_link_button || $show_fullscreen_link_button ) && ! empty( $config['album-url'] ) ) {
+		// External link button (if enabled in any mode)
+		if ( ( $show_inline_link_button || $show_fullscreen_link_button || $show_lightbox_link_button ) && ! empty( $config['album-url'] ) ) {
 			$html .= sprintf(
 				'<a href="%s" target="_blank" rel="noopener noreferrer" class="swiper-button-external-link" title="%s"></a>',
 				esc_url( $config['album-url'] ),
@@ -188,8 +190,8 @@ class JZSA_Renderer {
 			);
 		}
 
-		// Download button (if enabled in inline and/or fullscreen modes)
-		if ( $show_inline_download_button || $show_fullscreen_download_button ) {
+		// Download button (if enabled in any mode)
+		if ( $show_inline_download_button || $show_fullscreen_download_button || $show_lightbox_download_button ) {
 			$html .= sprintf(
 				'<button class="swiper-button-download" title="%s"></button>',
 				esc_attr( $i18n['downloadCurrentMedia'] )
@@ -324,6 +326,36 @@ class JZSA_Renderer {
 		}
 		if ( ! empty( $config['lightbox-corner-radius'] ) ) {
 			$attrs[] = sprintf( 'data-lightbox-corner-radius="%d"', intval( $config['lightbox-corner-radius'] ) );
+		}
+
+		// Display settings that JS applies when the lightbox opens.
+		// These are pre-resolved with bidirectional fallback from fullscreen-* by PHP.
+		if ( ! empty( $config['lightbox-controls-color'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-controls-color="%s"', esc_attr( $config['lightbox-controls-color'] ) );
+		}
+		if ( ! empty( $config['lightbox-video-controls-color'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-video-controls-color="%s"', esc_attr( $config['lightbox-video-controls-color'] ) );
+		}
+		if ( isset( $config['lightbox-video-controls-autohide'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-video-controls-autohide="%s"', $config['lightbox-video-controls-autohide'] ? 'true' : 'false' );
+		}
+		if ( isset( $config['lightbox-show-navigation'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-show-navigation="%s"', $config['lightbox-show-navigation'] ? 'true' : 'false' );
+		}
+		if ( isset( $config['lightbox-show-link-button'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-show-link-button="%s"', $config['lightbox-show-link-button'] ? 'true' : 'false' );
+		}
+		if ( isset( $config['lightbox-show-download-button'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-show-download-button="%s"', $config['lightbox-show-download-button'] ? 'true' : 'false' );
+		}
+		if ( isset( $config['lightbox-slideshow'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-slideshow="%s"', esc_attr( $config['lightbox-slideshow'] ) );
+		}
+		if ( isset( $config['lightbox-slideshow-delay'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-slideshow-delay="%s"', esc_attr( $config['lightbox-slideshow-delay'] ) );
+		}
+		if ( isset( $config['lightbox-slideshow-autoresume'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-slideshow-autoresume="%s"', esc_attr( $config['lightbox-slideshow-autoresume'] ) );
 		}
 
 		return $attrs;

@@ -509,18 +509,61 @@ class JZSA_Shared_Albums {
 			array( 'slideshow-autoresume', 'slideshow-autoresume-timeout', 'slideshow-inactivity-timeout' )
 		);
 
-		// Fullscreen display controls inherit the inline (non-fullscreen) values
-		// when fullscreen-specific attributes are omitted.
-		$fullscreen_show_navigation = isset( $atts['fullscreen-show-navigation'] ) ? $this->parse_bool( $atts, 'fullscreen-show-navigation', false ) : $show_navigation;
-		$fullscreen_show_link_button = isset( $atts['fullscreen-show-link-button'] ) ? $this->parse_bool( $atts, 'fullscreen-show-link-button', false ) : $show_link_button;
-		$fullscreen_show_download_button = isset( $atts['fullscreen-show-download-button'] ) ? $this->parse_bool( $atts, 'fullscreen-show-download-button', false ) : $show_download_button;
-		$fullscreen_controls_color = isset( $atts['fullscreen-controls-color'] ) ? $this->parse_color( $atts, 'fullscreen-controls-color', '' ) : $controls_color;
-		$fullscreen_video_controls_color = isset( $atts['fullscreen-video-controls-color'] ) ? $this->parse_color( $atts, 'fullscreen-video-controls-color', '' ) : $video_controls_color;
-		$fullscreen_video_controls_autohide = isset( $atts['fullscreen-video-controls-autohide'] ) ? $this->parse_bool( $atts, 'fullscreen-video-controls-autohide', false ) : $video_controls_autohide;
-		$fullscreen_info_font_size = isset( $atts['fullscreen-info-font-size'] ) ? $this->parse_info_font_size( $atts, 'fullscreen-info-font-size', $info_font_size ) : $info_font_size;
+		// Bidirectional display fallback: fullscreen-* and lightbox-* are paired.
+		// If only one of the pair is set the other inherits it; if both are set each uses its own value.
+		// Display params fall back to the inline value when neither paired param is set.
+		// Slideshow and source-quality params fall back to their own dedicated defaults instead.
+
+		$fs_nav_key = $this->paired_key( $atts, 'fullscreen-show-navigation', 'lightbox-show-navigation' );
+		$fullscreen_show_navigation = $fs_nav_key !== null ? $this->parse_bool( $atts, $fs_nav_key, false ) : $show_navigation;
+		$lb_nav_key = $this->paired_key( $atts, 'lightbox-show-navigation', 'fullscreen-show-navigation' );
+		$lightbox_show_navigation = $lb_nav_key !== null ? $this->parse_bool( $atts, $lb_nav_key, false ) : $show_navigation;
+
+		$fs_link_key = $this->paired_key( $atts, 'fullscreen-show-link-button', 'lightbox-show-link-button' );
+		$fullscreen_show_link_button = $fs_link_key !== null ? $this->parse_bool( $atts, $fs_link_key, false ) : $show_link_button;
+		$lb_link_key = $this->paired_key( $atts, 'lightbox-show-link-button', 'fullscreen-show-link-button' );
+		$lightbox_show_link_button = $lb_link_key !== null ? $this->parse_bool( $atts, $lb_link_key, false ) : $show_link_button;
+
+		$fs_dl_key = $this->paired_key( $atts, 'fullscreen-show-download-button', 'lightbox-show-download-button' );
+		$fullscreen_show_download_button = $fs_dl_key !== null ? $this->parse_bool( $atts, $fs_dl_key, false ) : $show_download_button;
+		$lb_dl_key = $this->paired_key( $atts, 'lightbox-show-download-button', 'fullscreen-show-download-button' );
+		$lightbox_show_download_button = $lb_dl_key !== null ? $this->parse_bool( $atts, $lb_dl_key, false ) : $show_download_button;
+
+		$fs_cc_key = $this->paired_key( $atts, 'fullscreen-controls-color', 'lightbox-controls-color' );
+		$fullscreen_controls_color = $fs_cc_key !== null ? $this->parse_color( $atts, $fs_cc_key, '' ) : $controls_color;
+		$lb_cc_key = $this->paired_key( $atts, 'lightbox-controls-color', 'fullscreen-controls-color' );
+		$lightbox_controls_color = $lb_cc_key !== null ? $this->parse_color( $atts, $lb_cc_key, '' ) : $controls_color;
+
+		$fs_vc_key = $this->paired_key( $atts, 'fullscreen-video-controls-color', 'lightbox-video-controls-color' );
+		$fullscreen_video_controls_color = $fs_vc_key !== null ? $this->parse_color( $atts, $fs_vc_key, '' ) : $video_controls_color;
+		$lb_vc_key = $this->paired_key( $atts, 'lightbox-video-controls-color', 'fullscreen-video-controls-color' );
+		$lightbox_video_controls_color = $lb_vc_key !== null ? $this->parse_color( $atts, $lb_vc_key, '' ) : $video_controls_color;
+
+		$fs_vca_key = $this->paired_key( $atts, 'fullscreen-video-controls-autohide', 'lightbox-video-controls-autohide' );
+		$fullscreen_video_controls_autohide = $fs_vca_key !== null ? $this->parse_bool( $atts, $fs_vca_key, false ) : $video_controls_autohide;
+		$lb_vca_key = $this->paired_key( $atts, 'lightbox-video-controls-autohide', 'fullscreen-video-controls-autohide' );
+		$lightbox_video_controls_autohide = $lb_vca_key !== null ? $this->parse_bool( $atts, $lb_vca_key, false ) : $video_controls_autohide;
+
+		$fullscreen_info_font_size   = isset( $atts['fullscreen-info-font-size'] )   ? $this->parse_info_font_size( $atts, 'fullscreen-info-font-size', $info_font_size ) : $info_font_size;
 		$fullscreen_info_font_family = isset( $atts['fullscreen-info-font-family'] ) ? $this->parse_info_font_family( $atts, 'fullscreen-info-font-family', $info_font_family ) : $info_font_family;
-		$fullscreen_info_font_color = isset( $atts['fullscreen-info-font-color'] ) ? $this->parse_color( $atts, 'fullscreen-info-font-color', '' ) : $info_font_color;
-		$fullscreen_slideshow_autoresume = isset( $atts['fullscreen-slideshow-autoresume'] ) ? $this->parse_slideshow_autoresume( $atts, array( 'fullscreen-slideshow-autoresume' ) ) : $slideshow_autoresume;
+		$fullscreen_info_font_color  = isset( $atts['fullscreen-info-font-color'] )  ? $this->parse_color( $atts, 'fullscreen-info-font-color', '' ) : $info_font_color;
+
+		$fs_sar_key = $this->paired_key( $atts, 'fullscreen-slideshow-autoresume', 'lightbox-slideshow-autoresume' );
+		$fullscreen_slideshow_autoresume = $fs_sar_key !== null
+			? $this->parse_slideshow_autoresume( $atts, array( $fs_sar_key ) )
+			: $slideshow_autoresume;
+		$lb_sar_key = $this->paired_key( $atts, 'lightbox-slideshow-autoresume', 'fullscreen-slideshow-autoresume' );
+		$lightbox_slideshow_autoresume = $lb_sar_key !== null
+			? $this->parse_slideshow_autoresume( $atts, array( $lb_sar_key ) )
+			: $slideshow_autoresume;
+
+		// Lightbox slideshow: bidirectional with fullscreen-slideshow, falls back to 'disabled' (not inline).
+		$fs_ss_key = $this->paired_key( $atts, 'fullscreen-slideshow', 'lightbox-slideshow' );
+		$lightbox_slideshow_mode = null; // resolved below after config has fullscreen-slideshow
+		$lb_ss_key = $this->paired_key( $atts, 'lightbox-slideshow', 'fullscreen-slideshow' );
+		$lb_sd_key = $this->paired_key( $atts, 'lightbox-slideshow-delay', 'fullscreen-slideshow-delay' );
+		$lightbox_slideshow_mode  = $lb_ss_key !== null ? $this->parse_slideshow_mode_val( $atts[ $lb_ss_key ] ) : 'disabled';
+		$lightbox_slideshow_delay = $this->parse_delay_range( $lb_sd_key !== null ? $atts[ $lb_sd_key ] : self::DEFAULT_FULLSCREEN_SLIDESHOW_DELAY );
 
 		$lightbox_mode = $this->parse_lightbox_toggle_mode( $atts );
 
@@ -536,8 +579,10 @@ class JZSA_Shared_Albums {
 			'height-explicit' => isset( $atts['height'] ),
 			'source-width'              => isset( $atts['source-width'] ) ? intval( $atts['source-width'] ) : self::DEFAULT_SOURCE_WIDTH,
 			'source-height'             => isset( $atts['source-height'] ) ? intval( $atts['source-height'] ) : self::DEFAULT_SOURCE_HEIGHT,
-			'fullscreen-source-width'   => isset( $atts['fullscreen-source-width'] ) ? intval( $atts['fullscreen-source-width'] ) : self::DEFAULT_FULLSCREEN_SOURCE_WIDTH,
-			'fullscreen-source-height'  => isset( $atts['fullscreen-source-height'] ) ? intval( $atts['fullscreen-source-height'] ) : self::DEFAULT_FULLSCREEN_SOURCE_HEIGHT,
+			'fullscreen-source-width'   => $this->parse_paired_source_dim( $atts, 'fullscreen-source-width', 'lightbox-source-width', self::DEFAULT_FULLSCREEN_SOURCE_WIDTH ),
+			'fullscreen-source-height'  => $this->parse_paired_source_dim( $atts, 'fullscreen-source-height', 'lightbox-source-height', self::DEFAULT_FULLSCREEN_SOURCE_HEIGHT ),
+			'lightbox-source-width'     => $this->parse_paired_source_dim( $atts, 'lightbox-source-width', 'fullscreen-source-width', self::DEFAULT_FULLSCREEN_SOURCE_WIDTH ),
+			'lightbox-source-height'    => $this->parse_paired_source_dim( $atts, 'lightbox-source-height', 'fullscreen-source-height', self::DEFAULT_FULLSCREEN_SOURCE_HEIGHT ),
 			'fullscreen-display-max-width'  => $this->parse_optional_positive_int( $atts, 'fullscreen-display-max-width' ),
 			'fullscreen-display-max-height' => $this->parse_optional_positive_int( $atts, 'fullscreen-display-max-height' ),
 			// Slideshow (normal mode)
@@ -545,13 +590,16 @@ class JZSA_Shared_Albums {
 			'slideshow-delay' => $this->parse_delay_range( isset( $atts['slideshow-delay'] ) ? $atts['slideshow-delay'] : self::DEFAULT_SLIDESHOW_DELAY_RANGE ),
 			'start-at'       => $this->parse_start_at( $atts ),
 
-			// Fullscreen slideshow (fullscreen mode only)
-			'fullscreen-slideshow'       => $this->parse_slideshow_mode( $atts, 'fullscreen-slideshow' ),
-			'fullscreen-slideshow-delay' => $this->parse_delay_range( isset( $atts['fullscreen-slideshow-delay'] ) ? $atts['fullscreen-slideshow-delay'] : self::DEFAULT_FULLSCREEN_SLIDESHOW_DELAY ),
+			// Fullscreen and lightbox slideshow (bidirectional fallback with each other)
+			'fullscreen-slideshow'       => $fs_ss_key !== null ? $this->parse_slideshow_mode_val( $atts[ $fs_ss_key ] ) : 'disabled',
+			'fullscreen-slideshow-delay' => $this->parse_delay_range( $this->paired_key( $atts, 'fullscreen-slideshow-delay', 'lightbox-slideshow-delay' ) !== null ? $atts[ $this->paired_key( $atts, 'fullscreen-slideshow-delay', 'lightbox-slideshow-delay' ) ] : self::DEFAULT_FULLSCREEN_SLIDESHOW_DELAY ),
+			'lightbox-slideshow'         => $lightbox_slideshow_mode,
+			'lightbox-slideshow-delay'   => $lightbox_slideshow_delay,
 
 			// Slideshow autoresume (backward compat: slideshow-autoresume-timeout, slideshow-inactivity-timeout)
-			'slideshow-autoresume' => $slideshow_autoresume,
+			'slideshow-autoresume'            => $slideshow_autoresume,
 			'fullscreen-slideshow-autoresume' => $fullscreen_slideshow_autoresume,
+			'lightbox-slideshow-autoresume'   => $lightbox_slideshow_autoresume,
 
 			// Cache refresh interval in hours (default: 168 = 7 days)
 			'cache-refresh' => $this->parse_cache_refresh( $atts ),
@@ -578,15 +626,22 @@ class JZSA_Shared_Albums {
 
 				// Lightbox: an alternative to native fullscreen. Instead of the browser
 				// taking over the screen, the album opens in a dimmed overlay on top of
-				// the page, in a size-capped box. While open it reuses the album's
-				// fullscreen-* settings (controls, navigation, slideshow, info boxes);
-				// the knobs below are the lightbox-specific extras.
+				// the page, in a size-capped box. The lightbox-* params below let authors
+				// tune the lightbox experience independently from the fullscreen experience.
+				// Each lightbox-* param is bidirectionally linked to its fullscreen-* counterpart:
+				// if only one is set the other inherits it; if both are set each uses its own value.
 				'lightbox-toggle'           => $lightbox_mode,
 				'lightbox-image-fit'        => $this->parse_lightbox_image_fit( $atts ),
 				'lightbox-max-width'        => $this->parse_optional_positive_int( $atts, 'lightbox-max-width' ),
 				'lightbox-max-height'       => $this->parse_optional_positive_int( $atts, 'lightbox-max-height' ),
 				'lightbox-background-color' => $this->parse_color( $atts, 'lightbox-background-color', '' ),
 				'lightbox-corner-radius'    => isset( $atts['lightbox-corner-radius'] ) ? max( 0, intval( $atts['lightbox-corner-radius'] ) ) : 0,
+				'lightbox-controls-color'           => $lightbox_controls_color,
+				'lightbox-video-controls-color'     => $lightbox_video_controls_color,
+				'lightbox-video-controls-autohide'  => $lightbox_video_controls_autohide,
+				'lightbox-show-navigation'          => $lightbox_show_navigation,
+				'lightbox-show-link-button'         => $lightbox_show_link_button,
+				'lightbox-show-download-button'     => $lightbox_show_download_button,
 
 				// Entry count
 				'limit'                => $this->parse_limit( $atts ),
@@ -594,6 +649,7 @@ class JZSA_Shared_Albums {
 			// Video controls
 			'video-controls-autohide' => $video_controls_autohide,
 			'fullscreen-video-controls-autohide' => $fullscreen_video_controls_autohide,
+			'lightbox-video-controls-autohide' => $lightbox_video_controls_autohide,
 
 			// Video support
 			'show-videos'            => $this->parse_bool( $atts, 'show-videos', false ),
@@ -1072,22 +1128,21 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse fullscreen-image-fit attribute.
+	 * Parse fullscreen-image-fit attribute (bidirectional fallback with lightbox-image-fit).
 	 *
-	 * Defaults to 'contain' when not explicitly provided.
+	 * Defaults to 'contain' when neither param is provided.
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string One of 'contain' or 'cover'.
 	 */
 	private function parse_fullscreen_image_fit( $atts ) {
-		if ( isset( $atts['fullscreen-image-fit'] ) ) {
-			$value = strtolower( trim( (string) $atts['fullscreen-image-fit'] ) );
+		$key = $this->paired_key( $atts, 'fullscreen-image-fit', 'lightbox-image-fit' );
+		if ( $key !== null ) {
+			$value = strtolower( trim( (string) $atts[ $key ] ) );
 			if ( in_array( $value, array( 'contain', 'cover' ), true ) ) {
 				return $value;
 			}
 		}
-
-		// Not set or invalid - default to 'contain' (show whole image).
 		return 'contain';
 	}
 
@@ -1414,6 +1469,70 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
+	 * Return the first of two attribute keys that is set and non-empty.
+	 *
+	 * Used for bidirectional lightbox-* / fullscreen-* fallback: whichever of
+	 * the two is explicitly set is used for both; if both are set each uses its
+	 * own value (primary wins).
+	 *
+	 * @param array  $atts     Shortcode attributes.
+	 * @param string $primary  Primary key (the caller's own param).
+	 * @param string $fallback Fallback key (the paired param).
+	 * @return string|null The key to read, or null when neither is set.
+	 */
+	private function paired_key( $atts, $primary, $fallback ) {
+		if ( isset( $atts[ $primary ] ) && '' !== trim( (string) $atts[ $primary ] ) ) {
+			return $primary;
+		}
+		if ( isset( $atts[ $fallback ] ) && '' !== trim( (string) $atts[ $fallback ] ) ) {
+			return $fallback;
+		}
+		return null;
+	}
+
+	/**
+	 * Parse a slideshow mode value string.
+	 *
+	 * Accepts the same values as parse_slideshow_mode but works directly on a
+	 * raw value string instead of an atts array + key, allowing paired_key()
+	 * to be used as the lookup.
+	 *
+	 * @param string $raw Raw attribute value.
+	 * @return string 'auto', 'manual', or 'disabled'.
+	 */
+	private function parse_slideshow_mode_val( $raw ) {
+		$value = strtolower( trim( (string) $raw ) );
+		if ( 'true' === $value || 'auto' === $value ) {
+			return 'auto';
+		}
+		if ( 'manual' === $value || 'enabled' === $value ) {
+			return 'manual';
+		}
+		return 'disabled';
+	}
+
+	/**
+	 * Parse a source-dimension attribute with bidirectional fallback.
+	 *
+	 * Returns the value of the primary key, the fallback key, or the default
+	 * constant. Clamped to a positive integer.
+	 *
+	 * @param array  $atts     Shortcode attributes.
+	 * @param string $primary  Primary key.
+	 * @param string $fallback Fallback key.
+	 * @param int    $default  Default when neither key is set.
+	 * @return int
+	 */
+	private function parse_paired_source_dim( $atts, $primary, $fallback, $default ) {
+		$key = $this->paired_key( $atts, $primary, $fallback );
+		if ( $key !== null ) {
+			$value = intval( $atts[ $key ] );
+			return $value > 0 ? $value : $default;
+		}
+		return $default;
+	}
+
+	/**
 	 * Parse gallery-gap attribute (pixels, 0–100).
 	 *
 	 * @param array $atts Shortcode attributes.
@@ -1499,21 +1618,21 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse lightbox-image-fit attribute.
+	 * Parse lightbox-image-fit attribute (bidirectional fallback with fullscreen-image-fit).
 	 *
-	 * Defaults to 'contain' when not explicitly provided.
+	 * Defaults to 'contain' when neither param is provided.
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string One of 'contain' or 'cover'.
 	 */
 	private function parse_lightbox_image_fit( $atts ) {
-		if ( isset( $atts['lightbox-image-fit'] ) ) {
-			$value = strtolower( trim( (string) $atts['lightbox-image-fit'] ) );
+		$key = $this->paired_key( $atts, 'lightbox-image-fit', 'fullscreen-image-fit' );
+		if ( $key !== null ) {
+			$value = strtolower( trim( (string) $atts[ $key ] ) );
 			if ( in_array( $value, array( 'contain', 'cover' ), true ) ) {
 				return $value;
 			}
 		}
-
 		return 'contain';
 	}
 
