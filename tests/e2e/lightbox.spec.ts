@@ -6,7 +6,7 @@ import { test, expect, type Page, type Locator } from '@playwright/test';
 //   #2  slider  lightbox-toggle="button-only"  fullscreen-toggle="button-only"  (dual)
 //   #3  gallery lightbox-toggle="button-only"  fullscreen-toggle="disabled"
 //   #4  gallery lightbox-toggle="button-only"  fullscreen-toggle="button-only"  (dual)
-const FIXTURE_URL = '/?page_id=15';
+const FIXTURE_URL = '/?pagename=lightbox-fixture';
 
 // Wait until the nth top-level album has finished loading (jzsa-loader-pending removed).
 // Excludes .jzsa-gallery-slideshow: those are dynamically created child Swipers inside gallery

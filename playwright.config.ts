@@ -1,9 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
+    globalSetup: './tests/e2e/global-setup.ts',
     testDir: './tests/e2e',
     timeout: 30_000,
     retries: 1,
+    workers: 1,
     reporter: [['list'], ['html', { open: 'never' }]],
     use: {
         baseURL: 'http://127.0.0.1:8080',
