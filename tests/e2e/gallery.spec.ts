@@ -175,7 +175,8 @@ test.describe('Gallery - slideshow player navigation', () => {
         // Open the player on the first item.
         await items.first().locator('.jzsa-gallery-thumb').click();
         const player = backdrop(page).locator('.jzsa-gallery-slideshow');
-        await expect(player).toBeAttached({ timeout: 5_000 });
+        // Wait for the Swiper inside the player to finish loading before interacting.
+        await expect(player).not.toHaveClass(/jzsa-loader-pending/, { timeout: 15_000 });
 
         const initialIdx = await player.locator('.swiper-slide-active').getAttribute('data-swiper-slide-index');
 

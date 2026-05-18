@@ -24,7 +24,7 @@ Both layers are operational. Run everything with:
 - `RendererLightboxAttrTest.php` -- all lightbox data attributes, interaction-lock suppression
 - `CommunityValidationTest.php` -- all 8 field validators, URL helpers, tag normalization
 
-**Playwright** (`tests/e2e/`) -- 135 tests
+**Playwright** (`tests/e2e/`) -- 152 tests
 
 - `lightbox.spec.ts` -- slider click/button-only trigger, dual expand, gallery lightbox
 - `fullscreen.spec.ts` -- fullscreen button presence, dual-expand interaction, close methods
@@ -34,7 +34,7 @@ Both layers are operational. Run everything with:
 - `mosaic.spec.ts` -- wrapper position classes, strip presence, data attributes, thumbnail-to-slide sync
 - `info-overlay.spec.ts` -- pagination text substitution ({item}/{items}/{album-title}), info-top box
 - `admin.spec.ts` -- Guide page lazy previews, Parameters table rows, Community page structure
-- `community.spec.ts` -- page structure, account disconnected state, browse AJAX, sort/search UI
+- `community.spec.ts` -- page structure, not-connected vs connected account state, browse AJAX, sort/search, publish form validation (6 rules), My entries empty state
 
 ### Infrastructure
 
@@ -43,7 +43,7 @@ Both layers are operational. Run everything with:
 - `tests/e2e/README.md` -- documents the shortcodes required on the lightbox fixture page
 - PHPUnit bootstrap stubs all WordPress functions so unit tests run without WordPress
 - Fixture pages (all require `mode="slider"` for slider-mode features): slideshow-fixture, mosaic-fixture, feature-fixture, info-fixture; gallery-fixture uses default gallery mode
-- Admin/community tests use WordPress admin credentials: user `dev`, password `test123` (local dev only)
+- Admin/community tests use two WP users: `dev`/`test123` (connected to community), `testuser-noc`/`testpass123` (never connected)
 
 ---
 
