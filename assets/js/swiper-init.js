@@ -7096,7 +7096,8 @@
                     thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-lightbox" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n('openMediaLightbox', globalIndex + 1)) + '"></div>';
                     thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n('openMediaFullscreen', globalIndex + 1)) + '"></div>';
                 } else {
-                    thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n(thumbExpandI18nKey, globalIndex + 1)) + '"></div>';
+                    var singleExpandClass = thumbLightboxOn ? 'swiper-button-lightbox' : 'swiper-button-fullscreen';
+                    thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn ' + singleExpandClass + '" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n(thumbExpandI18nKey, globalIndex + 1)) + '"></div>';
                 }
             }
 
@@ -7224,7 +7225,8 @@
                         thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-lightbox" role="button" tabindex="0" data-index="' + item.index + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n('openMediaLightbox', item.index + 1)) + '"></div>';
                         thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n('openMediaFullscreen', item.index + 1)) + '"></div>';
                     } else {
-                        thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n(thumbExpandI18nKey, item.index + 1)) + '"></div>';
+                        var singleExpandClass = thumbLightboxOn ? 'swiper-button-lightbox' : 'swiper-button-fullscreen';
+                        thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn ' + singleExpandClass + '" role="button" tabindex="0" data-index="' + item.index + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n(thumbExpandI18nKey, item.index + 1)) + '"></div>';
                     }
                 }
 

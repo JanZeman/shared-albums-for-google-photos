@@ -203,7 +203,9 @@ class JZSA_Renderer {
 		// class added above shifts the lightbox button left of the fullscreen one).
 		// Carousel omits the global lightbox button: per-tile buttons (jzsa-carousel-tile-fs-enabled)
 		// already handle lightbox triggering on each slide.
-		if ( $lightbox_on && ! $is_carousel ) {
+		// Click mode uses the slide itself as the trigger: no separate button needed.
+		$lightbox_toggle = isset( $config['lightbox-toggle'] ) ? $config['lightbox-toggle'] : 'disabled';
+		if ( $lightbox_on && ! $is_carousel && 'button-only' === $lightbox_toggle ) {
 			$html .= sprintf( '<div class="swiper-button-lightbox" title="%s"></div>', esc_attr( $i18n['openLightbox'] ) );
 		}
 		if ( $show_fullscreen ) {

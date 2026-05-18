@@ -192,5 +192,9 @@ composer.lock
 # PHPUnit
 .phpunit.result.cache
 
+# Playwright
+/playwright-report/
+/test-results/
+
 # Release directory and zip files
 /release/
