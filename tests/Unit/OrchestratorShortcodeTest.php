@@ -238,4 +238,48 @@ class OrchestratorShortcodeTest extends TestCase {
         $this->assertTrue( $GLOBALS['jzsa_test_nocache_headers_sent'] );
         $this->assertArrayNotHasKey( $this->cacheKey(), $GLOBALS['jzsa_test_transients'] );
     }
+
+    public function test_fetch_failure_with_no_photos_error_renders_no_photos_title(): void {
+        $this->provider->result = array(
+            'success' => false,
+            'error'   => 'No photos found in album',
+        );
+
+        $html = $this->orchestrator->handle_shortcode( array( 'link' => self::ALBUM_URL ) );
+
+        $this->assertSame( 'No Photos Found', $this->renderer->errors[0]['title'] );
+    }
+
+    public function test_fetch_failure_with_generic_error_renders_unable_to_load_title(): void {
+        $this->provider->result = array(
+            'success' => false,
+            'error'   => 'Failed to fetch album: timeout',
+        );
+
+        $html = $this->orchestrator->handle_shortcode( array( 'link' => self::ALBUM_URL ) );
+
+        $this->assertSame( 'Unable to Load Album', $this->renderer->errors[0]['title'] );
+    }
+
+    public function test_fresh_fetch_with_deprecated_url_sets_deprecation_warning(): void {
+        $this->provider->result = array(
+            'success'       => true,
+            'is_deprecated' => true,
+            'data'          => array(
+                'title'  => 'Old Album',
+                'photos' => array(
+                    array(
+                        'url' => 'https://lh3.googleusercontent.com/img-one',
+                        'id'  => 'PHOTO1',
+                    ),
+                ),
+            ),
+        );
+
+        $this->orchestrator->handle_shortcode( array( 'link' => self::ALBUM_URL ) );
+
+        $this->assertTrue( $this->renderer->last_config['show-deprecation-warning'] );
+        $cached = $GLOBALS['jzsa_test_transients'][ $this->cacheKey() ];
+        $this->assertTrue( (bool) $cached['is_deprecated'] );
+    }
 }

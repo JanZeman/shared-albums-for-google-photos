@@ -106,6 +106,22 @@ class CommunityAjaxTest extends TestCase {
         $this->assertSame( 'jwt-token', get_user_meta( 1, JZSA_Community::OPT_JWT, true ) );
     }
 
+    public function test_verify_connection_5xx_response_returns_server_error_without_clearing_jwt(): void {
+        $this->connect();
+        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/me' ] = $this->response( 503 );
+
+        $this->assertSame( 'server_error', JZSA_Community::verify_connection() );
+        $this->assertSame( 'jwt-token', get_user_meta( 1, JZSA_Community::OPT_JWT, true ) );
+    }
+
+    public function test_verify_connection_forbidden_response_clears_jwt(): void {
+        $this->connect();
+        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/me' ] = $this->response( 403 );
+
+        $this->assertSame( 'disconnected', JZSA_Community::verify_connection() );
+        $this->assertSame( '', get_user_meta( 1, JZSA_Community::OPT_JWT, true ) );
+    }
+
     public function test_browse_sanitizes_page_sort_and_forwards_jwt(): void {
         $this->connect();
         $_POST = array(
@@ -144,6 +160,27 @@ class CommunityAjaxTest extends TestCase {
         $this->assertFalse( $response->success );
         $this->assertSame( 403, $response->status_code );
         $this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
+    }
+
+    public function test_browse_wp_error_returns_server_unreachable_code(): void {
+        $GLOBALS['jzsa_test_http_responses']['*'] = new WP_Error( 'http_request_failed', 'timeout' );
+
+        $response = $this->callAjax( 'ajax_browse' );
+
+        $this->assertFalse( $response->success );
+        $this->assertSame( 'server_unreachable', $response->data['code'] );
+    }
+
+    public function test_browse_without_jwt_omits_authorization_header(): void {
+        $url = JZSA_COMMUNITY_API_URL . '/v1/entries?per_page=12&page=1&sort=newest';
+        $GLOBALS['jzsa_test_http_responses'][ $url ] = $this->response( 200, array( 'entries' => array() ) );
+
+        $response = $this->callAjax( 'ajax_browse' );
+
+        $this->assertTrue( $response->success );
+        $request = $GLOBALS['jzsa_test_http_requests'][0];
+        $this->assertArrayNotHasKey( 'Authorization', $request['args']['headers'] );
+        $this->assertSame( 'test-read-key', $request['args']['headers']['X-JZSA-Plugin-Key'] );
     }
 
     public function test_publish_requires_connection_before_http_request(): void {
@@ -220,6 +257,18 @@ class CommunityAjaxTest extends TestCase {
 	        $this->assertNull( $response->data['details'] );
 	    }
 
+    public function test_publish_wp_error_returns_unreachable(): void {
+        $this->connect();
+        $_POST = $this->validEntryPost();
+        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/entries' ] =
+            new WP_Error( 'http_request_failed', 'timeout' );
+
+        $response = $this->callAjax( 'ajax_publish' );
+
+        $this->assertFalse( $response->success );
+        $this->assertStringContainsString( 'community server', $response->data );
+    }
+
     public function test_delete_entry_success_uses_delete_method(): void {
         $this->connect();
         $_POST = array( 'entry_id' => '42' );
@@ -275,6 +324,19 @@ class CommunityAjaxTest extends TestCase {
         $this->assertSame( 'Jane', get_user_meta( 1, JZSA_Community::OPT_DISPLAY_NAME, true ) );
     }
 
+    public function test_delete_account_wp_error_returns_unreachable(): void {
+        $this->connect();
+        $_POST = array( 'delete_entries' => 'false' );
+        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/me' ] =
+            new WP_Error( 'http_request_failed', 'timeout' );
+
+        $response = $this->callAjax( 'ajax_delete_account' );
+
+        $this->assertFalse( $response->success );
+        $this->assertStringContainsString( 'community server', $response->data );
+        $this->assertSame( 'jwt-token', get_user_meta( 1, JZSA_Community::OPT_JWT, true ) );
+    }
+
 	    public function test_load_my_entries_returns_entries_array(): void {
 	        $this->connect();
 	        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/me' ] = $this->response( 200, array(
@@ -298,6 +360,24 @@ class CommunityAjaxTest extends TestCase {
 	        $this->assertFalse( $response->success );
 	        $this->assertSame( 'Session expired.', $response->data );
 	    }
+
+    public function test_load_my_entries_not_connected_returns_error_before_http_request(): void {
+        $response = $this->callAjax( 'ajax_load_my_entries' );
+
+        $this->assertFalse( $response->success );
+        $this->assertStringContainsString( 'Not connected', $response->data );
+        $this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
+    }
+
+    public function test_load_my_entries_server_error_returns_server_error_code(): void {
+        $this->connect();
+        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/me' ] = $this->response( 503 );
+
+        $response = $this->callAjax( 'ajax_load_my_entries' );
+
+        $this->assertFalse( $response->success );
+        $this->assertSame( 'server_error', $response->data['code'] );
+    }
 
     public function test_update_entry_omits_consent_when_not_posted(): void {
         $this->connect();
@@ -388,6 +468,18 @@ class CommunityAjaxTest extends TestCase {
 	        $this->assertSame( 'Original Name', get_user_meta( 1, JZSA_Community::OPT_DISPLAY_NAME, true ) );
 	    }
 
+    public function test_update_display_name_wp_error_returns_unreachable(): void {
+        $this->connect();
+        $_POST = array( 'display_name' => 'Jane Doe' );
+        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/me/display-name' ] =
+            new WP_Error( 'http_request_failed', 'timeout' );
+
+        $response = $this->callAjax( 'ajax_update_display_name' );
+
+        $this->assertFalse( $response->success );
+        $this->assertStringContainsString( 'community server', $response->data );
+    }
+
     public function test_update_display_url_empty_deletes_local_meta(): void {
         $this->connect();
         update_user_meta( 1, JZSA_Community::OPT_DISPLAY_URL, 'https://old.example' );
@@ -427,6 +519,18 @@ class CommunityAjaxTest extends TestCase {
         $this->assertFalse( $response->success );
         $this->assertStringContainsString( 'valid display URL', $response->data );
         $this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
+    }
+
+    public function test_update_display_url_wp_error_returns_unreachable(): void {
+        $this->connect();
+        $_POST = array( 'display_url' => 'example.com' );
+        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/me/display-url' ] =
+            new WP_Error( 'http_request_failed', 'timeout' );
+
+        $response = $this->callAjax( 'ajax_update_display_url' );
+
+        $this->assertFalse( $response->success );
+        $this->assertStringContainsString( 'community server', $response->data );
     }
 
 	    public function test_interact_clamps_count_and_does_not_require_jwt(): void {
@@ -511,6 +615,48 @@ class CommunityAjaxTest extends TestCase {
 
         $this->assertFalse( $response->success );
         $this->assertSame( 'Rate limit exceeded.', $response->data );
+    }
+
+    public function test_rate_requires_connection(): void {
+        $_POST = array(
+            'entry_id' => '77',
+            'rating'   => '4',
+        );
+
+        $response = $this->callAjax( 'ajax_rate' );
+
+        $this->assertFalse( $response->success );
+        $this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
+    }
+
+    public function test_rate_wp_error_returns_unreachable(): void {
+        $this->connect();
+        $_POST = array(
+            'entry_id' => '77',
+            'rating'   => '3',
+        );
+        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/entries/77/rate' ] =
+            new WP_Error( 'http_request_failed', 'timeout' );
+
+        $response = $this->callAjax( 'ajax_rate' );
+
+        $this->assertFalse( $response->success );
+        $this->assertStringContainsString( 'community server', $response->data );
+    }
+
+    public function test_rate_server_error_without_error_field_falls_back_to_status_message(): void {
+        $this->connect();
+        $_POST = array(
+            'entry_id' => '77',
+            'rating'   => '2',
+        );
+        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/entries/77/rate' ] =
+            $this->rawResponse( 500, 'Internal Server Error' );
+
+        $response = $this->callAjax( 'ajax_rate' );
+
+        $this->assertFalse( $response->success );
+        $this->assertStringContainsString( '500', $response->data );
     }
 
 	    public function test_request_magic_link_rejects_invalid_display_name_before_http_request(): void {
@@ -797,5 +943,149 @@ class CommunityAjaxTest extends TestCase {
 	        $this->assertFalse( $response->success );
 	        $this->assertSame( 'Invalid URL format.', $response->data );
 	        $this->assertSame( 'https://old.example', get_user_meta( 1, JZSA_Community::OPT_DISPLAY_URL, true ) );
+	    }
+
+	    // -------------------------------------------------------------------------
+	    // request_magic_link: display name / URL validation and HTTP error branches
+	    // -------------------------------------------------------------------------
+
+	    public function test_request_magic_link_display_name_over_50_chars_rejected(): void {
+	        $_POST = array(
+	            'display_name' => str_repeat( 'a', 51 ),
+	            'display_url'  => '',
+	        );
+
+	        $response = $this->callAjax( 'ajax_request_magic_link' );
+
+	        $this->assertFalse( $response->success );
+	        $this->assertStringContainsString( '50 characters', $response->data );
+	        $this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
+	    }
+
+	    public function test_request_magic_link_invalid_display_url_rejected(): void {
+	        $_POST = array(
+	            'display_name' => 'Jane Doe',
+	            'display_url'  => 'http://',
+	        );
+
+	        $response = $this->callAjax( 'ajax_request_magic_link' );
+
+	        $this->assertFalse( $response->success );
+	        $this->assertStringContainsString( 'valid display URL', $response->data );
+	        $this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
+	    }
+
+	    public function test_request_magic_link_wp_error_from_connect_clears_transient_and_returns_unreachable(): void {
+	        $_POST = array(
+	            'display_name' => 'Jane Doe',
+	            'display_url'  => '',
+	        );
+	        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/auth/connect' ] = new WP_Error( 'timeout', 'offline' );
+
+	        $response = $this->callAjax( 'ajax_request_magic_link' );
+
+	        $this->assertFalse( $response->success );
+	        $this->assertStringContainsString( 'community server', $response->data );
+	        $this->assertSame( array(), $GLOBALS['jzsa_test_transients'] );
+	        $this->assertSame( '', get_user_meta( 1, JZSA_Community::OPT_JWT, true ) );
+	    }
+
+	    public function test_request_magic_link_server_non_200_returns_body_error_message(): void {
+	        $_POST = array(
+	            'display_name' => 'Jane Doe',
+	            'display_url'  => '',
+	        );
+	        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/auth/connect' ] = $this->response( 409, array(
+	            'error' => 'Identity already registered.',
+	        ) );
+
+	        $response = $this->callAjax( 'ajax_request_magic_link' );
+
+	        $this->assertFalse( $response->success );
+	        $this->assertSame( 'Identity already registered.', $response->data );
+	        $this->assertSame( array(), $GLOBALS['jzsa_test_transients'] );
+	    }
+
+	    public function test_request_magic_link_server_non_200_falls_back_to_status_code(): void {
+	        $_POST = array(
+	            'display_name' => 'Jane Doe',
+	            'display_url'  => '',
+	        );
+	        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/auth/connect' ] = $this->rawResponse( 503, 'Service Unavailable' );
+
+	        $response = $this->callAjax( 'ajax_request_magic_link' );
+
+	        $this->assertFalse( $response->success );
+	        $this->assertStringContainsString( '503', $response->data );
+	        $this->assertSame( array(), $GLOBALS['jzsa_test_transients'] );
+	    }
+
+	    // -------------------------------------------------------------------------
+	    // update_display_name: empty and over-length rejections
+	    // -------------------------------------------------------------------------
+
+	    public function test_update_display_name_empty_rejected(): void {
+	        $this->connect();
+	        $_POST = array( 'display_name' => '' );
+
+	        $response = $this->callAjax( 'ajax_update_display_name' );
+
+	        $this->assertFalse( $response->success );
+	        $this->assertStringContainsString( 'cannot be empty', $response->data );
+	        $this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
+	    }
+
+	    public function test_update_display_name_over_50_chars_rejected(): void {
+	        $this->connect();
+	        $_POST = array( 'display_name' => str_repeat( 'a', 51 ) );
+
+	        $response = $this->callAjax( 'ajax_update_display_name' );
+
+	        $this->assertFalse( $response->success );
+	        $this->assertStringContainsString( '50 characters', $response->data );
+	        $this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
+	    }
+
+	    // -------------------------------------------------------------------------
+	    // delete_account: no JWT guard
+	    // -------------------------------------------------------------------------
+
+	    public function test_delete_account_requires_connection(): void {
+	        $_POST = array( 'delete_entries' => 'true' );
+
+	        $response = $this->callAjax( 'ajax_delete_account' );
+
+	        $this->assertFalse( $response->success );
+	        $this->assertStringContainsString( 'Not connected', $response->data );
+	        $this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
+	    }
+
+	    // -------------------------------------------------------------------------
+	    // load_my_entries: non-200 without error field falls back to status code
+	    // -------------------------------------------------------------------------
+
+	    public function test_load_my_entries_non_200_without_error_field_uses_status_code(): void {
+	        $this->connect();
+	        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/me' ] = $this->rawResponse( 403, 'Forbidden' );
+
+	        $response = $this->callAjax( 'ajax_load_my_entries' );
+
+	        $this->assertFalse( $response->success );
+	        $this->assertStringContainsString( '403', $response->data );
+	    }
+
+	    // -------------------------------------------------------------------------
+	    // browse: page=0 is raised to 1
+	    // -------------------------------------------------------------------------
+
+	    public function test_browse_page_zero_defaults_to_page_one(): void {
+	        $url = JZSA_COMMUNITY_API_URL . '/v1/entries?per_page=12&page=1&sort=newest';
+	        $_POST = array( 'page' => '0' );
+	        $GLOBALS['jzsa_test_http_responses'][ $url ] = $this->response( 200, array( 'entries' => array() ) );
+
+	        $response = $this->callAjax( 'ajax_browse' );
+
+	        $this->assertTrue( $response->success );
+	        $this->assertSame( $url, $GLOBALS['jzsa_test_http_requests'][0]['url'] );
 	    }
 	}

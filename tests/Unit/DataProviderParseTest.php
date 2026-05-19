@@ -584,6 +584,19 @@ class DataProviderParseTest extends TestCase {
 		$this->assertStringContainsString( 'lh3.googleusercontent.com', $urls['image'] );
 	}
 
+	public function test_extract_individual_photo_media_urls_returns_empty_on_empty_html(): void {
+		$urls = $this->provider->extract_individual_photo_media_urls( '' );
+		$this->assertSame( array(), $urls );
+	}
+
+	public function test_extract_individual_photo_media_urls_decodes_escaped_equals(): void {
+		$html = '"https://lh3.googleusercontent.com/pw/photo\\u003ds0-d-ip"';
+		$urls = $this->provider->extract_individual_photo_media_urls( $html );
+		$this->assertArrayHasKey( 'image', $urls );
+		$this->assertStringNotContainsString( '\\u003d', $urls['image'] );
+		$this->assertStringContainsString( '=s0-d-ip', $urls['image'] );
+	}
+
 	// -------------------------------------------------------------------------
 	// URL validation edge cases
 	// -------------------------------------------------------------------------
@@ -734,5 +747,108 @@ class DataProviderParseTest extends TestCase {
 		// If this count increases to > 0 in the future, update the fixture
 		// and add a positive filename assertion.
 		$this->assertCount( 0, $with_filename );
+	}
+
+	// -------------------------------------------------------------------------
+	// Deprecated URL in full fetch_album flow
+	// -------------------------------------------------------------------------
+
+	public function test_fetch_album_with_deprecated_url_returns_is_deprecated_true(): void {
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => self::$album_html );
+		$result = $this->provider->fetch_album( 'https://photos.app.goo.gl/abc123' );
+		$this->assertTrue( $result['success'] );
+		$this->assertNotEmpty( $result['is_deprecated'] );
+	}
+
+	// -------------------------------------------------------------------------
+	// u/0 scoped URL in full fetch_album flow
+	// -------------------------------------------------------------------------
+
+	public function test_fetch_album_with_u_scoped_url_succeeds(): void {
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => self::$album_html );
+		$result = $this->provider->fetch_album(
+			'https://photos.google.com/u/0/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R'
+		);
+		$this->assertTrue( $result['success'] );
+		$this->assertEmpty( $result['is_deprecated'] );
+	}
+
+	// -------------------------------------------------------------------------
+	// og:title fallback when primary title tag is absent
+	// -------------------------------------------------------------------------
+
+	public function test_fetch_album_falls_back_to_og_title_when_title_tag_absent(): void {
+		$html = preg_replace( '/<title[^>]*>[^<]*<\/title>/i', '', self::$album_html );
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => $html );
+		$result = $this->provider->fetch_album(
+			'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R'
+		);
+		$this->assertTrue( $result['success'] );
+		$this->assertNotEmpty( $result['data']['title'] );
+		// og:title for this fixture is "Photo Album Sample · Jun 3, 2009 – Jan 24, 2026 📸"
+		// The cleaner strips the dates and emoji, leaving just the album name.
+		$this->assertStringContainsString( 'Photo Album Sample', $result['data']['title'] );
+	}
+
+	/**
+	 * Helper to fetch album with a synthetic og:title (no primary title tag).
+	 */
+	private function fetchWithOgTitle( string $og_title ): ?string {
+		$html = preg_replace( '/<title[^>]*>[^<]*<\/title>/i', '', self::$album_html );
+		$html = preg_replace(
+			'/<meta property="og:title" content="[^"]*"/',
+			'<meta property="og:title" content="' . htmlspecialchars( $og_title, ENT_QUOTES ) . '"',
+			$html
+		);
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => $html );
+		$result = $this->provider->fetch_album(
+			'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R'
+		);
+		return $result['data']['title'] ?? null;
+	}
+
+	public function test_og_title_cleaner_strips_iso_date(): void {
+		$title = $this->fetchWithOgTitle( 'Vacation · 2024-07-15' );
+		$this->assertSame( 'Vacation', $title );
+	}
+
+	public function test_og_title_cleaner_strips_emoji(): void {
+		$title = $this->fetchWithOgTitle( 'Family 📸 Photos' );
+		// Emoji removed, surrounding spaces collapsed
+		$this->assertSame( 'Family Photos', $title );
+	}
+
+	public function test_og_title_cleaner_strips_camera_model(): void {
+		$title = $this->fetchWithOgTitle( 'Landscape · Canon EOS 5D' );
+		$this->assertSame( 'Landscape', $title );
+	}
+
+	public function test_fetch_album_title_is_null_when_no_title_tags_present(): void {
+		$html = preg_replace( '/<title[^>]*>[^<]*<\/title>/i', '', self::$album_html );
+		$html = preg_replace( '/<\s*meta[^>]*og:title[^>]*>/i', '', $html );
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => $html );
+		$result = $this->provider->fetch_album(
+			'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R'
+		);
+		$this->assertTrue( $result['success'] );
+		$this->assertNull( $result['data']['title'] );
+	}
+
+	// -------------------------------------------------------------------------
+	// HTML entity decoding in album title
+	// -------------------------------------------------------------------------
+
+	public function test_fetch_album_title_with_html_entities_is_decoded(): void {
+		$html = str_replace(
+			'<title>Photo Album Sample - Google Photos</title>',
+			'<title>Summer &amp; Winter - Google Photos</title>',
+			self::$album_html
+		);
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => $html );
+		$result = $this->provider->fetch_album(
+			'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R'
+		);
+		$this->assertTrue( $result['success'] );
+		$this->assertSame( 'Summer & Winter', $result['data']['title'] );
 	}
 }

@@ -130,6 +130,31 @@ class OrchestratorProgressiveTest extends TestCase {
         $this->assertSame( 2, $chunk['photos'][1]['globalIndex'] );
     }
 
+    public function test_prepare_photo_chunk_returns_empty_when_offset_exceeds_total(): void {
+        $base_items = array(
+            array( 'url' => 'https://lh3.googleusercontent.com/one', 'id' => 'ONE' ),
+            array( 'url' => 'https://lh3.googleusercontent.com/two', 'id' => 'TWO' ),
+            array( 'url' => 'https://lh3.googleusercontent.com/three', 'id' => 'THREE' ),
+        );
+
+        $chunk = $this->invoke(
+            'prepare_photo_chunk',
+            $base_items,
+            'https://photos.google.com/share/AF1QipTest',
+            10,
+            5,
+            1920,
+            1440,
+            800,
+            600,
+            10,
+            false
+        );
+
+        $this->assertSame( array(), $chunk['photos'] );
+        $this->assertSame( 3, $chunk['total_count'] );
+    }
+
     public function test_prepare_photo_chunk_reports_has_more_when_more_visible_items_remain(): void {
         $base_items = array(
             'https://lh3.googleusercontent.com/one',

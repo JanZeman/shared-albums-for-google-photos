@@ -109,7 +109,7 @@ if ( ! function_exists( 'current_user_can' ) ) {
     function current_user_can( $capability ) { return $GLOBALS['jzsa_test_current_user_can'] ?? false; }
 }
 if ( ! function_exists( 'is_user_logged_in' ) ) {
-    function is_user_logged_in() { return false; }
+    function is_user_logged_in() { return $GLOBALS['jzsa_test_is_user_logged_in'] ?? false; }
 }
 if ( ! function_exists( 'apply_filters' ) ) {
     function apply_filters( $hook, $value ) {
@@ -122,6 +122,11 @@ if ( ! function_exists( 'apply_filters' ) ) {
         }
 
         return $value;
+    }
+}
+if ( ! function_exists( 'wp_rand' ) ) {
+    function wp_rand( $min = 0, $max = 0 ) {
+        return rand( $min, $max );
     }
 }
 if ( ! function_exists( 'wp_unique_id' ) ) {

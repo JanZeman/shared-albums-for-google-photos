@@ -27,6 +27,10 @@ class OrchestratorConfigTest extends TestCase {
             ->invoke( $this->orchestrator, $atts, 'https://photos.google.com/share/AF1QipTest' );
     }
 
+    private function invoke( string $method, mixed ...$args ): mixed {
+        return $this->reflection->getMethod( $method )->invoke( $this->orchestrator, ...$args );
+    }
+
     public function test_defaults_are_stable_for_gallery_mode(): void {
         $config = $this->config( array() );
 
@@ -262,6 +266,155 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertSame( '"Open Sans", Arial colorred', $config['info-font-family'] );
     }
 
+    public function test_parse_color_accepts_rgba_and_hsl_formats_and_rejects_invalid(): void {
+        $rgba   = $this->invoke( 'parse_color', array( 'background-color' => 'rgba(0,0,0,0.5)' ), 'background-color', 'transparent' );
+        $hsl    = $this->invoke( 'parse_color', array( 'background-color' => 'hsl(120,50%,50%)' ), 'background-color', 'transparent' );
+        $hsla   = $this->invoke( 'parse_color', array( 'background-color' => 'hsla(0,0%,0%,0.7)' ), 'background-color', 'transparent' );
+        $rgb    = $this->invoke( 'parse_color', array( 'background-color' => 'rgb(255,128,0)' ), 'background-color', 'transparent' );
+        $invalid = $this->invoke( 'parse_color', array( 'background-color' => 'notacolor' ), 'background-color', 'transparent' );
+        $missing = $this->invoke( 'parse_color', array(), 'background-color', 'transparent' );
+
+        $this->assertSame( 'rgba(0,0,0,0.5)', $rgba );
+        $this->assertSame( 'hsl(120,50%,50%)', $hsl );
+        $this->assertSame( 'hsla(0,0%,0%,0.7)', $hsla );
+        $this->assertSame( 'rgb(255,128,0)', $rgb );
+        $this->assertSame( 'transparent', $invalid );
+        $this->assertSame( 'transparent', $missing );
+    }
+
+    public function test_parse_delay_range_returns_fixed_value_or_random_in_range(): void {
+        $fixed = $this->invoke( 'parse_delay_range', '3000' );
+        $range = $this->invoke( 'parse_delay_range', '1000-5000' );
+
+        $this->assertSame( 3000, $fixed );
+        $this->assertGreaterThanOrEqual( 1000, $range );
+        $this->assertLessThanOrEqual( 5000, $range );
+    }
+
+    public function test_mosaic_position_defaults_to_bottom_when_absent_and_valid_values_pass_through(): void {
+        $default = $this->invoke( 'parse_mosaic_position', array() );
+        $left    = $this->invoke( 'parse_mosaic_position', array( 'mosaic-position' => 'left' ) );
+        $top     = $this->invoke( 'parse_mosaic_position', array( 'mosaic-position' => 'top' ) );
+
+        $this->assertSame( 'bottom', $default );
+        $this->assertSame( 'left', $left );
+        $this->assertSame( 'top', $top );
+    }
+
+    public function test_mode_carousel_is_accepted_and_invalid_mode_falls_back_to_gallery(): void {
+        $carousel = $this->config( array( 'mode' => 'carousel' ) );
+        $invalid  = $this->config( array( 'mode' => 'fullscreen' ) );
+
+        $this->assertSame( 'carousel', $carousel['mode'] );
+        $this->assertSame( 'gallery', $invalid['mode'] );
+    }
+
+    public function test_slideshow_mode_enabled_alias_maps_to_manual(): void {
+        $config = $this->config( array( 'slideshow' => 'enabled' ) );
+        $this->assertSame( 'manual', $config['slideshow'] );
+    }
+
+    public function test_slideshow_mode_invalid_value_falls_back_to_disabled(): void {
+        $config = $this->config( array( 'slideshow' => 'something' ) );
+        $this->assertSame( 'disabled', $config['slideshow'] );
+    }
+
+    public function test_slideshow_autoresume_disabled_string_is_preserved(): void {
+        $config = $this->config( array( 'slideshow-autoresume' => 'disabled' ) );
+        $this->assertSame( 'disabled', $config['slideshow-autoresume'] );
+    }
+
+    public function test_slideshow_autoresume_numeric_string_is_preserved(): void {
+        $config = $this->config( array( 'slideshow-autoresume' => '30' ) );
+        $this->assertSame( '30', $config['slideshow-autoresume'] );
+    }
+
+    public function test_parse_start_at_accepts_random_and_numeric_and_falls_back(): void {
+        $random  = $this->invoke( 'parse_start_at', array( 'start-at' => 'random' ) );
+        $numeric = $this->invoke( 'parse_start_at', array( 'start-at' => '5' ) );
+        $zero    = $this->invoke( 'parse_start_at', array( 'start-at' => '0' ) );
+        $invalid = $this->invoke( 'parse_start_at', array( 'start-at' => 'abc' ) );
+        $absent  = $this->invoke( 'parse_start_at', array() );
+
+        $this->assertSame( 'random', $random );
+        $this->assertSame( '5', $numeric );
+        $this->assertSame( '1', $zero );
+        $this->assertSame( '1', $invalid );
+        $this->assertSame( '1', $absent );
+    }
+
+    public function test_parse_image_fit_accepts_cover_and_contain_and_falls_back(): void {
+        $cover   = $this->invoke( 'parse_image_fit', array( 'image-fit' => 'cover' ) );
+        $contain = $this->invoke( 'parse_image_fit', array( 'image-fit' => 'contain' ) );
+        $invalid = $this->invoke( 'parse_image_fit', array( 'image-fit' => 'stretch' ) );
+        $absent  = $this->invoke( 'parse_image_fit', array() );
+
+        $this->assertSame( 'cover', $cover );
+        $this->assertSame( 'contain', $contain );
+        $this->assertSame( 'cover', $invalid );
+        $this->assertSame( 'cover', $absent );
+    }
+
+    public function test_parse_mosaic_count_auto_keyword_and_positive_value(): void {
+        $auto    = $this->invoke( 'parse_mosaic_count', array( 'mosaic-count' => 'auto' ) );
+        $upper   = $this->invoke( 'parse_mosaic_count', array( 'mosaic-count' => 'AUTO' ) );
+        $valid   = $this->invoke( 'parse_mosaic_count', array( 'mosaic-count' => '5' ) );
+        $absent  = $this->invoke( 'parse_mosaic_count', array() );
+
+        $this->assertSame( 0, $auto );
+        $this->assertSame( 0, $upper );
+        $this->assertSame( 5, $valid );
+        $this->assertSame( 0, $absent );
+    }
+
+    public function test_parse_mosaic_gap_valid_in_range_and_zero_boundary(): void {
+        $absent = $this->invoke( 'parse_mosaic_gap', array() );
+        $zero   = $this->invoke( 'parse_mosaic_gap', array( 'mosaic-gap' => '0' ) );
+        $mid    = $this->invoke( 'parse_mosaic_gap', array( 'mosaic-gap' => '20' ) );
+        $max    = $this->invoke( 'parse_mosaic_gap', array( 'mosaic-gap' => '100' ) );
+
+        $this->assertSame( 8, $absent );
+        $this->assertSame( 0, $zero );
+        $this->assertSame( 20, $mid );
+        $this->assertSame( 100, $max );
+    }
+
+    public function test_parse_mosaic_opacity_valid_in_range_and_absent(): void {
+        $absent = $this->invoke( 'parse_mosaic_opacity', array() );
+        $mid    = $this->invoke( 'parse_mosaic_opacity', array( 'mosaic-opacity' => '0.5' ) );
+        $zero   = $this->invoke( 'parse_mosaic_opacity', array( 'mosaic-opacity' => '0' ) );
+        $one    = $this->invoke( 'parse_mosaic_opacity', array( 'mosaic-opacity' => '1' ) );
+
+        $this->assertSame( 0.3, $absent );
+        $this->assertSame( 0.5, $mid );
+        $this->assertSame( 0.0, $zero );
+        $this->assertSame( 1.0, $one );
+    }
+
+    public function test_parse_fullscreen_mosaic_layout_accepts_overlay_and_outer(): void {
+        $overlay = $this->invoke( 'parse_fullscreen_mosaic_layout', array( 'fullscreen-mosaic-layout' => 'overlay' ) );
+        $outer   = $this->invoke( 'parse_fullscreen_mosaic_layout', array( 'fullscreen-mosaic-layout' => 'outer' ) );
+        $invalid = $this->invoke( 'parse_fullscreen_mosaic_layout', array( 'fullscreen-mosaic-layout' => 'stacked' ) );
+        $absent  = $this->invoke( 'parse_fullscreen_mosaic_layout', array() );
+
+        $this->assertSame( 'overlay', $overlay );
+        $this->assertSame( 'outer', $outer );
+        $this->assertSame( 'outer', $invalid );
+        $this->assertSame( 'outer', $absent );
+    }
+
+    public function test_parse_gallery_gap_valid_in_range_and_zero_boundary(): void {
+        $absent = $this->invoke( 'parse_gallery_gap', array() );
+        $zero   = $this->invoke( 'parse_gallery_gap', array( 'gallery-gap' => '0' ) );
+        $mid    = $this->invoke( 'parse_gallery_gap', array( 'gallery-gap' => '20' ) );
+        $max    = $this->invoke( 'parse_gallery_gap', array( 'gallery-gap' => '100' ) );
+
+        $this->assertSame( 4, $absent );
+        $this->assertSame( 0, $zero );
+        $this->assertSame( 20, $mid );
+        $this->assertSame( 100, $max );
+    }
+
     public function test_optional_positive_display_bounds_ignore_zero_and_negative_values(): void {
         $config = $this->config(
             array(
@@ -276,5 +429,118 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertNull( $config['fullscreen-display-max-height'] );
         $this->assertSame( 900, $config['lightbox-max-width'] );
         $this->assertNull( $config['lightbox-max-height'] );
+    }
+
+    public function test_parse_dimension_accepts_auto_keyword(): void {
+        $auto   = $this->invoke( 'parse_dimension', array( 'width' => 'auto' ), 'width', 400 );
+        $upper  = $this->invoke( 'parse_dimension', array( 'width' => 'AUTO' ), 'width', 400 );
+        $valid  = $this->invoke( 'parse_dimension', array( 'width' => '500' ), 'width', 400 );
+        $absent = $this->invoke( 'parse_dimension', array(), 'width', 400 );
+
+        $this->assertSame( 'auto', $auto );
+        $this->assertSame( 'auto', $upper );
+        $this->assertSame( 500, $valid );
+        $this->assertSame( 400, $absent );
+    }
+
+    public function test_parse_cache_refresh_legacy_key_and_invalid_value_fall_back(): void {
+        $legacy  = $this->invoke( 'parse_cache_refresh', array( 'cache-refresh' => '72' ) );
+        $zero    = $this->invoke( 'parse_cache_refresh', array( 'album-cache-refresh' => '0' ) );
+        $neg     = $this->invoke( 'parse_cache_refresh', array( 'cache-refresh' => '-5' ) );
+        $absent  = $this->invoke( 'parse_cache_refresh', array() );
+        $primary = $this->invoke( 'parse_cache_refresh', array( 'album-cache-refresh' => '48', 'cache-refresh' => '1' ) );
+
+        $this->assertSame( 72, $legacy );
+        $this->assertSame( 168, $zero );
+        $this->assertSame( 168, $neg );
+        $this->assertSame( 168, $absent );
+        $this->assertSame( 48, $primary );
+    }
+
+    public function test_parse_lightbox_toggle_mode_aliases_and_valid_modes(): void {
+        $true_alias   = $this->invoke( 'parse_lightbox_toggle_mode', array( 'lightbox-toggle' => 'true' ) );
+        $on_alias     = $this->invoke( 'parse_lightbox_toggle_mode', array( 'lightbox-toggle' => 'on' ) );
+        $one_alias    = $this->invoke( 'parse_lightbox_toggle_mode', array( 'lightbox-toggle' => '1' ) );
+        $false_alias  = $this->invoke( 'parse_lightbox_toggle_mode', array( 'lightbox-toggle' => 'false' ) );
+        $off_alias    = $this->invoke( 'parse_lightbox_toggle_mode', array( 'lightbox-toggle' => 'off' ) );
+        $zero_alias   = $this->invoke( 'parse_lightbox_toggle_mode', array( 'lightbox-toggle' => '0' ) );
+        $btn_only     = $this->invoke( 'parse_lightbox_toggle_mode', array( 'lightbox-toggle' => 'button-only' ) );
+        $dbl_click    = $this->invoke( 'parse_lightbox_toggle_mode', array( 'lightbox-toggle' => 'double-click' ) );
+        $invalid      = $this->invoke( 'parse_lightbox_toggle_mode', array( 'lightbox-toggle' => 'hover' ) );
+
+        $this->assertSame( 'click', $true_alias );
+        $this->assertSame( 'click', $on_alias );
+        $this->assertSame( 'click', $one_alias );
+        $this->assertSame( 'disabled', $false_alias );
+        $this->assertSame( 'disabled', $off_alias );
+        $this->assertSame( 'disabled', $zero_alias );
+        $this->assertSame( 'button-only', $btn_only );
+        $this->assertSame( 'double-click', $dbl_click );
+        $this->assertSame( 'disabled', $invalid );
+    }
+
+    public function test_parse_fullscreen_toggle_mode_explicit_values_and_invalid_fallback(): void {
+        $click      = $this->invoke( 'parse_fullscreen_toggle_mode', array( 'fullscreen-toggle' => 'click' ) );
+        $dbl        = $this->invoke( 'parse_fullscreen_toggle_mode', array( 'fullscreen-toggle' => 'double-click' ) );
+        $disabled   = $this->invoke( 'parse_fullscreen_toggle_mode', array( 'fullscreen-toggle' => 'disabled' ) );
+        $invalid    = $this->invoke( 'parse_fullscreen_toggle_mode', array( 'fullscreen-toggle' => 'hover' ) );
+
+        $this->assertSame( 'click', $click );
+        $this->assertSame( 'double-click', $dbl );
+        $this->assertSame( 'disabled', $disabled );
+        $this->assertSame( 'button-only', $invalid );
+    }
+
+    public function test_parse_gallery_buttons_on_mobile_accepts_always(): void {
+        $always  = $this->invoke( 'parse_gallery_buttons_on_mobile', array( 'gallery-buttons-on-mobile' => 'always' ) );
+        $default = $this->invoke( 'parse_gallery_buttons_on_mobile', array() );
+        $invalid = $this->invoke( 'parse_gallery_buttons_on_mobile', array( 'gallery-buttons-on-mobile' => 'sometimes' ) );
+
+        $this->assertSame( 'always', $always );
+        $this->assertSame( 'on-interaction', $default );
+        $this->assertSame( 'on-interaction', $invalid );
+    }
+
+    public function test_parse_slideshow_autoresume_absent_and_invalid_fall_back_to_default(): void {
+        $absent  = $this->invoke( 'parse_slideshow_autoresume', array(), array( 'slideshow-autoresume' ) );
+        $invalid = $this->invoke( 'parse_slideshow_autoresume', array( 'slideshow-autoresume' => '0' ), array( 'slideshow-autoresume' ) );
+        $neg     = $this->invoke( 'parse_slideshow_autoresume', array( 'slideshow-autoresume' => '-5' ), array( 'slideshow-autoresume' ) );
+        $valid   = $this->invoke( 'parse_slideshow_autoresume', array( 'slideshow-autoresume' => '60' ), array( 'slideshow-autoresume' ) );
+
+        $this->assertSame( '30', $absent );
+        $this->assertSame( '30', $invalid );
+        $this->assertSame( '30', $neg );
+        $this->assertSame( '60', $valid );
+    }
+
+    public function test_parse_fullscreen_image_fit_and_lightbox_image_fit_bidirectional_fallback(): void {
+        $cover    = $this->invoke( 'parse_fullscreen_image_fit', array( 'fullscreen-image-fit' => 'cover' ) );
+        $fallback = $this->invoke( 'parse_fullscreen_image_fit', array( 'lightbox-image-fit' => 'cover' ) );
+        $invalid  = $this->invoke( 'parse_fullscreen_image_fit', array( 'fullscreen-image-fit' => 'stretch' ) );
+        $absent   = $this->invoke( 'parse_fullscreen_image_fit', array() );
+
+        $lbox_cover    = $this->invoke( 'parse_lightbox_image_fit', array( 'lightbox-image-fit' => 'cover' ) );
+        $lbox_fallback = $this->invoke( 'parse_lightbox_image_fit', array( 'fullscreen-image-fit' => 'cover' ) );
+        $lbox_invalid  = $this->invoke( 'parse_lightbox_image_fit', array( 'lightbox-image-fit' => 'stretch' ) );
+        $lbox_absent   = $this->invoke( 'parse_lightbox_image_fit', array() );
+
+        $this->assertSame( 'cover', $cover );
+        $this->assertSame( 'cover', $fallback );
+        $this->assertSame( 'contain', $invalid );
+        $this->assertSame( 'contain', $absent );
+        $this->assertSame( 'cover', $lbox_cover );
+        $this->assertSame( 'cover', $lbox_fallback );
+        $this->assertSame( 'contain', $lbox_invalid );
+        $this->assertSame( 'contain', $lbox_absent );
+    }
+
+    public function test_parse_optional_bool_returns_null_when_absent_and_correct_bool_when_present(): void {
+        $absent = $this->invoke( 'parse_optional_bool', array(), 'show-navigation' );
+        $true   = $this->invoke( 'parse_optional_bool', array( 'show-navigation' => 'true' ), 'show-navigation' );
+        $false  = $this->invoke( 'parse_optional_bool', array( 'show-navigation' => 'false' ), 'show-navigation' );
+
+        $this->assertNull( $absent );
+        $this->assertTrue( $true );
+        $this->assertFalse( $false );
     }
 }
