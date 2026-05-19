@@ -14,6 +14,7 @@ class DataProviderParseTest extends TestCase {
 	private static string $album_video_html;
 	private static string $photo_image_html;
 	private static string $photo_video_html;
+	private static string $photo_exif_html;
 
 	private const FIXTURE_DIR = __DIR__ . '/../fixtures/google';
 
@@ -23,6 +24,7 @@ class DataProviderParseTest extends TestCase {
 			'album_video_html' => self::FIXTURE_DIR . '/album-video.html',
 			'photo_image_html' => self::FIXTURE_DIR . '/photo-image.html',
 			'photo_video_html' => self::FIXTURE_DIR . '/photo-video.html',
+			'photo_exif_html'  => self::FIXTURE_DIR . '/photo-exif.html',
 		);
 		foreach ( $fixtures as $prop => $path ) {
 			if ( ! file_exists( $path ) ) {
@@ -437,7 +439,121 @@ class DataProviderParseTest extends TestCase {
 	}
 
 	// -------------------------------------------------------------------------
-	// Individual photo meta extraction
+	// Individual photo page EXIF (photo-exif.html, Samsung SM-F936B, f/2.2, 1/494, 1.74mm, ISO32)
+	// -------------------------------------------------------------------------
+
+	public function test_exif_fixture_all_keys_present(): void {
+		$meta = $this->provider->extract_individual_photo_meta( self::$photo_exif_html );
+		foreach ( array( 'camera', 'camera_make', 'camera_model', 'aperture', 'shutter', 'focal', 'iso' ) as $key ) {
+			$this->assertArrayHasKey( $key, $meta );
+			$this->assertNotEmpty( $meta[ $key ], "Key '$key' must not be empty" );
+		}
+	}
+
+	public function test_exif_fixture_no_combined_exif_string_from_individual_page(): void {
+		// The combined 'exif' string ("ƒ/2.2 · 1/494 · ...") is only assembled by
+		// Stage 2c inside the album HTML parser, not by extract_individual_photo_meta.
+		$meta = $this->provider->extract_individual_photo_meta( self::$photo_exif_html );
+		$this->assertArrayNotHasKey( 'exif', $meta );
+	}
+
+	public function test_exif_fixture_camera_display_name(): void {
+		$meta = $this->provider->extract_individual_photo_meta( self::$photo_exif_html );
+		// "Samsung" is not a prefix of "SM-F936B" so both appear in the display name.
+		$this->assertSame( 'Samsung SM-F936B', $meta['camera'] );
+	}
+
+	public function test_exif_fixture_camera_make(): void {
+		$meta = $this->provider->extract_individual_photo_meta( self::$photo_exif_html );
+		$this->assertSame( 'Samsung', $meta['camera_make'] );
+	}
+
+	public function test_exif_fixture_camera_model(): void {
+		$meta = $this->provider->extract_individual_photo_meta( self::$photo_exif_html );
+		$this->assertSame( 'SM-F936B', $meta['camera_model'] );
+	}
+
+	public function test_exif_fixture_aperture_exact(): void {
+		$meta = $this->provider->extract_individual_photo_meta( self::$photo_exif_html );
+		// Aperture uses the ƒ ligature (U+0192, encoded as \xC6\x92), not plain "f".
+		$this->assertSame( "\xC6\x92/2.2", $meta['aperture'] );
+	}
+
+	public function test_exif_fixture_shutter_exact(): void {
+		$meta = $this->provider->extract_individual_photo_meta( self::$photo_exif_html );
+		// 0.0020242915 s => 1/round(1/0.0020242915) = 1/494
+		$this->assertSame( '1/494', $meta['shutter'] );
+	}
+
+	public function test_exif_fixture_focal_exact(): void {
+		$meta = $this->provider->extract_individual_photo_meta( self::$photo_exif_html );
+		$this->assertSame( '1.74mm', $meta['focal'] );
+	}
+
+	public function test_exif_fixture_iso_exact(): void {
+		$meta = $this->provider->extract_individual_photo_meta( self::$photo_exif_html );
+		$this->assertSame( 'ISO32', $meta['iso'] );
+	}
+
+	public function test_exif_photo_page_without_exif_returns_no_camera(): void {
+		$meta = $this->provider->extract_individual_photo_meta( self::$photo_image_html );
+		$this->assertIsArray( $meta );
+		$this->assertArrayNotHasKey( 'camera', $meta );
+	}
+
+	public function test_exif_video_page_returns_no_camera(): void {
+		$meta = $this->provider->extract_individual_photo_meta( self::$photo_video_html );
+		$this->assertArrayNotHasKey( 'camera', $meta );
+	}
+
+	// -------------------------------------------------------------------------
+	// Album-level EXIF (Stage 2c inside fetch_album / album.html)
+	// -------------------------------------------------------------------------
+
+	public function test_album_fixture_one_photo_has_stage2c_exif(): void {
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => self::$album_html );
+		$result = $this->provider->fetch_album(
+			'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R'
+		);
+		$with_exif = array_filter( $result['data']['photos'], static function ( $p ) {
+			return isset( $p['camera'] );
+		} );
+		$this->assertCount( 1, $with_exif, 'Exactly one album photo should have Stage 2c EXIF embedded' );
+	}
+
+	public function test_album_fixture_stage2c_photo_has_combined_exif_string(): void {
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => self::$album_html );
+		$result = $this->provider->fetch_album(
+			'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R'
+		);
+		$with_exif = array_values( array_filter( $result['data']['photos'], static function ( $p ) {
+			return isset( $p['exif'] );
+		} ) );
+		$this->assertCount( 1, $with_exif );
+		// Combined string format: "ƒ/2.2 · 1/494 · 1.74mm · ISO32"
+		$this->assertSame( "\xC6\x92/2.2 \xC2\xB7 1/494 \xC2\xB7 1.74mm \xC2\xB7 ISO32", $with_exif[0]['exif'] );
+	}
+
+	public function test_album_fixture_stage2c_photo_camera_fields(): void {
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => self::$album_html );
+		$result = $this->provider->fetch_album(
+			'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R'
+		);
+		$with_exif = array_values( array_filter( $result['data']['photos'], static function ( $p ) {
+			return isset( $p['camera'] );
+		} ) );
+		$photo = $with_exif[0];
+		$this->assertSame( 'Samsung SM-F936B', $photo['camera'] );
+		$this->assertSame( 'Samsung', $photo['camera_make'] );
+		$this->assertSame( 'SM-F936B', $photo['camera_model'] );
+		$this->assertSame( "\xC6\x92/2.2", $photo['aperture'] );
+		$this->assertSame( '1/494', $photo['shutter'] );
+		$this->assertSame( '1.74mm', $photo['focal'] );
+		$this->assertSame( 'ISO32', $photo['iso'] );
+	}
+
+	// -------------------------------------------------------------------------
+	// Individual photo meta extraction - synthetic
 	// -------------------------------------------------------------------------
 
 	public function test_extract_individual_photo_meta_returns_empty_on_empty_html(): void {

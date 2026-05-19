@@ -405,13 +405,15 @@ class JZSA_Data_Provider {
 				$exif_map[ $meta['id'] ] = $this->extract_album_exif_for_media_id( $html, $meta['id'] );
 			}
 			if ( ! empty( $exif_map[ $meta['id'] ] ) ) {
-				$exif            = $exif_map[ $meta['id'] ];
-				$item['camera']   = $exif['camera'];
-				$item['exif']     = $exif['exif'];
-				$item['aperture'] = $exif['aperture'];
-				$item['shutter']  = $exif['shutter'];
-				$item['focal']    = $exif['focal'];
-				$item['iso']      = $exif['iso'];
+				$exif                  = $exif_map[ $meta['id'] ];
+				$item['camera']        = $exif['camera'];
+				$item['camera_make']   = $exif['camera_make'];
+				$item['camera_model']  = $exif['camera_model'];
+				$item['exif']          = $exif['exif'];
+				$item['aperture']      = $exif['aperture'];
+				$item['shutter']       = $exif['shutter'];
+				$item['focal']         = $exif['focal'];
+				$item['iso']           = $exif['iso'];
 			}
 		}
 		unset( $item );
