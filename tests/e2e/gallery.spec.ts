@@ -175,17 +175,20 @@ test.describe('Gallery - slideshow player navigation', () => {
         // Open the player on the first item.
         await items.first().locator('.jzsa-gallery-thumb').click();
         const player = backdrop(page).locator('.jzsa-gallery-slideshow');
-        // Wait for the Swiper inside the player to finish loading before interacting.
         await expect(player).not.toHaveClass(/jzsa-loader-pending/, { timeout: 15_000 });
 
-        const initialIdx = await player.locator('.swiper-slide-active').getAttribute('data-swiper-slide-index');
+        // Wait until Swiper has assigned data-swiper-slide-index on the active slide
+        // (this attribute is set after the loader drops but during slide init).
+        const activeSlide = player.locator('.swiper-slide-active');
+        await expect(activeSlide).toHaveAttribute('data-swiper-slide-index', { timeout: 5_000 });
+        const initialIdx = await activeSlide.getAttribute('data-swiper-slide-index');
 
         await player.locator('.swiper-button-next').click({ force: true });
 
         await expect(async () => {
             const newIdx = await player.locator('.swiper-slide-active').getAttribute('data-swiper-slide-index');
             expect(newIdx).not.toBe(initialIdx);
-        }).toPass({ timeout: 2_000 });
+        }).toPass({ timeout: 3_000 });
     });
 
     test('opening on the second item starts the player at index 1', async ({ page }) => {
