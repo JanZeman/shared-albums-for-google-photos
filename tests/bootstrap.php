@@ -134,6 +134,53 @@ if ( ! function_exists( 'md5' ) ) {
     // md5 is a PHP built-in; only here to document the dependency.
 }
 
+// HTTP stubs for DataProvider tests.
+// Set $GLOBALS['jzsa_test_http_responses'] to an array keyed by URL (or '*' for any URL).
+$GLOBALS['jzsa_test_http_responses'] = array();
+
+if ( ! class_exists( 'WP_Error' ) ) {
+    class WP_Error {
+        private $code;
+        private $message;
+        public function __construct( $code = '', $message = '' ) {
+            $this->code    = $code;
+            $this->message = $message;
+        }
+        public function get_error_message() { return $this->message; }
+        public function get_error_code()    { return $this->code; }
+    }
+}
+if ( ! function_exists( 'is_wp_error' ) ) {
+    function is_wp_error( $thing ) { return $thing instanceof WP_Error; }
+}
+if ( ! function_exists( 'wp_remote_get' ) ) {
+    function wp_remote_get( $url, $args = array() ) {
+        $responses = $GLOBALS['jzsa_test_http_responses'] ?? array();
+        if ( isset( $responses[ $url ] ) ) {
+            return $responses[ $url ];
+        }
+        if ( isset( $responses['*'] ) ) {
+            return $responses['*'];
+        }
+        return new WP_Error( 'http_request_failed', 'No test response configured for ' . $url );
+    }
+}
+if ( ! function_exists( 'wp_remote_retrieve_body' ) ) {
+    function wp_remote_retrieve_body( $response ) {
+        if ( is_wp_error( $response ) ) {
+            return '';
+        }
+        return $response['body'] ?? '';
+    }
+}
+if ( ! function_exists( 'get_bloginfo' ) ) {
+    function get_bloginfo( $show = '' ) {
+        if ( 'version' === $show ) { return '6.5'; }
+        if ( 'url' === $show )     { return 'http://localhost'; }
+        return '';
+    }
+}
+
 // Load plugin classes (orchestrator depends on the others being present).
 $includes = dirname( __DIR__ ) . '/includes/';
 require_once $includes . 'class-data-provider.php';

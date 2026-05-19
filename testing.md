@@ -10,9 +10,15 @@ Both layers are operational. Run everything with:
 ./test.sh --e2e     # Playwright only
 ```
 
+Live Google format tests (not run in normal CI -- require internet):
+
+```bash
+vendor/bin/phpunit tests/Live/   # calls real Google Photos to detect format changes
+```
+
 ### What exists
 
-**PHPUnit** (`tests/Unit/`) -- 297 tests
+**PHPUnit** (`tests/Unit/`) -- 329 tests
 
 - `OrchestratorToggleModeTest.php` -- toggle mode resolution, paired-key fallback
 - `OrchestratorCacheTest.php` -- cache/expiry/backup key generation, TTL constants, cache-refresh parsing
@@ -23,6 +29,7 @@ Both layers are operational. Run everything with:
 - `RendererInfoBoxTest.php` -- info-box format strings, typography CSS props, halo effects
 - `RendererLightboxAttrTest.php` -- all lightbox data attributes, interaction-lock suppression
 - `CommunityValidationTest.php` -- all 8 field validators, URL helpers, tag normalization
+- `DataProviderParseTest.php` -- URL extraction, metadata enrichment, video detection, title cleaning, camera formatting, individual photo meta; uses `tests/fixtures/google/album.html` (real recorded response)
 
 **Playwright** (`tests/e2e/`) -- 152 tests
 
@@ -39,6 +46,8 @@ Both layers are operational. Run everything with:
 ### Infrastructure
 
 - `playwright.config.ts` -- Chromium only, 1 worker, retries: 1, globalSetup validates all fixture pages
+- `tests/fixtures/google/album.html` -- recorded Google Photos album response (1 MB); used by DataProviderParseTest
+- `tests/Live/DataProviderLiveTest.php` -- 5 live smoke tests; run manually to detect Google format changes
 - `tests/e2e/global-setup.ts` -- validates 6 fixture pages (lightbox, slideshow, gallery, mosaic, info, feature)
 - `tests/e2e/README.md` -- documents the shortcodes required on the lightbox fixture page
 - PHPUnit bootstrap stubs all WordPress functions so unit tests run without WordPress
