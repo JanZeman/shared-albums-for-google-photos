@@ -8,14 +8,16 @@ export const DISCONNECTED_USER = process.env.JZSA_E2E_DISCONNECTED_USER ?? 'test
 export const DISCONNECTED_PASS = process.env.JZSA_E2E_DISCONNECTED_PASS ?? 'testpass123';
 
 export async function loginAs(page: Page, user: string, pass: string): Promise<void> {
-    await page.goto('/wp-login.php');
+    await page.goto('/wp-login.php', { waitUntil: 'domcontentloaded' });
     await page.fill('#user_login', user);
     await page.fill('#user_pass', pass);
 
-    await Promise.all([
-        page.waitForURL(/\/wp-admin\//, { timeout: 20_000 }),
-        page.click('#wp-submit'),
-    ]);
+    await page.click('#wp-submit');
+    await page.waitForLoadState('domcontentloaded', { timeout: 20_000 }).catch(() => {});
+
+    if (!/\/wp-admin\//.test(page.url())) {
+        await page.goto('/wp-admin/', { waitUntil: 'domcontentloaded' });
+    }
 
     await expect(page.locator('#wpadminbar')).toBeAttached({ timeout: 10_000 });
 }

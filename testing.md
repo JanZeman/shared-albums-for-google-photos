@@ -18,26 +18,33 @@ vendor/bin/phpunit tests/Live/   # calls real Google Photos to detect format cha
 
 ### What exists
 
-**PHPUnit** (`tests/Unit/`) -- 378 tests
+**PHPUnit** (`tests/Unit/`) -- 488 tests
 
 - `OrchestratorToggleModeTest.php` -- toggle mode resolution, paired-key fallback
 - `OrchestratorCacheTest.php` -- cache/expiry/backup key generation, TTL constants, cache-refresh parsing
+- `OrchestratorAdminAjaxTest.php` -- admin preview guardrails, clear-cache AJAX messages, post-save album/photo-meta cache invalidation
+- `OrchestratorConfigTest.php` -- shortcode config defaults, bounds, aliases, legacy compatibility, paired fullscreen/lightbox fallbacks
+- `OrchestratorShortcodeTest.php` -- public shortcode flow with fake provider/renderer: fresh fetch, cache hit, cache-duration invalidation, stale backup fallback, fetch error
+- `OrchestratorProgressiveTest.php` -- progressive slider activation rules and chunk payload preparation
+- `OrchestratorMediaAjaxTest.php` -- photo-meta AJAX, progressive chunk AJAX, refresh-URLs AJAX, download warnings/hard limits, legacy download fallback, media URL/filename helpers
 - `RendererSliderTest.php` -- inline styles, data attributes for slider/carousel mode
 - `RendererGalleryTest.php` -- gallery-mode container and all gallery-specific parameters
+- `RendererEscapingTest.php` -- escaped renderer attributes, photo JSON payload attributes, error title/link markup
 - `RendererButtonsTest.php` -- lightbox/fullscreen button render conditions, dual-expand class
 - `RendererMosaicTest.php` -- mosaic wrapper positions, strip element, mosaic data attributes
 - `RendererInfoBoxTest.php` -- info-box format strings, typography CSS props, halo effects
 - `RendererLightboxAttrTest.php` -- all lightbox data attributes, interaction-lock suppression
 - `CommunityValidationTest.php` -- all 8 field validators, URL helpers, tag normalization
+- `CommunityAjaxTest.php` -- real community AJAX/REST handlers with mocked HTTP: connect, browse, publish/update/delete, profile, interactions, rating, challenge validation, malformed responses
 - `DataProviderParseTest.php` -- URL extraction, metadata enrichment, video detection, title cleaning, camera formatting, individual photo meta; uses `tests/fixtures/google/album.html` (real recorded response)
 
-**Playwright** (`tests/e2e/`) -- 152 tests
+**Playwright** (`tests/e2e/`) -- 161 tests
 
-- `lightbox.spec.ts` -- slider click/button-only trigger, dual expand, gallery lightbox
+- `lightbox.spec.ts` -- slider click/button-only trigger, dual expand, gallery lightbox, dialog/close-button accessibility attributes, keyboard gallery lightbox activation
 - `fullscreen.spec.ts` -- fullscreen button presence, dual-expand interaction, close methods
 - `slideshow.spec.ts` -- data attributes, play/pause button, auto-advance and manual-hold
-- `gallery.spec.ts` -- data attributes (layout/columns/scrollable/rows), items, hover button, slideshow player open/navigate/close
-- `navigation.spec.ts` -- arrow visibility, slide advance, keyboard, interaction-lock, download/link buttons
+- `gallery.spec.ts` -- data attributes (layout/columns/scrollable/rows), items, responsive columns, hover button, slideshow player open/navigate/close
+- `navigation.spec.ts` -- arrow visibility, slide advance, keyboard, interaction-lock, download/link buttons, safe external-link attributes
 - `mosaic.spec.ts` -- wrapper position classes, strip presence, data attributes, thumbnail-to-slide sync
 - `info-overlay.spec.ts` -- pagination text substitution ({item}/{items}/{album-title}), info-top box
 - `admin.spec.ts` -- Guide page lazy previews, Parameters table rows, Community page structure
@@ -61,8 +68,9 @@ Compared `feature/community-lightbox-tests` against `feature/community-and-light
 Local verification:
 
 ```bash
-./test.sh --unit  # passed: 378 tests, 552 assertions
-./test.sh --e2e   # passed with 151 passed, 1 flaky before stability fixes
+./test.sh         # latest full command previously passed before this extra batch
+./test.sh --unit  # passed: 488 tests, 959 assertions
+./test.sh --e2e   # passed: 161 tests
 ```
 
 Issues found and addressed:
@@ -71,7 +79,22 @@ Issues found and addressed:
 - `tests/e2e/README.md` documented only `lightbox-fixture`, while `global-setup.ts` required six fixture pages.
 - `npm test` exited with "no test specified" despite Playwright being installed.
 - Admin/community specs duplicated login logic and hardcoded users directly in spec files.
-- One community e2e test was flaky on first login navigation (`page.waitForURL` timed out once, retry passed).
+- Admin login e2e was flaky on first navigation when waiting for a specific redirect event; the shared login helper now submits, waits for load, explicitly lands in `/wp-admin/`, and asserts the admin bar.
+- Fixture specs waited for full page `load`, which could block on external media and make page navigation flaky.
+- Gallery slideshow tests clicked controls before the player had left its fullscreen-loading gate.
+- The lightbox close button sat below the full-resolution loader overlay, so the overlay could intercept close clicks while media was still loading.
+- Community AJAX handlers were mostly covered only indirectly through browser tests; deterministic unit coverage now exercises success, validation, server-error, auth, and local-state branches.
+- Renderer escaping/security boundaries were not explicitly covered; dedicated tests now lock down unsafe titles, info strings, JSON payload attributes, and error titles.
+- Lightbox and external-link browser tests checked presence/behavior but not key accessibility and safe-link attributes; e2e now covers dialog semantics, close labels, `target`, and `rel`.
+- Shortcode parsing had little direct coverage; unit tests now lock down defaults, legacy `show-title`/`show-counter` behavior, false aliases such as `lightbox-toggle="no"`, dimension/bounds clamping, and paired fullscreen/lightbox inheritance.
+- Inline `source-width` / `source-height` accepted zero/negative values through raw `intval`; they now fall back to defaults like paired fullscreen/lightbox source dimensions.
+- Public shortcode flow was not covered without a real provider; fake provider/renderer tests now verify cache writes, cache hits, cache duration invalidation, stale backup recovery, and error rendering.
+- Progressive slider loading had no dedicated tests; activation is now covered for large sliders, threshold boundary, gallery/mosaic/video exclusions, and visible-index chunk payloads.
+- Media AJAX endpoints had only browser-level coverage; unit tests now lock down photo-meta nonce/URL guards, cache-hit behavior, partial EXIF cache refresh, empty response handling, album chunk cache miss/failure paths, refresh-URL cache mutation/failure paths, and download warning/fetch-failure guardrails.
+- Admin AJAX and save-post cache invalidation were under-tested; unit tests now cover shortcode preview permission/shortcode guards, preview success, clear-cache scope routing/messages, and deletion of album, backup, expiry, and per-photo metadata caches for post shortcodes.
+- Community REST/auth challenge coverage now verifies route registration, missing/invalid/reused challenges, one-time valid challenge consumption, malformed API responses, partial profile sync fallback, and interaction JWT/count behavior.
+- Download tests now cover both warning threshold and hard-limit enforcement from `content-length` and actual body size, plus legacy `image_url` compatibility.
+- Browser coverage now verifies gallery responsive column behavior at desktop/tablet/mobile widths and keyboard activation of gallery lightbox thumbnail controls.
 
 Remaining risks:
 
@@ -90,11 +113,18 @@ Remaining risks:
 |---|---|
 | `RendererSliderTest.php` | Every slider/carousel parameter maps to the correct `data-*` attribute or CSS custom property |
 | `RendererGalleryTest.php` | Every gallery-specific parameter (`gallery-columns`, `gallery-layout`, `gallery-rows`, etc.) |
+| `RendererEscapingTest.php` | Escaping at HTML attribute boundaries for titles, info strings, photo JSON payloads, numeric casts, and error markup |
 | `RendererButtonsTest.php` | Which buttons render under which conditions (fullscreen, lightbox, download, link, dual-expand class) |
 | `RendererMosaicTest.php` | Mosaic parameters (`mosaic-position`, `mosaic-count`, `fullscreen-mosaic-layout`, etc.) |
 | `RendererInfoBoxTest.php` | All `info-*` parameters, per-box halo overrides, font/color/align inheritance |
+| `OrchestratorAdminAjaxTest.php` | Admin shortcode preview, clear-cache AJAX scope/message logic, post-content cache invalidation |
 | `OrchestratorCacheTest.php` | Cache key generation (MD5 of URL), TTL edge cases, paired-key additional coverage |
+| `OrchestratorConfigTest.php` | Shortcode attribute normalization: defaults, legacy info defaults, aliases, bounds, source dimensions, paired fullscreen/lightbox values |
+| `OrchestratorShortcodeTest.php` | Public `handle_shortcode()` flow with fake dependencies: fresh fetch/cache/backup/error branches |
+| `OrchestratorProgressiveTest.php` | Progressive loading activation and album chunk preparation |
+| `OrchestratorMediaAjaxTest.php` | Photo-meta, album-chunk, refresh-URL, and download AJAX guardrails plus media filename/cache helpers and hard-limit filters |
 | `CommunityValidationTest.php` | All 8 field validators: title (3-120), tags (max 5, 2-30 chars), display name (3+ letters), URLs, description length |
+| `CommunityAjaxTest.php` | AJAX/REST permissions, JWT handling, mocked HTTP payloads, validation short-circuits, server errors, profile/local-state updates, auth challenge lifecycle |
 
 The renderer tests are the highest-value target. With 80+ parameters each mapping to a `data-*` attribute, parametrized PHPUnit tests can cover the full surface cheaply. A renderer bug that misconfigures a `data-lightbox-max-width` attribute would never show up in the current test suite.
 
@@ -103,11 +133,12 @@ The renderer tests are the highest-value target. With 80+ parameters each mappin
 | File | What it covers | Fixture page slug |
 |---|---|---|
 | `fullscreen.spec.ts` | button presence/absence, dual-expand interaction, lightbox close methods | `lightbox-fixture` |
-| `gallery.spec.ts` | Grid and justified layouts, opening the slideshow player, navigating within it, close | `gallery-fixture` |
+| `gallery.spec.ts` | Grid and justified layouts, responsive column counts, opening the slideshow player, navigating within it, close | `gallery-fixture` |
 | `slideshow.spec.ts` | Auto-advance, play/pause button, manual mode hold | `slideshow-fixture` |
-| `navigation.spec.ts` | Arrow buttons, keyboard arrows, interaction-lock, download/link buttons | `feature-fixture` |
+| `navigation.spec.ts` | Arrow buttons, keyboard arrows, interaction-lock, download/link buttons, safe link attributes | `feature-fixture` |
 | `mosaic.spec.ts` | Clicking a mosaic thumbnail advances the main slider, all four positions | `mosaic-fixture` |
 | `info-overlay.spec.ts` | `{item}`, `{items}`, `{album-title}` substitution visible in rendered text | `info-fixture` |
+| `lightbox.spec.ts` | Lightbox trigger behavior, dialog ARIA, close-button labels, gallery lightbox cases, keyboard activation | `lightbox-fixture` |
 | `community.spec.ts` (done) | Browse list loads, search/filter, connect flow, publish form validation | WordPress admin URL |
 | `admin.spec.ts` (done) | Guide page loads previews, Parameters page renders the table | WordPress admin URL |
 
@@ -139,18 +170,18 @@ Community and admin tests use WordPress admin URLs directly, no shortcode fixtur
 
 ### Phase 2 -- high-value missing unit/integration coverage
 
-1. Community AJAX handlers with mocked `wp_remote_get` / `wp_remote_post`: publish success/failure, update, delete, delete account, browse, rating, display name/url update, auth/connect errors.
-2. Real WordPress shortcode integration tests: `do_shortcode` through orchestrator/cache/provider/renderer together.
-3. Security/escaping cases for shortcode attrs, album titles, descriptions, info strings, URLs, and community fields.
-4. Error states: invalid Google link, empty album, Google format failure, HTTP failure, deprecated short links, stale backup cache fallback.
+1. More Community AJAX edge cases with mocked HTTP: delete/update/rating malformed response bodies and REST challenge route integration under real WordPress routing.
+2. Real WordPress shortcode integration tests: `do_shortcode` through WordPress shortcode parsing and actual renderer output together.
+3. More security/escaping cases at the shortcode-parser/orchestrator boundary, especially URL sanitization under real WordPress escaping functions.
+4. Error states still worth broadening: malformed Google payloads, deprecated short links in the full shortcode flow, and real WordPress shortcode parsing/escaping integration.
 
 ### Phase 3 -- frontend behavior coverage
 
 1. Video/Plyr controls and mixed image/video albums.
-2. Download warning threshold and download/link button interactions.
+2. Download/link button click interactions against a deterministic mocked download endpoint.
 3. EXIF/photo-meta lazy AJAX behavior and chunk loading/retry paths.
-4. Lightbox accessibility: focus handling, Escape behavior, tab flow, ARIA labels, keyboard-only navigation.
-5. Responsive/mobile gallery behavior and mobile button display modes.
+4. Lightbox accessibility beyond current ARIA checks: focus trapping/restoration, tab flow, keyboard-only navigation.
+5. More responsive/mobile gallery behavior: touch gestures, mobile button display modes, and visual regression screenshots.
 
 ---
 
@@ -200,4 +231,4 @@ jobs:
       - run: npx playwright test
 ```
 
-PHPUnit runs in under 10 seconds. Playwright for the current 17 tests runs in under 20 seconds. Both should block merging if they fail.
+PHPUnit runs in under 10 seconds. Playwright currently has 161 Chromium tests and depends on the local WordPress fixture database. Both should block merging once fixture/user setup is deterministic in CI.

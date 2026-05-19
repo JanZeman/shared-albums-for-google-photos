@@ -1,4 +1,5 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
+import { gotoFixture } from './support/navigation';
 
 // The lightbox-fixture page contains five shortcodes (see tests/e2e/README.md).
 // Album at index 2 has both lightbox-toggle="button-only" AND fullscreen-toggle="button-only"
@@ -22,7 +23,7 @@ const backdrop = (page: Page) => page.locator('.jzsa-lightbox-backdrop');
 
 test.describe('Fullscreen - button present / absent', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('fullscreen button absent when fullscreen-toggle is disabled', async ({ page }) => {
@@ -44,7 +45,7 @@ test.describe('Fullscreen - button present / absent', () => {
 
 test.describe('Fullscreen - dual expand interaction', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('clicking fullscreen button does NOT open the lightbox overlay', async ({ page }) => {
@@ -77,7 +78,7 @@ test.describe('Fullscreen - dual expand interaction', () => {
 
 test.describe('Fullscreen - lightbox close methods (via dual-expand album)', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('Escape closes the lightbox opened from dual-expand album', async ({ page }) => {
@@ -107,7 +108,7 @@ test.describe('Fullscreen - lightbox close methods (via dual-expand album)', () 
 
 test.describe('Fullscreen - data attributes on rendered albums', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('album index 1 has data-fullscreen-toggle="disabled"', async ({ page }) => {

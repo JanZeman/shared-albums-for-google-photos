@@ -1,4 +1,5 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
+import { gotoFixture } from './support/navigation';
 
 // feature-fixture contains 4 albums in this order:
 //   #0  show-navigation="true"
@@ -16,7 +17,7 @@ async function waitForAlbum(page: Page, index: number): Promise<Locator> {
 
 test.describe('Navigation - arrows visible/hidden', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('album 0 navigation arrows are visible when show-navigation="true"', async ({ page }) => {
@@ -55,7 +56,7 @@ test.describe('Navigation - arrows visible/hidden', () => {
 
 test.describe('Navigation - click arrow advances slide', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('clicking next arrow advances to a new slide', async ({ page }) => {
@@ -100,7 +101,7 @@ test.describe('Navigation - click arrow advances slide', () => {
 
 test.describe('Navigation - keyboard arrows', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('pressing ArrowRight advances the active slide', async ({ page }) => {
@@ -120,7 +121,7 @@ test.describe('Navigation - keyboard arrows', () => {
 
 test.describe('Navigation - interaction-lock prevents navigation', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('locked album slide does not change on next-arrow click attempt', async ({ page }) => {
@@ -139,7 +140,7 @@ test.describe('Navigation - interaction-lock prevents navigation', () => {
 
 test.describe('Navigation - download and link buttons', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('download button is present when show-download-button="true"', async ({ page }) => {
@@ -152,6 +153,20 @@ test.describe('Navigation - download and link buttons', () => {
         await expect(album.locator('.swiper-button-external-link')).toBeAttached();
     });
 
+    test('link button opens the Google Photos album in a safe new tab context', async ({ page }) => {
+        const album = await waitForAlbum(page, 1);
+        const link = album.locator('.swiper-button-external-link');
+
+        await expect(link).toHaveAttribute('href', /https:\/\/photos\.google\.com\/share\//);
+        await expect(link).toHaveAttribute('target', '_blank');
+        await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    });
+
+    test('download button exposes the localized title used by icon-only controls', async ({ page }) => {
+        const album = await waitForAlbum(page, 1);
+        await expect(album.locator('.swiper-button-download')).toHaveAttribute('title', 'Download current media');
+    });
+
     test('download button is absent when show-download-button is not set', async ({ page }) => {
         const album = await waitForAlbum(page, 0);
         await expect(album.locator('.swiper-button-download')).not.toBeAttached();
@@ -161,5 +176,10 @@ test.describe('Navigation - download and link buttons', () => {
         const album = await waitForAlbum(page, 2);
         // interaction-lock hides all buttons; download button should not be rendered either.
         await expect(album.locator('.swiper-button-download')).not.toBeAttached();
+    });
+
+    test('link button is absent when interaction-lock is set', async ({ page }) => {
+        const album = await waitForAlbum(page, 2);
+        await expect(album.locator('.swiper-button-external-link')).not.toBeAttached();
     });
 });

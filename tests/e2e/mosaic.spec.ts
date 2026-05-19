@@ -1,4 +1,5 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
+import { gotoFixture } from './support/navigation';
 
 // mosaic-fixture contains 4 albums in this order:
 //   #0  mosaic="true"  (no explicit position, defaults to right)
@@ -27,7 +28,7 @@ async function waitForWrapper(page: Page, index: number): Promise<Locator> {
 
 test.describe('Mosaic - wrapper position classes', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('album 0 wrapper has jzsa-mosaic-right class (default)', async ({ page }) => {
@@ -53,7 +54,7 @@ test.describe('Mosaic - wrapper position classes', () => {
 
 test.describe('Mosaic - strip presence', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('album 0 has a mosaic strip (.jzsa-mosaic.swiper)', async ({ page }) => {
@@ -77,7 +78,7 @@ test.describe('Mosaic - strip presence', () => {
 
 test.describe('Mosaic - data attributes', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('album 0 has data-mosaic="true"', async ({ page }) => {
@@ -103,7 +104,7 @@ test.describe('Mosaic - data attributes', () => {
 
 test.describe('Mosaic - thumbnail click advances main slider', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('clicking the 2nd mosaic thumbnail navigates main slider to index 1', async ({ page }) => {

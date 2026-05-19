@@ -1,4 +1,5 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
+import { gotoFixture } from './support/navigation';
 
 // The fixture page contains five shortcodes in this order:
 //   #0  slider  lightbox-toggle="click"        fullscreen-toggle="disabled"
@@ -23,13 +24,24 @@ const backdrop = (page: Page) => page.locator('.jzsa-lightbox-backdrop');
 
 test.describe('Lightbox - slider / click trigger', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('clicking slider opens the lightbox overlay', async ({ page }) => {
         const album = await waitForAlbum(page, 0);
         await album.locator('.swiper-slide.swiper-slide-active').click();
         await expect(backdrop(page)).toBeVisible();
+    });
+
+    test('lightbox backdrop has dialog semantics when opened', async ({ page }) => {
+        const album = await waitForAlbum(page, 0);
+        await album.locator('.swiper-slide.swiper-slide-active').click();
+        const overlay = backdrop(page);
+
+        await expect(overlay).toBeVisible();
+        await expect(overlay).toHaveAttribute('role', 'dialog');
+        await expect(overlay).toHaveAttribute('aria-modal', 'true');
+        await expect(overlay).toHaveAttribute('aria-label', 'Photo viewer');
     });
 
     test('lightbox shows the album in fullscreen style (jzsa-is-fullscreen class)', async ({ page }) => {
@@ -66,6 +78,17 @@ test.describe('Lightbox - slider / click trigger', () => {
         await expect(backdrop(page)).not.toBeVisible();
     });
 
+    test('close button is labelled for keyboard and assistive technology users', async ({ page }) => {
+        const album = await waitForAlbum(page, 0);
+        await album.locator('.swiper-slide.swiper-slide-active').click();
+        const close = page.locator('.jzsa-lightbox-close');
+
+        await expect(close).toBeVisible();
+        await expect(close).toHaveAttribute('type', 'button');
+        await expect(close).toHaveAttribute('aria-label', 'Close');
+        await expect(close).toHaveAttribute('title', 'Close');
+    });
+
     test('no lightbox button on the slider in click mode (slide itself is the trigger)', async ({ page }) => {
         const album = await waitForAlbum(page, 0);
         await expect(album.locator('.swiper-button-lightbox')).not.toBeAttached();
@@ -74,7 +97,7 @@ test.describe('Lightbox - slider / click trigger', () => {
 
 test.describe('Lightbox - slider / button-only trigger', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('lightbox button is visible on the slider', async ({ page }) => {
@@ -104,7 +127,7 @@ test.describe('Lightbox - slider / button-only trigger', () => {
 
 test.describe('Lightbox - slider / dual expand (lightbox + fullscreen)', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('both lightbox and fullscreen buttons are visible', async ({ page }) => {
@@ -131,7 +154,7 @@ test.describe('Lightbox - slider / dual expand (lightbox + fullscreen)', () => {
 
 test.describe('Lightbox - gallery mode', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('gallery has lightbox-toggle attribute set', async ({ page }) => {
@@ -175,5 +198,16 @@ test.describe('Lightbox - gallery mode', () => {
         await firstItem.hover();
         const buttons = firstItem.locator('.jzsa-gallery-thumb-fs-btn');
         await expect(buttons).toHaveCount(2);
+    });
+
+    test('gallery thumbnail lightbox button opens from keyboard', async ({ page }) => {
+        const album = await waitForAlbum(page, 3);
+        const firstButton = album.locator('.jzsa-gallery-item').first().locator('.jzsa-gallery-thumb-fs-btn');
+        await firstButton.waitFor({ state: 'attached', timeout: 30_000 });
+        await firstButton.focus();
+
+        await page.keyboard.press('Enter');
+
+        await expect(backdrop(page)).toBeVisible({ timeout: 5_000 });
     });
 });

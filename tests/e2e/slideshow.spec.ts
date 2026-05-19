@@ -1,4 +1,5 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
+import { gotoFixture } from './support/navigation';
 
 // slideshow-fixture contains 3 albums in this order:
 //   #0  slideshow="auto"     slideshow-delay="1"  (auto-advances every 1 second)
@@ -15,7 +16,7 @@ async function waitForAlbum(page: Page, index: number): Promise<Locator> {
 
 test.describe('Slideshow - data attributes', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('album 0 has data-slideshow="auto"', async ({ page }) => {
@@ -41,7 +42,7 @@ test.describe('Slideshow - data attributes', () => {
 
 test.describe('Slideshow - play/pause button', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('play/pause button is present on auto-slideshow album', async ({ page }) => {
@@ -82,7 +83,7 @@ test.describe('Slideshow - play/pause button', () => {
 
 test.describe('Slideshow - auto-advance', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('auto album advances to a new slide within 2 seconds', async ({ page }) => {

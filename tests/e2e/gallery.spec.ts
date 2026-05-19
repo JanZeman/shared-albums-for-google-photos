@@ -1,4 +1,5 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
+import { gotoFixture } from './support/navigation';
 
 // gallery-fixture contains 5 albums in this order:
 //   #0  mode="gallery"  gallery-columns="3"  (grid, default layout)      fullscreen-toggle="button-only"
@@ -17,7 +18,7 @@ async function waitForAlbum(page: Page, index: number): Promise<Locator> {
 
 test.describe('Gallery - data attributes', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('album 0 has data-mode="gallery"', async ({ page }) => {
@@ -63,7 +64,7 @@ test.describe('Gallery - data attributes', () => {
 
 test.describe('Gallery - items and structure', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('album 0 renders gallery items', async ({ page }) => {
@@ -90,9 +91,44 @@ test.describe('Gallery - items and structure', () => {
     });
 });
 
+test.describe('Gallery - responsive columns', () => {
+    test('grid uses desktop column count on wide viewport', async ({ page }) => {
+        await page.setViewportSize({ width: 1280, height: 720 });
+	        await gotoFixture(page, FIXTURE_URL);
+
+	        const album = await waitForAlbum(page, 0);
+	        await expect(album).toBeVisible({ timeout: 10_000 });
+
+	        const columns = await album.evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length);
+	        expect(columns).toBe(3);
+	    });
+
+    test('grid uses tablet column count on medium viewport', async ({ page }) => {
+        await page.setViewportSize({ width: 760, height: 900 });
+	        await gotoFixture(page, FIXTURE_URL);
+
+	        const album = await waitForAlbum(page, 0);
+	        await expect(album).toBeVisible({ timeout: 10_000 });
+
+	        const columns = await album.evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length);
+	        expect(columns).toBe(2);
+	    });
+
+    test('grid uses mobile column count on narrow viewport', async ({ page }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+	        await gotoFixture(page, FIXTURE_URL);
+
+	        const album = await waitForAlbum(page, 0);
+	        await expect(album).toBeVisible({ timeout: 10_000 });
+
+	        const columns = await album.evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length);
+	        expect(columns).toBe(1);
+	    });
+});
+
 test.describe('Gallery - hover button', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('hovering a gallery item shows the fullscreen button', async ({ page }) => {
@@ -131,7 +167,7 @@ function backdrop(page: Page): Locator {
 
 test.describe('Gallery - slideshow player opens on click', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('clicking a gallery item opens the lightbox backdrop', async ({ page }) => {
@@ -164,7 +200,7 @@ test.describe('Gallery - slideshow player opens on click', () => {
 
 test.describe('Gallery - slideshow player navigation', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('player next arrow advances to a different slide', async ({ page }) => {
@@ -176,6 +212,7 @@ test.describe('Gallery - slideshow player navigation', () => {
         await items.first().locator('.jzsa-gallery-thumb').click();
         const player = backdrop(page).locator('.jzsa-gallery-slideshow');
         await expect(player).not.toHaveClass(/jzsa-loader-pending/, { timeout: 15_000 });
+        await expect(player).not.toHaveClass(/jzsa-fullscreen-waiting/, { timeout: 15_000 });
 
         // Wait until Swiper has assigned data-swiper-slide-index on the active slide
         // (this attribute is set after the loader drops but during slide init).
@@ -183,12 +220,15 @@ test.describe('Gallery - slideshow player navigation', () => {
         await expect(activeSlide).toHaveAttribute('data-swiper-slide-index', { timeout: 5_000 });
         const initialIdx = await activeSlide.getAttribute('data-swiper-slide-index');
 
-        await player.locator('.swiper-button-next').click({ force: true });
+        const next = player.locator('.swiper-button-next');
+        await expect(next).toBeVisible({ timeout: 5_000 });
+        await expect(next).toHaveCSS('pointer-events', 'auto');
+        await next.click();
 
         await expect(async () => {
             const newIdx = await player.locator('.swiper-slide-active').getAttribute('data-swiper-slide-index');
             expect(newIdx).not.toBe(initialIdx);
-        }).toPass({ timeout: 3_000 });
+        }).toPass({ timeout: 5_000 });
     });
 
     test('opening on the second item starts the player at index 1', async ({ page }) => {
@@ -210,7 +250,7 @@ test.describe('Gallery - slideshow player navigation', () => {
 
 test.describe('Gallery - slideshow player close', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('Escape closes the gallery player', async ({ page }) => {

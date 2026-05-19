@@ -1,4 +1,5 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
+import { gotoFixture } from './support/navigation';
 
 // info-fixture contains 3 albums in this order:
 //   #0  info-bottom="{item} / {items}"    (renders in .swiper-pagination)
@@ -15,7 +16,7 @@ async function waitForAlbum(page: Page, index: number): Promise<Locator> {
 
 test.describe('Info overlay - info-bottom placeholder substitution', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('album 0 pagination shows substituted info-bottom text', async ({ page }) => {
@@ -57,7 +58,7 @@ test.describe('Info overlay - info-bottom placeholder substitution', () => {
 
 test.describe('Info overlay - info-top placeholder substitution', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('album 1 has an info-top box', async ({ page }) => {
@@ -91,7 +92,7 @@ test.describe('Info overlay - info-top placeholder substitution', () => {
 
 test.describe('Info overlay - data attributes', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(FIXTURE_URL);
+        await gotoFixture(page, FIXTURE_URL);
     });
 
     test('album 0 has data-info-bottom attribute', async ({ page }) => {

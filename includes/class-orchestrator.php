@@ -577,8 +577,8 @@ class JZSA_Shared_Albums {
 			// Track whether width/height were explicitly set in shortcode.
 			'width-explicit'  => isset( $atts['width'] ),
 			'height-explicit' => isset( $atts['height'] ),
-			'source-width'              => isset( $atts['source-width'] ) ? intval( $atts['source-width'] ) : self::DEFAULT_SOURCE_WIDTH,
-			'source-height'             => isset( $atts['source-height'] ) ? intval( $atts['source-height'] ) : self::DEFAULT_SOURCE_HEIGHT,
+			'source-width'              => $this->parse_source_dim( $atts, 'source-width', self::DEFAULT_SOURCE_WIDTH ),
+			'source-height'             => $this->parse_source_dim( $atts, 'source-height', self::DEFAULT_SOURCE_HEIGHT ),
 			'fullscreen-source-width'   => $this->parse_paired_source_dim( $atts, 'fullscreen-source-width', 'lightbox-source-width', self::DEFAULT_FULLSCREEN_SOURCE_WIDTH ),
 			'fullscreen-source-height'  => $this->parse_paired_source_dim( $atts, 'fullscreen-source-height', 'lightbox-source-height', self::DEFAULT_FULLSCREEN_SOURCE_HEIGHT ),
 			'lightbox-source-width'     => $this->parse_paired_source_dim( $atts, 'lightbox-source-width', 'fullscreen-source-width', self::DEFAULT_FULLSCREEN_SOURCE_WIDTH ),
@@ -1533,6 +1533,24 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
+	 * Parse a positive source-dimension attribute.
+	 *
+	 * @param array  $atts    Shortcode attributes.
+	 * @param string $key     Attribute key.
+	 * @param int    $default Default when key is omitted or invalid.
+	 * @return int
+	 */
+	private function parse_source_dim( $atts, $key, $default ) {
+		if ( ! isset( $atts[ $key ] ) ) {
+			return $default;
+		}
+
+		$value = intval( $atts[ $key ] );
+
+		return $value > 0 ? $value : $default;
+	}
+
+	/**
 	 * Parse gallery-gap attribute (pixels, 0–100).
 	 *
 	 * @param array $atts Shortcode attributes.
@@ -1560,8 +1578,7 @@ class JZSA_Shared_Albums {
 			// lightbox replaces the fullscreen button. Authors who want both side-by-side
 			// must set fullscreen-toggle explicitly (e.g. fullscreen-toggle="button-only").
 			if ( isset( $atts['lightbox-toggle'] ) ) {
-				$lb = strtolower( trim( (string) $atts['lightbox-toggle'] ) );
-				if ( 'disabled' !== $lb ) {
+				if ( 'disabled' !== $this->parse_lightbox_toggle_mode( $atts ) ) {
 					return 'disabled';
 				}
 			}

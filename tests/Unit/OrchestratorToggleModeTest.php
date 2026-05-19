@@ -61,6 +61,12 @@ class OrchestratorToggleModeTest extends TestCase {
         $this->assertSame( 'button-only', $config );
     }
 
+    public function test_fullscreen_defaults_to_button_only_when_lightbox_false_alias_is_used(): void {
+        $atts = [ 'lightbox-toggle' => 'no' ];
+        $config = $this->invoke( 'parse_fullscreen_toggle_mode', $atts );
+        $this->assertSame( 'button-only', $config );
+    }
+
     public function test_fullscreen_explicit_value_respected_alongside_lightbox(): void {
         $atts = [
             'lightbox-toggle'   => 'button-only',
@@ -116,6 +122,12 @@ class OrchestratorToggleModeTest extends TestCase {
         $atts = [ 'lightbox-toggle' => 'true' ];
         $config = $this->invoke( 'parse_lightbox_toggle_mode', $atts );
         $this->assertSame( 'click', $config );
+    }
+
+    public function test_lightbox_false_alias_maps_to_disabled(): void {
+        $atts = [ 'lightbox-toggle' => 'no' ];
+        $config = $this->invoke( 'parse_lightbox_toggle_mode', $atts );
+        $this->assertSame( 'disabled', $config );
     }
 
     public function test_lightbox_invalid_value_falls_back_to_disabled(): void {
