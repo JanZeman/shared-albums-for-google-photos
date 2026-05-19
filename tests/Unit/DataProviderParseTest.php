@@ -583,4 +583,156 @@ class DataProviderParseTest extends TestCase {
 		$this->assertArrayHasKey( 'image', $urls );
 		$this->assertStringContainsString( 'lh3.googleusercontent.com', $urls['image'] );
 	}
+
+	// -------------------------------------------------------------------------
+	// URL validation edge cases
+	// -------------------------------------------------------------------------
+
+	public function test_validate_url_rejects_http_scheme(): void {
+		$result = $this->provider->validate_url( 'http://photos.google.com/share/AF1QipTest' );
+		$this->assertFalse( $result['valid'] );
+	}
+
+	// -------------------------------------------------------------------------
+	// fetch_album result structure
+	// -------------------------------------------------------------------------
+
+	public function test_fetch_album_result_has_is_deprecated_key(): void {
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => self::$album_html );
+		$result = $this->provider->fetch_album(
+			'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R'
+		);
+		$this->assertTrue( $result['success'] );
+		$this->assertArrayHasKey( 'is_deprecated', $result );
+	}
+
+	public function test_fetch_album_result_not_deprecated_for_full_link(): void {
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => self::$album_html );
+		$result = $this->provider->fetch_album(
+			'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R'
+		);
+		$this->assertTrue( $result['success'] );
+		$this->assertEmpty( $result['is_deprecated'] );
+	}
+
+	public function test_fetch_album_result_data_has_required_keys(): void {
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => self::$album_html );
+		$result = $this->provider->fetch_album(
+			'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R'
+		);
+		$this->assertTrue( $result['success'] );
+		$this->assertArrayHasKey( 'title', $result['data'] );
+		$this->assertArrayHasKey( 'photos', $result['data'] );
+		$this->assertArrayHasKey( 'count', $result['data'] );
+	}
+
+	// -------------------------------------------------------------------------
+	// Video album: non-video item count
+	// -------------------------------------------------------------------------
+
+	public function test_fetch_video_album_fixture_non_video_count_is_13(): void {
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => self::$album_video_html );
+		$result = $this->provider->fetch_album(
+			'https://photos.google.com/share/AF1QipM-v19vtjd5NEiD6w40U7XqZoqwMUX4FyPr6p9U-9Ixjw2jy7oYFs7m7vgvvpm3PA?key=ZjhXZDNkc1ZrNmFvZ2tIOW16QXlGal94Y2g2cGJB'
+		);
+		$this->assertTrue( $result['success'] );
+		$non_videos = array_filter( $result['data']['photos'], static function ( $item ) {
+			return ! is_array( $item ) || ( $item['type'] ?? '' ) !== 'video';
+		} );
+		$this->assertCount( 13, $non_videos );
+	}
+
+	// -------------------------------------------------------------------------
+	// Individual photo page: image and video URL presence
+	// -------------------------------------------------------------------------
+
+	public function test_video_photo_page_also_has_image_url(): void {
+		$urls = $this->provider->extract_individual_photo_media_urls( self::$photo_video_html );
+		$this->assertArrayHasKey( 'image', $urls,
+			'Video photo pages also carry a thumbnail image URL alongside the video URL' );
+		$this->assertStringContainsString( 'googleusercontent.com', $urls['image'] );
+	}
+
+	public function test_image_photo_page_has_no_video_url(): void {
+		$urls = $this->provider->extract_individual_photo_media_urls( self::$photo_image_html );
+		$this->assertArrayNotHasKey( 'video', $urls );
+	}
+
+	public function test_image_photo_page_url_has_s0_d_ip_suffix(): void {
+		$urls = $this->provider->extract_individual_photo_media_urls( self::$photo_image_html );
+		$this->assertArrayHasKey( 'image', $urls );
+		$this->assertStringEndsWith( '=s0-d-ip', $urls['image'],
+			'The s0-d-ip suffix must be preserved so the plugin can append its own size param' );
+	}
+
+	// -------------------------------------------------------------------------
+	// EXIF shutter speed formatting
+	// -------------------------------------------------------------------------
+
+	public function test_extract_individual_photo_meta_slow_shutter_uses_seconds_format(): void {
+		$html = '[4032,3024,1,null,["Canon","EOS R5",null,85.0,1.8,100,2.5,null,1]]';
+		$meta = $this->provider->extract_individual_photo_meta( $html );
+		$this->assertSame( '2.5s', $meta['shutter'] );
+	}
+
+	public function test_extract_individual_photo_meta_fast_shutter_uses_fraction_format(): void {
+		$html = '[4032,3024,1,null,["Sony","A7R IV",null,85.0,1.8,200,0.001,null,1]]';
+		$meta = $this->provider->extract_individual_photo_meta( $html );
+		$this->assertSame( '1/1000', $meta['shutter'] );
+	}
+
+	public function test_extract_individual_photo_meta_returns_empty_when_required_exif_null(): void {
+		// When any required field (focal, aperture, iso, shutter) is null, the regex
+		// does not match and extract_individual_photo_meta returns an empty array.
+		$html = '[4032,3024,1,null,["Canon","EOS 90D",null,null,2.8,null,0.0025,null,1]]';
+		$meta = $this->provider->extract_individual_photo_meta( $html );
+		$this->assertIsArray( $meta );
+		$this->assertArrayNotHasKey( 'camera', $meta );
+		$this->assertArrayNotHasKey( 'aperture', $meta );
+	}
+
+	// -------------------------------------------------------------------------
+	// Description field from individual photo page
+	// -------------------------------------------------------------------------
+
+	public function test_extract_individual_photo_meta_parses_description(): void {
+		$html = '"396644657":["A caption for this photo"]';
+		$meta = $this->provider->extract_individual_photo_meta( $html );
+		$this->assertArrayHasKey( 'description', $meta );
+		$this->assertSame( 'A caption for this photo', $meta['description'] );
+	}
+
+	public function test_extract_individual_photo_meta_no_description_when_absent(): void {
+		$html = '[4032,3024,1,null,["Canon","EOS R5",null,85.0,1.8,100,0.001,null,1]]';
+		$meta = $this->provider->extract_individual_photo_meta( $html );
+		$this->assertArrayNotHasKey( 'description', $meta );
+	}
+
+	// -------------------------------------------------------------------------
+	// Camera make normalization
+	// -------------------------------------------------------------------------
+
+	public function test_format_camera_display_name_lowercased_make_is_title_cased(): void {
+		$name = $this->provider->format_camera_display_name( 'samsung', 'Galaxy S23' );
+		$this->assertSame( 'Samsung Galaxy S23', $name );
+	}
+
+	// -------------------------------------------------------------------------
+	// Filename field: fixture album documents known behavior (no filenames in
+	// this particular album's HTML since Google does not always include them)
+	// -------------------------------------------------------------------------
+
+	public function test_fetch_album_fixture_no_photos_have_filename(): void {
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => self::$album_html );
+		$result = $this->provider->fetch_album(
+			'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R'
+		);
+		$with_filename = array_filter( $result['data']['photos'], static function ( $item ) {
+			return is_array( $item ) && isset( $item['filename'] );
+		} );
+		// This fixture album's HTML does not contain filename metadata.
+		// If this count increases to > 0 in the future, update the fixture
+		// and add a positive filename assertion.
+		$this->assertCount( 0, $with_filename );
+	}
 }
