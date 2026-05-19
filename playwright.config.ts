@@ -8,7 +8,7 @@ export default defineConfig({
     workers: 1,
     reporter: [['list'], ['html', { open: 'never' }]],
     use: {
-        baseURL: 'http://127.0.0.1:8080',
+        baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:8080',
         // Album data is fetched from Google Photos on first load and cached by WP.
         // On subsequent runs the cache is served locally with no network needed.
         // A longer timeout accommodates a cold (uncached) first run.

@@ -1,21 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
-
-// dev          — connected to the community (JWT in user meta)
-// testuser-noc — fresh administrator, never connected (no JWT)
-const CONNECTED_USER     = 'dev';
-const CONNECTED_PASS     = 'test123';
-const DISCONNECTED_USER  = 'testuser-noc';
-const DISCONNECTED_PASS  = 'testpass123';
+import { CONNECTED_PASS, CONNECTED_USER, DISCONNECTED_PASS, DISCONNECTED_USER, loginAs } from './support/auth';
 
 const COMMUNITY_URL = '/wp-admin/admin.php?page=janzeman-shared-albums-for-google-photos-community';
-
-async function loginAs(page: Page, user: string, pass: string): Promise<void> {
-    await page.goto('/wp-login.php');
-    await page.fill('#user_login', user);
-    await page.fill('#user_pass', pass);
-    await page.click('#wp-submit');
-    await page.waitForURL('**/wp-admin/**', { timeout: 10_000 });
-}
 
 // Set the textContent of the publish shortcode contenteditable <code> element.
 async function setPublishShortcode(page: Page, value: string): Promise<void> {

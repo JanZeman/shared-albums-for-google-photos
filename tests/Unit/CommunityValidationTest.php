@@ -215,6 +215,22 @@ class CommunityValidationTest extends TestCase {
         $this->assertNotSame( '', $result );
     }
 
+    public function test_tags_with_empty_segments_are_ignored(): void {
+        $result = $this->validate( tags_raw: 'landscape,, travel, ' );
+        $this->assertSame( '', $result );
+    }
+
+    public function test_tags_are_normalized_to_lowercase_trimmed_values(): void {
+        $tags = $this->callStatic( 'normalize_community_tags', ' Landscape,TRAVEL , night-shots ' );
+        $this->assertSame( array( 'landscape', 'travel', 'night-shots' ), $tags );
+    }
+
+    public function test_duplicate_tags_count_toward_maximum(): void {
+        $result = $this->validate( tags_raw: 'one,one,two,three,four,five' );
+        $this->assertNotSame( '', $result );
+        $this->assertStringContainsString( '5', $result );
+    }
+
     // -------------------------------------------------------------------------
     // Entry URL validation
     // -------------------------------------------------------------------------
@@ -246,6 +262,16 @@ class CommunityValidationTest extends TestCase {
 
     public function test_invalid_url_format_fails(): void {
         $result = $this->validate( entry_url: 'not-a-url' );
+        $this->assertNotSame( '', $result );
+    }
+
+    public function test_https_url_with_query_and_fragment_passes(): void {
+        $result = $this->validate( entry_url: 'https://example.com/gallery?album=1#photo-2' );
+        $this->assertSame( '', $result );
+    }
+
+    public function test_javascript_entry_url_fails(): void {
+        $result = $this->validate( entry_url: 'javascript:alert(1)' );
         $this->assertNotSame( '', $result );
     }
 
@@ -372,6 +398,14 @@ class CommunityValidationTest extends TestCase {
         $this->assertFalse( $this->callStatic( 'is_valid_display_url', 'hello world' ) );
     }
 
+    public function test_display_url_host_without_dot_is_valid(): void {
+        $this->assertTrue( $this->callStatic( 'is_valid_display_url', 'https://localhost' ) );
+    }
+
+    public function test_display_url_missing_scheme_is_invalid_before_normalization(): void {
+        $this->assertFalse( $this->callStatic( 'is_valid_display_url', 'example.com' ) );
+    }
+
     // -------------------------------------------------------------------------
     // normalize_display_url
     // -------------------------------------------------------------------------
@@ -394,6 +428,11 @@ class CommunityValidationTest extends TestCase {
     public function test_normalize_preserves_existing_http(): void {
         $result = $this->callStatic( 'normalize_display_url', 'http://example.com' );
         $this->assertStringStartsWith( 'http://', $result );
+    }
+
+    public function test_normalize_trims_whitespace_before_adding_scheme(): void {
+        $result = $this->callStatic( 'normalize_display_url', '  example.com/profile  ' );
+        $this->assertSame( 'https://example.com/profile', $result );
     }
 
     // -------------------------------------------------------------------------
@@ -419,6 +458,22 @@ class CommunityValidationTest extends TestCase {
         $sc   = '[jzsa-album link="https://photos.google.com/share/AF1Qip?key=XYZ123"]';
         $link = $this->callStatic( 'extract_community_shortcode_album_link', $sc );
         $this->assertSame( 'https://photos.google.com/share/AF1Qip?key=XYZ123', $link );
+    }
+
+    public function test_extract_accepts_single_quoted_link(): void {
+        $sc   = "[jzsa-album link='https://photos.google.com/share/AF1QipSingleQuote']";
+        $link = $this->callStatic( 'extract_community_shortcode_album_link', $sc );
+        $this->assertSame( 'https://photos.google.com/share/AF1QipSingleQuote', $link );
+    }
+
+    public function test_extract_returns_empty_for_http_google_photos_link(): void {
+        $link = $this->callStatic( 'extract_community_shortcode_album_link', '[jzsa-album link="http://photos.google.com/share/AF1Qip"]' );
+        $this->assertSame( '', $link );
+    }
+
+    public function test_extract_returns_empty_when_extra_content_follows_shortcode(): void {
+        $link = $this->callStatic( 'extract_community_shortcode_album_link', self::VALID_SC . ' trailing text' );
+        $this->assertSame( '', $link );
     }
 
     public function test_extract_returns_empty_for_plain_text(): void {

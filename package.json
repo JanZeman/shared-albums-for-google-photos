@@ -8,7 +8,9 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./test.sh",
+    "test:unit": "./test.sh --unit",
+    "test:e2e": "./test.sh --e2e"
   },
   "repository": {
     "type": "git",

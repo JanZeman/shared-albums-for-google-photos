@@ -1,19 +1,9 @@
-import { test, expect, type Page } from '@playwright/test';
-
-const ADMIN_USER = 'dev';
-const ADMIN_PASS = 'test123';
+import { test, expect } from '@playwright/test';
+import { loginAsAdmin } from './support/auth';
 
 const GUIDE_URL      = '/wp-admin/admin.php?page=janzeman-shared-albums-for-google-photos';
 const PARAMS_URL     = '/wp-admin/admin.php?page=janzeman-shared-albums-for-google-photos-shortcode-parameters';
 const COMMUNITY_URL  = '/wp-admin/admin.php?page=janzeman-shared-albums-for-google-photos-community';
-
-async function loginAsAdmin(page: Page): Promise<void> {
-    await page.goto('/wp-login.php');
-    await page.fill('#user_login', ADMIN_USER);
-    await page.fill('#user_pass', ADMIN_PASS);
-    await page.click('#wp-submit');
-    await page.waitForURL('**/wp-admin/**', { timeout: 10_000 });
-}
 
 test.describe('Admin - Guide page', () => {
     test.beforeEach(async ({ page }) => {
