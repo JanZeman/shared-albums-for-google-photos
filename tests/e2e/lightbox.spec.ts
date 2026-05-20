@@ -221,3 +221,73 @@ test.describe('Lightbox - gallery mode', () => {
         await expect(backdrop(page)).toBeVisible({ timeout: 5_000 });
     });
 });
+
+test.describe('Lightbox - Accessibility Depth', () => {
+    test.beforeEach(async ({ page }) => {
+        await gotoFixture(page, FIXTURE_URL);
+    });
+
+    test('focus is trapped inside the lightbox when tabbed', async ({ page }) => {
+        const album = await waitForSliderAlbum(page, 0);
+        await album.locator(ACTIVE_SLIDER_SLIDE).click();
+        const overlay = backdrop(page);
+        await expect(overlay).toBeVisible();
+
+        const closeBtn = page.locator('.jzsa-lightbox-close');
+        await expect(closeBtn).toBeAttached();
+
+        const focusableElements = await overlay.evaluate((el) => {
+            const els = Array.from(el.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')) as HTMLElement[];
+            return els.map(e => ({
+                tagName: e.tagName.toLowerCase(),
+                className: e.className
+            }));
+        });
+
+        if (focusableElements.length > 0) {
+            await overlay.focus();
+            await page.keyboard.press('Tab');
+            
+            for (let i = 0; i < 15; i++) {
+                await page.keyboard.press('Tab');
+                const isInsideBackdrop = await page.evaluate(() => {
+                    const active = document.activeElement;
+                    if (!active) return false;
+                    return active.closest('.jzsa-lightbox-backdrop') !== null;
+                });
+                expect(isInsideBackdrop).toBe(true);
+            }
+        }
+    });
+
+    test('focus is restored back to the originating trigger button when closed', async ({ page }) => {
+        const album = await waitForAlbum(page, 3);
+        const firstButton = album.locator('.jzsa-gallery-item').first().locator('.jzsa-gallery-thumb-fs-btn');
+        await firstButton.waitFor({ state: 'attached', timeout: 30_000 });
+        
+        await firstButton.focus();
+        await expect(firstButton).toBeFocused();
+        await page.keyboard.press('Enter');
+        await expect(backdrop(page)).toBeVisible();
+
+        await page.keyboard.press('Escape');
+        await expect(backdrop(page)).not.toBeVisible();
+
+        await expect(firstButton).toBeFocused();
+    });
+
+    test('pressing Escape closes the lightbox even when active inside other focusable elements', async ({ page }) => {
+        const album = await waitForSliderAlbum(page, 0);
+        await album.locator(ACTIVE_SLIDER_SLIDE).click();
+        const overlay = backdrop(page);
+        await expect(overlay).toBeVisible();
+
+        const closeBtn = page.locator('.jzsa-lightbox-close');
+        await closeBtn.focus();
+        await expect(closeBtn).toBeFocused();
+
+        await page.keyboard.press('Escape');
+        await expect(overlay).not.toBeVisible();
+    });
+});
+

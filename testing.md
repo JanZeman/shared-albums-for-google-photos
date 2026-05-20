@@ -40,9 +40,9 @@ vendor/bin/phpunit tests/Live/   # calls real Google Photos to detect format cha
 - `CommunityAjaxTest.php` -- real community AJAX/REST handlers with mocked HTTP: connect, browse, publish/update/delete, profile, interactions, rating, challenge validation, malformed responses
 - `DataProviderParseTest.php` -- URL extraction, duplicate filtering, non-Google URL filtering, metadata enrichment, filename extraction, EXIF scoping, video detection, title cleaning, camera formatting, individual photo meta; uses `tests/fixtures/google/album.html` (real recorded response)
 
-**Playwright** (`tests/e2e/`) -- 174 Chromium tests plus 10 Firefox/WebKit smoke executions
+**Playwright** (`tests/e2e/`) -- 177 Chromium tests plus 10 Firefox/WebKit smoke executions
 
-- `lightbox.spec.ts` -- slider click/button-only trigger, dual expand, gallery lightbox, dialog/close-button accessibility attributes, keyboard gallery lightbox activation
+- `lightbox.spec.ts` -- slider click/button-only trigger, dual expand, gallery lightbox, dialog/close-button accessibility attributes, keyboard gallery lightbox activation, and advanced accessibility (focus trapping, focus restoration on close, Escape close inside focusable elements)
 - `fullscreen.spec.ts` -- fullscreen button presence, dual-expand interaction, close methods
 - `slideshow.spec.ts` -- data attributes, play/pause button, auto-advance and manual-hold
 - `gallery.spec.ts` -- data attributes (layout/columns/scrollable/rows), items, responsive columns, hover button, slideshow player open/navigate/close
@@ -149,7 +149,7 @@ The renderer tests are the highest-value target. With 80+ parameters each mappin
 | `shortcode-integration.spec.ts` | Actual WordPress shortcode rendering into plugin markup, frontend asset enqueue/localization, parsed attributes, gallery output | `feature-fixture`, `gallery-fixture` |
 | `mosaic.spec.ts` | Clicking a mosaic thumbnail advances the main slider, all four positions | `mosaic-fixture` |
 | `info-overlay.spec.ts` | `{item}`, `{items}`, `{album-title}` substitution visible in rendered text | `info-fixture` |
-| `lightbox.spec.ts` | Lightbox trigger behavior, dialog ARIA, close-button labels, gallery lightbox cases, keyboard activation | `lightbox-fixture` |
+| `lightbox.spec.ts` | Lightbox trigger behavior, dialog ARIA, close-button labels, gallery lightbox cases, keyboard activation, and advanced accessibility (focus trapping, focus restoration, Escape close inside focusable elements) | `lightbox-fixture` |
 | `community.spec.ts` (done) | Browse list loads, search/filter, connect flow, publish form validation | WordPress admin URL |
 | `community-mocked.spec.ts` (done) | Mocked community browse, publish, rating, update, and delete flows without the external API | WordPress admin URL |
 | `admin.spec.ts` (done) | Guide page loads previews, Parameters page renders the table | WordPress admin URL |
@@ -192,8 +192,8 @@ Community and admin tests use WordPress admin URLs directly, no shortcode fixtur
 
 ### Good next tier
 
-6. **Lightbox accessibility depth**
-   Current tests cover ARIA and basic keyboard activation. Add focus trap, focus restoration, tab order, Escape behavior across nested states, and keyboard navigation inside gallery/player.
+6. **Lightbox accessibility depth (Partially Completed)**
+   Current tests cover ARIA, basic keyboard activation, and now include robust coverage for focus trapping, focus restoration to originating trigger element on keyboard close, and Escape closability when inner components are focused. Remaining areas: Escape behavior across nested iframe video states, and keyboard navigation inside Swiper player.
 
 7. **Mobile/touch behavior**
    Current responsive gallery tests are good, but touch gestures, mobile button visibility modes, pseudo-fullscreen on iPhone-like viewports, and small-screen lightbox layout are still likely risk areas.
