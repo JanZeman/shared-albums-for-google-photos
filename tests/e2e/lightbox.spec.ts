@@ -99,9 +99,15 @@ test.describe('Lightbox - slider / click trigger', () => {
         await expect(close).toHaveAttribute('title', 'Close');
     });
 
-    test('no lightbox button on the slider in click mode (slide itself is the trigger)', async ({ page }) => {
+    test('lightbox button is present on the slider in click mode (alongside the slide trigger)', async ({ page }) => {
         const album = await waitForSliderAlbum(page, 0);
-        await expect(album.locator(SLIDER_LIGHTBOX_BUTTON)).not.toBeAttached();
+        await expect(album.locator(SLIDER_LIGHTBOX_BUTTON)).toBeVisible();
+    });
+
+    test('lightbox button also opens the lightbox in click mode', async ({ page }) => {
+        const album = await waitForSliderAlbum(page, 0);
+        await album.locator(SLIDER_LIGHTBOX_BUTTON).click({ force: true });
+        await expect(backdrop(page)).toBeVisible();
     });
 });
 

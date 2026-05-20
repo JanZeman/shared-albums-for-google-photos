@@ -39,16 +39,17 @@ class RendererButtonsTest extends TestCase {
         $this->assertStringNotContainsString( 'swiper-button-lightbox', $html );
     }
 
-    public function test_no_lightbox_button_in_click_mode(): void {
-        // In click mode, clicking the slide itself opens the lightbox.
-        // A dedicated button would be redundant.
+    public function test_lightbox_button_present_in_click_mode(): void {
+        // The dedicated corner button must render in every non-disabled lightbox mode,
+        // including click mode, so visitors get a visible affordance even when the
+        // slide itself is also a trigger.
         $html = $this->render( [ 'lightbox-toggle' => 'click' ] );
-        $this->assertStringNotContainsString( 'swiper-button-lightbox', $html );
+        $this->assertStringContainsString( 'swiper-button-lightbox', $html );
     }
 
-    public function test_no_lightbox_button_in_double_click_mode(): void {
+    public function test_lightbox_button_present_in_double_click_mode(): void {
         $html = $this->render( [ 'lightbox-toggle' => 'double-click' ] );
-        $this->assertStringNotContainsString( 'swiper-button-lightbox', $html );
+        $this->assertStringContainsString( 'swiper-button-lightbox', $html );
     }
 
     public function test_lightbox_button_present_in_button_only_mode(): void {
