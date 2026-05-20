@@ -104,6 +104,9 @@
 		if ( typeof jzsaHighlightPlaceholders === 'function' ) {
 			jzsaHighlightPlaceholders( el );
 		}
+		// Programmatic textContent changes do not fire 'input'; dispatch one so
+		// the shared code-block validation refreshes for the new shortcode.
+		el.dispatchEvent( new Event( 'input', { bubbles: true } ) );
 	}
 
 	function normalizeUrlInput( value ) {

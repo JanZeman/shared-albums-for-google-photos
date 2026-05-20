@@ -376,6 +376,44 @@
 .jzsa-code-block .jzsa-copy-btn { display: none; }
 .jzsa-code-block .jzsa-inline-playground-btns { display: none; }
 
+/* Live shortcode validation area, sits between the code block and its preview */
+.jzsa-code-validation {
+    margin: -4px 0 14px;
+    padding: 8px 12px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 12px;
+    line-height: 1.5;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+/* No message (a valid or pristine empty shortcode) collapses the area entirely. */
+.jzsa-code-validation:empty {
+    display: none;
+}
+
+.jzsa-code-validation--warning {
+    color: #6a4b00;
+    background: #fff8e5;
+    border-color: #f0d68a;
+}
+
+.jzsa-code-validation--error {
+    color: #8a1f1f;
+    background: #fcecec;
+    border-color: #e7b3b3;
+}
+
+.jzsa-code-validation__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.jzsa-code-validation__list li {
+    margin: 2px 0;
+}
+
 .jzsa-help-text {
     font-size: 13px;
     color: #646970;

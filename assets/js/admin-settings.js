@@ -417,6 +417,302 @@ function jzsaSetupLazyPreviews() {
 }
 
 /**
+ * Known [jzsa-album] shortcode parameter names.
+ *
+ * Source of truth: the "Parameter" column of the tables in
+ * includes/admin/reference-parameters.php. Keep this list in sync whenever a
+ * documented shortcode parameter is added or removed.
+ */
+var JZSA_KNOWN_PARAMS = [
+	'album-cache-refresh', 'album-title-halo-effect', 'background-color',
+	'controls-color', 'corner-radius', 'download-size-warning',
+	'fullscreen-background-color', 'fullscreen-controls-color',
+	'fullscreen-display-max-height', 'fullscreen-display-max-width',
+	'fullscreen-image-fit', 'fullscreen-info-bottom', 'fullscreen-info-font-color',
+	'fullscreen-info-font-family', 'fullscreen-info-font-size',
+	'fullscreen-info-top', 'fullscreen-info-top-secondary', 'fullscreen-mosaic',
+	'fullscreen-mosaic-background', 'fullscreen-mosaic-corner-radius',
+	'fullscreen-mosaic-count', 'fullscreen-mosaic-gap', 'fullscreen-mosaic-layout',
+	'fullscreen-mosaic-opacity', 'fullscreen-mosaic-position',
+	'fullscreen-show-download-button', 'fullscreen-show-link-button',
+	'fullscreen-show-navigation', 'fullscreen-slideshow',
+	'fullscreen-slideshow-autoresume', 'fullscreen-slideshow-delay',
+	'fullscreen-source-height', 'fullscreen-source-width', 'fullscreen-toggle',
+	'fullscreen-video-controls-autohide', 'fullscreen-video-controls-color',
+	'gallery-buttons-on-mobile', 'gallery-columns', 'gallery-columns-mobile',
+	'gallery-columns-tablet', 'gallery-gap', 'gallery-info-bottom',
+	'gallery-info-bottom-halo-effect', 'gallery-layout', 'gallery-row-height',
+	'gallery-rows', 'gallery-scrollable', 'gallery-sizing', 'height', 'image-fit',
+	'info-bottom', 'info-bottom-halo-effect', 'info-bottom-text-align',
+	'info-font-color', 'info-font-family', 'info-font-size', 'info-halo-effect',
+	'info-text-align', 'info-top', 'info-top-halo-effect', 'info-top-secondary',
+	'info-top-secondary-halo-effect', 'info-top-secondary-text-align',
+	'info-top-text-align', 'info-wrap', 'interaction-lock',
+	'lightbox-background-color', 'lightbox-controls-color',
+	'lightbox-corner-radius', 'lightbox-image-fit', 'lightbox-max-height',
+	'lightbox-max-width', 'lightbox-show-download-button',
+	'lightbox-show-link-button', 'lightbox-show-navigation', 'lightbox-slideshow',
+	'lightbox-slideshow-autoresume', 'lightbox-slideshow-delay',
+	'lightbox-source-height', 'lightbox-source-width', 'lightbox-toggle',
+	'lightbox-video-controls-autohide', 'lightbox-video-controls-color', 'limit',
+	'link', 'mode', 'mosaic', 'mosaic-background', 'mosaic-corner-radius',
+	'mosaic-count', 'mosaic-gap', 'mosaic-opacity', 'mosaic-position',
+	'show-download-button', 'show-link-button', 'show-navigation', 'show-videos',
+	'slideshow', 'slideshow-autoresume', 'slideshow-delay', 'source-height',
+	'source-width', 'start-at', 'video-controls-autohide', 'video-controls-color',
+	'width'
+];
+
+/**
+ * Backward-compatibility parameter aliases. Still accepted by the PHP shortcode
+ * handler but intentionally undocumented, so they must not be flagged as
+ * unknown parameters.
+ */
+var JZSA_LEGACY_PARAMS = [
+	'cache-refresh', 'show-counter', 'show-title', 'fullscreen-show-counter',
+	'fullscreen-show-title', 'gallery-page-bottom'
+];
+
+var JZSA_PARAM_SET = ( function () {
+	var set = {};
+	JZSA_KNOWN_PARAMS.concat( JZSA_LEGACY_PARAMS ).forEach( function ( name ) {
+		set[ name ] = true;
+	} );
+	return set;
+}() );
+
+function jzsaEscapeHtml( str ) {
+	return String( str )
+		.replace( /&/g, '&amp;' )
+		.replace( /</g, '&lt;' )
+		.replace( />/g, '&gt;' );
+}
+
+/**
+ * Levenshtein edit distance between two strings.
+ */
+function jzsaLevenshtein( a, b ) {
+	var m = a.length;
+	var n = b.length;
+	if ( ! m ) {
+		return n;
+	}
+	if ( ! n ) {
+		return m;
+	}
+	var prev = [];
+	var i;
+	var j;
+	for ( j = 0; j <= n; j++ ) {
+		prev[ j ] = j;
+	}
+	for ( i = 1; i <= m; i++ ) {
+		var cur = [ i ];
+		for ( j = 1; j <= n; j++ ) {
+			var cost = a.charAt( i - 1 ) === b.charAt( j - 1 ) ? 0 : 1;
+			cur[ j ] = Math.min( cur[ j - 1 ] + 1, prev[ j ] + 1, prev[ j - 1 ] + cost );
+		}
+		prev = cur;
+	}
+	return prev[ n ];
+}
+
+/**
+ * Suggest the closest known parameter name for a typo, or null when nothing is
+ * close enough to be a confident suggestion.
+ */
+function jzsaSuggestParam( name ) {
+	var best = null;
+	// Allow looser matches for longer names, but stay strict for short ones so
+	// unrelated words (e.g. "zoom") do not get a misleading suggestion.
+	var maxDist = Math.max( 1, Math.floor( name.length / 4 ) );
+	var bestDist = maxDist + 1;
+	JZSA_KNOWN_PARAMS.forEach( function ( known ) {
+		var dist = jzsaLevenshtein( name, known );
+		if ( dist < bestDist ) {
+			bestDist = dist;
+			best = known;
+		}
+	} );
+	return best;
+}
+
+/**
+ * Validate the syntax of a [jzsa-album] shortcode string.
+ *
+ * Performs purely client-side checks: bracket balance, the shortcode tag name,
+ * quote matching, malformed key=value pairs, duplicate attributes, a missing
+ * link, and unknown parameter names. It does not validate parameter values.
+ *
+ * @param {string} raw The raw shortcode text.
+ * @return {{state: string, errors: string[], warnings: string[]}}
+ */
+function jzsaValidateShortcode( raw ) {
+	var errors = [];
+	var warnings = [];
+	// The replace() below swaps non-breaking spaces (emitted by contentEditable)
+	// for plain spaces so tokenization and \s matching behave predictably.
+	var text = ( raw || '' ).replace( / /g, ' ' ).trim();
+
+	if ( ! text ) {
+		// A pristine empty field is not an error; the message area stays hidden.
+		return { state: 'empty', errors: errors, warnings: warnings };
+	}
+
+	// Single quote-aware pass: track quote state and record the positions of
+	// brackets that sit outside quoted values (so [link] inside a value or a
+	// "]" inside an info string never trips the structural checks).
+	var quote = null;
+	var opens = [];
+	var closes = [];
+	var i;
+	for ( i = 0; i < text.length; i++ ) {
+		var ch = text.charAt( i );
+		if ( quote ) {
+			if ( ch === quote ) {
+				quote = null;
+			}
+		} else if ( ch === '"' || ch === '\'' ) {
+			quote = ch;
+		} else if ( ch === '[' ) {
+			opens.push( i );
+		} else if ( ch === ']' ) {
+			closes.push( i );
+		}
+	}
+
+	if ( quote ) {
+		errors.push( 'Unterminated ' + ( quote === '"' ? 'double' : 'single' ) +
+			' quote (' + quote + ') - every opening quote needs a matching closing one.' );
+		return { state: 'error', errors: errors, warnings: warnings };
+	}
+
+	if ( ! opens.length || ! closes.length ) {
+		errors.push( 'Shortcode must be wrapped in square brackets: [jzsa-album ...].' );
+		return { state: 'error', errors: errors, warnings: warnings };
+	}
+	if ( opens.length > 1 || closes.length > 1 ) {
+		errors.push( 'Enter exactly one [jzsa-album] shortcode.' );
+	}
+	if ( text.charAt( 0 ) !== '[' ) {
+		errors.push( 'Shortcode must start with "[".' );
+	}
+	if ( text.charAt( text.length - 1 ) !== ']' ) {
+		errors.push( 'Shortcode must end with "]".' );
+	}
+	if ( opens[ 0 ] > closes[ 0 ] ) {
+		errors.push( 'A closing "]" appears before the opening "[".' );
+		return { state: 'error', errors: errors, warnings: warnings };
+	}
+
+	var inner = text.slice( opens[ 0 ] + 1, closes[ closes.length - 1 ] );
+
+	// Tag name.
+	var tagMatch = inner.match( /^\s*([a-z0-9_-]*)/i );
+	var tag = tagMatch ? tagMatch[ 1 ] : '';
+	if ( tag !== 'jzsa-album' ) {
+		if ( ! tag ) {
+			errors.push( 'Missing shortcode name. Expected [jzsa-album ...].' );
+		} else {
+			errors.push( 'Unknown shortcode name "' + tag + '". Expected "jzsa-album".' );
+		}
+	}
+
+	var attrText = inner.slice( tagMatch ? tagMatch[ 0 ].length : 0 );
+
+	// Quotes are verified balanced above, so attribute tokenization is safe.
+	var attrRe = /([\w-]+)\s*=\s*"([^"]*)"|([\w-]+)\s*=\s*'([^']*)'|([\w-]+)\s*=\s*([^\s'"\]]+)|"([^"]*)"|'([^']*)'|(\S+)/g;
+	var seen = {};
+	var hasLink = false;
+	var match;
+	while ( ( match = attrRe.exec( attrText ) ) ) {
+		var name = match[ 1 ] || match[ 3 ] || match[ 5 ];
+		if ( name ) {
+			name = name.toLowerCase();
+			if ( seen[ name ] ) {
+				warnings.push( 'Parameter "' + name + '" is set more than once - only the last value is used.' );
+			}
+			seen[ name ] = true;
+
+			if ( name === 'link' ) {
+				hasLink = true;
+				var linkVal = ( match[ 2 ] || match[ 4 ] || match[ 6 ] || '' ).trim();
+				if ( ! linkVal ) {
+					errors.push( 'The "link" parameter is empty - paste a Google Photos album share URL.' );
+				}
+			} else if ( ! JZSA_PARAM_SET[ name ] ) {
+				var suggestion = jzsaSuggestParam( name );
+				warnings.push( 'Unknown parameter "' + name + '"' +
+					( suggestion ? ' - did you mean "' + suggestion + '"?' : '.' ) );
+			}
+			continue;
+		}
+
+		// Bare token with no "name=" prefix.
+		var bareWord = match[ 9 ];
+		if ( bareWord !== undefined ) {
+			if ( /^https?:\/\//i.test( bareWord ) ) {
+				hasLink = true; // Positional album URL.
+			} else if ( bareWord.indexOf( '=' ) !== -1 ) {
+				var partial = bareWord.split( '=' )[ 0 ];
+				errors.push( 'Parameter "' + partial + '" has an empty or malformed value. Use ' +
+					partial + '="value".' );
+			} else {
+				warnings.push( 'Stray value "' + bareWord +
+					'" has no parameter name and is ignored. Use name="value".' );
+			}
+			continue;
+		}
+
+		// Bare quoted token.
+		var bareQuoted = ( match[ 7 ] !== undefined ) ? match[ 7 ] : match[ 8 ];
+		if ( bareQuoted !== undefined ) {
+			if ( /^https?:\/\//i.test( bareQuoted ) ) {
+				hasLink = true;
+			} else {
+				warnings.push( 'Stray quoted value has no parameter name and is ignored. Use name="value".' );
+			}
+		}
+	}
+
+	if ( ! hasLink ) {
+		errors.push( 'Missing required "link" parameter. Add link="https://photos.google.com/share/...".' );
+	}
+
+	var state = errors.length ? 'error' : ( warnings.length ? 'warning' : 'ok' );
+	return { state: state, errors: errors, warnings: warnings };
+}
+
+/**
+ * Render a validation result into its message area below a code block.
+ */
+function jzsaRenderValidation( validationEl, result ) {
+	validationEl.classList.remove(
+		'jzsa-code-validation--ok',
+		'jzsa-code-validation--warning',
+		'jzsa-code-validation--error'
+	);
+
+	if ( 'empty' === result.state || 'ok' === result.state ) {
+		// Nothing to report: leaving the element empty collapses it entirely
+		// via the :empty CSS rule, so only problems are ever shown.
+		validationEl.textContent = '';
+		return;
+	}
+
+	validationEl.classList.add( 'jzsa-code-validation--' + result.state );
+
+	var items = '';
+	result.errors.forEach( function ( msg ) {
+		items += '<li>✕ ' + jzsaEscapeHtml( msg ) + '</li>';
+	} );
+	result.warnings.forEach( function ( msg ) {
+		items += '<li>⚠ ' + jzsaEscapeHtml( msg ) + '</li>';
+	} );
+	validationEl.innerHTML = '<ul class="jzsa-code-validation__list">' + items + '</ul>';
+}
+
+/**
  * Set up Copy/Apply/Revert on a single .jzsa-code-block.
  * Safe to call on dynamically created blocks after page load.
  *
@@ -429,8 +725,16 @@ function jzsaSetupCodeBlock( block ) {
 	}
 
 	var previewContainer = block.nextElementSibling;
+	// A prior init may have inserted the validation area between the block and
+	// its preview; skip past it so the preview is still found on a repeat call.
+	if ( previewContainer && previewContainer.classList.contains( 'jzsa-code-validation' ) ) {
+		previewContainer = previewContainer.nextElementSibling;
+	}
 	var hasPreview = previewContainer && previewContainer.classList.contains( 'jzsa-preview-container' );
 	var originalText = codeEl.textContent || '';
+
+	// Assigned in the editable branch below; left null for non-editable blocks.
+	var runValidation = null;
 
 	// Make editable if there's a preview to update.
 	if ( hasPreview ) {
@@ -483,8 +787,12 @@ function jzsaSetupCodeBlock( block ) {
 		}
 	}
 
-	// Copy handler.
+	// Copy handler. Refresh validation on Copy so problems surface even when
+	// the user never edited the shortcode.
 	copyBtn.addEventListener( 'click', function () {
+		if ( runValidation ) {
+			runValidation();
+		}
 		jzsaCopyToClipboard( copyBtn, codeEl.textContent || '' );
 	} );
 
@@ -492,24 +800,40 @@ function jzsaSetupCodeBlock( block ) {
 		return;
 	}
 
-	// Keep placeholder highlighting live while editing.
+	// Live validation area, inserted just below the editable code block.
+	var validationEl = block.nextElementSibling;
+	if ( ! validationEl || ! validationEl.classList.contains( 'jzsa-code-validation' ) ) {
+		validationEl = document.createElement( 'div' );
+		validationEl.className = 'jzsa-code-validation';
+		validationEl.setAttribute( 'aria-live', 'polite' );
+		block.insertAdjacentElement( 'afterend', validationEl );
+	}
+	runValidation = function () {
+		jzsaRenderValidation( validationEl, jzsaValidateShortcode( codeEl.textContent || '' ) );
+	};
+
+	// Keep placeholder highlighting and validation live while editing.
 	codeEl.addEventListener( 'input', function () {
 		jzsaHighlightPlaceholders( codeEl );
+		runValidation();
 	} );
 
-	// Highlight placeholders on initial load.
+	// Highlight placeholders and validate on initial load.
 	jzsaHighlightPlaceholders( codeEl );
+	runValidation();
 
 	// Revert: restore original shortcode, re-highlight placeholders, and re-apply the preview.
 	revertBtn.addEventListener( 'click', function () {
 		codeEl.textContent = originalText;
 		jzsaHighlightPlaceholders( codeEl );
+		runValidation();
 		var revertOverride = codeEl.dataset.revertShortcode || undefined;
 		jzsaApplyPreview( codeEl, revertBtn, previewContainer, 'Reverted!', revertOverride );
 	} );
 
 	// Apply: AJAX preview.
 	applyBtn.addEventListener( 'click', function () {
+		runValidation();
 		jzsaApplyPreview( codeEl, applyBtn, previewContainer );
 	} );
 }
