@@ -8,6 +8,8 @@
 define( 'ABSPATH', __DIR__ . '/' );
 define( 'JZSA_VERSION', '0.0.0-test' );
 define( 'JZSA_PLUGIN_FILE', dirname( __DIR__ ) . '/janzeman-shared-albums-for-google-photos.php' );
+define( 'JZSA_PLUGIN_DIR', dirname( __DIR__ ) . '/' );
+define( 'JZSA_PLUGIN_URL', 'https://site.example/wp-content/plugins/jzsa/' );
 define( 'JZSA_COMMUNITY_API_URL', 'https://community.test' );
 define( 'JZSA_COMMUNITY_PLUGIN_READ_KEY', 'test-read-key' );
 
@@ -87,8 +89,13 @@ if ( ! function_exists( 'trailingslashit' ) ) {
 if ( ! function_exists( 'plugin_dir_url' ) ) {
     function plugin_dir_url( $file ) { return ''; }
 }
+if ( ! function_exists( 'plugin_dir_path' ) ) {
+    function plugin_dir_path( $file ) { return dirname( (string) $file ) . '/'; }
+}
 if ( ! function_exists( 'plugins_url' ) ) {
-    function plugins_url( $path = '', $plugin = '' ) { return ''; }
+    function plugins_url( $path = '', $plugin = '' ) {
+        return 'https://site.example/wp-content/plugins/jzsa/' . ltrim( (string) $path, '/' );
+    }
 }
 if ( ! function_exists( '__' ) ) {
     function __( $text, $domain = '' ) { return $text; }
@@ -98,6 +105,12 @@ if ( ! function_exists( '_n' ) ) {
 }
 if ( ! function_exists( 'esc_html__' ) ) {
     function esc_html__( $text, $domain = '' ) { return esc_html( $text ); }
+}
+if ( ! function_exists( 'esc_html_e' ) ) {
+    function esc_html_e( $text, $domain = '' ) { echo esc_html( $text ); }
+}
+if ( ! function_exists( 'esc_attr_e' ) ) {
+    function esc_attr_e( $text, $domain = '' ) { echo esc_attr( $text ); }
 }
 if ( ! function_exists( 'wp_kses' ) ) {
     function wp_kses( $string, $allowed_html ) { return $string; }
@@ -268,6 +281,37 @@ if ( ! function_exists( 'rest_url' ) ) {
 }
 if ( ! function_exists( 'admin_url' ) ) {
     function admin_url( $path = '', $scheme = 'admin' ) { return 'https://site.example/wp-admin/' . ltrim( $path, '/' ); }
+}
+if ( ! function_exists( 'get_admin_page_title' ) ) {
+    function get_admin_page_title() { return $GLOBALS['jzsa_test_admin_page_title'] ?? 'Shared Albums'; }
+}
+if ( ! function_exists( 'add_menu_page' ) ) {
+    function add_menu_page( $page_title, $menu_title, $capability, $menu_slug, $callback = '', $icon_url = '', $position = null ) {
+        $GLOBALS['jzsa_test_admin_menu_pages'][] = compact( 'page_title', 'menu_title', 'capability', 'menu_slug', 'callback', 'icon_url', 'position' );
+        return 'toplevel_page_' . $menu_slug;
+    }
+}
+if ( ! function_exists( 'add_submenu_page' ) ) {
+    function add_submenu_page( $parent_slug, $page_title, $menu_title, $capability, $menu_slug, $callback = '', $position = null ) {
+        $GLOBALS['jzsa_test_admin_submenu_pages'][] = compact( 'parent_slug', 'page_title', 'menu_title', 'capability', 'menu_slug', 'callback', 'position' );
+        return $parent_slug . '_page_' . $menu_slug;
+    }
+}
+if ( ! function_exists( 'wp_enqueue_style' ) ) {
+    function wp_enqueue_style( $handle, $src = '', $deps = array(), $ver = false, $media = 'all' ) {
+        $GLOBALS['jzsa_test_enqueued_styles'][] = compact( 'handle', 'src', 'deps', 'ver', 'media' );
+    }
+}
+if ( ! function_exists( 'wp_enqueue_script' ) ) {
+    function wp_enqueue_script( $handle, $src = '', $deps = array(), $ver = false, $args = array() ) {
+        $GLOBALS['jzsa_test_enqueued_scripts'][] = compact( 'handle', 'src', 'deps', 'ver', 'args' );
+    }
+}
+if ( ! function_exists( 'wp_localize_script' ) ) {
+    function wp_localize_script( $handle, $object_name, $l10n ) {
+        $GLOBALS['jzsa_test_localized_scripts'][] = compact( 'handle', 'object_name', 'l10n' );
+        return true;
+    }
 }
 if ( ! function_exists( 'wp_generate_password' ) ) {
     function wp_generate_password( $length = 12, $special_chars = true, $extra_special_chars = false ) {

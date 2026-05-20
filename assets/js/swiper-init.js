@@ -4291,11 +4291,10 @@
                         });
                     },
                     error: function(xhr, _status, error) {
-                        var ajaxErrorData = getAjaxErrorData(xhr);
-                        if (ajaxErrorData) {
-                            if (ajaxErrorData.requiresLargeDownloadConfirmation && !allowLargeDownload) {
+                        function handleDownloadErrorData(errorData) {
+                            if (errorData.requiresLargeDownloadConfirmation && !allowLargeDownload) {
                                 restoreButtonState();
-                                if (confirmLargeDownload(ajaxErrorData)) {
+                                if (confirmLargeDownload(errorData)) {
                                     requestProxyDownload(true);
                                 } else {
                                     showDownloadStatus('Download canceled.', false);
@@ -4303,24 +4302,45 @@
                                 return;
                             }
 
-                            showDownloadErrorMessage(ajaxErrorData.message);
+                            showDownloadErrorMessage(errorData.message);
                             restoreButtonState();
+                        }
+
+                        function openDirectDownloadFallback() {
+                            console.error('Download failed:', error);
+
+                            // Fallback: Try direct link with download attribute
+                            var link = document.createElement('a');
+                            link.href = mediaUrl;
+                            link.download = filename;
+                            link.target = '_blank';
+                            link.rel = 'noopener noreferrer';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            showDownloadStatus('Opening direct download...', false);
+                            restoreButtonState();
+                        }
+
+                        var ajaxErrorData = getAjaxErrorData(xhr);
+                        if (ajaxErrorData) {
+                            handleDownloadErrorData(ajaxErrorData);
                             return;
                         }
 
-                        console.error('Download failed:', error);
+                        if (xhr && xhr.response && typeof xhr.response.text === 'function') {
+                            detectDownloadErrorFromBlob(xhr.response, function(blobErrorData) {
+                                if (blobErrorData) {
+                                    handleDownloadErrorData(blobErrorData);
+                                    return;
+                                }
 
-                        // Fallback: Try direct link with download attribute
-                        var link = document.createElement('a');
-                        link.href = mediaUrl;
-                        link.download = filename;
-                        link.target = '_blank';
-                        link.rel = 'noopener noreferrer';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        showDownloadStatus('Opening direct download...', false);
-                        restoreButtonState();
+                                openDirectDownloadFallback();
+                            });
+                            return;
+                        }
+
+                        openDirectDownloadFallback();
                     }
                 });
             }
@@ -9195,11 +9215,10 @@
                             });
                         },
                         error: function(xhr) {
-                            var ajaxErrorData = getAjaxErrorData(xhr);
-                            if (ajaxErrorData) {
-                                if (ajaxErrorData.requiresLargeDownloadConfirmation && !allowLargeDownload) {
+                            function handleGalleryDownloadErrorData(errorData) {
+                                if (errorData.requiresLargeDownloadConfirmation && !allowLargeDownload) {
                                     restoreThumbButtonState();
-                                    if (confirmLargeDownload(ajaxErrorData)) {
+                                    if (confirmLargeDownload(errorData)) {
                                         requestGalleryProxyDownload(true);
                                     } else {
                                         showDownloadStatus('Download canceled.', false);
@@ -9207,20 +9226,42 @@
                                     return;
                                 }
 
-                                showDownloadErrorMessage(ajaxErrorData.message);
+                                showDownloadErrorMessage(errorData.message);
                                 restoreThumbButtonState();
+                            }
+
+                            function openGalleryDirectDownloadFallback() {
+                                var link = document.createElement('a');
+                                link.href = mediaUrl;
+                                link.download = filename;
+                                link.target = '_blank';
+                                link.rel = 'noopener noreferrer';
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                showDownloadStatus('Opening direct download...', false);
+                                restoreThumbButtonState();
+                            }
+
+                            var ajaxErrorData = getAjaxErrorData(xhr);
+                            if (ajaxErrorData) {
+                                handleGalleryDownloadErrorData(ajaxErrorData);
                                 return;
                             }
-                            var link = document.createElement('a');
-                            link.href = mediaUrl;
-                            link.download = filename;
-                            link.target = '_blank';
-                            link.rel = 'noopener noreferrer';
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            showDownloadStatus('Opening direct download...', false);
-                            restoreThumbButtonState();
+
+                            if (xhr && xhr.response && typeof xhr.response.text === 'function') {
+                                detectDownloadErrorFromBlob(xhr.response, function(blobErrorData) {
+                                    if (blobErrorData) {
+                                        handleGalleryDownloadErrorData(blobErrorData);
+                                        return;
+                                    }
+
+                                    openGalleryDirectDownloadFallback();
+                                });
+                                return;
+                            }
+
+                            openGalleryDirectDownloadFallback();
                         }
                     });
                 }

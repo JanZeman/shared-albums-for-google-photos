@@ -15,6 +15,55 @@ async function waitForAlbum(page: Page, index: number): Promise<Locator> {
     return album;
 }
 
+function parseFormPostData(postData: string | null): URLSearchParams {
+    return new URLSearchParams(postData ?? '');
+}
+
+async function mockDownloadAjax(
+    page: Page,
+    onDownloadRequest: (payload: URLSearchParams, requestNumber: number) => Promise<{
+        status?: number;
+        contentType?: string;
+        body: string;
+    }>
+): Promise<URLSearchParams[]> {
+    const downloadPayloads: URLSearchParams[] = [];
+
+    await page.route('**/wp-admin/admin-ajax.php', async (route) => {
+        const payload = parseFormPostData(route.request().postData());
+        const action = payload.get('action');
+
+        if (action === 'jzsa_fetch_photo_meta') {
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    success: true,
+                    data: {
+                        filename: 'fixture-photo.jpg',
+                    },
+                }),
+            });
+            return;
+        }
+
+        if (action === 'jzsa_download_image') {
+            downloadPayloads.push(payload);
+            const response = await onDownloadRequest(payload, downloadPayloads.length);
+            await route.fulfill({
+                status: response.status ?? 200,
+                contentType: response.contentType ?? 'image/jpeg',
+                body: response.body,
+            });
+            return;
+        }
+
+        await route.fallback();
+    });
+
+    return downloadPayloads;
+}
+
 test.describe('Navigation - arrows visible/hidden', () => {
     test.beforeEach(async ({ page }) => {
         await gotoFixture(page, FIXTURE_URL);
@@ -165,6 +214,86 @@ test.describe('Navigation - download and link buttons', () => {
     test('download button exposes the localized title used by icon-only controls', async ({ page }) => {
         const album = await waitForAlbum(page, 1);
         await expect(album.locator('.swiper-button-download')).toHaveAttribute('title', 'Download current media');
+    });
+
+    test('download button posts the active media through the WordPress AJAX proxy', async ({ page }) => {
+        const downloadPayloads = await mockDownloadAjax(page, async () => ({
+            body: 'jpeg-bytes',
+        }));
+
+        page.on('download', (download) => download.cancel().catch(() => {}));
+
+        const album = await waitForAlbum(page, 1);
+        await album.locator('.swiper-button-download').click({ force: true });
+
+        await expect.poll(() => downloadPayloads.length).toBe(1);
+        const payload = downloadPayloads[0];
+        expect(payload.get('action')).toBe('jzsa_download_image');
+        expect(payload.get('nonce')).toBeTruthy();
+        expect(payload.get('media_url')).toContain('googleusercontent.com');
+        expect(payload.get('image_url')).toBe(payload.get('media_url'));
+        expect(payload.get('filename')).toMatch(/\.jpe?g$/);
+        expect(payload.get('allow_large_download')).toBeNull();
+    });
+
+    test('large download confirmation retries the proxy request with explicit override', async ({ page }) => {
+        const downloadPayloads = await mockDownloadAjax(page, async (_payload, requestNumber) => {
+            if (requestNumber === 1) {
+                return {
+                    contentType: 'text/plain',
+                    body: JSON.stringify({
+                        success: false,
+                        data: {
+                            message: 'Large download warning',
+                            requires_large_download_confirmation: true,
+                            actual_size_bytes: 6_291_456,
+                            warning_size_bytes: 1_048_576,
+                        },
+                    }),
+                };
+            }
+
+            return {
+                body: 'large-jpeg-bytes',
+            };
+        });
+
+        page.on('download', (download) => download.cancel().catch(() => {}));
+        const dialogPromise = page.waitForEvent('dialog').then(async (dialog) => {
+            expect(dialog.type()).toBe('confirm');
+            expect(dialog.message()).toContain('Large download warning');
+            await dialog.accept();
+        });
+
+        const album = await waitForAlbum(page, 1);
+        await album.locator('.swiper-button-download').click({ force: true });
+
+        await dialogPromise;
+        await expect.poll(() => downloadPayloads.length).toBe(2);
+        expect(downloadPayloads[0].get('allow_large_download')).toBeNull();
+        expect(downloadPayloads[1].get('allow_large_download')).toBe('true');
+        expect(downloadPayloads[1].get('media_url')).toBe(downloadPayloads[0].get('media_url'));
+    });
+
+    test('download button surfaces proxy error payloads in the status message', async ({ page }) => {
+        const downloadPayloads = await mockDownloadAjax(page, async () => ({
+            contentType: 'text/plain',
+            body: JSON.stringify({
+                success: false,
+                data: {
+                    message: 'Proxy rejected the media request',
+                },
+            }),
+        }));
+
+        page.on('download', (download) => download.cancel().catch(() => {}));
+
+        const album = await waitForAlbum(page, 1);
+        await album.locator('.swiper-button-download').click({ force: true });
+
+        await expect.poll(() => downloadPayloads.length).toBe(1);
+        await expect(page.locator('#jzsa-download-status')).toContainText('Proxy rejected the media request');
+        await expect(page.locator('#jzsa-download-status')).toHaveClass(/jzsa-download-status-error/);
     });
 
     test('download button is absent when show-download-button is not set', async ({ page }) => {

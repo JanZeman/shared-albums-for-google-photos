@@ -851,4 +851,98 @@ class DataProviderParseTest extends TestCase {
 		$this->assertTrue( $result['success'] );
 		$this->assertSame( 'Summer & Winter', $result['data']['title'] );
 	}
+
+	// -------------------------------------------------------------------------
+	// Synthetic parser boundaries: duplicates, non-Google URLs, filenames, EXIF
+	// -------------------------------------------------------------------------
+
+	public function test_primary_extraction_ignores_non_googleusercontent_urls(): void {
+		$good = 'https://lh3.googleusercontent.com/pw/good001=w120-h80';
+		$html = '<title>Mixed URLs - Google Photos</title><script>'
+			. '"https://example.com/not-a-photo.jpg",640,480,'
+			. '"' . $good . '",120,80'
+			. '</script>';
+
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => $html );
+		$result = $this->provider->fetch_album( 'https://photos.google.com/share/AF1QipMixedUrls' );
+
+		$this->assertTrue( $result['success'] );
+		$this->assertSame( 1, $result['data']['count'] );
+		$this->assertSame( 'https://lh3.googleusercontent.com/pw/good001', $result['data']['photos'][0] );
+	}
+
+	public function test_primary_extraction_deduplicates_by_base_url(): void {
+		$base = 'https://lh3.googleusercontent.com/pw/duplicate001';
+		$html = '<title>Duplicates - Google Photos</title><script>'
+			. '"' . $base . '=w120-h80",120,80,'
+			. '"' . $base . '=w240-h160",240,160'
+			. '</script>';
+
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => $html );
+		$result = $this->provider->fetch_album( 'https://photos.google.com/share/AF1QipDuplicates' );
+
+		$this->assertTrue( $result['success'] );
+		$this->assertSame( 1, $result['data']['count'] );
+		$this->assertSame( $base, $result['data']['photos'][0] );
+	}
+
+	public function test_synthetic_album_extracts_original_filename_from_known_key(): void {
+		$url = 'https://lh3.googleusercontent.com/pw/file001=w4032-h3024';
+		$html = '<title>Filename - Google Photos</title><script>'
+			. '["AF1QipFilename001",["' . $url . '",4032,3024,null,null,null,null,null,[987654]],1700000000,"",0,'
+			. '"101428965":[null,"IMG_2024-05-01_120000.jpg"]]'
+			. '</script>';
+
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => $html );
+		$result = $this->provider->fetch_album( 'https://photos.google.com/share/AF1QipFilename' );
+
+		$this->assertTrue( $result['success'] );
+		$this->assertSame( 'IMG_2024-05-01_120000.jpg', $result['data']['photos'][0]['filename'] );
+		$this->assertSame( 'AF1QipFilename001', $result['data']['photos'][0]['id'] );
+		$this->assertSame( 987654, $result['data']['photos'][0]['filesize'] );
+	}
+
+	public function test_synthetic_album_chooses_best_plausible_filename_candidate(): void {
+		$url = 'https://lh3.googleusercontent.com/pw/file002=w1200-h800';
+		$html = '<title>Filename Candidate - Google Photos</title><script>'
+			. '["AF1QipFilename002",["' . $url . '",1200,800,null,null,null,null,null,[123456]],1700000001,"",0,'
+			. '"11111":[null,"icon.jpg"],'
+			. '"22222":[null,"DJI_2024-05-01_153000.MP4"]]'
+			. '</script>';
+
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => $html );
+		$result = $this->provider->fetch_album( 'https://photos.google.com/share/AF1QipFilenameCandidate' );
+
+		$this->assertTrue( $result['success'] );
+		$this->assertSame( 'DJI_2024-05-01_153000.MP4', $result['data']['photos'][0]['filename'] );
+	}
+
+	public function test_album_exif_is_scoped_to_matching_media_id(): void {
+		$url_one = 'https://lh3.googleusercontent.com/pw/exif001=w1000-h750';
+		$url_two = 'https://lh3.googleusercontent.com/pw/exif002=w1000-h750';
+		$html = '<title>Scoped EXIF - Google Photos</title><script>'
+			. '["AF1QipScopedOne",["' . $url_one . '",1000,750,null,null,null,null,null,[111111]],1700000002,"",0],'
+			. '["AF1QipScopedTwo",["' . $url_two . '",1000,750,null,null,null,null,null,[222222]],1700000003,"",0,'
+			. '[1000,750,1,null,["Canon","EOS R5",null,35.0,4.0,200,0.005,null,1]]]'
+			. '</script>';
+
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => $html );
+		$result = $this->provider->fetch_album( 'https://photos.google.com/share/AF1QipScopedExif' );
+
+		$this->assertTrue( $result['success'] );
+		$this->assertCount( 2, $result['data']['photos'] );
+		$this->assertArrayNotHasKey( 'camera', $result['data']['photos'][0] );
+		$this->assertSame( 'Canon EOS R5', $result['data']['photos'][1]['camera'] );
+		$this->assertSame( "\xC6\x92/4.0 \xC2\xB7 1/200 \xC2\xB7 35.0mm \xC2\xB7 ISO200", $result['data']['photos'][1]['exif'] );
+	}
+
+	public function test_individual_photo_media_urls_ignore_non_google_video_urls(): void {
+		$html = '"https://video-downloads.example.com/not-google"'
+			. '"https://lh3.googleusercontent.com/pw/photo\\u003ds0-d-ip"';
+
+		$urls = $this->provider->extract_individual_photo_media_urls( $html );
+
+		$this->assertArrayHasKey( 'image', $urls );
+		$this->assertArrayNotHasKey( 'video', $urls );
+	}
 }
