@@ -8,6 +8,24 @@ import { gotoFixture } from './support/navigation';
 //   #3  mode="gallery"  gallery-rows="2"                                  fullscreen-toggle="button-only"
 //   #4  mode="gallery"  lightbox-toggle="click"  fullscreen-toggle="disabled"  (gallery player tests)
 const FIXTURE_URL = '/?pagename=gallery-fixture';
+const TINY_PNG = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lQz9WQAAAABJRU5ErkJggg==',
+    'base64',
+);
+
+async function mockGooglePhotoImages(page: Page): Promise<void> {
+    await page.route('https://lh3.googleusercontent.com/**', async (route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: 'image/png',
+            body: TINY_PNG,
+        });
+    });
+}
+
+test.beforeEach(async ({ page }) => {
+    await mockGooglePhotoImages(page);
+});
 
 async function waitForAlbum(page: Page, index: number): Promise<Locator> {
     const album = page.locator('.jzsa-album:not(.jzsa-gallery-slideshow):not(.jzsa-gallery-controls)').nth(index);

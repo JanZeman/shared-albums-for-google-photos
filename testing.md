@@ -81,6 +81,7 @@ npx playwright test  # passed after deterministic setup: 192 passed, 3 flaky ret
 npx playwright test tests/e2e/info-overlay.spec.ts --project=chromium  # passed: 14 tests
 npx playwright test tests/e2e/admin.spec.ts --project=chromium  # passed after auth hardening: 14 tests
 npx playwright test tests/e2e/community.spec.ts --project=chromium  # passed after auth hardening: 35 tests
+npx playwright test tests/e2e/gallery.spec.ts --project=chromium  # passed twice after image-load stabilization: 26 tests
 ```
 
 Issues found and addressed:
@@ -111,6 +112,7 @@ Issues found and addressed:
 - Browser video behavior now has deterministic coverage using static mixed-media fixture markup and a Plyr stub: mixed image/video rendering, Plyr initialization, play-state UI, stopping/resetting on navigation, stopping before native fullscreen, and stopping when the lightbox closes.
 - Lazy photo metadata placeholders were only unit-tested; browser coverage now verifies the `jzsa_fetch_photo_meta` request payload, info-box refresh from AJAX metadata, updated `data-all-photos`, and non-fatal slider navigation after a metadata request failure.
 - E2E setup is now deterministic by default: Playwright global setup runs the WordPress seeder through Docker Compose, validates every fixture page, and verifies the seeded admin/disconnected login credentials before specs start. `JZSA_E2E_SKIP_SETUP=1` preserves support for already prepared remote targets.
+- Gallery e2e no longer depends on Google image byte delivery for browser-side `<img>` loads; the gallery spec stubs `lh3.googleusercontent.com` image responses so fullscreen/lightbox progressive loading tests exercise plugin behavior without waiting on external media.
 
 Remaining risks:
 
