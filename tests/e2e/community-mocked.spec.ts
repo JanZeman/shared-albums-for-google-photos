@@ -1,0 +1,240 @@
+import { test, expect, type Page } from '@playwright/test';
+import { CONNECTED_PASS, CONNECTED_USER, loginAs } from './support/auth';
+
+const COMMUNITY_URL = '/wp-admin/admin.php?page=janzeman-shared-albums-for-google-photos-community';
+const ALBUM_URL = 'https://photos.google.com/share/AF1Qip-test?key=abc123';
+
+type AjaxRequest = {
+    action: string;
+    fields: Record<string, string>;
+};
+
+declare global {
+    interface Window {
+        __jzsaCommunityRequests?: AjaxRequest[];
+    }
+}
+
+async function installCommunityAjaxMock(page: Page): Promise<{ requests: () => Promise<AjaxRequest[]> }> {
+    await page.addInitScript(({ albumUrl }) => {
+        const originalFetch = window.fetch.bind(window);
+        const makeEntry = (overrides = {}) => ({
+            id: 101,
+            title: 'Mocked Slider Example',
+            shortcode: `[jzsa-album link="${albumUrl}" mode="slider" show-navigation="true"]`,
+            preview_shortcode: `[jzsa-album link="${albumUrl}" mode="slider" show-navigation="true"]`,
+            description: 'A deterministic community entry from the Playwright mock.',
+            tags: ['slider', 'navigation'],
+            site_url: 'https://example.test/album',
+            photographer_name: 'Mock Author',
+            photographer_bio: 'Uses mocked AJAX responses.',
+            interaction_score: 12,
+            avg_rating: 3.8,
+            rating_count: 4,
+            public_showcase_consent: true,
+            author: {
+                display_name: 'Mock Author',
+                display_url: 'https://example.test',
+            },
+            ...overrides,
+        });
+        const browseEntries = [makeEntry()];
+        let myEntries = [makeEntry({ id: 202, title: 'Owned Mocked Example', interaction_score: 0 })];
+
+        window.__jzsaCommunityRequests = [];
+        window.fetch = async (input, init) => {
+            const url = input instanceof Request ? input.url : String(input);
+            const body = init && init.body;
+            const fields = {};
+
+            if (/admin-ajax\.php/.test(url) && body instanceof FormData) {
+                body.forEach((value, key) => {
+                    fields[key] = String(value);
+                });
+            }
+
+            const action = fields.action || '';
+            if (!action.startsWith('jzsa_community_')) {
+                return originalFetch(input, init);
+            }
+
+            window.__jzsaCommunityRequests.push({ action, fields });
+
+            let payload;
+            switch (action) {
+                case 'jzsa_community_browse':
+                    payload = {
+                        success: true,
+                        data: {
+                            data: browseEntries,
+                            meta: { total: browseEntries.length, page: Number(fields.page || 1), per_page: 12 },
+                        },
+                    };
+                    break;
+
+                case 'jzsa_community_load_my_entries':
+                    payload = { success: true, data: myEntries };
+                    break;
+
+                case 'jzsa_community_publish': {
+                    const published = makeEntry({
+                        id: 303,
+                        title: fields.title,
+                        shortcode: fields.shortcode,
+                        description: fields.description,
+                        tags: fields.tags ? fields.tags.split(',').map((tag) => tag.trim()) : [],
+                        site_url: fields.site_url,
+                        photographer_name: fields.photographer_name,
+                        photographer_bio: fields.photographer_bio,
+                        public_showcase_consent: fields.public_showcase_consent === 'true',
+                    });
+                    browseEntries.unshift(published);
+                    myEntries.unshift(published);
+                    payload = { success: true, data: published };
+                    break;
+                }
+
+                case 'jzsa_community_update_entry':
+                    myEntries = myEntries.map((entry) => (
+                        String(entry.id) === fields.entry_id
+                            ? { ...entry, title: fields.title, description: fields.description, site_url: fields.site_url }
+                            : entry
+                    ));
+                    payload = { success: true, data: myEntries.find((entry) => String(entry.id) === fields.entry_id) };
+                    break;
+
+                case 'jzsa_community_delete_entry':
+                    myEntries = myEntries.filter((entry) => String(entry.id) !== fields.entry_id);
+                    payload = { success: true, data: { deleted: true } };
+                    break;
+
+                case 'jzsa_community_rate':
+                    payload = { success: true, data: { avg_rating: 4.2, rating_count: 9 } };
+                    break;
+
+                default:
+                    payload = { success: true, data: {} };
+            }
+
+            return new Response(JSON.stringify(payload), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        };
+    }, { albumUrl: ALBUM_URL });
+
+    return {
+        requests: () => page.evaluate(() => window.__jzsaCommunityRequests || []),
+    };
+}
+
+async function openShareSection(page: Page): Promise<void> {
+    const section = page.locator('#jzsa-publish-details');
+    if ((await section.getAttribute('open')) === null) {
+        await section.locator('summary').click();
+    }
+}
+
+async function openMyEntriesSection(page: Page): Promise<void> {
+    const section = page.locator('.jzsa-community-my-section');
+    if ((await section.getAttribute('open')) === null) {
+        await section.locator('summary').click();
+    }
+}
+
+async function setPublishShortcode(page: Page, value: string): Promise<void> {
+    await page.evaluate((shortcode) => {
+        const el = document.querySelector('#jzsa-pub-shortcode') as HTMLElement | null;
+        if (el) el.textContent = shortcode;
+    }, value);
+}
+
+test.describe('Community - mocked AJAX flows', () => {
+    test.beforeEach(async ({ page }) => {
+        await loginAs(page, CONNECTED_USER, CONNECTED_PASS);
+    });
+
+    test('browse renders deterministic mocked entries', async ({ page }) => {
+        await installCommunityAjaxMock(page);
+        await page.goto(COMMUNITY_URL);
+
+        const entry = page.locator('#jzsa-community-entries .jzsa-community-entry').first();
+        await expect(entry).toContainText('Mocked Slider Example', { timeout: 10_000 });
+        await expect(entry).toContainText('slider, navigation');
+        await expect(entry.locator('.jzsa-community-entry-score')).toContainText('12 interaction points');
+        await expect(page.locator('#jzsa-community-entries-count')).toContainText('1 published');
+    });
+
+    test('sort and search send deterministic browse parameters', async ({ page }) => {
+        const mock = await installCommunityAjaxMock(page);
+        await page.goto(COMMUNITY_URL);
+        await expect(page.locator('#jzsa-community-entries .jzsa-community-entry')).toHaveCount(1, { timeout: 10_000 });
+
+        await page.locator('.jzsa-community-sort-btn[data-sort="newest"]').click();
+        await page.fill('#jzsa-community-search', 'slider');
+        await page.click('#jzsa-community-search-btn');
+
+        await expect.poll(async () => (await mock.requests()).filter((request) => request.action === 'jzsa_community_browse').length).toBeGreaterThanOrEqual(3);
+        const lastBrowse = (await mock.requests()).filter((request) => request.action === 'jzsa_community_browse').at(-1);
+        expect(lastBrowse?.fields).toMatchObject({ page: '1', q: 'slider', sort: 'newest' });
+    });
+
+    test('publish submits a valid shortcode and reloads browse/my entries', async ({ page }) => {
+        const mock = await installCommunityAjaxMock(page);
+        await page.goto(COMMUNITY_URL);
+        await openShareSection(page);
+
+        await page.fill('#jzsa-pub-title', 'Published From Mock');
+        await setPublishShortcode(page, `[jzsa-album link="${ALBUM_URL}" mode="gallery"]`);
+        await page.fill('#jzsa-pub-description', 'Published through a mocked community API.');
+        await page.fill('#jzsa-pub-tags', 'gallery,test');
+        await page.fill('#jzsa-pub-site-url', 'example.test/published');
+        await page.fill('#jzsa-pub-photographer-name', 'Mock Publisher');
+        await page.click('#jzsa-community-publish-btn');
+
+        await expect(page.locator('#jzsa-publish-result')).toContainText('Published!', { timeout: 10_000 });
+        const publish = (await mock.requests()).find((request) => request.action === 'jzsa_community_publish');
+        expect(publish?.fields).toMatchObject({
+            title: 'Published From Mock',
+            tags: 'gallery,test',
+            site_url: 'https://example.test/published',
+            photographer_name: 'Mock Publisher',
+        });
+        expect(publish?.fields.shortcode).toContain('mode="gallery"');
+        await expect.poll(async () => (await mock.requests()).filter((request) => request.action === 'jzsa_community_load_my_entries').length).toBeGreaterThanOrEqual(1);
+    });
+
+    test('rating a community entry updates the star summary from the mock response', async ({ page }) => {
+        const mock = await installCommunityAjaxMock(page);
+        await page.goto(COMMUNITY_URL);
+
+        const entry = page.locator('#jzsa-community-entries .jzsa-community-entry').first();
+        await expect(entry).toContainText('Mocked Slider Example', { timeout: 10_000 });
+        await entry.locator('.jzsa-star[data-value="4"]').click();
+
+        await expect(entry.locator('.jzsa-community-entry-rating-count')).toContainText('4.2 ★ (9)', { timeout: 10_000 });
+        const rate = (await mock.requests()).find((request) => request.action === 'jzsa_community_rate');
+        expect(rate?.fields).toMatchObject({ entry_id: '101', rating: '4' });
+    });
+
+    test('my entry save and delete use mocked update/delete endpoints', async ({ page }) => {
+        const mock = await installCommunityAjaxMock(page);
+        await page.goto(COMMUNITY_URL);
+        await openMyEntriesSection(page);
+
+        const entry = page.locator('#jzsa-community-my-entries .jzsa-community-my-entry').first();
+        await expect(entry).toContainText('Owned Mocked Example', { timeout: 10_000 });
+
+        await entry.locator('.jzsa-community-my-entry-title-input').fill('Updated Owned Example');
+        await entry.locator('.jzsa-community-save-entry-btn').click();
+        await expect(entry.locator('.jzsa-community-result')).toContainText('Saved!', { timeout: 10_000 });
+
+        page.once('dialog', async (dialog) => dialog.accept());
+        await entry.locator('.jzsa-community-delete-entry-btn').click();
+        await expect(page.locator('#jzsa-community-my-entries .jzsa-community-empty')).toBeAttached({ timeout: 10_000 });
+
+        const requests = await mock.requests();
+        expect(requests.find((request) => request.action === 'jzsa_community_update_entry')?.fields.title).toBe('Updated Owned Example');
+        expect(requests.find((request) => request.action === 'jzsa_community_delete_entry')?.fields.entry_id).toBe('202');
+    });
+});

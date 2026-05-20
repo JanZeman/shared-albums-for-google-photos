@@ -30,6 +30,49 @@ JZSA_E2E_DISCONNECTED_PASS=testpass123
 The connected user must already have a valid community JWT in user meta. The
 disconnected user should be an administrator with no community JWT.
 
+## Automated Setup
+
+The fixture pages and default users can be created or refreshed without WP-CLI:
+
+```bash
+docker compose exec wordpress php \
+  /var/www/html/wp-content/plugins/janzeman-shared-albums-for-google-photos/tests/e2e/setup-fixtures.php
+```
+
+The setup script upserts all six published fixture pages, ensures the default
+admin and disconnected users exist, and removes community connection metadata
+from the disconnected user. It preserves the connected user's existing community
+JWT by default. To seed a connected JWT explicitly:
+
+```bash
+docker compose exec -e JZSA_E2E_CONNECTED_JWT=your-jwt wordpress php \
+  /var/www/html/wp-content/plugins/janzeman-shared-albums-for-google-photos/tests/e2e/setup-fixtures.php
+```
+
+Optional setup variables:
+
+```bash
+JZSA_E2E_ALBUM_URL=https://photos.google.com/share/...
+JZSA_E2E_ADMIN_USER=dev
+JZSA_E2E_ADMIN_PASS=test123
+JZSA_E2E_DISCONNECTED_USER=testuser-noc
+JZSA_E2E_DISCONNECTED_PASS=testpass123
+WP_ROOT=/var/www/html
+```
+
+## Browser Matrix
+
+The default Playwright run executes the full suite in Chromium. Tests tagged
+`@cross-browser` also run in Firefox and WebKit smoke projects. These smoke tests
+cover browser-sensitive behavior such as fullscreen/lightbox interaction, mobile
+gallery layout, downloads, and slideshow timing.
+
+Install all required browsers before running the full e2e matrix:
+
+```bash
+npx playwright install chromium firefox webkit
+```
+
 ## Fixture Pages
 
 Create these published pages with exactly these slugs and shortcode order.
@@ -37,11 +80,11 @@ Create these published pages with exactly these slugs and shortcode order.
 ### `lightbox-fixture`
 
 ```text
-[jzsa-album link="YOUR_LINK" lightbox-toggle="click" fullscreen-toggle="disabled"]
+[jzsa-album link="YOUR_LINK" mode="slider" lightbox-toggle="click" fullscreen-toggle="disabled"]
 
-[jzsa-album link="YOUR_LINK" lightbox-toggle="button-only" fullscreen-toggle="disabled"]
+[jzsa-album link="YOUR_LINK" mode="slider" lightbox-toggle="button-only" fullscreen-toggle="disabled"]
 
-[jzsa-album link="YOUR_LINK" lightbox-toggle="button-only" fullscreen-toggle="button-only"]
+[jzsa-album link="YOUR_LINK" mode="slider" lightbox-toggle="button-only" fullscreen-toggle="button-only"]
 
 [jzsa-album link="YOUR_LINK" mode="gallery" lightbox-toggle="button-only" fullscreen-toggle="disabled"]
 
@@ -83,6 +126,9 @@ Create these published pages with exactly these slugs and shortcode order.
 
 [jzsa-album link="YOUR_LINK" mode="slider" mosaic="true" mosaic-position="bottom"]
 ```
+
+The first mosaic shortcode intentionally omits `mosaic-position`; the integrated
+shortcode parser currently defaults that value to `bottom`.
 
 ### `info-fixture`
 

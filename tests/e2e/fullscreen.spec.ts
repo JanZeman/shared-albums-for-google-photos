@@ -11,9 +11,11 @@ import { gotoFixture } from './support/navigation';
 //
 // Album at index 0 has lightbox-toggle="click" + fullscreen-toggle="disabled".
 const FIXTURE_URL = '/?pagename=lightbox-fixture';
+const SLIDER_FULLSCREEN_BUTTON = '.swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn)';
+const SLIDER_LIGHTBOX_BUTTON = '.swiper-button-lightbox:not(.jzsa-gallery-thumb-fs-btn)';
 
 async function waitForAlbum(page: Page, index: number): Promise<Locator> {
-    const album = page.locator('.jzsa-album:not(.jzsa-gallery-slideshow):not(.jzsa-gallery-controls)').nth(index);
+    const album = page.locator('.jzsa-album.swiper:not(.jzsa-gallery-slideshow):not(.jzsa-gallery-controls)').nth(index);
     await album.scrollIntoViewIfNeeded();
     await expect(album).not.toHaveClass(/jzsa-loader-pending/, { timeout: 20_000 });
     return album;
@@ -28,18 +30,18 @@ test.describe('Fullscreen - button present / absent', () => {
 
     test('fullscreen button absent when fullscreen-toggle is disabled', async ({ page }) => {
         const album = await waitForAlbum(page, 1);
-        await expect(album.locator('.swiper-button-fullscreen')).not.toBeAttached();
+        await expect(album.locator(SLIDER_FULLSCREEN_BUTTON)).not.toBeAttached();
     });
 
     test('fullscreen button present when fullscreen-toggle is button-only', async ({ page }) => {
         const album = await waitForAlbum(page, 2);
-        await expect(album.locator('.swiper-button-fullscreen')).toBeVisible();
+        await expect(album.locator(SLIDER_FULLSCREEN_BUTTON)).toBeVisible();
     });
 
     test('lightbox button also present in dual-expand album (index 2)', async ({ page }) => {
         const album = await waitForAlbum(page, 2);
-        await expect(album.locator('.swiper-button-lightbox')).toBeVisible();
-        await expect(album.locator('.swiper-button-fullscreen')).toBeVisible();
+        await expect(album.locator(SLIDER_LIGHTBOX_BUTTON)).toBeVisible();
+        await expect(album.locator(SLIDER_FULLSCREEN_BUTTON)).toBeVisible();
     });
 });
 
@@ -51,14 +53,14 @@ test.describe('Fullscreen - dual expand interaction', () => {
     test('clicking fullscreen button does NOT open the lightbox overlay', async ({ page }) => {
         const album = await waitForAlbum(page, 2);
         // force:true: cover-fit slide image overlaps button bounding box.
-        await album.locator('.swiper-button-fullscreen').click({ force: true });
+        await album.locator(SLIDER_FULLSCREEN_BUTTON).click({ force: true });
         // The lightbox backdrop must stay hidden; fullscreen uses the native API.
         await expect(backdrop(page)).not.toBeVisible();
     });
 
     test('clicking lightbox button opens the overlay (not native fullscreen) @cross-browser', async ({ page }) => {
         const album = await waitForAlbum(page, 2);
-        await album.locator('.swiper-button-lightbox').click({ force: true });
+        await album.locator(SLIDER_LIGHTBOX_BUTTON).click({ force: true });
         await expect(backdrop(page)).toBeVisible();
         // Native fullscreen API must NOT be active after lightbox open.
         const isNativeFullscreen = await page.evaluate(() => !!document.fullscreenElement);
@@ -83,7 +85,7 @@ test.describe('Fullscreen - lightbox close methods (via dual-expand album)', () 
 
     test('Escape closes the lightbox opened from dual-expand album', async ({ page }) => {
         const album = await waitForAlbum(page, 2);
-        await album.locator('.swiper-button-lightbox').click({ force: true });
+        await album.locator(SLIDER_LIGHTBOX_BUTTON).click({ force: true });
         await expect(backdrop(page)).toBeVisible();
         await page.keyboard.press('Escape');
         await expect(backdrop(page)).not.toBeVisible();
@@ -91,7 +93,7 @@ test.describe('Fullscreen - lightbox close methods (via dual-expand album)', () 
 
     test('close button closes the lightbox opened from dual-expand album', async ({ page }) => {
         const album = await waitForAlbum(page, 2);
-        await album.locator('.swiper-button-lightbox').click({ force: true });
+        await album.locator(SLIDER_LIGHTBOX_BUTTON).click({ force: true });
         await expect(backdrop(page)).toBeVisible();
         await page.locator('.jzsa-lightbox-close').click();
         await expect(backdrop(page)).not.toBeVisible();
@@ -99,7 +101,7 @@ test.describe('Fullscreen - lightbox close methods (via dual-expand album)', () 
 
     test('clicking the backdrop edge closes the lightbox', async ({ page }) => {
         const album = await waitForAlbum(page, 2);
-        await album.locator('.swiper-button-lightbox').click({ force: true });
+        await album.locator(SLIDER_LIGHTBOX_BUTTON).click({ force: true });
         await expect(backdrop(page)).toBeVisible();
         await backdrop(page).click({ position: { x: 10, y: 10 } });
         await expect(backdrop(page)).not.toBeVisible();

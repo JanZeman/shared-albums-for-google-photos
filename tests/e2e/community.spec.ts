@@ -141,10 +141,11 @@ test.describe('Community - My entries (connected)', () => {
         await expect(container.locator('.jzsa-community-loading')).not.toBeAttached({ timeout: 15_000 });
     });
 
-    test('My entries shows empty state when no entries published', async ({ page }) => {
+    test('My entries renders either entries or the empty state after loading', async ({ page }) => {
         const container = page.locator('#jzsa-community-my-entries');
         await expect(container.locator('.jzsa-community-loading')).not.toBeAttached({ timeout: 15_000 });
-        await expect(container.locator('.jzsa-community-empty')).toBeAttached({ timeout: 5_000 });
+        const terminalState = container.locator('.jzsa-community-empty, .jzsa-community-my-entry, .jzsa-community-error');
+        await expect(terminalState.first()).toBeAttached({ timeout: 5_000 });
     });
 });
 

@@ -40,25 +40,28 @@ vendor/bin/phpunit tests/Live/   # calls real Google Photos to detect format cha
 - `CommunityAjaxTest.php` -- real community AJAX/REST handlers with mocked HTTP: connect, browse, publish/update/delete, profile, interactions, rating, challenge validation, malformed responses
 - `DataProviderParseTest.php` -- URL extraction, duplicate filtering, non-Google URL filtering, metadata enrichment, filename extraction, EXIF scoping, video detection, title cleaning, camera formatting, individual photo meta; uses `tests/fixtures/google/album.html` (real recorded response)
 
-**Playwright** (`tests/e2e/`) -- 164 tests
+**Playwright** (`tests/e2e/`) -- 174 Chromium tests plus 10 Firefox/WebKit smoke executions
 
 - `lightbox.spec.ts` -- slider click/button-only trigger, dual expand, gallery lightbox, dialog/close-button accessibility attributes, keyboard gallery lightbox activation
 - `fullscreen.spec.ts` -- fullscreen button presence, dual-expand interaction, close methods
 - `slideshow.spec.ts` -- data attributes, play/pause button, auto-advance and manual-hold
 - `gallery.spec.ts` -- data attributes (layout/columns/scrollable/rows), items, responsive columns, hover button, slideshow player open/navigate/close
 - `navigation.spec.ts` -- arrow visibility, slide advance, keyboard, interaction-lock, download/link buttons, safe external-link attributes, mocked download proxy clicks, proxy error status, and large-download retry confirmation
+- `shortcode-integration.spec.ts` -- real WordPress shortcode rendering, asset enqueue/localization, parsed shortcode attributes, gallery-mode output
 - `mosaic.spec.ts` -- wrapper position classes, strip presence, data attributes, thumbnail-to-slide sync
 - `info-overlay.spec.ts` -- pagination text substitution ({item}/{items}/{album-title}), info-top box
 - `admin.spec.ts` -- Guide page lazy previews, Parameters table rows, Community page structure
-- `community.spec.ts` -- page structure, not-connected vs connected account state, browse AJAX, sort/search, publish form validation (6 rules), My entries empty state
+- `community.spec.ts` -- page structure, not-connected vs connected account state, live browse AJAX, sort/search, publish form validation (6 rules), My entries terminal state
+- `community-mocked.spec.ts` -- deterministic mocked community AJAX for browse rendering, search/sort payloads, publish, rating, owned-entry update/delete
 
 ### Infrastructure
 
-- `playwright.config.ts` -- Chromium only, 1 worker, retries: 1, globalSetup validates all fixture pages, `PLAYWRIGHT_BASE_URL` supported
+- `playwright.config.ts` -- full Chromium project plus Firefox/WebKit smoke projects for tests tagged `@cross-browser`, 1 worker, retries: 1, globalSetup validates all fixture pages, `PLAYWRIGHT_BASE_URL` supported
 - `tests/fixtures/google/album.html` -- recorded Google Photos album response (1 MB); used by DataProviderParseTest
 - `tests/Live/DataProviderLiveTest.php` -- 5 live smoke tests; run manually to detect Google format changes
 - `tests/e2e/global-setup.ts` -- validates 6 fixture pages (lightbox, slideshow, gallery, mosaic, info, feature)
-- `tests/e2e/README.md` -- documents all required fixture pages, shortcode order, and e2e environment variables
+- `tests/e2e/setup-fixtures.php` -- deterministic WordPress fixture seeder for the 6 e2e pages plus default admin/disconnected users; preserves connected JWT unless `JZSA_E2E_CONNECTED_JWT` is provided
+- `tests/e2e/README.md` -- documents automated setup, all required fixture pages, shortcode order, and e2e environment variables
 - PHPUnit bootstrap stubs all WordPress functions so unit tests run without WordPress
 - Fixture pages (all require `mode="slider"` for slider-mode features): slideshow-fixture, mosaic-fixture, feature-fixture, info-fixture; gallery-fixture uses default gallery mode
 - Admin/community tests use two WP users by default: `dev`/`test123` (connected to community), `testuser-noc`/`testpass123` (never connected). Override with `JZSA_E2E_*` environment variables.
@@ -73,7 +76,7 @@ Local verification:
 ./test.sh         # runs PHPUnit and Playwright together
 ./test.sh --unit  # passed: 607 tests, 1300 assertions
 npx playwright test tests/e2e/navigation.spec.ts  # passed: 20 tests
-./test.sh --e2e   # passed: 164 tests
+./test.sh --e2e   # passed: 184 test executions (174 Chromium + 10 Firefox/WebKit smoke)
 ```
 
 Issues found and addressed:
@@ -103,9 +106,9 @@ Issues found and addressed:
 
 Remaining risks:
 
-- E2E still depends on a prepared local WordPress database, fixture pages, and connected/disconnected account state.
-- Community e2e still exercises the real community/backend state unless a mock layer is added.
-- Frontend e2e currently runs Chromium only.
+- E2E fixture pages and users can now be seeded deterministically with `tests/e2e/setup-fixtures.php`; connected community state still needs either an existing local JWT or `JZSA_E2E_CONNECTED_JWT`.
+- Community e2e now has a deterministic mocked-flow spec for browse/publish/rate/update/delete, while `community.spec.ts` still provides a smaller live-state smoke layer.
+- Frontend e2e runs the full suite in Chromium and a tagged browser-sensitive smoke subset in Firefox/WebKit.
 - Some tests assert DOM/data attributes rather than fully observable behavior. That is useful for cheap regression coverage, but not a substitute for integration coverage of the complete shortcode path.
 
 ---
@@ -143,10 +146,12 @@ The renderer tests are the highest-value target. With 80+ parameters each mappin
 | `gallery.spec.ts` | Grid and justified layouts, responsive column counts, opening the slideshow player, navigating within it, close | `gallery-fixture` |
 | `slideshow.spec.ts` | Auto-advance, play/pause button, manual mode hold | `slideshow-fixture` |
 | `navigation.spec.ts` | Arrow buttons, keyboard arrows, interaction-lock, download/link buttons, safe link attributes, mocked download proxy click/error/retry behavior | `feature-fixture` |
+| `shortcode-integration.spec.ts` | Actual WordPress shortcode rendering into plugin markup, frontend asset enqueue/localization, parsed attributes, gallery output | `feature-fixture`, `gallery-fixture` |
 | `mosaic.spec.ts` | Clicking a mosaic thumbnail advances the main slider, all four positions | `mosaic-fixture` |
 | `info-overlay.spec.ts` | `{item}`, `{items}`, `{album-title}` substitution visible in rendered text | `info-fixture` |
 | `lightbox.spec.ts` | Lightbox trigger behavior, dialog ARIA, close-button labels, gallery lightbox cases, keyboard activation | `lightbox-fixture` |
 | `community.spec.ts` (done) | Browse list loads, search/filter, connect flow, publish form validation | WordPress admin URL |
+| `community-mocked.spec.ts` (done) | Mocked community browse, publish, rating, update, and delete flows without the external API | WordPress admin URL |
 | `admin.spec.ts` (done) | Guide page loads previews, Parameters page renders the table | WordPress admin URL |
 
 ### Fixture pages needed
@@ -243,8 +248,8 @@ jobs:
       - uses: actions/checkout@v4
       - run: docker compose up -d
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium firefox webkit
       - run: npx playwright test
 ```
 
-PHPUnit runs in under 10 seconds. Playwright currently has 164 Chromium tests and depends on the local WordPress fixture database. Both should block merging once fixture/user setup is deterministic in CI.
+PHPUnit runs in under 10 seconds. Playwright currently has 174 Chromium tests plus 10 Firefox/WebKit smoke executions and depends on the local WordPress fixture database. Both should block merging once CI runs the fixture setup script before Playwright.

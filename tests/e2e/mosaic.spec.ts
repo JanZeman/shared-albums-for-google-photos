@@ -2,7 +2,7 @@ import { test, expect, type Page, type Locator } from '@playwright/test';
 import { gotoFixture } from './support/navigation';
 
 // mosaic-fixture contains 4 albums in this order:
-//   #0  mosaic="true"  (no explicit position, defaults to right)
+//   #0  mosaic="true"  (no explicit position, shortcode config defaults to bottom)
 //   #1  mosaic="true"  mosaic-position="left"
 //   #2  mosaic="true"  mosaic-position="top"
 //   #3  mosaic="true"  mosaic-position="bottom"
@@ -31,9 +31,9 @@ test.describe('Mosaic - wrapper position classes', () => {
         await gotoFixture(page, FIXTURE_URL);
     });
 
-    test('album 0 wrapper has jzsa-mosaic-right class (default)', async ({ page }) => {
+    test('album 0 wrapper has jzsa-mosaic-bottom class (shortcode default)', async ({ page }) => {
         const wrapper = await waitForWrapper(page, 0);
-        await expect(wrapper).toHaveClass(/jzsa-mosaic-right/);
+        await expect(wrapper).toHaveClass(/jzsa-mosaic-bottom/);
     });
 
     test('album 1 wrapper has jzsa-mosaic-left class', async ({ page }) => {
