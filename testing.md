@@ -49,21 +49,22 @@ vendor/bin/phpunit tests/Live/   # calls real Google Photos to detect format cha
 - `navigation.spec.ts` -- arrow visibility, slide advance, keyboard, interaction-lock, download/link buttons, safe external-link attributes, mocked download proxy clicks, proxy error status, and large-download retry confirmation
 - `shortcode-integration.spec.ts` -- real WordPress shortcode rendering, asset enqueue/localization, parsed shortcode attributes, gallery-mode output
 - `mosaic.spec.ts` -- wrapper position classes, strip presence, data attributes, thumbnail-to-slide sync
-- `info-overlay.spec.ts` -- pagination text substitution ({item}/{items}/{album-title}), info-top box
+- `info-overlay.spec.ts` -- pagination text substitution ({item}/{items}/{album-title}), info-top box, lazy photo metadata AJAX/DOM refresh/failure handling
 - `admin.spec.ts` -- Guide page lazy previews, Parameters table rows, Community page structure
 - `community.spec.ts` -- page structure, not-connected vs connected account state, live browse AJAX, sort/search, publish form validation (6 rules), My entries terminal state
 - `community-mocked.spec.ts` -- deterministic mocked community AJAX for browse rendering, search/sort payloads, publish, rating, owned-entry update/delete
+- `video.spec.ts` -- deterministic mixed image/video album behavior with Plyr stub: initialization, play state, navigation stop/reset, fullscreen stop, lightbox close stop
 
 ### Infrastructure
 
 - `playwright.config.ts` -- full Chromium project plus Firefox/WebKit smoke projects for tests tagged `@cross-browser`, 1 worker, retries: 1, globalSetup validates all fixture pages, `PLAYWRIGHT_BASE_URL` supported
 - `tests/fixtures/google/album.html` -- recorded Google Photos album response (1 MB); used by DataProviderParseTest
 - `tests/Live/DataProviderLiveTest.php` -- 5 live smoke tests; run manually to detect Google format changes
-- `tests/e2e/global-setup.ts` -- validates 6 fixture pages (lightbox, slideshow, gallery, mosaic, info, feature)
-- `tests/e2e/setup-fixtures.php` -- deterministic WordPress fixture seeder for the 6 e2e pages plus default admin/disconnected users; preserves connected JWT unless `JZSA_E2E_CONNECTED_JWT` is provided
+- `tests/e2e/global-setup.ts` -- validates 7 fixture pages (lightbox, slideshow, video, gallery, mosaic, info, feature)
+- `tests/e2e/setup-fixtures.php` -- deterministic WordPress fixture seeder for the 7 e2e pages plus default admin/disconnected users; preserves connected JWT unless `JZSA_E2E_CONNECTED_JWT` is provided
 - `tests/e2e/README.md` -- documents automated setup, all required fixture pages, shortcode order, and e2e environment variables
 - PHPUnit bootstrap stubs all WordPress functions so unit tests run without WordPress
-- Fixture pages (all require `mode="slider"` for slider-mode features): slideshow-fixture, mosaic-fixture, feature-fixture, info-fixture; gallery-fixture uses default gallery mode
+- Fixture pages (all require `mode="slider"` for slider-mode features): slideshow-fixture, video-fixture, mosaic-fixture, feature-fixture, info-fixture; gallery-fixture uses default gallery mode
 - Admin/community tests use two WP users by default: `dev`/`test123` (connected to community), `testuser-noc`/`testpass123` (never connected). Override with `JZSA_E2E_*` environment variables.
 
 ### Verification findings from branch review
@@ -76,7 +77,8 @@ Local verification:
 ./test.sh         # runs PHPUnit and Playwright together
 ./test.sh --unit  # passed: 607 tests, 1300 assertions
 npx playwright test tests/e2e/navigation.spec.ts  # passed: 20 tests
-./test.sh --e2e   # passed: 187 passed, 1 flaky retry, 2 expected skips
+npx playwright test  # passed: 194 passed, 1 flaky retry, 2 expected skips
+npx playwright test tests/e2e/info-overlay.spec.ts --project=chromium  # passed: 14 tests
 ```
 
 Issues found and addressed:
@@ -104,6 +106,8 @@ Issues found and addressed:
 - Browser coverage now clicks the slider download button against a deterministic mocked WordPress AJAX endpoint, verifies the proxy payload, locks down large-download confirmation retry behavior with `allow_large_download=true`, and verifies proxy error payloads appear in the user-facing status message.
 - The download client now inspects blob-like error responses before falling back to a direct download path for both slider and gallery thumbnail download buttons.
 - Firefox dropped grouped fullscreen display-limit CSS selectors containing WebKit's prefixed pseudo-class; e2e now covers the real-user native fullscreen limited-presentation regression from commit `f7d5911`.
+- Browser video behavior now has deterministic coverage using static mixed-media fixture markup and a Plyr stub: mixed image/video rendering, Plyr initialization, play-state UI, stopping/resetting on navigation, stopping before native fullscreen, and stopping when the lightbox closes.
+- Lazy photo metadata placeholders were only unit-tested; browser coverage now verifies the `jzsa_fetch_photo_meta` request payload, info-box refresh from AJAX metadata, updated `data-all-photos`, and non-fatal slider navigation after a metadata request failure.
 
 Remaining risks:
 
@@ -149,8 +153,9 @@ The renderer tests are the highest-value target. With 80+ parameters each mappin
 | `navigation.spec.ts` | Arrow buttons, keyboard arrows, interaction-lock, download/link buttons, safe link attributes, mocked download proxy click/error/retry behavior | `feature-fixture` |
 | `shortcode-integration.spec.ts` | Actual WordPress shortcode rendering into plugin markup, frontend asset enqueue/localization, parsed attributes, gallery output | `feature-fixture`, `gallery-fixture` |
 | `mosaic.spec.ts` | Clicking a mosaic thumbnail advances the main slider, all four positions | `mosaic-fixture` |
-| `info-overlay.spec.ts` | `{item}`, `{items}`, `{album-title}` substitution visible in rendered text | `info-fixture` |
+| `info-overlay.spec.ts` | `{item}`, `{items}`, `{album-title}` substitution visible in rendered text plus lazy photo metadata request/update/failure behavior | `info-fixture` |
 | `lightbox.spec.ts` | Lightbox trigger behavior, dialog ARIA, close-button labels, gallery lightbox cases, keyboard activation, and advanced accessibility (focus trapping, focus restoration, Escape close inside focusable elements) | `lightbox-fixture` |
+| `video.spec.ts` | Mixed image/video rendering, Plyr initialization, play state, navigation stop/reset, fullscreen stop, lightbox close stop | `video-fixture` |
 | `community.spec.ts` (done) | Browse list loads, search/filter, connect flow, publish form validation | WordPress admin URL |
 | `community-mocked.spec.ts` (done) | Mocked community browse, publish, rating, update, and delete flows without the external API | WordPress admin URL |
 | `admin.spec.ts` (done) | Guide page loads previews, Parameters page renders the table | WordPress admin URL |
@@ -164,8 +169,9 @@ Each e2e spec file lists its own `FIXTURE_URL` constant at the top. `globalSetup
 | `lightbox-fixture` | 5 (exists) | lightbox tests |
 | `gallery-fixture` | 5: grid, justified, scrollable, paginated (gallery-rows), click-to-lightbox gallery | gallery interaction tests |
 | `slideshow-fixture` | 3: auto delay=1, manual, disabled (control) | slideshow tests; use `slideshow-delay="1"` so tests don't wait 5s |
+| `video-fixture` | 2 static video albums plus 1 asset-enqueue shortcode | deterministic video tests without real video downloads |
 | `mosaic-fixture` | 4: bottom, top, left, right | mosaic strip tests |
-| `info-fixture` | 3: various info-top/info-bottom format strings | placeholder rendering tests |
+| `info-fixture` | 4: various info-top/info-bottom format strings plus lazy metadata placeholders | placeholder rendering and lazy metadata tests |
 | `feature-fixture` | 3-4: navigation, download, link, interaction-lock | feature flag tests |
 
 Community and admin tests use WordPress admin URLs directly, no shortcode fixture page needed.
@@ -185,24 +191,21 @@ Community and admin tests use WordPress admin URLs directly, no shortcode fixtur
 3. **Community e2e with mocked API**
    Unit coverage is strong, but browser coverage still depends on local/community state. A deterministic mock/filter for browse, publish, update, delete, rate, and connect would make full community flows CI-safe.
 
-4. **Video behavior**
-   There is parser coverage for video detection, but browser coverage for mixed image/video albums, Plyr initialization, play/pause, fullscreen/lightbox video behavior, and stopping playback on navigation would be valuable.
-
-5. **Lazy metadata and progressive loading behavior in browser**
-   Unit tests cover `fetch_photo_meta`, chunks, refresh URLs, and caching. E2E should cover actual lazy EXIF/photo-meta requests, retry/error UI, and progressive chunk loading as the user navigates deep into a large album.
+4. **Lazy metadata and progressive loading behavior in browser (Partially Completed)**
+   E2E now covers actual lazy EXIF/photo-meta requests, request flags, DOM refresh from returned metadata, `data-all-photos` mutation, and non-fatal slider navigation after metadata failure. Remaining work: progressive chunk loading as the user navigates deep into a large album, retry-specific UX, and cache-hit behavior across repeated albums.
 
 ### Good next tier
 
-6. **Lightbox accessibility depth (Partially Completed)**
+5. **Lightbox accessibility depth (Partially Completed)**
    Current tests cover ARIA, basic keyboard activation, and now include robust coverage for focus trapping, focus restoration to originating trigger element on keyboard close, and Escape closability when inner components are focused. Remaining areas: Escape behavior across nested iframe video states, and keyboard navigation inside Swiper player.
 
-7. **Mobile/touch behavior**
+6. **Mobile/touch behavior**
    Current responsive gallery tests are good, but touch gestures, mobile button visibility modes, pseudo-fullscreen on iPhone-like viewports, and small-screen lightbox layout are still likely risk areas.
 
-8. **Admin UI behavior beyond presence**
+7. **Admin UI behavior beyond presence**
    Admin e2e checks structure and lazy previews. Add tests for the shortcode playground preview, copy/apply/revert flows, cache-clear button behavior, and parameter/reference navigation.
 
-9. **Failure-state rendering**
+8. **Failure-state rendering**
    Add browser-level tests for fetch errors, stale backup display, deprecated short-link warning visibility for admins only, no-photos errors, and malformed Google payload fallback.
 
 ---
@@ -253,4 +256,4 @@ jobs:
       - run: npx playwright test
 ```
 
-PHPUnit runs in under 10 seconds. Playwright currently has 174 Chromium tests plus 10 Firefox/WebKit smoke executions and depends on the local WordPress fixture database. Both should block merging once CI runs the fixture setup script before Playwright.
+PHPUnit runs in under 10 seconds. Playwright currently schedules 197 tests across full Chromium plus Firefox/WebKit smoke projects. The latest local full run passed with 194 passed, 1 flaky retry, and 2 expected skips for the Firefox-only fullscreen regression outside Firefox. Both should block merging once CI runs the fixture setup script before Playwright.

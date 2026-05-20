@@ -39,7 +39,7 @@ docker compose exec wordpress php \
   /var/www/html/wp-content/plugins/janzeman-shared-albums-for-google-photos/tests/e2e/setup-fixtures.php
 ```
 
-The setup script upserts all six published fixture pages, ensures the default
+The setup script upserts all seven published fixture pages, ensures the default
 admin and disconnected users exist, and removes community connection metadata
 from the disconnected user. It preserves the connected user's existing community
 JWT by default. To seed a connected JWT explicitly:
@@ -103,6 +103,20 @@ Create these published pages with exactly these slugs and shortcode order.
 [jzsa-album link="YOUR_LINK" mode="slider" slideshow="disabled"]
 ```
 
+### `video-fixture`
+
+`setup-fixtures.php` writes deterministic static video-album markup for this
+page. The final one-photo shortcode is present only to enqueue the frontend
+assets the static fixture needs.
+
+```text
+<div id="jzsa-e2e-video-inline" class="jzsa-album swiper jzsa-loader-pending" ...></div>
+
+<div id="jzsa-e2e-video-lightbox" class="jzsa-album swiper jzsa-loader-pending" ...></div>
+
+[jzsa-album link="YOUR_LINK" mode="slider" limit="1"]
+```
+
 ### `gallery-fixture`
 
 ```text
@@ -140,6 +154,8 @@ shortcode parser currently defaults that value to `bottom`.
 [jzsa-album link="YOUR_LINK" mode="slider" info-top="{album-title}"]
 
 [jzsa-album link="YOUR_LINK" mode="slider" info-bottom="{item}" info-top="{album-title}"]
+
+[jzsa-album link="YOUR_LINK" mode="slider" info-bottom="{item}" info-top="{filename}" info-top-secondary="{camera} {description}"]
 ```
 
 ### `feature-fixture`

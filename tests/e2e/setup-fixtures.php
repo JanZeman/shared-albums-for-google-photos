@@ -97,6 +97,78 @@ $album_link = jzsa_e2e_env(
 	'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R'
 );
 
+function jzsa_e2e_video_album_markup( string $id, string $lightbox_toggle, string $fullscreen_toggle ): string {
+	$photos = array(
+		array(
+			'full'     => 'https://lh3.googleusercontent.com/jzsa-e2e-video-one=w1920-h1440-no',
+			'thumb'    => 'https://lh3.googleusercontent.com/jzsa-e2e-video-one=w400-h400-c',
+			'preview'  => 'https://lh3.googleusercontent.com/jzsa-e2e-video-one=w800-h600-no',
+			'video'    => 'https://lh3.googleusercontent.com/jzsa-e2e-video-one=dv',
+			'type'     => 'video',
+			'id'       => 'JZSA_E2E_VIDEO_1',
+			'width'    => 1280,
+			'height'   => 720,
+			'filename' => 'fixture-video-one.mp4',
+		),
+		array(
+			'full'     => 'https://lh3.googleusercontent.com/jzsa-e2e-image-one=w1920-h1440',
+			'thumb'    => 'https://lh3.googleusercontent.com/jzsa-e2e-image-one=w400-h400-c',
+			'preview'  => 'https://lh3.googleusercontent.com/jzsa-e2e-image-one=w800-h600',
+			'id'       => 'JZSA_E2E_IMAGE_1',
+			'width'    => 1200,
+			'height'   => 800,
+			'filename' => 'fixture-image-one.jpg',
+		),
+		array(
+			'full'     => 'https://lh3.googleusercontent.com/jzsa-e2e-video-two=w1920-h1440-no',
+			'thumb'    => 'https://lh3.googleusercontent.com/jzsa-e2e-video-two=w400-h400-c',
+			'preview'  => 'https://lh3.googleusercontent.com/jzsa-e2e-video-two=w800-h600-no',
+			'video'    => 'https://lh3.googleusercontent.com/jzsa-e2e-video-two=dv',
+			'type'     => 'video',
+			'id'       => 'JZSA_E2E_VIDEO_2',
+			'width'    => 1280,
+			'height'   => 720,
+			'filename' => 'fixture-video-two.mp4',
+		),
+	);
+
+	$classes = array( 'jzsa-album', 'swiper', 'jzsa-loader-pending' );
+	if ( 'disabled' !== $lightbox_toggle && 'disabled' !== $fullscreen_toggle ) {
+		$classes[] = 'jzsa-has-dual-expand';
+	}
+
+	$html  = '<div id="' . esc_attr( $id ) . '" class="' . esc_attr( implode( ' ', $classes ) ) . '"';
+	$html .= ' data-all-photos="' . esc_attr( wp_json_encode( $photos ) ) . '"';
+	$html .= ' data-total-count="3" data-slideshow="disabled" data-fullscreen-slideshow="disabled"';
+	$html .= ' data-interaction-lock="false" data-show-navigation="true" data-fullscreen-show-navigation="true"';
+	$html .= ' data-show-link-button="false" data-show-download-button="false"';
+	$html .= ' data-fullscreen-show-link-button="false" data-fullscreen-show-download-button="false"';
+	$html .= ' data-video-controls-autohide="false" data-fullscreen-video-controls-autohide="false"';
+	$html .= ' data-info-halo-effect="true" data-mosaic="false" data-fullscreen-mosaic="false"';
+	$html .= ' data-has-active-bottom-center="true" data-info-bottom="{item} / {items}" data-fullscreen-info-bottom="{item} / {items}"';
+	$html .= ' data-mosaic-position="bottom" data-mosaic-count="0" data-mosaic-gap="8" data-mosaic-opacity="0.3"';
+	$html .= ' data-fullscreen-mosaic-position="bottom" data-fullscreen-mosaic-layout="outer" data-fullscreen-mosaic-count="0" data-fullscreen-mosaic-gap="8" data-fullscreen-mosaic-opacity="0.3"';
+	$html .= ' data-slideshow-delay="5" data-download-size-warning="128" data-image-fit="cover" data-fullscreen-image-fit="contain"';
+	$html .= ' data-start-at="1" data-fullscreen-slideshow-delay="5" data-slideshow-autoresume="30" data-fullscreen-slideshow-autoresume="30"';
+	$html .= ' data-mode="slider" data-background-color="transparent" data-controls-color="#ffffff" data-fullscreen-controls-color="#ffffff"';
+	$html .= ' data-video-controls-color="#00b2ff" data-fullscreen-video-controls-color="#00b2ff"';
+	$html .= ' data-album-title="JZSA E2E Video Album" data-fullscreen-toggle="' . esc_attr( $fullscreen_toggle ) . '"';
+	$html .= ' data-album-url="https://photos.google.com/share/JZSA_E2E_VIDEO_ALBUM?key=fixture123"';
+	$html .= ' data-info-font-size="12" data-fullscreen-info-font-size="12" data-lightbox-toggle="' . esc_attr( $lightbox_toggle ) . '"';
+	$html .= ' style="width: 400px; max-width: 100%; height: 300px; --gallery-bg-color: transparent; --jzsa-controls-color: #ffffff; --jzsa-video-controls-color: #00b2ff; --jzsa-corner-radius: 0px; --jzsa-info-font-size: 12px">';
+	$html .= '<div class="swiper-wrapper"></div><div class="swiper-button-prev"></div><div class="swiper-button-next"></div><div class="swiper-pagination"></div>';
+	$html .= '<button class="swiper-button-play-pause" title="Play/Pause (Space)"></button><div class="swiper-slideshow-progress"><div class="swiper-slideshow-progress-bar"></div></div>';
+	if ( 'disabled' !== $fullscreen_toggle ) {
+		$html .= '<div class="swiper-button-fullscreen"></div>';
+	}
+	if ( 'disabled' !== $lightbox_toggle ) {
+		$html .= '<button class="swiper-button-lightbox" type="button" title="Open in lightbox" aria-label="Open in lightbox"></button>';
+	}
+	$html .= '</div>';
+
+	return $html;
+}
+
 $pages = array(
 	'lightbox-fixture'  => array(
 		'title'   => 'JZSA Lightbox E2E Fixtures',
@@ -156,6 +228,7 @@ $pages = array(
 				'[jzsa-album link="' . $album_link . '" mode="slider" info-bottom="{item} / {items}"]',
 				'[jzsa-album link="' . $album_link . '" mode="slider" info-top="{album-title}"]',
 				'[jzsa-album link="' . $album_link . '" mode="slider" info-bottom="{item}" info-top="{album-title}"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" info-bottom="{item}" info-top="{filename}" info-top-secondary="{camera} {description}"]',
 			)
 		),
 	),
@@ -168,6 +241,17 @@ $pages = array(
 				'[jzsa-album link="' . $album_link . '" mode="slider" show-download-button="true" show-link-button="true"]',
 				'[jzsa-album link="' . $album_link . '" mode="slider" interaction-lock="true"]',
 				'[jzsa-album link="' . $album_link . '" mode="slider" show-navigation="false"]',
+			)
+		),
+	),
+	'video-fixture'     => array(
+		'title'   => 'Video Fixture',
+		'content' => implode(
+			"\n\n",
+			array(
+				jzsa_e2e_video_album_markup( 'jzsa-e2e-video-inline', 'disabled', 'button-only' ),
+				jzsa_e2e_video_album_markup( 'jzsa-e2e-video-lightbox', 'button-only', 'disabled' ),
+				'[jzsa-album link="' . $album_link . '" mode="slider" limit="1"]',
 			)
 		),
 	),

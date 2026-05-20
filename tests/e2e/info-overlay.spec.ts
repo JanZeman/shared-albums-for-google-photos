@@ -1,11 +1,43 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
 import { gotoFixture } from './support/navigation';
 
-// info-fixture contains 3 albums in this order:
+// info-fixture contains 4 albums in this order:
 //   #0  info-bottom="{item} / {items}"    (renders in .swiper-pagination)
 //   #1  info-top="{album-title}"          (renders in .jzsa-info-box.jzsa-info-top)
 //   #2  both info-bottom and info-top set
+//   #3  lazy metadata placeholders: info-top="{filename}", info-top-secondary="{camera} {description}"
 const FIXTURE_URL = '/?pagename=info-fixture';
+
+type PhotoMetaPayload = Record<string, string>;
+
+async function mockPhotoMetaAjax(
+    page: Page,
+    handler: (payload: PhotoMetaPayload, requestNumber: number) => Promise<{ status?: number; body: unknown }>,
+): Promise<PhotoMetaPayload[]> {
+    const payloads: PhotoMetaPayload[] = [];
+
+    await page.route('**/wp-admin/admin-ajax.php', async (route, request) => {
+        const form = new URLSearchParams(request.postData() ?? '');
+        const action = form.get('action');
+
+        if (action !== 'jzsa_fetch_photo_meta') {
+            await route.fallback();
+            return;
+        }
+
+        const payload = Object.fromEntries(form.entries());
+        payloads.push(payload);
+
+        const response = await handler(payload, payloads.length);
+        await route.fulfill({
+            status: response.status ?? 200,
+            contentType: 'application/json',
+            body: JSON.stringify(response.body),
+        });
+    });
+
+    return payloads;
+}
 
 async function waitForAlbum(page: Page, index: number): Promise<Locator> {
     const album = page.locator('.jzsa-album:not(.jzsa-gallery-slideshow):not(.jzsa-gallery-controls)').nth(index);
@@ -118,5 +150,77 @@ test.describe('Info overlay - data attributes', () => {
         const album = await waitForAlbum(page, 1);
         // Slider mode defaults show-counter=true so info-bottom is always set for slider albums.
         await expect(album).toHaveAttribute('data-has-active-bottom-center', 'true');
+    });
+});
+
+test.describe('Info overlay - lazy photo metadata', () => {
+    test('fetches missing metadata and refreshes visible info boxes', async ({ page }) => {
+        const payloads = await mockPhotoMetaAjax(page, async () => ({
+            body: {
+                success: true,
+                data: {
+                    filename: 'lazy-fixture-photo.jpg',
+                    camera_make: 'Nikon',
+                    camera_model: 'Z6',
+                    description: 'Lazy caption from metadata',
+                },
+            },
+        }));
+
+        await gotoFixture(page, FIXTURE_URL);
+        const album = await waitForAlbum(page, 3);
+
+        await expect.poll(() => payloads.length, { timeout: 10_000 }).toBeGreaterThan(0);
+
+        const firstPayload = payloads[0];
+        expect(firstPayload.action).toBe('jzsa_fetch_photo_meta');
+        expect(firstPayload.nonce).toBeTruthy();
+        expect(firstPayload.photo_url).toMatch(/^https:\/\/photos\.google\.com\/share\/.+\/photo\/.+\?key=.+/);
+        expect(firstPayload.media_url).toContain('googleusercontent.com');
+        expect(firstPayload.media_type).toBe('photo');
+        expect(firstPayload.need_description).toBe('true');
+        expect(firstPayload.need_exif).toBe('true');
+        // The fixture's album data already includes filenames for early slides, so
+        // the lazy request should avoid asking for filename again for this photo.
+        expect(firstPayload.need_filename).toBe('false');
+
+        await expect(album.locator('.jzsa-info-box.jzsa-info-top')).toContainText('lazy-fixture-photo.jpg', {
+            timeout: 10_000,
+        });
+        const secondary = album.locator('.jzsa-info-box.jzsa-info-top-secondary');
+        await expect(secondary).toContainText('Nikon Z6', { timeout: 10_000 });
+        await expect(secondary).toContainText('Lazy caption from metadata');
+
+        const photosJson = await album.getAttribute('data-all-photos');
+        const photos = JSON.parse(photosJson ?? '[]') as Array<Record<string, unknown>>;
+        expect(photos.some((photo) => photo.filename === 'lazy-fixture-photo.jpg')).toBe(true);
+        expect(photos.some((photo) => photo.camera === 'Nikon Z6')).toBe(true);
+        expect(photos.some((photo) => photo.description === 'Lazy caption from metadata')).toBe(true);
+    });
+
+    test('metadata request failure leaves slider navigation usable', async ({ page }) => {
+        const payloads = await mockPhotoMetaAjax(page, async () => ({
+            status: 500,
+            body: {
+                success: false,
+                data: {
+                    message: 'metadata failed',
+                },
+            },
+        }));
+
+        await gotoFixture(page, FIXTURE_URL);
+        const album = await waitForAlbum(page, 3);
+
+        await expect.poll(() => payloads.length, { timeout: 10_000 }).toBeGreaterThan(0);
+        await expect(album.locator('.jzsa-error')).not.toBeAttached();
+
+        const initialIndex = await album.locator('.swiper-slide-active').getAttribute('data-swiper-slide-index');
+        await album.locator('.swiper-button-next').click({ force: true });
+
+        await expect(async () => {
+            const nextIndex = await album.locator('.swiper-slide-active').getAttribute('data-swiper-slide-index');
+            expect(nextIndex).not.toBe(initialIndex);
+        }).toPass({ timeout: 3_000 });
     });
 });

@@ -37,14 +37,20 @@ const FIXTURES: FixtureSpec[] = [
     {
         slug: 'info-fixture',
         selector: 'class="jzsa-album',
-        expectedMin: 3,
-        description: '3 albums (info-overlay tests)',
+        expectedMin: 4,
+        description: '4 albums (info-overlay and metadata tests)',
     },
     {
         slug: 'feature-fixture',
         selector: 'class="jzsa-album',
         expectedMin: 4,
         description: '4 albums (navigation/feature tests)',
+    },
+    {
+        slug: 'video-fixture',
+        selector: 'data-album-title="JZSA E2E Video Album"',
+        expectedMin: 2,
+        description: '2 cached video albums (video tests)',
     },
 ];
 
