@@ -2,8 +2,8 @@
 Contributors: janzeman
 Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.0
-Tested up to: 6.9
-Requires PHP: 7.0
+Tested up to: 7.0
+Requires PHP: 7.4
 Stable tag: 2.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -144,11 +144,9 @@ The plugin provides clear feedback:
 == Changelog ==
 
 = 2.3.0 =
-* New: Lightbox - an alternative to native fullscreen. With `lightbox="click"` (or `button-only` / `double-click`) clicking a photo opens it in a dimmed overlay *on top of the page* instead of taking over the screen
-* New: `lightbox-max-width` / `lightbox-max-height` - open photos at a predetermined size instead of wall-to-wall
-* New: `lightbox-image-fit`, `lightbox-background-color`, `lightbox-corner-radius` for tuning the lightbox box and backdrop
-* When the lightbox is enabled it reuses the album's `fullscreen-*` settings; by default it replaces the fullscreen button, but both can be shown side by side by keeping `fullscreen-toggle` enabled; `interaction-lock="true"` disables both
-* Thanks to `@valterbruno` for the feature request that started this!
+* Tested with WordPress 7.0
+* New: Lightbox - an alternative to native fullscreen
+* Thanks to `@valterbruno` for the Lightbox feature request!
 
 = 2.2.2 =
 * Community feature bugfixes

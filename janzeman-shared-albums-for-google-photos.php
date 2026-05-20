@@ -6,7 +6,7 @@
  * Description: Display publicly shared Google Photos albums with a modern Swiper-based gallery viewer. Not affiliated with or endorsed by Google LLC.
  * Version: 2.3.0
  * Requires at least: 5.0
- * Requires PHP: 7.0
+ * Requires PHP: 7.4
  * Author: Jan Zeman
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
