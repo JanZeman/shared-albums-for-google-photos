@@ -87,3 +87,59 @@ test.describe('Shortcode validation - Playground live feedback', () => {
         await expect(page.locator(VALIDATION)).not.toBeVisible();
     });
 });
+
+const VALID_LINK = 'https://photos.google.com/share/x';
+
+test.describe('Shortcode validation - parameter values', () => {
+    test.beforeEach(async ({ page }) => {
+        await loginAsAdmin(page);
+        await page.goto(GUIDE_URL);
+        await expect(page.locator(VALIDATION)).toBeAttached({ timeout: 10_000 });
+    });
+
+    test('a non true/false boolean value warns', async ({ page }) => {
+        await setShortcode(page, `[jzsa-album link="${VALID_LINK}" show-navigation="yes"]`);
+        const area = page.locator(VALIDATION);
+        await expect(area).toHaveClass(/jzsa-code-validation--warning/);
+        await expect(area).toContainText('expects true or false');
+    });
+
+    test('an out-of-set enum value warns and lists the accepted values', async ({ page }) => {
+        await setShortcode(page, `[jzsa-album link="${VALID_LINK}" mode="slideshow"]`);
+        const area = page.locator(VALIDATION);
+        await expect(area).toHaveClass(/jzsa-code-validation--warning/);
+        await expect(area).toContainText('gallery, slider, carousel');
+    });
+
+    test('a non-numeric value for a number parameter warns', async ({ page }) => {
+        await setShortcode(page, `[jzsa-album link="${VALID_LINK}" limit="lots"]`);
+        const area = page.locator(VALIDATION);
+        await expect(area).toHaveClass(/jzsa-code-validation--warning/);
+        await expect(area).toContainText('expects a whole number');
+    });
+
+    test('an out-of-range number warns with the allowed bound', async ({ page }) => {
+        await setShortcode(page, `[jzsa-album link="${VALID_LINK}" gallery-columns="20"]`);
+        const area = page.locator(VALIDATION);
+        await expect(area).toHaveClass(/jzsa-code-validation--warning/);
+        await expect(area).toContainText('12 or lower');
+    });
+
+    test('an invalid color value warns', async ({ page }) => {
+        await setShortcode(page, `[jzsa-album link="${VALID_LINK}" controls-color="white"]`);
+        const area = page.locator(VALIDATION);
+        await expect(area).toHaveClass(/jzsa-code-validation--warning/);
+        await expect(area).toContainText('expects a color');
+    });
+
+    test('valid values across types produce no message', async ({ page }) => {
+        await setShortcode(
+            page,
+            `[jzsa-album link="${VALID_LINK}" mode="slider" limit="12" ` +
+                'gallery-columns="3" controls-color="#1A2B3C" show-navigation="true" ' +
+                'slideshow-delay="4-12" mosaic-opacity="0.4"]',
+        );
+        const area = page.locator(VALIDATION);
+        await expect(area).not.toBeVisible();
+    });
+});

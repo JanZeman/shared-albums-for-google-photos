@@ -481,6 +481,245 @@ var JZSA_PARAM_SET = ( function () {
 	return set;
 }() );
 
+/**
+ * Per-parameter value rules.
+ *
+ * Source of truth: the parse_* helpers in includes/class-orchestrator.php.
+ * Parameters absent from this map accept free-form text (info strings, font
+ * families) and have no value check. Keep the accepted sets and numeric bounds
+ * in sync with the PHP parsers.
+ */
+var JZSA_VALUE_RULES = ( function () {
+	var rules = {};
+	var add = function ( names, rule ) {
+		names.forEach( function ( name ) {
+			rules[ name ] = rule;
+		} );
+	};
+
+	add( [
+		'show-navigation', 'show-link-button', 'show-download-button', 'show-videos',
+		'fullscreen-show-navigation', 'fullscreen-show-link-button',
+		'fullscreen-show-download-button', 'lightbox-show-navigation',
+		'lightbox-show-link-button', 'lightbox-show-download-button',
+		'video-controls-autohide', 'fullscreen-video-controls-autohide',
+		'lightbox-video-controls-autohide', 'info-halo-effect', 'info-top-halo-effect',
+		'info-top-secondary-halo-effect', 'info-bottom-halo-effect',
+		'gallery-info-bottom-halo-effect', 'album-title-halo-effect', 'info-wrap',
+		'interaction-lock', 'mosaic', 'fullscreen-mosaic', 'gallery-scrollable',
+		'show-counter', 'show-title', 'fullscreen-show-counter', 'fullscreen-show-title'
+	], { type: 'bool' } );
+
+	add( [ 'mode' ], { type: 'enum', values: [ 'gallery', 'slider', 'carousel' ] } );
+	add( [ 'image-fit', 'fullscreen-image-fit', 'lightbox-image-fit' ],
+		{ type: 'enum', values: [ 'cover', 'contain' ] } );
+	add( [ 'gallery-layout' ], { type: 'enum', values: [ 'grid', 'justified' ] } );
+	add( [ 'gallery-sizing' ], { type: 'enum', values: [ 'ratio', 'fill' ] } );
+	add( [ 'gallery-buttons-on-mobile' ],
+		{ type: 'enum', values: [ 'on-interaction', 'always' ] } );
+	add( [ 'mosaic-position', 'fullscreen-mosaic-position' ],
+		{ type: 'enum', values: [ 'top', 'bottom', 'left', 'right' ] } );
+	add( [ 'fullscreen-mosaic-layout' ], { type: 'enum', values: [ 'outer', 'overlay' ] } );
+	add( [ 'fullscreen-toggle' ],
+		{ type: 'enum', values: [ 'button-only', 'click', 'double-click', 'disabled' ] } );
+	add( [ 'lightbox-toggle' ], {
+		type: 'enum',
+		values: [ 'disabled', 'button-only', 'click', 'double-click' ],
+		accept: [ 'true', 'on', 'yes', '1', 'false', 'off', 'no', '0' ]
+	} );
+	add( [ 'slideshow', 'fullscreen-slideshow', 'lightbox-slideshow' ],
+		{ type: 'enum', values: [ 'auto', 'manual', 'disabled' ], accept: [ 'true', 'enabled' ] } );
+	add( [
+		'info-text-align', 'info-top-text-align', 'info-top-secondary-text-align',
+		'info-bottom-text-align'
+	], { type: 'enum', values: [ 'left', 'center', 'right' ] } );
+
+	add( [
+		'background-color', 'controls-color', 'video-controls-color', 'info-font-color',
+		'fullscreen-background-color', 'fullscreen-controls-color',
+		'fullscreen-video-controls-color', 'fullscreen-info-font-color',
+		'lightbox-background-color', 'lightbox-controls-color',
+		'lightbox-video-controls-color', 'mosaic-background', 'fullscreen-mosaic-background'
+	], { type: 'color' } );
+
+	add( [ 'limit' ], { type: 'int', min: 1 } );
+	add( [ 'gallery-rows' ], { type: 'int', min: 0 } );
+	add( [ 'corner-radius', 'mosaic-corner-radius', 'fullscreen-mosaic-corner-radius' ],
+		{ type: 'int', min: 0 } );
+	add( [ 'download-size-warning' ], { type: 'int', min: 0 } );
+	add( [ 'album-cache-refresh', 'cache-refresh' ], { type: 'int', min: 1 } );
+	add( [
+		'source-width', 'source-height', 'fullscreen-source-width',
+		'fullscreen-source-height', 'lightbox-source-width', 'lightbox-source-height',
+		'fullscreen-display-max-width', 'fullscreen-display-max-height',
+		'lightbox-max-width', 'lightbox-max-height'
+	], { type: 'int', min: 1 } );
+	add( [ 'gallery-columns', 'gallery-columns-tablet', 'gallery-columns-mobile' ],
+		{ type: 'int', min: 1, max: 12 } );
+	add( [ 'gallery-row-height' ], { type: 'int', min: 50, max: 800 } );
+	add( [ 'gallery-gap', 'mosaic-gap', 'fullscreen-mosaic-gap' ],
+		{ type: 'int', min: 0, max: 100 } );
+	add( [ 'info-font-size', 'fullscreen-info-font-size' ],
+		{ type: 'int', min: 8, max: 48 } );
+	add( [ 'width', 'height' ], { type: 'int', min: 1, auto: true } );
+	add( [ 'mosaic-count', 'fullscreen-mosaic-count' ], { type: 'int', min: 1, auto: true } );
+
+	add( [ 'mosaic-opacity', 'fullscreen-mosaic-opacity' ], { type: 'opacity' } );
+	add( [ 'slideshow-delay', 'fullscreen-slideshow-delay', 'lightbox-slideshow-delay' ],
+		{ type: 'delay' } );
+	add( [
+		'slideshow-autoresume', 'fullscreen-slideshow-autoresume',
+		'lightbox-slideshow-autoresume'
+	], { type: 'autoresume' } );
+	add( [ 'start-at' ], { type: 'startat' } );
+	add( [ 'link' ], { type: 'url' } );
+
+	return rules;
+}() );
+
+/**
+ * Check a color string against the formats accepted by parse_color() in PHP:
+ * the keyword "transparent", a 6-digit hex code, or an rgb()/rgba()/hsl()/hsla()
+ * function.
+ */
+function jzsaIsValidColor( color ) {
+	if ( 'transparent' === color.toLowerCase() ) {
+		return true;
+	}
+	if ( /^#[0-9a-f]{6}$/i.test( color ) ) {
+		return true;
+	}
+	if ( /^rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(?:,\s*(?:0|1|0?\.\d+))?\s*\)$/i.test( color ) ) {
+		return true;
+	}
+	if ( /^hsla?\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*(?:,\s*(?:0|1|0?\.\d+))?\s*\)$/i.test( color ) ) {
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Validate a single parameter value against its rule.
+ *
+ * @param {string} name     Parameter name (lowercase).
+ * @param {string} rawValue The value as written in the shortcode.
+ * @return {string|null} A human-readable problem, or null when the value is fine.
+ */
+function jzsaValidateValue( name, rawValue ) {
+	var rule = JZSA_VALUE_RULES[ name ];
+	if ( ! rule ) {
+		return null;
+	}
+
+	var value = ( rawValue || '' ).trim();
+	if ( '' === value ) {
+		// An empty value behaves like an omitted parameter in PHP.
+		return null;
+	}
+	var lower = value.toLowerCase();
+
+	if ( 'bool' === rule.type ) {
+		if ( 'true' !== lower && 'false' !== lower ) {
+			return 'Parameter "' + name + '" expects true or false, but got "' + value + '".';
+		}
+		return null;
+	}
+
+	if ( 'enum' === rule.type ) {
+		if ( rule.values.indexOf( lower ) !== -1 ) {
+			return null;
+		}
+		if ( rule.accept && rule.accept.indexOf( lower ) !== -1 ) {
+			return null;
+		}
+		return 'Parameter "' + name + '" expects one of: ' + rule.values.join( ', ' ) +
+			' - but got "' + value + '".';
+	}
+
+	if ( 'color' === rule.type ) {
+		if ( ! jzsaIsValidColor( value ) ) {
+			return 'Parameter "' + name + '" expects a color such as #1A2B3C, ' +
+				'rgb(...), hsl(...), or transparent - but got "' + value + '".';
+		}
+		return null;
+	}
+
+	if ( 'int' === rule.type ) {
+		if ( rule.auto && 'auto' === lower ) {
+			return null;
+		}
+		if ( ! /^-?\d+$/.test( value ) ) {
+			return 'Parameter "' + name + '" expects a whole number' +
+				( rule.auto ? ' or "auto"' : '' ) + ', but got "' + value + '".';
+		}
+		var intVal = parseInt( value, 10 );
+		if ( undefined !== rule.min && intVal < rule.min ) {
+			return 'Parameter "' + name + '" must be ' + rule.min +
+				' or greater, but got ' + intVal + '.';
+		}
+		if ( undefined !== rule.max && intVal > rule.max ) {
+			return 'Parameter "' + name + '" must be ' + rule.max +
+				' or lower, but got ' + intVal + '.';
+		}
+		return null;
+	}
+
+	if ( 'opacity' === rule.type ) {
+		if ( ! /^\d*\.?\d+$/.test( value ) ) {
+			return 'Parameter "' + name + '" expects a number between 0 and 1, but got "' + value + '".';
+		}
+		var opacity = parseFloat( value );
+		if ( opacity < 0 || opacity > 1 ) {
+			return 'Parameter "' + name + '" must be between 0 and 1, but got ' + value + '.';
+		}
+		return null;
+	}
+
+	if ( 'delay' === rule.type ) {
+		if ( ! /^\d+$/.test( value ) && ! /^\d+\s*-\s*\d+$/.test( value ) ) {
+			return 'Parameter "' + name + '" expects a number of seconds or a range ' +
+				'like "4-12", but got "' + value + '".';
+		}
+		return null;
+	}
+
+	if ( 'autoresume' === rule.type ) {
+		if ( 'disabled' === lower ) {
+			return null;
+		}
+		if ( ! /^\d+$/.test( value ) || parseInt( value, 10 ) < 1 ) {
+			return 'Parameter "' + name + '" expects a positive number of seconds ' +
+				'or "disabled", but got "' + value + '".';
+		}
+		return null;
+	}
+
+	if ( 'startat' === rule.type ) {
+		if ( 'random' === lower ) {
+			return null;
+		}
+		if ( ! /^\d+$/.test( value ) || parseInt( value, 10 ) < 1 ) {
+			return 'Parameter "start-at" expects a slide number (1 or greater) ' +
+				'or "random", but got "' + value + '".';
+		}
+		return null;
+	}
+
+	if ( 'url' === rule.type ) {
+		// Allow [link]-style masks and {placeholder} tokens used in samples.
+		if ( /^\[[^\]]*\]$/.test( value ) || value.indexOf( '{' ) !== -1 ) {
+			return null;
+		}
+		if ( ! /^https?:\/\//i.test( value ) ) {
+			return 'The "link" value should be a full Google Photos album share URL ' +
+				'starting with "https://".';
+		}
+		return null;
+	}
+
+	return null;
+}
+
 function jzsaEscapeHtml( str ) {
 	return String( str )
 		.replace( /&/g, '&amp;' )
@@ -634,16 +873,27 @@ function jzsaValidateShortcode( raw ) {
 			}
 			seen[ name ] = true;
 
+			var rawValue = ( match[ 2 ] !== undefined ) ? match[ 2 ]
+				: ( match[ 4 ] !== undefined ) ? match[ 4 ]
+					: ( match[ 6 ] !== undefined ) ? match[ 6 ] : '';
+
 			if ( name === 'link' ) {
 				hasLink = true;
-				var linkVal = ( match[ 2 ] || match[ 4 ] || match[ 6 ] || '' ).trim();
-				if ( ! linkVal ) {
+				if ( ! rawValue.trim() ) {
 					errors.push( 'The "link" parameter is empty - paste a Google Photos album share URL.' );
+					continue;
 				}
 			} else if ( ! JZSA_PARAM_SET[ name ] ) {
 				var suggestion = jzsaSuggestParam( name );
 				warnings.push( 'Unknown parameter "' + name + '"' +
 					( suggestion ? ' - did you mean "' + suggestion + '"?' : '.' ) );
+				continue;
+			}
+
+			// Known parameter: check that its value matches the expected type.
+			var valueIssue = jzsaValidateValue( name, rawValue );
+			if ( valueIssue ) {
+				warnings.push( valueIssue );
 			}
 			continue;
 		}
