@@ -60,7 +60,7 @@ vendor/bin/phpunit tests/Live/   # calls real Google Photos to detect format cha
 - `playwright.config.ts` -- full Chromium project plus Firefox/WebKit smoke projects for tests tagged `@cross-browser`, 1 worker, retries: 1, globalSetup validates all fixture pages, `PLAYWRIGHT_BASE_URL` supported
 - `tests/fixtures/google/album.html` -- recorded Google Photos album response (1 MB); used by DataProviderParseTest
 - `tests/Live/DataProviderLiveTest.php` -- 5 live smoke tests; run manually to detect Google format changes
-- `tests/e2e/global-setup.ts` -- validates 7 fixture pages (lightbox, slideshow, video, gallery, mosaic, info, feature)
+- `tests/e2e/global-setup.ts` -- seeds deterministic fixtures by default, validates 7 fixture pages (lightbox, slideshow, video, gallery, mosaic, info, feature), and verifies seeded login users
 - `tests/e2e/setup-fixtures.php` -- deterministic WordPress fixture seeder for the 7 e2e pages plus default admin/disconnected users; preserves connected JWT unless `JZSA_E2E_CONNECTED_JWT` is provided
 - `tests/e2e/README.md` -- documents automated setup, all required fixture pages, shortcode order, and e2e environment variables
 - PHPUnit bootstrap stubs all WordPress functions so unit tests run without WordPress
@@ -77,8 +77,10 @@ Local verification:
 ./test.sh         # runs PHPUnit and Playwright together
 ./test.sh --unit  # passed: 607 tests, 1300 assertions
 npx playwright test tests/e2e/navigation.spec.ts  # passed: 20 tests
-npx playwright test  # passed: 194 passed, 1 flaky retry, 2 expected skips
+npx playwright test  # passed after deterministic setup: 192 passed, 3 flaky retries, 2 expected skips
 npx playwright test tests/e2e/info-overlay.spec.ts --project=chromium  # passed: 14 tests
+npx playwright test tests/e2e/admin.spec.ts --project=chromium  # passed after auth hardening: 14 tests
+npx playwright test tests/e2e/community.spec.ts --project=chromium  # passed after auth hardening: 35 tests
 ```
 
 Issues found and addressed:
@@ -108,6 +110,7 @@ Issues found and addressed:
 - Firefox dropped grouped fullscreen display-limit CSS selectors containing WebKit's prefixed pseudo-class; e2e now covers the real-user native fullscreen limited-presentation regression from commit `f7d5911`.
 - Browser video behavior now has deterministic coverage using static mixed-media fixture markup and a Plyr stub: mixed image/video rendering, Plyr initialization, play-state UI, stopping/resetting on navigation, stopping before native fullscreen, and stopping when the lightbox closes.
 - Lazy photo metadata placeholders were only unit-tested; browser coverage now verifies the `jzsa_fetch_photo_meta` request payload, info-box refresh from AJAX metadata, updated `data-all-photos`, and non-fatal slider navigation after a metadata request failure.
+- E2E setup is now deterministic by default: Playwright global setup runs the WordPress seeder through Docker Compose, validates every fixture page, and verifies the seeded admin/disconnected login credentials before specs start. `JZSA_E2E_SKIP_SETUP=1` preserves support for already prepared remote targets.
 
 Remaining risks:
 
@@ -185,8 +188,8 @@ Community and admin tests use WordPress admin URLs directly, no shortcode fixtur
 1. **Real WordPress integration for shortcode rendering**
    Current unit tests stub WordPress heavily. Add a small WordPress integration layer that runs actual `do_shortcode()` with WordPress shortcode parsing, escaping, enqueue behavior, and post content. This would catch issues hidden by `tests/bootstrap.php`.
 
-2. **Deterministic e2e setup**
-   The biggest remaining risk is fixture state. Tests pass locally, but they depend on prepared pages, users, cache, and community state. Add scripts/tests that create fixture pages and users automatically, then verify the suite can bootstrap from a clean database.
+2. **Deterministic e2e setup (Completed)**
+   Playwright global setup now creates fixture pages and users automatically through `setup-fixtures.php`, validates the rendered pages, and verifies the seeded admin/disconnected login credentials before specs start. Remaining related risk: connected community state still needs either an existing local JWT or `JZSA_E2E_CONNECTED_JWT`.
 
 3. **Community e2e with mocked API**
    Unit coverage is strong, but browser coverage still depends on local/community state. A deterministic mock/filter for browse, publish, update, delete, rate, and connect would make full community flows CI-safe.
@@ -256,4 +259,4 @@ jobs:
       - run: npx playwright test
 ```
 
-PHPUnit runs in under 10 seconds. Playwright currently schedules 197 tests across full Chromium plus Firefox/WebKit smoke projects. The latest local full run passed with 194 passed, 1 flaky retry, and 2 expected skips for the Firefox-only fullscreen regression outside Firefox. Both should block merging once CI runs the fixture setup script before Playwright.
+PHPUnit runs in under 10 seconds. Playwright currently schedules 197 tests across full Chromium plus Firefox/WebKit smoke projects. The latest local full run after deterministic setup passed with 192 passed, 3 flaky retries, and 2 expected skips for the Firefox-only fullscreen regression outside Firefox. The admin and community specs passed cleanly after auth-helper hardening. Both layers should block merging once CI runs the fixture setup script before Playwright.

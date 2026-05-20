@@ -1,8 +1,8 @@
 # E2E Test Fixtures
 
 Playwright tests depend on published WordPress pages with fixed slugs and
-shortcodes in a specific order. `global-setup.ts` verifies the required pages
-exist before any test runs, so missing fixtures fail early with a clear error.
+shortcodes in a specific order. `global-setup.ts` seeds those fixtures by
+default, then verifies the required pages and login users before any test runs.
 
 Replace `YOUR_LINK` with a shared Google Photos album URL. The same link can be
 used for all shortcodes. Use an album with at least 2 photos; gallery, mosaic,
@@ -25,6 +25,7 @@ JZSA_E2E_CONNECTED_USER=dev
 JZSA_E2E_CONNECTED_PASS=test123
 JZSA_E2E_DISCONNECTED_USER=testuser-noc
 JZSA_E2E_DISCONNECTED_PASS=testpass123
+JZSA_E2E_SKIP_SETUP=0
 ```
 
 The connected user must already have a valid community JWT in user meta. The
@@ -32,7 +33,8 @@ disconnected user should be an administrator with no community JWT.
 
 ## Automated Setup
 
-The fixture pages and default users can be created or refreshed without WP-CLI:
+Playwright runs this setup automatically through Docker Compose before the e2e
+suite starts:
 
 ```bash
 docker compose exec wordpress php \
@@ -59,6 +61,10 @@ JZSA_E2E_DISCONNECTED_USER=testuser-noc
 JZSA_E2E_DISCONNECTED_PASS=testpass123
 WP_ROOT=/var/www/html
 ```
+
+When testing against an already prepared remote or non-Docker WordPress site,
+set `JZSA_E2E_SKIP_SETUP=1`. Global setup will skip Docker seeding but still
+validate the fixture pages and the configured login credentials.
 
 ## Browser Matrix
 

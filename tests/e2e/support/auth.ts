@@ -8,18 +8,29 @@ export const DISCONNECTED_USER = process.env.JZSA_E2E_DISCONNECTED_USER ?? 'test
 export const DISCONNECTED_PASS = process.env.JZSA_E2E_DISCONNECTED_PASS ?? 'testpass123';
 
 export async function loginAs(page: Page, user: string, pass: string): Promise<void> {
-    await page.goto('/wp-login.php', { waitUntil: 'domcontentloaded' });
-    await page.fill('#user_login', user);
-    await page.fill('#user_pass', pass);
+    let lastError: unknown;
 
-    await page.click('#wp-submit');
-    await page.waitForLoadState('domcontentloaded', { timeout: 20_000 }).catch(() => {});
+    for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+            await page.context().clearCookies();
+            await page.goto('/wp-login.php', { waitUntil: 'domcontentloaded', timeout: 5_000 });
+            await page.fill('#user_login', user);
+            await page.fill('#user_pass', pass);
 
-    if (!/\/wp-admin\//.test(page.url())) {
-        await page.goto('/wp-admin/', { waitUntil: 'domcontentloaded' });
+            await Promise.all([
+                page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 5_000 }).catch(() => {}),
+                page.locator('#loginform').evaluate((form) => (form as HTMLFormElement).submit()),
+            ]);
+
+            await page.goto('/wp-admin/', { waitUntil: 'domcontentloaded', timeout: 5_000 });
+            await expect(page.locator('#wpadminbar')).toBeAttached({ timeout: 3_000 });
+            return;
+        } catch (error) {
+            lastError = error;
+        }
     }
 
-    await expect(page.locator('#wpadminbar')).toBeAttached({ timeout: 10_000 });
+    throw lastError instanceof Error ? lastError : new Error(`Failed to log in as ${user}`);
 }
 
 export async function loginAsAdmin(page: Page): Promise<void> {

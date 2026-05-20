@@ -1,6 +1,26 @@
 import { request } from '@playwright/test';
+import { execFileSync } from 'child_process';
 
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:8080';
+const SKIP_SETUP = process.env.JZSA_E2E_SKIP_SETUP === '1' || process.env.JZSA_E2E_SKIP_SETUP === 'true';
+const SETUP_SCRIPT = '/var/www/html/wp-content/plugins/janzeman-shared-albums-for-google-photos/tests/e2e/setup-fixtures.php';
+
+const E2E_SETUP_ENV_KEYS = [
+    'JZSA_E2E_ALBUM_URL',
+    'JZSA_E2E_ADMIN_USER',
+    'JZSA_E2E_ADMIN_PASS',
+    'JZSA_E2E_CONNECTED_USER',
+    'JZSA_E2E_CONNECTED_PASS',
+    'JZSA_E2E_CONNECTED_JWT',
+    'JZSA_E2E_DISCONNECTED_USER',
+    'JZSA_E2E_DISCONNECTED_PASS',
+    'WP_ROOT',
+];
+
+const ADMIN_USER = process.env.JZSA_E2E_ADMIN_USER ?? 'dev';
+const ADMIN_PASS = process.env.JZSA_E2E_ADMIN_PASS ?? 'test123';
+const DISCONNECTED_USER = process.env.JZSA_E2E_DISCONNECTED_USER ?? 'testuser-noc';
+const DISCONNECTED_PASS = process.env.JZSA_E2E_DISCONNECTED_PASS ?? 'testpass123';
 
 interface FixtureSpec {
     slug: string;
@@ -54,7 +74,65 @@ const FIXTURES: FixtureSpec[] = [
     },
 ];
 
+function runFixtureSetup(): void {
+    if (SKIP_SETUP) {
+        return;
+    }
+
+    const args = ['compose', 'exec', '-T'];
+    for (const key of E2E_SETUP_ENV_KEYS) {
+        const value = process.env[key];
+        if (value !== undefined && value !== '') {
+            args.push('-e', `${key}=${value}`);
+        }
+    }
+    args.push('wordpress', 'php', SETUP_SCRIPT);
+
+    try {
+        execFileSync('docker', args, {
+            cwd: process.cwd(),
+            stdio: 'inherit',
+            env: process.env,
+        });
+    } catch (error) {
+        throw new Error(
+            'Failed to seed deterministic e2e fixtures with docker compose.\n' +
+            'Start the WordPress Docker stack, or set JZSA_E2E_SKIP_SETUP=1 when targeting an already prepared site.\n' +
+            `Command: docker ${args.join(' ')}\n` +
+            `Original error: ${error instanceof Error ? error.message : String(error)}`
+        );
+    }
+}
+
+async function verifyLogin(baseURL: string, username: string, password: string, label: string): Promise<void> {
+    const ctx = await request.newContext({ baseURL });
+    try {
+        await ctx.post('/wp-login.php', {
+            form: {
+                log: username,
+                pwd: password,
+                'wp-submit': 'Log In',
+                redirect_to: `${baseURL}/wp-admin/`,
+                testcookie: '1',
+            },
+        });
+
+        const admin = await ctx.get('/wp-admin/');
+        const body = await admin.text();
+        if (!admin.ok() || !body.includes('id="wpadminbar"')) {
+            throw new Error(
+                `Seeded ${label} user "${username}" could not log in to ${baseURL}/wp-admin/. ` +
+                'Run tests/e2e/setup-fixtures.php or check the JZSA_E2E_* credentials.'
+            );
+        }
+    } finally {
+        await ctx.dispose();
+    }
+}
+
 export default async function globalSetup() {
+    runFixtureSetup();
+
     const ctx = await request.newContext({ baseURL: BASE_URL });
 
     // Verify WordPress is reachable first.
@@ -103,4 +181,7 @@ export default async function globalSetup() {
     }
 
     await ctx.dispose();
+
+    await verifyLogin(BASE_URL, ADMIN_USER, ADMIN_PASS, 'admin');
+    await verifyLogin(BASE_URL, DISCONNECTED_USER, DISCONNECTED_PASS, 'disconnected');
 }
