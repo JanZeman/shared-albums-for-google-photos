@@ -108,6 +108,7 @@ $pages = array(
 				'[jzsa-album link="' . $album_link . '" mode="slider" lightbox-toggle="button-only" fullscreen-toggle="button-only"]',
 				'[jzsa-album link="' . $album_link . '" mode="gallery" lightbox-toggle="button-only" fullscreen-toggle="disabled"]',
 				'[jzsa-album link="' . $album_link . '" mode="gallery" lightbox-toggle="button-only" fullscreen-toggle="button-only"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" fullscreen-toggle="button-only" fullscreen-display-max-width="320" fullscreen-display-max-height="240"]',
 			)
 		),
 	),

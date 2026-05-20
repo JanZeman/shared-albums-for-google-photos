@@ -40,10 +40,10 @@ vendor/bin/phpunit tests/Live/   # calls real Google Photos to detect format cha
 - `CommunityAjaxTest.php` -- real community AJAX/REST handlers with mocked HTTP: connect, browse, publish/update/delete, profile, interactions, rating, challenge validation, malformed responses
 - `DataProviderParseTest.php` -- URL extraction, duplicate filtering, non-Google URL filtering, metadata enrichment, filename extraction, EXIF scoping, video detection, title cleaning, camera formatting, individual photo meta; uses `tests/fixtures/google/album.html` (real recorded response)
 
-**Playwright** (`tests/e2e/`) -- 177 Chromium tests plus 10 Firefox/WebKit smoke executions
+**Playwright** (`tests/e2e/`) -- full Chromium project plus Firefox/WebKit smoke executions, including a Firefox-only fullscreen regression
 
 - `lightbox.spec.ts` -- slider click/button-only trigger, dual expand, gallery lightbox, dialog/close-button accessibility attributes, keyboard gallery lightbox activation, and advanced accessibility (focus trapping, focus restoration on close, Escape close inside focusable elements)
-- `fullscreen.spec.ts` -- fullscreen button presence, dual-expand interaction, close methods
+- `fullscreen.spec.ts` -- fullscreen button presence, dual-expand interaction, close methods, Firefox native fullscreen display-limit regression
 - `slideshow.spec.ts` -- data attributes, play/pause button, auto-advance and manual-hold
 - `gallery.spec.ts` -- data attributes (layout/columns/scrollable/rows), items, responsive columns, hover button, slideshow player open/navigate/close
 - `navigation.spec.ts` -- arrow visibility, slide advance, keyboard, interaction-lock, download/link buttons, safe external-link attributes, mocked download proxy clicks, proxy error status, and large-download retry confirmation
@@ -76,7 +76,7 @@ Local verification:
 ./test.sh         # runs PHPUnit and Playwright together
 ./test.sh --unit  # passed: 607 tests, 1300 assertions
 npx playwright test tests/e2e/navigation.spec.ts  # passed: 20 tests
-./test.sh --e2e   # passed: 184 test executions (174 Chromium + 10 Firefox/WebKit smoke)
+./test.sh --e2e   # passed: 187 passed, 1 flaky retry, 2 expected skips
 ```
 
 Issues found and addressed:
@@ -103,6 +103,7 @@ Issues found and addressed:
 - Browser coverage now verifies gallery responsive column behavior at desktop/tablet/mobile widths and keyboard activation of gallery lightbox thumbnail controls.
 - Browser coverage now clicks the slider download button against a deterministic mocked WordPress AJAX endpoint, verifies the proxy payload, locks down large-download confirmation retry behavior with `allow_large_download=true`, and verifies proxy error payloads appear in the user-facing status message.
 - The download client now inspects blob-like error responses before falling back to a direct download path for both slider and gallery thumbnail download buttons.
+- Firefox dropped grouped fullscreen display-limit CSS selectors containing WebKit's prefixed pseudo-class; e2e now covers the real-user native fullscreen limited-presentation regression from commit `f7d5911`.
 
 Remaining risks:
 
@@ -142,7 +143,7 @@ The renderer tests are the highest-value target. With 80+ parameters each mappin
 
 | File | What it covers | Fixture page slug |
 |---|---|---|
-| `fullscreen.spec.ts` | button presence/absence, dual-expand interaction, lightbox close methods | `lightbox-fixture` |
+| `fullscreen.spec.ts` | button presence/absence, dual-expand interaction, lightbox close methods, Firefox native fullscreen display caps | `lightbox-fixture` |
 | `gallery.spec.ts` | Grid and justified layouts, responsive column counts, opening the slideshow player, navigating within it, close | `gallery-fixture` |
 | `slideshow.spec.ts` | Auto-advance, play/pause button, manual mode hold | `slideshow-fixture` |
 | `navigation.spec.ts` | Arrow buttons, keyboard arrows, interaction-lock, download/link buttons, safe link attributes, mocked download proxy click/error/retry behavior | `feature-fixture` |

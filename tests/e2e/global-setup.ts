@@ -13,8 +13,8 @@ const FIXTURES: FixtureSpec[] = [
     {
         slug: 'lightbox-fixture',
         selector: 'class="jzsa-album',
-        expectedMin: 5,
-        description: '5 albums (lightbox tests)',
+        expectedMin: 6,
+        description: '6 albums (lightbox/fullscreen tests)',
     },
     {
         slug: 'slideshow-fixture',
