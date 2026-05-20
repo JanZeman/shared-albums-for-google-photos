@@ -216,7 +216,7 @@ test.describe('Navigation - download and link buttons', () => {
         await expect(album.locator('.swiper-button-download')).toHaveAttribute('title', 'Download current media');
     });
 
-    test('download button posts the active media through the WordPress AJAX proxy', async ({ page }) => {
+    test('download button posts the active media through the WordPress AJAX proxy @cross-browser', async ({ page }) => {
         const downloadPayloads = await mockDownloadAjax(page, async () => ({
             body: 'jpeg-bytes',
         }));

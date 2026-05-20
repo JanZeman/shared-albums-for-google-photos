@@ -114,7 +114,7 @@ test.describe('Gallery - responsive columns', () => {
 	        expect(columns).toBe(2);
 	    });
 
-    test('grid uses mobile column count on narrow viewport', async ({ page }) => {
+    test('grid uses mobile column count on narrow viewport @cross-browser', async ({ page }) => {
         await page.setViewportSize({ width: 390, height: 844 });
 	        await gotoFixture(page, FIXTURE_URL);
 

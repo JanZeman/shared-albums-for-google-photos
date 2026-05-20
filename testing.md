@@ -168,27 +168,36 @@ Community and admin tests use WordPress admin URLs directly, no shortcode fixtur
 
 ## Next coverage plan
 
-### Phase 1 -- stability and CI readiness
+### Highest value
 
-1. Seed or generate e2e fixture pages/users automatically so the suite does not depend on a hand-prepared database.
-2. Add a deterministic mock layer for community API responses.
-3. Split e2e into smoke vs full groups so CI can block on fast deterministic tests and run live smoke tests separately.
-4. Add Firefox/WebKit projects after the deterministic path is stable.
+1. **Real WordPress integration for shortcode rendering**
+   Current unit tests stub WordPress heavily. Add a small WordPress integration layer that runs actual `do_shortcode()` with WordPress shortcode parsing, escaping, enqueue behavior, and post content. This would catch issues hidden by `tests/bootstrap.php`.
 
-### Phase 2 -- high-value missing unit/integration coverage
+2. **Deterministic e2e setup**
+   The biggest remaining risk is fixture state. Tests pass locally, but they depend on prepared pages, users, cache, and community state. Add scripts/tests that create fixture pages and users automatically, then verify the suite can bootstrap from a clean database.
 
-1. More Community AJAX edge cases with mocked HTTP: delete/update/rating malformed response bodies and REST challenge route integration under real WordPress routing.
-2. Real WordPress shortcode integration tests: `do_shortcode` through WordPress shortcode parsing and actual renderer output together.
-3. More security/escaping cases at the shortcode-parser/orchestrator boundary, especially URL sanitization under real WordPress escaping functions.
-4. Error states still worth broadening: malformed Google payloads, deprecated short links in the full shortcode flow, and real WordPress shortcode parsing/escaping integration.
+3. **Community e2e with mocked API**
+   Unit coverage is strong, but browser coverage still depends on local/community state. A deterministic mock/filter for browse, publish, update, delete, rate, and connect would make full community flows CI-safe.
 
-### Phase 3 -- frontend behavior coverage
+4. **Video behavior**
+   There is parser coverage for video detection, but browser coverage for mixed image/video albums, Plyr initialization, play/pause, fullscreen/lightbox video behavior, and stopping playback on navigation would be valuable.
 
-1. Video/Plyr controls and mixed image/video albums.
-2. Gallery thumbnail download/link click interactions against a deterministic mocked download endpoint.
-3. EXIF/photo-meta lazy AJAX behavior and chunk loading/retry paths.
-4. Lightbox accessibility beyond current ARIA checks: focus trapping/restoration, tab flow, keyboard-only navigation.
-5. More responsive/mobile gallery behavior: touch gestures, mobile button display modes, and visual regression screenshots.
+5. **Lazy metadata and progressive loading behavior in browser**
+   Unit tests cover `fetch_photo_meta`, chunks, refresh URLs, and caching. E2E should cover actual lazy EXIF/photo-meta requests, retry/error UI, and progressive chunk loading as the user navigates deep into a large album.
+
+### Good next tier
+
+6. **Lightbox accessibility depth**
+   Current tests cover ARIA and basic keyboard activation. Add focus trap, focus restoration, tab order, Escape behavior across nested states, and keyboard navigation inside gallery/player.
+
+7. **Mobile/touch behavior**
+   Current responsive gallery tests are good, but touch gestures, mobile button visibility modes, pseudo-fullscreen on iPhone-like viewports, and small-screen lightbox layout are still likely risk areas.
+
+8. **Admin UI behavior beyond presence**
+   Admin e2e checks structure and lazy previews. Add tests for the shortcode playground preview, copy/apply/revert flows, cache-clear button behavior, and parameter/reference navigation.
+
+9. **Failure-state rendering**
+   Add browser-level tests for fetch errors, stale backup display, deprecated short-link warning visibility for admins only, no-photos errors, and malformed Google payload fallback.
 
 ---
 

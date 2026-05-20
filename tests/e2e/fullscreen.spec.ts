@@ -56,7 +56,7 @@ test.describe('Fullscreen - dual expand interaction', () => {
         await expect(backdrop(page)).not.toBeVisible();
     });
 
-    test('clicking lightbox button opens the overlay (not native fullscreen)', async ({ page }) => {
+    test('clicking lightbox button opens the overlay (not native fullscreen) @cross-browser', async ({ page }) => {
         const album = await waitForAlbum(page, 2);
         await album.locator('.swiper-button-lightbox').click({ force: true });
         await expect(backdrop(page)).toBeVisible();

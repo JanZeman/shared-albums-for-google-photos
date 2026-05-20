@@ -86,7 +86,7 @@ test.describe('Slideshow - auto-advance', () => {
         await gotoFixture(page, FIXTURE_URL);
     });
 
-    test('auto album advances to a new slide within 2 seconds', async ({ page }) => {
+    test('auto album advances to a new slide within 2 seconds @cross-browser', async ({ page }) => {
         const album = await waitForAlbum(page, 0);
         // Capture the data-swiper-slide-index of the initially active slide.
         const initialActive = album.locator('.swiper-slide-active');

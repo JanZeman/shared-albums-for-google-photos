@@ -27,7 +27,7 @@ test.describe('Lightbox - slider / click trigger', () => {
         await gotoFixture(page, FIXTURE_URL);
     });
 
-    test('clicking slider opens the lightbox overlay', async ({ page }) => {
+    test('clicking slider opens the lightbox overlay @cross-browser', async ({ page }) => {
         const album = await waitForAlbum(page, 0);
         await album.locator('.swiper-slide.swiper-slide-active').click();
         await expect(backdrop(page)).toBeVisible();
