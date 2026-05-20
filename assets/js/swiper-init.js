@@ -2401,6 +2401,11 @@
         }
 
         var cleanMake = make.replace(/\b(?:corporation|corp\.?|company|co\.?|inc\.?|incorporated|limited|ltd\.?|llc|plc|gmbh|ag|sa|bv|oy|ab|aps)\b/ig, '');
+        // The suffix regex's trailing \b sits between letter and ".", so the optional
+        // period (\.?) is left behind on inputs like "Canon Inc." → "Canon .". Strip
+        // any leftover edge punctuation before the empty-fallback check so a make
+        // that collapses to just "." correctly triggers the fallback.
+        cleanMake = cleanMake.replace(/^[\s.,;:!?-]+|[\s.,;:!?-]+$/g, '');
         cleanMake = cleanMake.replace(/\s+/g, ' ').trim();
         if (!cleanMake) {
             cleanMake = make;

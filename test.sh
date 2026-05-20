@@ -8,6 +8,12 @@ run_unit() {
     vendor/bin/phpunit
 }
 
+run_js() {
+    echo ""
+    echo "=== JS unit tests (Vitest) ==="
+    npx vitest run
+}
+
 run_e2e() {
     echo ""
     echo "=== E2E tests (Playwright) ==="
@@ -17,16 +23,20 @@ run_e2e() {
 case "${1:-}" in
     "")
         run_unit
+        run_js
         run_e2e
         ;;
     --unit)
         run_unit
         ;;
+    --js)
+        run_js
+        ;;
     --e2e)
         run_e2e
         ;;
     *)
-        echo "Usage: $0 [--unit | --e2e]" >&2
+        echo "Usage: $0 [--unit | --js | --e2e]" >&2
         exit 1
         ;;
 esac
