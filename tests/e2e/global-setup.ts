@@ -22,6 +22,15 @@ const ADMIN_PASS = process.env.JZSA_E2E_ADMIN_PASS ?? 'test123';
 const DISCONNECTED_USER = process.env.JZSA_E2E_DISCONNECTED_USER ?? 'testuser-noc';
 const DISCONNECTED_PASS = process.env.JZSA_E2E_DISCONNECTED_PASS ?? 'testpass123';
 
+// Local community API database (docker-compose service + credentials). e2e
+// community entries are always published with an `example.test` site URL
+// (RFC 6761 reserved domain), so they can be identified and wiped without
+// touching real entries or the seeded sample.
+const COMMUNITY_DB_SERVICE = process.env.JZSA_E2E_DB_SERVICE ?? 'mariadb';
+const COMMUNITY_DB_NAME = process.env.JZSA_E2E_DB_NAME ?? 'jzsa_api';
+const COMMUNITY_DB_USER = process.env.JZSA_E2E_DB_USER ?? 'jzsa_api';
+const COMMUNITY_DB_PASS = process.env.JZSA_E2E_DB_PASS ?? 'jzsa_api';
+
 interface FixtureSpec {
     slug: string;
     selector: string;
@@ -104,6 +113,43 @@ function runFixtureSetup(): void {
     }
 }
 
+// Wipe community entries left behind by previous e2e runs so leaked test data
+// cannot accumulate in the local community API database. Test entries are
+// identified by their `example.test` site URL; real entries and the seeded
+// sample use real domains and are left untouched. Child rows are removed first
+// in case the schema has no ON DELETE CASCADE.
+function resetCommunityTestEntries(): void {
+    if (SKIP_SETUP) {
+        return;
+    }
+
+    const sql = [
+        "DELETE r FROM entry_ratings r JOIN entries e ON r.entry_id = e.id WHERE e.site_url LIKE '%example.test%';",
+        "DELETE i FROM entry_interactions i JOIN entries e ON i.entry_id = e.id WHERE e.site_url LIKE '%example.test%';",
+        "DELETE FROM entries WHERE site_url LIKE '%example.test%';",
+    ].join(' ');
+
+    const args = [
+        'compose', 'exec', '-T', COMMUNITY_DB_SERVICE,
+        'mariadb', `-u${COMMUNITY_DB_USER}`, `-p${COMMUNITY_DB_PASS}`, COMMUNITY_DB_NAME,
+        '-e', sql,
+    ];
+
+    try {
+        execFileSync('docker', args, {
+            cwd: process.cwd(),
+            stdio: 'inherit',
+            env: process.env,
+        });
+    } catch (error) {
+        throw new Error(
+            'Failed to reset community test entries in the local API database.\n' +
+            'Start the WordPress Docker stack, or set JZSA_E2E_SKIP_SETUP=1 when targeting an already prepared site.\n' +
+            `Original error: ${error instanceof Error ? error.message : String(error)}`
+        );
+    }
+}
+
 async function verifyLogin(baseURL: string, username: string, password: string, label: string): Promise<void> {
     const ctx = await request.newContext({ baseURL });
     try {
@@ -132,6 +178,7 @@ async function verifyLogin(baseURL: string, username: string, password: string, 
 
 export default async function globalSetup() {
     runFixtureSetup();
+    resetCommunityTestEntries();
 
     const ctx = await request.newContext({ baseURL: BASE_URL });
 

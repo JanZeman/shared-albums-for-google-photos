@@ -4,6 +4,11 @@ import { CONNECTED_PASS, CONNECTED_USER, loginAs } from './support/auth';
 const COMMUNITY_URL = '/wp-admin/admin.php?page=janzeman-shared-albums-for-google-photos-community';
 const ALBUM_URL = 'https://photos.google.com/share/AF1Qip-test?key=abc123';
 
+// A genuinely renderable album link, kept in sync with tests/e2e/setup-fixtures.php.
+// global-setup loads the fixture pages, which warms this album's server-side cache.
+const REAL_ALBUM_URL = process.env.JZSA_E2E_ALBUM_URL
+    ?? 'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R';
+
 type AjaxRequest = {
     action: string;
     fields: Record<string, string>;
@@ -236,5 +241,67 @@ test.describe('Community - mocked AJAX flows', () => {
         const requests = await mock.requests();
         expect(requests.find((request) => request.action === 'jzsa_community_update_entry')?.fields.title).toBe('Updated Owned Example');
         expect(requests.find((request) => request.action === 'jzsa_community_delete_entry')?.fields.entry_id).toBe('202');
+    });
+
+    test('a browsed entry with a valid album link renders a real gallery preview', async ({ page }) => {
+        // Mock ONLY jzsa_community_browse. The lazy preview render
+        // (jzsa_shortcode_preview) is deliberately left to hit the real plugin,
+        // so this exercises the genuine render path. Nothing is published and
+        // nothing is written to the community database.
+        await page.addInitScript((albumUrl: string) => {
+            const originalFetch = window.fetch.bind(window);
+            window.fetch = async (input, init) => {
+                const url = input instanceof Request ? input.url : String(input);
+                const body = init && init.body;
+                const action = (/admin-ajax\.php/.test(url) && body instanceof FormData)
+                    ? String(body.get('action') || '')
+                    : '';
+
+                if (action !== 'jzsa_community_browse') {
+                    return originalFetch(input, init);
+                }
+
+                const entry = {
+                    id: 9001,
+                    title: 'Renderable Community Entry',
+                    shortcode: '[jzsa-album link="[link]" mode="gallery"]',
+                    preview_shortcode: `[jzsa-album link="${albumUrl}" mode="gallery"]`,
+                    description: 'Uses a real album link so the preview renders.',
+                    tags: ['gallery'],
+                    site_url: 'https://example.test/renderable',
+                    photographer_name: 'Render Test',
+                    interaction_score: 0,
+                    avg_rating: 0,
+                    rating_count: 0,
+                    public_showcase_consent: false,
+                    author: { display_name: 'Render Test', display_url: 'https://example.test' },
+                };
+
+                return new Response(JSON.stringify({
+                    success: true,
+                    data: { data: [entry], meta: { total: 1, page: 1, per_page: 12 } },
+                }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+            };
+        }, REAL_ALBUM_URL);
+
+        await page.goto(COMMUNITY_URL);
+
+        const entry = page.locator('#jzsa-community-entries .jzsa-community-entry').first();
+        await expect(entry).toContainText('Renderable Community Entry', { timeout: 10_000 });
+
+        // The lazy preview is IntersectionObserver-gated; scroll it into view,
+        // then wait for the real jzsa_shortcode_preview AJAX to finish.
+        const preview = entry.locator('.jzsa-preview-container');
+        await preview.scrollIntoViewIfNeeded();
+        await expect(preview).toHaveAttribute('data-lazy-state', 'loaded', { timeout: 20_000 });
+
+        // A valid album link must render a gallery, not the "No Photos Found"
+        // error box that an invalid link (e.g. link="[link]") produces.
+        // Gallery mode renders the grid plus a slideshow sub-element; assert the
+        // grid specifically and that real photos were resolved.
+        const gallery = preview.locator('.jzsa-album[data-mode="gallery"]');
+        await expect(gallery).toBeAttached();
+        expect(Number(await gallery.getAttribute('data-total-count'))).toBeGreaterThan(0);
+        await expect(preview.locator('.jzsa-playground-error')).toHaveCount(0);
     });
 });
