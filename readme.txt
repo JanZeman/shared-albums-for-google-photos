@@ -144,7 +144,7 @@ The plugin provides clear feedback:
 
 == Changelog ==
 
-= 2.3.0 =
+= 2.3.0 = 
 * New: Lightbox - an alternative to native fullscreen
 * Thanks to `@valterbruno` for the Lightbox feature request!
 * Basic shortcode real-time validation
