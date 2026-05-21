@@ -1,0 +1,124 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  unit-js:
+    name: PHPUnit and Vitest
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Run PHPUnit
+        run: ./test.sh --unit
+
+      - name: Run Vitest
+        run: ./test.sh --js
+
+  e2e:
+    name: Playwright
+    runs-on: ubuntu-latest
+    needs: unit-js
+
+    env:
+      PLAYWRIGHT_BASE_URL: http://127.0.0.1:8080
+      WORDPRESS_DB_HOST: jzsa-mysql
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Start WordPress
+        run: |
+          docker network create jzsa-ci
+          docker run -d --name jzsa-mysql --network jzsa-ci \
+            -e MYSQL_DATABASE="$WORDPRESS_DB_NAME" \
+            -e MYSQL_USER="$WORDPRESS_DB_USER" \
+            -e MYSQL_PASSWORD="$WORDPRESS_DB_PASSWORD" \
+            -e MYSQL_RANDOM_ROOT_PASSWORD=1 \
+            mysql:8.4
+          docker run -d --name jzsa-wordpress --network jzsa-ci -p 8080:80 \
+            -e WORDPRESS_DB_HOST="$WORDPRESS_DB_HOST" \
+            -e WORDPRESS_DB_NAME="$WORDPRESS_DB_NAME" \
+            -e WORDPRESS_DB_USER="$WORDPRESS_DB_USER" \
+            -e WORDPRESS_DB_PASSWORD="$WORDPRESS_DB_PASSWORD" \
+            -v "$GITHUB_WORKSPACE:/var/www/html/wp-content/plugins/janzeman-shared-albums-for-google-photos" \
+            wordpress:php8.3-apache
+
+      - name: Install WordPress and activate plugin
+        run: |
+          for i in {1..90}; do
+            if curl -fsS "$PLAYWRIGHT_BASE_URL/wp-admin/install.php" >/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+
+          docker run --rm --network jzsa-ci --volumes-from jzsa-wordpress --user 33:33 \
+            wordpress:cli wp core install \
+              --path=/var/www/html \
+              --url="$PLAYWRIGHT_BASE_URL" \
+              --title="JZSA E2E" \
+              --admin_user=dev \
+              --admin_password=test123 \
+              --admin_email=dev@example.test
+
+          docker run --rm --network jzsa-ci --volumes-from jzsa-wordpress --user 33:33 \
+            wordpress:cli wp plugin activate janzeman-shared-albums-for-google-photos \
+              --path=/var/www/html
+
+      - name: Seed e2e fixtures
+        run: |
+          docker exec jzsa-wordpress php \
+            /var/www/html/wp-content/plugins/janzeman-shared-albums-for-google-photos/tests/e2e/setup-fixtures.php
+
+      - name: Run Playwright
+        run: npx playwright test
+        env:
+          JZSA_E2E_SKIP_SETUP: '1'
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

@@ -216,6 +216,7 @@ test.describe('Community - publish form validation', () => {
 
     test('valid title but no shortcode shows validation error', async ({ page }) => {
         await page.fill('#jzsa-pub-title', 'My Test Album');
+        await expect(page.locator('#jzsa-pub-title')).toHaveValue('My Test Album');
         await page.click('#jzsa-community-publish-btn');
         await expect(page.locator('#jzsa-publish-result')).toContainText('Shortcode must be a valid', { timeout: 5_000 });
     });
