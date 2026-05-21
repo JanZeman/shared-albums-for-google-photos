@@ -136,10 +136,11 @@ The plugin provides clear feedback:
 4. Carousel mode (also shows the video capability)
 5. Fullscreen mode with description and EXIF info overlay
 6. From low- to high-resolution image support
-7. Every sample includes a live preview - edit and see the result immediately
+7. Every sample includes a live preview. Edit and see the result immediately!
 8. Description with custom font
 9. Fullscreen mosaic support
 10. Mosaic strip in the overlay mode
+11. Community page - Get inspired by other users of this plugin!
 
 == Changelog ==
 
@@ -149,12 +150,9 @@ The plugin provides clear feedback:
 * Basic shortcode real-time validation
 * Tested with WordPress 7.0
 
-= 2.2.2 =
-* Community feature bugfixes
-
 = 2.2.1 =
 * Preparation of the Community feature for the release
-* Once more thanks to `@naveenbachwani` for valuable discussion about the feature!
+* Once more huge thanks to `@naveenbachwani` for sharp and inspiring feedback about this feature!
 
 = 2.2.0 =
 * New: Community Directory - browse, copy, and publish shortcode configurations and inspire others :-)
