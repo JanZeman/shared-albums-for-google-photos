@@ -791,7 +791,7 @@ function jzsaValidateShortcode( raw ) {
 	var warnings = [];
 	// The replace() below swaps non-breaking spaces (emitted by contentEditable)
 	// for plain spaces so tokenization and \s matching behave predictably.
-	var text = ( raw || '' ).replace( / /g, ' ' ).trim();
+	var text = ( raw || '' ).replace( /\u00A0/g, ' ' ).trim();
 
 	if ( ! text ) {
 		// A pristine empty field is not an error; the message area stays hidden.
@@ -954,10 +954,10 @@ function jzsaRenderValidation( validationEl, result ) {
 
 	var items = '';
 	result.errors.forEach( function ( msg ) {
-		items += '<li>✕ ' + jzsaEscapeHtml( msg ) + '</li>';
+		items += '<li>\u2715 ' + jzsaEscapeHtml( msg ) + '</li>';
 	} );
 	result.warnings.forEach( function ( msg ) {
-		items += '<li>⚠ ' + jzsaEscapeHtml( msg ) + '</li>';
+		items += '<li>\u26A0 ' + jzsaEscapeHtml( msg ) + '</li>';
 	} );
 	validationEl.innerHTML = '<ul class="jzsa-code-validation__list">' + items + '</ul>';
 }
