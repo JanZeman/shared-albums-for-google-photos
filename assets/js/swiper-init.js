@@ -2349,19 +2349,32 @@
         };
 
         var result = format;
+        var resolvedAnyValue = false;
         for (var placeholder in placeholders) {
             if (placeholders.hasOwnProperty(placeholder)) {
+                if (placeholders[placeholder] !== '' && result.indexOf(placeholder) !== -1) {
+                    resolvedAnyValue = true;
+                }
                 result = result.replace(new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g'), placeholders[placeholder]);
             }
         }
 
         // Clean up separators around removed placeholders: collapse runs of
         // whitespace + separator + whitespace into nothing when adjacent
-        // to the start/end or another separator.
-        result = result.replace(/^[\s·•|—–-]+/, '').replace(/[\s·•|—–-]+$/, '');
+        // to the start/end or another separator. The class covers the
+        // middle-dot family (· • ∙ ⋅ ⸱ ・), pipes and dashes.
+        result = result.replace(/^[\s·•∙⋅⸱・|—–-]+/, '').replace(/[\s·•∙⋅⸱・|—–-]+$/, '');
         // Collapse internal double-separators (e.g. "foo ·  · bar" → "foo · bar").
-        result = result.replace(/([·•|—–-])\s*([·•|—–-])/g, '$1');
+        result = result.replace(/([·•∙⋅⸱・|—–-])\s*([·•∙⋅⸱・|—–-])/g, '$1');
         result = result.replace(/\s{2,}/g, ' ').trim();
+
+        // Hide the box entirely when nothing of value remains: no placeholder
+        // resolved to a value, and only separators/punctuation are left behind.
+        // This avoids orphaned separators (e.g. "· · ·") when, say, EXIF data
+        // is absent for every placeholder in the format string.
+        if (!resolvedAnyValue && !/[\p{L}\p{N}]/u.test(result)) {
+            return '';
+        }
 
         return result;
     }
