@@ -3,7 +3,7 @@ Contributors: janzeman
 Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.0
 Tested up to: 7.0
-Requires PHP: 7.4
+Requires PHP: 7.0
 Stable tag: 2.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -144,9 +144,10 @@ The plugin provides clear feedback:
 == Changelog ==
 
 = 2.3.0 =
-* Tested with WordPress 7.0
 * New: Lightbox - an alternative to native fullscreen
 * Thanks to `@valterbruno` for the Lightbox feature request!
+* Basic shortcode real-time validation
+* Tested with WordPress 7.0
 
 = 2.2.2 =
 * Community feature bugfixes
