@@ -581,10 +581,10 @@ class JZSA_Community {
 				<div class="jzsa-community-status jzsa-community-status--connected">
 					<span class="dashicons dashicons-yes-alt" style="color:#46b450; font-size:22px; vertical-align:middle; margin-right:6px;"></span>
 					<strong><?php esc_html_e( 'Connected to Community', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-					<button type="button" class="button button-link jzsa-community-disconnect-btn" style="margin-left:14px; color:#d63638;">
+					<button type="button" class="button-link jzsa-community-disconnect-btn" style="margin-left:14px; color:#d63638;">
 						<?php esc_html_e( 'Disconnect', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</button>
-					<button type="button" class="button button-link jzsa-community-delete-account-entries-btn" style="margin-left:8px; color:#d63638;">
+					<button type="button" class="button-link jzsa-community-delete-account-entries-btn" style="margin-left:8px; color:#d63638;">
 						<?php esc_html_e( 'Disconnect and delete all my entries', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</button>
 				</div>
@@ -601,7 +601,7 @@ class JZSA_Community {
 						}
 						?>
 					</span>
-					<button type="button" class="button button-link" id="jzsa-display-name-edit-btn" style="font-size:13px;">
+					<button type="button" class="button-link" id="jzsa-display-name-edit-btn" style="font-size:13px;">
 						<?php esc_html_e( 'Edit', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</button>
 					<span id="jzsa-display-name-edit-row" style="display:none; align-items:center; gap:6px; flex-wrap:wrap;">
@@ -615,7 +615,7 @@ class JZSA_Community {
 						<button type="button" class="button" id="jzsa-display-name-cancel-btn">
 							<?php esc_html_e( 'Cancel', 'janzeman-shared-albums-for-google-photos' ); ?>
 						</button>
-						<button type="button" class="button button-link" id="jzsa-display-name-generate-btn" title="<?php esc_attr_e( 'Generate a random nickname', 'janzeman-shared-albums-for-google-photos' ); ?>">
+						<button type="button" class="button-link" id="jzsa-display-name-generate-btn" title="<?php esc_attr_e( 'Generate a random nickname', 'janzeman-shared-albums-for-google-photos' ); ?>">
 							<?php esc_html_e( '🎲 Generate nickname', 'janzeman-shared-albums-for-google-photos' ); ?>
 						</button>
 						<span class="description" style="font-size:12px; color:#666; margin-top:4px; display:block;"><?php esc_html_e( 'Required, minimum 3 letters.', 'janzeman-shared-albums-for-google-photos' ); ?></span>
@@ -635,7 +635,7 @@ class JZSA_Community {
 						}
 						?>
 					</span>
-					<button type="button" class="button button-link" id="jzsa-display-url-edit-btn" style="font-size:13px;">
+					<button type="button" class="button-link" id="jzsa-display-url-edit-btn" style="font-size:13px;">
 						<?php esc_html_e( 'Edit', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</button>
 					<span id="jzsa-display-url-edit-row" style="display:none; align-items:center; gap:6px; flex-wrap:wrap;">
@@ -676,7 +676,7 @@ class JZSA_Community {
 					<span class="description" style="white-space:nowrap;">
 						<?php esc_html_e( 'Required, minimum 3 letters.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</span>
-					<button type="button" class="button button-link" id="jzsa-connect-display-name-generate-btn" style="white-space:nowrap;" title="<?php esc_attr_e( 'Generate a random nickname', 'janzeman-shared-albums-for-google-photos' ); ?>">
+					<button type="button" class="button-link" id="jzsa-connect-display-name-generate-btn" style="white-space:nowrap;" title="<?php esc_attr_e( 'Generate a random nickname', 'janzeman-shared-albums-for-google-photos' ); ?>">
 						<?php esc_html_e( '🎲 Generate nickname', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</button>
 				</p>
