@@ -966,15 +966,9 @@ html.jzsa-lightbox-open body {
     transform: scale(var(--jzsa-controls-fs-scale));
     transform-origin: top right;
 }
-/* Always-visible inside the lightbox when both buttons coexist (jzsa-has-dual-expand).
-   Specificity 0,6,0 beats loading-state (0,4,0), not-loaded (0,5,0), and
-   fullscreen-hide (0,4,0) rules without needing !important. */
-.jzsa-album.swiper.jzsa-lightbox-active.jzsa-has-dual-expand > .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn) {
-    opacity: var(--jzsa-controls-visible-opacity);
-    visibility: visible;
-    pointer-events: auto;
-    animation: none;
-}
+/* The fullscreen button inside the lightbox follows the standard hide-until-hover
+   behaviour: the lightbox album carries .jzsa-is-fullscreen, so the desktop
+   reveal rules for .jzsa-is-fullscreen .swiper-button-fullscreen apply. */
 /* Hide the lightbox close button in native fullscreen — Esc (or the fullscreen
    button) exits back to the lightbox; no need for a separate close affordance. */
 .jzsa-album.jzsa-lightbox-active:fullscreen > .jzsa-lightbox-close,

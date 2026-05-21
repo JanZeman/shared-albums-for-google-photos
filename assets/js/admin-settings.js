@@ -1091,7 +1091,7 @@ function jzsaSetupCodeBlock( block ) {
 /**
  * Bind click handlers to copy buttons and wire up the Playground preview.
  */
-document.addEventListener( 'DOMContentLoaded', function () {
+function jzsaInitAdminSettings() {
 	var blocks = document.querySelectorAll( '.jzsa-code-block' );
 
 	blocks.forEach( function ( block ) {
@@ -1160,4 +1160,15 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	}
 
 	jzsaSetupLazyPreviews();
-} );
+}
+
+// Run on DOMContentLoaded, or immediately if the document already finished
+// parsing. A bare DOMContentLoaded listener silently never fires when the
+// script is loaded late, deferred, or async (e.g. by a caching/optimization
+// plugin, or a changed script-loading strategy) - which leaves the Playground
+// with no validation and no Copy/Apply/Revert wiring.
+if ( 'loading' === document.readyState ) {
+	document.addEventListener( 'DOMContentLoaded', jzsaInitAdminSettings );
+} else {
+	jzsaInitAdminSettings();
+}
