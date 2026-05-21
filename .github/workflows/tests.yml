@@ -94,6 +94,10 @@ jobs:
           done
 
           docker run --rm --network jzsa-ci --volumes-from jzsa-wordpress --user 33:33 \
+            -e WORDPRESS_DB_HOST="$WORDPRESS_DB_HOST" \
+            -e WORDPRESS_DB_NAME="$WORDPRESS_DB_NAME" \
+            -e WORDPRESS_DB_USER="$WORDPRESS_DB_USER" \
+            -e WORDPRESS_DB_PASSWORD="$WORDPRESS_DB_PASSWORD" \
             wordpress:cli wp core install \
               --path=/var/www/html \
               --url="$PLAYWRIGHT_BASE_URL" \
@@ -103,6 +107,10 @@ jobs:
               --admin_email=dev@example.test
 
           docker run --rm --network jzsa-ci --volumes-from jzsa-wordpress --user 33:33 \
+            -e WORDPRESS_DB_HOST="$WORDPRESS_DB_HOST" \
+            -e WORDPRESS_DB_NAME="$WORDPRESS_DB_NAME" \
+            -e WORDPRESS_DB_USER="$WORDPRESS_DB_USER" \
+            -e WORDPRESS_DB_PASSWORD="$WORDPRESS_DB_PASSWORD" \
             wordpress:cli wp plugin activate janzeman-shared-albums-for-google-photos \
               --path=/var/www/html
 
