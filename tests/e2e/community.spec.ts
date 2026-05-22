@@ -3,6 +3,28 @@ import { CONNECTED_PASS, CONNECTED_USER, DISCONNECTED_PASS, DISCONNECTED_USER, l
 
 const COMMUNITY_URL = '/wp-admin/admin.php?page=janzeman-shared-albums-for-google-photos-community';
 
+// =====================================================================
+// TEMPORARY: connected-user tests are disabled in CI.
+//
+// These describes require the WP user to be in the "community connected"
+// state, which depends on a real JWT in user_meta plus a reachable
+// community API. CI seeds neither, so every assertion against the
+// connected-only DOM fails.
+//
+// They still run locally (CI env var unset), so the dev workflow of
+// running the full suite before a release is unaffected.
+//
+// TO RE-ENABLE IN CI:
+//   1. Provision a permanent test account on the community API and
+//      capture its JWT.
+//   2. Add JZSA_E2E_CONNECTED_JWT as a GitHub Actions secret and pass
+//      it through to setup-fixtures.php in .github/workflows/tests.yml.
+//   3. Delete SKIP_CONNECTED_ON_CI and its four call sites below.
+//
+// Affected describes: lines tagged with SKIP_CONNECTED_ON_CI.
+// =====================================================================
+const SKIP_CONNECTED_ON_CI = !!process.env.CI;
+
 // Set the textContent of the publish shortcode contenteditable <code> element.
 async function setPublishShortcode(page: Page, value: string): Promise<void> {
     await page.evaluate((sc) => {
@@ -95,6 +117,8 @@ test.describe('Community - account (not connected)', () => {
 // -------------------------------------------------------------------------
 
 test.describe('Community - account (connected)', () => {
+    test.skip(SKIP_CONNECTED_ON_CI, 'Requires a connected community user; not configured on CI yet.');
+
     test.beforeEach(async ({ page }) => {
         await loginAs(page, CONNECTED_USER, CONNECTED_PASS);
         await page.goto(COMMUNITY_URL);
@@ -129,6 +153,8 @@ test.describe('Community - account (connected)', () => {
 // -------------------------------------------------------------------------
 
 test.describe('Community - My entries (connected)', () => {
+    test.skip(SKIP_CONNECTED_ON_CI, 'Requires a connected community user; not configured on CI yet.');
+
     test.beforeEach(async ({ page }) => {
         await loginAs(page, CONNECTED_USER, CONNECTED_PASS);
         await page.goto(COMMUNITY_URL);
@@ -197,6 +223,8 @@ test.describe('Community - browse section', () => {
 // -------------------------------------------------------------------------
 
 test.describe('Community - publish form validation', () => {
+    test.skip(SKIP_CONNECTED_ON_CI, 'Requires a connected community user; not configured on CI yet.');
+
     test.beforeEach(async ({ page }) => {
         await loginAs(page, CONNECTED_USER, CONNECTED_PASS);
         await page.goto(COMMUNITY_URL);
@@ -251,6 +279,8 @@ test.describe('Community - publish form validation', () => {
 // -------------------------------------------------------------------------
 
 test.describe('Community - publish form structure', () => {
+    test.skip(SKIP_CONNECTED_ON_CI, 'Requires a connected community user; not configured on CI yet.');
+
     test.beforeEach(async ({ page }) => {
         await loginAs(page, CONNECTED_USER, CONNECTED_PASS);
         await page.goto(COMMUNITY_URL);

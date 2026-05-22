@@ -145,12 +145,10 @@ The plugin provides clear feedback:
 == Changelog ==
 
 = 2.3.0 =
+* Tested with WordPress 7.0
 * New: Lightbox - an alternative to native fullscreen
 * Thanks to `@valterbruno` for the Lightbox feature request!
 * Basic shortcode real-time validation
-* Tested with WordPress 7.0
-
-= 2.2.1 =
 * Preparation of the Community feature for the release
 * Once more huge thanks to `@naveenbachwani` for sharp and inspiring feedback about this feature!
 
@@ -300,7 +298,7 @@ The "Share Your Shortcode" community feature is entirely optional. Browsing comm
 * **Site verification and correlation.** Your site's home URL is transmitted during connection so the community server can verify that the request really came from that WordPress site. The backend stores only a separate SHA-256 hash of the site URL. This hash cannot be reversed to recover the URL. Its purpose is abuse prevention, such as detecting if multiple accounts originate from the same WordPress installation.
 * **Community profile.** If you provide a community display name or display URL while connecting or later editing your community profile, those values are stored by the community server and may be shown publicly with your shared entries. These fields are optional and can be changed or cleared.
 * **User-provided account and entry data.** If you publish an entry, the following is stored on jzsa.janzeman.com: title, shortcode, album link extracted from the shortcode, optional description, optional tags, optional sample page URL, optional photographer / creator name, optional short bio, plugin version, and whether you opted into future public showcase consideration. If you provide a photographer / creator name, it is shown as the entry author; otherwise, an explicitly set community display name may be shown. Entry sample URLs are shown when provided; otherwise, your community display URL may be shown. You control this data.
-* **Album-link masking.** Public community responses show the shared shortcode with the Google Photos URL replaced by `link="[link]"`. The real shared album link is still stored by the community server so previews can render. Authenticated community users may receive a private preview shortcode containing the real link, but the visible shared shortcode remains masked.
+* **Album-link masking.** Public community responses show the shared shortcode with the Google Photos URL replaced by `link="hidden-album-link"`. This makes it clear that the album link is intentionally hidden. The real shared album link is still stored by the community server so previews can render. Authenticated community users may receive a private preview shortcode containing the real link, but the visible shared shortcode remains masked.
 * **Anonymous interaction signals.** When someone copies, applies, rates, or previews a community entry, an interaction event may be recorded. The community backend hashes the request IP it sees each day (SHA-256 of IP + date) and never stores it in plain text. Because WordPress proxies these calls, this is normally the WordPress site's server IP rather than the browser user's direct IP.
 * **Star ratings.** Authenticated community users can rate entries (1-5 stars). The rating is stored linked to the user's identity hash, not to any personal data.
 * **Account deletion.** You can delete your community account at any time from the plugin's admin page. Account deletion removes the stored identity hash, site hash, display name, display URL, and ratings you submitted. You can choose whether published entries are preserved as community examples or hidden at the same time.

@@ -51,6 +51,7 @@ function jzsaGetPreviewAjaxConfig() {
 var jzsaLazyPreviewObserver = null;
 var jzsaLazyPreviewBackgroundStarted = false;
 var jzsaLazyPreviewShortcodes = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
+var JZSA_MASKED_ALBUM_LINK = 'hidden-album-link';
 
 function jzsaSetLazyPreviewShortcode( lazyPreviewEl, shortcode ) {
 	if ( ! lazyPreviewEl ) {
@@ -169,12 +170,12 @@ function jzsaHighlightPlaceholders( codeEl ) {
 
 function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel, shortcodeOverride ) {
 	var shortcode = shortcodeOverride || ( codeEl.textContent || '' ).trim();
-	// Community browse cards display link="[link]" to mask the real URL.
+	// Community browse cards display link="hidden-album-link" to mask the real URL.
 	// Substitute the real URL back before sending to the preview AJAX endpoint.
-	if ( ! shortcodeOverride && shortcode.indexOf( '[link]' ) !== -1 && codeEl && codeEl.dataset && codeEl.dataset.revertShortcode ) {
+	if ( ! shortcodeOverride && /\blink\s*=\s*["']hidden-album-link["']/i.test( shortcode ) && codeEl && codeEl.dataset && codeEl.dataset.revertShortcode ) {
 		var urlMatch = codeEl.dataset.revertShortcode.match( /\blink\s*=\s*["']([^"']+)["']/i );
 		if ( urlMatch ) {
-			shortcode = shortcode.replace( '[link]', urlMatch[ 1 ] );
+			shortcode = shortcode.replace( /(\blink\s*=\s*["'])hidden-album-link(["'])/i, '$1' + urlMatch[ 1 ] + '$2' );
 		}
 	}
 	var ajaxConfig = jzsaGetPreviewAjaxConfig();
@@ -706,8 +707,8 @@ function jzsaValidateValue( name, rawValue ) {
 	}
 
 	if ( 'url' === rule.type ) {
-		// Allow [link]-style masks and {placeholder} tokens used in samples.
-		if ( /^\[[^\]]*\]$/.test( value ) || value.indexOf( '{' ) !== -1 ) {
+		// Allow masked album links and {placeholder} tokens used in samples.
+		if ( JZSA_MASKED_ALBUM_LINK === lower || value.indexOf( '{' ) !== -1 ) {
 			return null;
 		}
 		if ( ! /^https?:\/\//i.test( value ) ) {
@@ -799,8 +800,8 @@ function jzsaValidateShortcode( raw ) {
 	}
 
 	// Single quote-aware pass: track quote state and record the positions of
-	// brackets that sit outside quoted values (so [link] inside a value or a
-	// "]" inside an info string never trips the structural checks).
+	// brackets that sit outside quoted values (so a "]" inside an info string
+	// never trips the structural checks).
 	var quote = null;
 	var opens = [];
 	var closes = [];

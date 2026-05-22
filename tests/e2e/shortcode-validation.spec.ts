@@ -132,6 +132,13 @@ test.describe('Shortcode validation - parameter values', () => {
         await expect(area).toContainText('expects a color');
     });
 
+    test('the community masked album link produces no warning', async ({ page }) => {
+        await setShortcode(page, '[jzsa-album link="hidden-album-link" mode="gallery"]');
+        const area = page.locator(VALIDATION);
+        await expect(area).not.toBeVisible();
+        await expect(area).not.toHaveClass(/jzsa-code-validation--(warning|error)/);
+    });
+
     test('valid values across types produce no message', async ({ page }) => {
         await setShortcode(
             page,
