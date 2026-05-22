@@ -285,7 +285,7 @@ test.describe('Community - mocked AJAX flows', () => {
                 const entry = {
                     id: 9001,
                     title: 'Renderable Community Entry',
-                    shortcode: '[jzsa-album link="[link]" mode="gallery"]',
+                    shortcode: '[jzsa-album link="hidden-album-link" mode="gallery"]',
                     preview_shortcode: `[jzsa-album link="${albumUrl}" mode="gallery"]`,
                     description: 'Uses a real album link so the preview renders.',
                     tags: ['gallery'],
@@ -317,7 +317,7 @@ test.describe('Community - mocked AJAX flows', () => {
         await expect(preview).toHaveAttribute('data-lazy-state', 'loaded', { timeout: 20_000 });
 
         // A valid album link must render a gallery, not the "No Photos Found"
-        // error box that an invalid link (e.g. link="[link]") produces.
+        // error box that an invalid link (e.g. link="hidden-album-link") produces.
         // Gallery mode renders the grid plus a slideshow sub-element; assert the
         // grid specifically and that real photos were resolved.
         const gallery = preview.locator('.jzsa-album[data-mode="gallery"]');

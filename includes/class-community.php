@@ -716,7 +716,8 @@ class JZSA_Community {
 				</span>
 				<div>
 					<strong><?php esc_html_e( 'Who sees what?', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-					<?php esc_html_e( 'Other WP admins see your text, tags, sample URL, masked shortcode, preview, and optional creator info. The real album link is stored only for editing and preview rendering.', 'janzeman-shared-albums-for-google-photos' ); ?>
+					<?php esc_html_e( 'Other WP admins see what you decide to share below.', 'janzeman-shared-albums-for-google-photos' ); ?>
+					<strong><?php esc_html_e( 'They do not see the real album link as plain text', 'janzeman-shared-albums-for-google-photos' ); ?></strong><?php esc_html_e( '; published shortcodes replace it with ', 'janzeman-shared-albums-for-google-photos' ); ?><strong><?php esc_html_e( 'link="hidden-album-link"', 'janzeman-shared-albums-for-google-photos' ); ?></strong><?php esc_html_e( '. The unmasked link is stored only for editing and preview rendering.', 'janzeman-shared-albums-for-google-photos' ); ?>
 				</div>
 			</div>
 			<table class="form-table jzsa-community-publish-table">
@@ -762,7 +763,7 @@ class JZSA_Community {
 							<?php esc_html_e( 'Paste your shortcode below and click the Apply button to preview what you are about to share.', 'janzeman-shared-albums-for-google-photos' ); ?>
 						</p>
 						<p class="description">
-							<?php esc_html_e( 'Privacy note: Published shortcodes show link="[link]". The real album link is kept only for editing and preview rendering.', 'janzeman-shared-albums-for-google-photos' ); ?>
+							<?php esc_html_e( 'Privacy note: Published shortcodes show link="hidden-album-link" instead of the real album link. The unmasked link is kept only for editing and preview rendering.', 'janzeman-shared-albums-for-google-photos' ); ?>
 						</p>
 						<div class="jzsa-code-block jzsa-community-publish-shortcode-block">
 							<code id="jzsa-pub-shortcode" data-placeholder='[jzsa-album link="https://photos.google.com/share/..." mode="slider"]' aria-label="<?php esc_attr_e( 'Shortcode', 'janzeman-shared-albums-for-google-photos' ); ?>"></code>

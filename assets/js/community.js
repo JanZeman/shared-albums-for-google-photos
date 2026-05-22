@@ -51,7 +51,7 @@
 	function maskShortcodeAlbumLink( shortcode ) {
 		return String( shortcode || '' ).replace(
 			/(\blink\s*=\s*)(["'])(.*?)\2/i,
-			'$1$2[link]$2'
+			'$1$2hidden-album-link$2'
 		);
 	}
 
@@ -654,7 +654,7 @@
 			shortcodeHelp.textContent = 'Edit your shortcode below and click the Apply button to preview your changes.';
 			var shortcodePrivacy = document.createElement( 'p' );
 			shortcodePrivacy.className = 'description';
-			shortcodePrivacy.textContent = 'Privacy note: Published shortcodes show link="[link]". The real album link is kept only for editing and preview rendering.';
+			shortcodePrivacy.textContent = 'Privacy note: Published shortcodes show link="hidden-album-link" instead of the real album link. The unmasked link is kept only for editing and preview rendering.';
 			var ownedPreview = document.createElement( 'div' );
 			ownedPreview.className = 'jzsa-preview-container jzsa-lazy-preview jzsa-community-publish-preview';
 			if ( typeof jzsaSetLazyPreviewShortcode === 'function' ) {
