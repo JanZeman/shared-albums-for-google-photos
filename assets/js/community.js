@@ -626,7 +626,23 @@
 				help.textContent = i18n( 'showcaseConsentHelp' );
 				wrapEl.appendChild( label );
 				wrapEl.appendChild( help );
-				return { wrapper: wrapEl, checkbox: checkbox };
+				var hideLabel = document.createElement( 'label' );
+				hideLabel.className = 'jzsa-community-showcase-shortcode-visibility';
+				var hideCheckbox = document.createElement( 'input' );
+				hideCheckbox.type = 'checkbox';
+				hideCheckbox.className = 'jzsa-community-my-entry-hide-shortcode-checkbox';
+				hideCheckbox.checked = entry.public_showcase_hide_shortcode ? true : false;
+				hideCheckbox.disabled = true;
+				var hideText = document.createElement( 'span' );
+				hideText.textContent = i18n( 'showcaseHideShortcodeLabel' );
+				hideLabel.appendChild( hideCheckbox );
+				hideLabel.appendChild( hideText );
+				var hideHelp = document.createElement( 'p' );
+				hideHelp.className = 'description jzsa-community-showcase-shortcode-visibility-help';
+				hideHelp.textContent = i18n( 'showcaseHideShortcodeHelp' );
+				wrapEl.appendChild( hideLabel );
+				wrapEl.appendChild( hideHelp );
+				return { wrapper: wrapEl, checkbox: checkbox, hideCheckbox: hideCheckbox };
 			}
 
 			var topConsent = createConsentBlock( 'jzsa-my-entry-consent-top-' + entry.id );
@@ -734,9 +750,16 @@
 			saveRow.appendChild( bottomConsent.wrapper );
 
 			var consentCheckboxes = [ topConsent.checkbox, bottomConsent.checkbox ];
+			var hideShortcodeCheckboxes = [ topConsent.hideCheckbox, bottomConsent.hideCheckbox ];
 			function syncOwnedShowcaseConsent( checked ) {
 				consentCheckboxes.forEach( function ( checkbox ) {
 					checkbox.checked = checked;
+				} );
+				hideShortcodeCheckboxes.forEach( function ( checkbox ) {
+					checkbox.disabled = ! checked;
+					if ( ! checked ) {
+						checkbox.checked = false;
+					}
 				} );
 				syncShowcaseRequiredState(
 					topConsent.checkbox,
@@ -744,10 +767,20 @@
 					[ descriptionRequiredBadge, urlRequiredBadge, photographerRequiredBadge ]
 				);
 			}
+			function syncOwnedHideShortcode( checked ) {
+				hideShortcodeCheckboxes.forEach( function ( checkbox ) {
+					checkbox.checked = checked;
+				} );
+			}
 			syncOwnedShowcaseConsent( entry.public_showcase_consent ? true : false );
 			consentCheckboxes.forEach( function ( checkbox ) {
 				checkbox.addEventListener( 'change', function () {
 					syncOwnedShowcaseConsent( checkbox.checked );
+				} );
+			} );
+			hideShortcodeCheckboxes.forEach( function ( checkbox ) {
+				checkbox.addEventListener( 'change', function () {
+					syncOwnedHideShortcode( checkbox.checked );
 				} );
 			} );
 
@@ -891,6 +924,7 @@
 		var photographerInput = block.querySelector( '.jzsa-community-my-entry-photographer-name-input' );
 		var bioInput = block.querySelector( '.jzsa-community-my-entry-photographer-bio-input' );
 		var consentCheckbox = block.querySelector( '.jzsa-community-my-entry-consent-checkbox' );
+		var hideShortcodeCheckbox = block.querySelector( '.jzsa-community-my-entry-hide-shortcode-checkbox' );
 		if ( urlInput ) {
 			urlInput.addEventListener( 'blur', function () {
 				var val = urlInput.value.trim();
@@ -907,6 +941,7 @@
 				var tags = tagsInput ? tagsInput.value.trim() : '';
 				var siteUrl = normalizeUrlInput( urlInput ? urlInput.value : '' );
 				var showcaseConsent = consentCheckbox ? consentCheckbox.checked : false;
+				var hideShortcode = showcaseConsent && hideShortcodeCheckbox ? hideShortcodeCheckbox.checked : false;
 				var description = descInput ? descInput.value.trim() : '';
 				var photographerName = photographerInput ? photographerInput.value.trim() : '';
 				var photographerBio = bioInput ? bioInput.value.trim() : '';
@@ -938,6 +973,7 @@
 					photographer_name: photographerName,
 					photographer_bio: photographerBio,
 					public_showcase_consent: showcaseConsent,
+					public_showcase_hide_shortcode: hideShortcode,
 				} )
 					.then( function ( res ) {
 						saveBtn.disabled = false;
@@ -1435,6 +1471,9 @@
 		var showcaseConsentToggles = Array.prototype.slice.call(
 			document.querySelectorAll( '.jzsa-pub-showcase-consent-toggle' )
 		);
+		var hideShortcodeToggles = Array.prototype.slice.call(
+			document.querySelectorAll( '.jzsa-pub-showcase-hide-shortcode-toggle' )
+		);
 		var publishRequiredControls = [
 			qs( '#jzsa-pub-description' ),
 			qs( '#jzsa-pub-site-url' ),
@@ -1452,13 +1491,30 @@
 			showcaseConsentToggles.forEach( function ( toggle ) {
 				toggle.checked = checked;
 			} );
+			hideShortcodeToggles.forEach( function ( toggle ) {
+				toggle.disabled = ! checked;
+				if ( ! checked ) {
+					toggle.checked = false;
+				}
+			} );
 			syncShowcaseRequiredState( showcaseConsentEl, publishRequiredControls, publishRequiredBadges );
+		}
+
+		function syncPublishHideShortcode( checked ) {
+			hideShortcodeToggles.forEach( function ( toggle ) {
+				toggle.checked = checked;
+			} );
 		}
 
 		syncPublishShowcaseConsent( showcaseConsentEl ? showcaseConsentEl.checked : false );
 		showcaseConsentToggles.forEach( function ( toggle ) {
 			toggle.addEventListener( 'change', function () {
 				syncPublishShowcaseConsent( toggle.checked );
+			} );
+		} );
+		hideShortcodeToggles.forEach( function ( toggle ) {
+			toggle.addEventListener( 'change', function () {
+				syncPublishHideShortcode( toggle.checked );
 			} );
 		} );
 
@@ -1471,6 +1527,7 @@
 			var photographerName = ( qs( '#jzsa-pub-photographer-name' ) || {} ).value || '';
 			var photographerBio = ( qs( '#jzsa-pub-photographer-bio' ) || {} ).value || '';
 			var showcaseConsent = ( qs( '#jzsa-pub-showcase-consent' ) || {} ).checked || false;
+			var hideShortcode = showcaseConsent && ( ( qs( '#jzsa-pub-showcase-hide-shortcode' ) || {} ).checked || false );
 
 			title     = title.trim();
 			shortcode = shortcode.trim();
@@ -1507,6 +1564,7 @@
 				photographer_name:         photographerName,
 				photographer_bio:          photographerBio,
 				public_showcase_consent:   showcaseConsent,
+				public_showcase_hide_shortcode: hideShortcode,
 			} )
 				.then( function ( res ) {
 					btn.disabled = false;

@@ -487,6 +487,28 @@
     margin-bottom: 0;
 }
 
+.jzsa-community-showcase-shortcode-visibility {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    margin-left: 32px;
+    max-width: 720px;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+.jzsa-community-showcase-shortcode-visibility input {
+    flex-shrink: 0;
+}
+
+.jzsa-community-showcase-consent-cell p.jzsa-community-showcase-shortcode-visibility-help,
+.jzsa-community-showcase-consent-bottom p.jzsa-community-showcase-shortcode-visibility-help,
+.jzsa-community-my-entry-consent-block p.jzsa-community-showcase-shortcode-visibility-help {
+    margin-top: 4px;
+    margin-left: 60px !important;
+}
+
 /* ---- Publish form inside details ---- */
 
 .jzsa-community-publish-details {

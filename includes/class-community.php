@@ -54,15 +54,17 @@ class JZSA_Community {
 	 */
 	private static function get_i18n_strings() {
 		return array(
-			'showcaseConsentLabel'    => __( 'Allow this example to be considered for a future public showcase.', 'janzeman-shared-albums-for-google-photos' ),
-			'showcaseConsentHelp'     => __( 'If selected, this shortcode example and its rendered preview may later appear on a public plugin showcase outside this admin page. Description, sample page URL, and creator name are required for showcase consideration.', 'janzeman-shared-albums-for-google-photos' ),
-			'showcaseRequiredBadge'   => __( 'Required for showcase', 'janzeman-shared-albums-for-google-photos' ),
-			'showcaseRequiredMessage' => __( 'Description, sample page URL, and photographer / creator name are required for public showcase consideration.', 'janzeman-shared-albums-for-google-photos' ),
-			'descriptionLabel'        => __( 'Description', 'janzeman-shared-albums-for-google-photos' ),
-			'siteUrlLabel'            => __( 'Sample page URL', 'janzeman-shared-albums-for-google-photos' ),
-			'photographerNameLabel'   => __( 'Photographer / creator name or nickname', 'janzeman-shared-albums-for-google-photos' ),
-			'photographerBioLabel'    => __( 'Short bio / intro', 'janzeman-shared-albums-for-google-photos' ),
-			'photographerBioHelp'     => __( 'A short note about the photographer, creator, studio, or website behind this example.', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseConsentLabel'       => __( 'Allow this example to be considered for a future public showcase.', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseConsentHelp'        => __( 'If selected, this shortcode example and its rendered preview may later appear on a public plugin showcase outside this admin page. Description, sample page URL, and creator name are required for showcase consideration.', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseHideShortcodeLabel' => __( 'Prefer to share only photos on the public showcase; hide my shortcode there.', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseHideShortcodeHelp'  => __( 'Available only when public showcase consideration is enabled. The community directory still shows the masked shortcode.', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseRequiredBadge'      => __( 'Required for showcase', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseRequiredMessage'    => __( 'Description, sample page URL, and photographer / creator name are required for public showcase consideration.', 'janzeman-shared-albums-for-google-photos' ),
+			'descriptionLabel'           => __( 'Description', 'janzeman-shared-albums-for-google-photos' ),
+			'siteUrlLabel'               => __( 'Sample page URL', 'janzeman-shared-albums-for-google-photos' ),
+			'photographerNameLabel'      => __( 'Photographer / creator name or nickname', 'janzeman-shared-albums-for-google-photos' ),
+			'photographerBioLabel'       => __( 'Short bio / intro', 'janzeman-shared-albums-for-google-photos' ),
+			'photographerBioHelp'        => __( 'A short note about the photographer, creator, studio, or website behind this example.', 'janzeman-shared-albums-for-google-photos' ),
 		);
 	}
 
@@ -733,6 +735,13 @@ class JZSA_Community {
 						<p class="description" style="margin-top:6px;">
 							<?php echo esc_html( $i18n['showcaseConsentHelp'] ); ?>
 						</p>
+						<label class="jzsa-community-showcase-shortcode-visibility">
+							<input type="checkbox" id="jzsa-pub-showcase-hide-shortcode" class="jzsa-pub-showcase-hide-shortcode-toggle" value="1" disabled>
+							<span><?php echo esc_html( $i18n['showcaseHideShortcodeLabel'] ); ?></span>
+						</label>
+						<p class="description jzsa-community-showcase-shortcode-visibility-help">
+							<?php echo esc_html( $i18n['showcaseHideShortcodeHelp'] ); ?>
+						</p>
 					</td>
 				</tr>
 				<tr>
@@ -845,6 +854,13 @@ class JZSA_Community {
 				</label>
 				<p class="description" style="margin-top:6px;">
 					<?php echo esc_html( $i18n['showcaseConsentHelp'] ); ?>
+				</p>
+				<label class="jzsa-community-showcase-shortcode-visibility">
+					<input type="checkbox" id="jzsa-pub-showcase-hide-shortcode-bottom" class="jzsa-pub-showcase-hide-shortcode-toggle" value="1" disabled>
+					<span><?php echo esc_html( $i18n['showcaseHideShortcodeLabel'] ); ?></span>
+				</label>
+				<p class="description jzsa-community-showcase-shortcode-visibility-help">
+					<?php echo esc_html( $i18n['showcaseHideShortcodeHelp'] ); ?>
 				</p>
 			</div>
 			<p style="margin-top:12px;">
@@ -1150,6 +1166,7 @@ class JZSA_Community {
 		$photographer_name = sanitize_text_field( wp_unslash( $_POST['photographer_name'] ?? '' ) );
 		$photographer_bio  = sanitize_textarea_field( wp_unslash( $_POST['photographer_bio'] ?? '' ) );
 		$consent     = filter_var( wp_unslash( $_POST['public_showcase_consent'] ?? false ), FILTER_VALIDATE_BOOLEAN );
+		$hide_shortcode = $consent && filter_var( wp_unslash( $_POST['public_showcase_hide_shortcode'] ?? false ), FILTER_VALIDATE_BOOLEAN );
 		if ( ! empty( $entry_url ) && ! preg_match( '#^https?://#i', $entry_url ) ) {
 			$entry_url = 'https://' . $entry_url;
 		}
@@ -1174,7 +1191,8 @@ class JZSA_Community {
 			'site_url'                => $entry_url ?: null,
 			'photographer_name'       => $photographer_name ?: null,
 			'photographer_bio'        => $photographer_bio ?: null,
-			'public_showcase_consent' => $consent,
+			'public_showcase_consent'        => $consent,
+			'public_showcase_hide_shortcode' => $hide_shortcode,
 		);
 
 		$response = wp_remote_post(
@@ -1396,6 +1414,9 @@ class JZSA_Community {
 		$consent = array_key_exists( 'public_showcase_consent', $_POST )
 			? filter_var( wp_unslash( $_POST['public_showcase_consent'] ), FILTER_VALIDATE_BOOLEAN )
 			: null;
+		$hide_shortcode = array_key_exists( 'public_showcase_hide_shortcode', $_POST )
+			? filter_var( wp_unslash( $_POST['public_showcase_hide_shortcode'] ), FILTER_VALIDATE_BOOLEAN )
+			: null;
 
 		if ( ! $entry_id ) {
 			wp_send_json_error( __( 'Invalid entry ID.', 'janzeman-shared-albums-for-google-photos' ) );
@@ -1424,6 +1445,12 @@ class JZSA_Community {
 		);
 		if ( $consent !== null ) {
 			$body['public_showcase_consent'] = $consent;
+			if ( false === $consent ) {
+				$body['public_showcase_hide_shortcode'] = false;
+			}
+		}
+		if ( $hide_shortcode !== null ) {
+			$body['public_showcase_hide_shortcode'] = true === $consent && $hide_shortcode;
 		}
 
 		$response = wp_remote_request(

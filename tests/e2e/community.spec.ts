@@ -272,6 +272,24 @@ test.describe('Community - publish form validation', () => {
         await page.click('#jzsa-community-publish-btn');
         await expect(page.locator('#jzsa-publish-result')).toContainText('required', { timeout: 5_000 });
     });
+
+    test('showcase shortcode hiding is disabled until showcase consent is enabled', async ({ page }) => {
+        const hideShortcode = page.locator('#jzsa-pub-showcase-hide-shortcode');
+
+        await expect(hideShortcode).toBeDisabled();
+        await expect(hideShortcode).not.toBeChecked();
+
+        await page.check('#jzsa-pub-showcase-consent');
+        await expect(hideShortcode).toBeEnabled();
+
+        await hideShortcode.check();
+        await expect(page.locator('#jzsa-pub-showcase-hide-shortcode-bottom')).toBeChecked();
+
+        await page.uncheck('#jzsa-pub-showcase-consent');
+        await expect(hideShortcode).toBeDisabled();
+        await expect(hideShortcode).not.toBeChecked();
+        await expect(page.locator('#jzsa-pub-showcase-hide-shortcode-bottom')).not.toBeChecked();
+    });
 });
 
 // -------------------------------------------------------------------------

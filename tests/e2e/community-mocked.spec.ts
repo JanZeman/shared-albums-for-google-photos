@@ -55,6 +55,7 @@ async function installCommunityAjaxMock(page: Page): Promise<{ requests: () => P
             avg_rating: 3.8,
             rating_count: 4,
             public_showcase_consent: true,
+            public_showcase_hide_shortcode: false,
             author: {
                 display_name: 'Mock Author',
                 display_url: 'https://example.test',
@@ -110,6 +111,7 @@ async function installCommunityAjaxMock(page: Page): Promise<{ requests: () => P
                         photographer_name: fields.photographer_name,
                         photographer_bio: fields.photographer_bio,
                         public_showcase_consent: fields.public_showcase_consent === 'true',
+                        public_showcase_hide_shortcode: fields.public_showcase_hide_shortcode === 'true',
                     });
                     browseEntries.unshift(published);
                     myEntries.unshift(published);
@@ -120,7 +122,14 @@ async function installCommunityAjaxMock(page: Page): Promise<{ requests: () => P
                 case 'jzsa_community_update_entry':
                     myEntries = myEntries.map((entry) => (
                         String(entry.id) === fields.entry_id
-                            ? { ...entry, title: fields.title, description: fields.description, site_url: fields.site_url }
+                            ? {
+                                ...entry,
+                                title: fields.title,
+                                description: fields.description,
+                                site_url: fields.site_url,
+                                public_showcase_consent: fields.public_showcase_consent === 'true',
+                                public_showcase_hide_shortcode: fields.public_showcase_hide_shortcode === 'true',
+                            }
                             : entry
                     ));
                     payload = { success: true, data: myEntries.find((entry) => String(entry.id) === fields.entry_id) };
@@ -214,6 +223,8 @@ test.describe('Community - mocked AJAX flows', () => {
         await page.fill('#jzsa-pub-tags', 'gallery,test');
         await page.fill('#jzsa-pub-site-url', 'example.test/published');
         await page.fill('#jzsa-pub-photographer-name', 'Mock Publisher');
+        await page.check('#jzsa-pub-showcase-consent');
+        await page.check('#jzsa-pub-showcase-hide-shortcode');
         await page.click('#jzsa-community-publish-btn');
 
         await expect(page.locator('#jzsa-publish-result')).toContainText('Published!', { timeout: 10_000 });
@@ -223,6 +234,8 @@ test.describe('Community - mocked AJAX flows', () => {
             tags: 'gallery,test',
             site_url: 'https://example.test/published',
             photographer_name: 'Mock Publisher',
+            public_showcase_consent: 'true',
+            public_showcase_hide_shortcode: 'true',
         });
         expect(publish?.fields.shortcode).toContain('mode="gallery"');
         await expect.poll(async () => (await mock.requests()).filter((request) => request.action === 'jzsa_community_load_my_entries').length).toBeGreaterThanOrEqual(1);
