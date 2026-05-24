@@ -354,6 +354,41 @@ class JZSA_Community {
 	private static $cached_connection_state = null;
 
 	/**
+	 * Mirror display_name and display_url from a successful /v1/me response
+	 * into the current user's meta. The server is the source of truth; if a
+	 * field comes back empty or null, the local mirror is cleared so the UI
+	 * reflects that state rather than showing a stale value.
+	 *
+	 * @param array $response Raw wp_remote_get response from /v1/me.
+	 */
+	private static function sync_profile_meta_from_me_response( $response ) {
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		if ( ! is_array( $body ) ) {
+			return;
+		}
+
+		$user_id = get_current_user_id();
+
+		if ( array_key_exists( 'display_name', $body ) ) {
+			$name = sanitize_text_field( (string) ( $body['display_name'] ?? '' ) );
+			if ( '' !== $name ) {
+				update_user_meta( $user_id, self::OPT_DISPLAY_NAME, $name );
+			} else {
+				delete_user_meta( $user_id, self::OPT_DISPLAY_NAME );
+			}
+		}
+
+		if ( array_key_exists( 'display_url', $body ) ) {
+			$url = sanitize_url( (string) ( $body['display_url'] ?? '' ) );
+			if ( '' !== $url ) {
+				update_user_meta( $user_id, self::OPT_DISPLAY_URL, $url );
+			} else {
+				delete_user_meta( $user_id, self::OPT_DISPLAY_URL );
+			}
+		}
+	}
+
+	/**
 	 * Verify the stored JWT against the community server.
 	 *
 	 * Returns one of three states:
@@ -364,6 +399,11 @@ class JZSA_Community {
 	 * Result is cached for the duration of the current request so calling this
 	 * method from both enqueue_scripts() and render_content() costs only one
 	 * outbound HTTP request.
+	 *
+	 * On a successful response, display_name and display_url from the server
+	 * are mirrored into user meta so the local cache stays in sync with the
+	 * authoritative value. If the API is unreachable, user meta is left alone
+	 * and the UI falls back to whatever was last cached.
 	 *
 	 * @return string 'connected' | 'disconnected' | 'server_error'
 	 */
@@ -398,6 +438,7 @@ class JZSA_Community {
 		$code = wp_remote_retrieve_response_code( $response );
 
 		if ( 200 === $code ) {
+			self::sync_profile_meta_from_me_response( $response );
 			self::$cached_connection_state = 'connected';
 			return self::$cached_connection_state;
 		}
