@@ -291,7 +291,7 @@ This plugin does not collect or store any user data for its core gallery functio
 
 = Community Directory (optional, opt-in) =
 
-The "Share Your Shortcode" community feature is entirely optional. Browsing community examples loads entries from jzsa.janzeman.com. Account, rating, and publishing features are active only when you choose to connect to the community.
+The "Share Your Shortcode" community feature is entirely optional. Browsing community samples loads entries from jzsa.janzeman.com. Account, rating, and publishing features are active only when you choose to connect to the community.
 
 * **No email is ever transmitted.** Your WordPress admin email and site URL are combined and hashed on your server using SHA-256 before anything is sent. Only this identity hash - from which the original email cannot be recovered - is transmitted.
 * **Identity stored as a one-way hash.** The backend applies a second cryptographic layer (HMAC-SHA256 with a server-side secret), so the stored value cannot be reversed even with access to the database.
@@ -301,7 +301,7 @@ The "Share Your Shortcode" community feature is entirely optional. Browsing comm
 * **Album-link masking.** Public community responses show the shared shortcode with the Google Photos URL replaced by `link="hidden-album-link"`. This makes it clear that the album link is intentionally hidden. The real shared album link is still stored by the community server so previews can render. Authenticated community users may receive a private preview shortcode containing the real link, but the visible shared shortcode remains masked.
 * **Anonymous interaction signals.** When someone copies, applies, rates, or previews a community entry, an interaction event may be recorded. The community backend hashes the request IP it sees each day (SHA-256 of IP + date) and never stores it in plain text. Because WordPress proxies these calls, this is normally the WordPress site's server IP rather than the browser user's direct IP.
 * **Star ratings.** Authenticated community users can rate entries (1-5 stars). The rating is stored linked to the user's identity hash, not to any personal data.
-* **Account deletion.** You can delete your community account at any time from the plugin's admin page. Account deletion removes the stored identity hash, site hash, display name, display URL, and ratings you submitted. You can choose whether published entries are preserved as community examples or hidden at the same time.
+* **Account deletion.** You can delete your community account at any time from the plugin's admin page. Account deletion removes the stored identity hash, site hash, display name, display URL, and ratings you submitted. You can choose whether published entries are preserved as community samples or hidden at the same time.
 * **No tracking.** The community backend does not use cookies, analytics, or advertising.
 
 == Support ==

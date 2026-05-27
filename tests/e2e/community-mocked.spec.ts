@@ -256,7 +256,7 @@ test.describe('Community - mocked AJAX flows', () => {
     });
 
     test('my entry save and delete use mocked update/delete endpoints', async ({ page }) => {
-        test.skip(SKIP_CONNECTED_ON_CI, 'Requires the connected-only "Your Shared Examples" section; not configured on CI yet.');
+        test.skip(SKIP_CONNECTED_ON_CI, 'Requires the connected-only "Edit / Delete Your Published Samples" section; not configured on CI yet.');
         const mock = await installCommunityAjaxMock(page);
         await page.goto(COMMUNITY_URL);
         await openMyEntriesSection(page);

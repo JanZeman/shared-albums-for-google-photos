@@ -107,7 +107,7 @@ test.describe('Community - account (not connected)', () => {
         await expect(page.locator('.jzsa-community-share-section')).not.toBeAttached();
     });
 
-    test('"Your Shared Examples" section is not rendered when not connected', async ({ page }) => {
+    test('"Edit / Delete Your Published Samples" section is not rendered when not connected', async ({ page }) => {
         await expect(page.locator('.jzsa-community-my-section')).not.toBeAttached();
     });
 });
@@ -143,7 +143,7 @@ test.describe('Community - account (connected)', () => {
         await expect(page.locator('.jzsa-community-share-section')).toBeAttached();
     });
 
-    test('"Your Shared Examples" section is present', async ({ page }) => {
+    test('"Edit / Delete Your Published Samples" section is present', async ({ page }) => {
         await expect(page.locator('.jzsa-community-my-section')).toBeAttached();
     });
 });

@@ -54,8 +54,8 @@ class JZSA_Community {
 	 */
 	private static function get_i18n_strings() {
 		return array(
-			'showcaseConsentLabel'       => __( 'Allow this example to be considered for a future public showcase.', 'janzeman-shared-albums-for-google-photos' ),
-			'showcaseConsentHelp'        => __( 'If selected, this shortcode example and its rendered preview may later appear on a public plugin showcase outside this admin page. Description, sample page URL, and creator name are required for showcase consideration.', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseConsentLabel'       => __( 'Allow this sample to be considered for a future public showcase.', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseConsentHelp'        => __( 'If selected, this shortcode sample and its rendered preview may later appear on a public plugin showcase outside this admin page. Description, sample page URL, and creator name are required for showcase consideration.', 'janzeman-shared-albums-for-google-photos' ),
 			'showcaseHideShortcodeLabel' => __( 'Prefer to share only photos on the public showcase; hide my shortcode there.', 'janzeman-shared-albums-for-google-photos' ),
 			'showcaseHideShortcodeHelp'  => __( 'Available only when public showcase consideration is enabled. The community directory still shows the masked shortcode.', 'janzeman-shared-albums-for-google-photos' ),
 			'showcaseRequiredBadge'      => __( 'Required for showcase', 'janzeman-shared-albums-for-google-photos' ),
@@ -64,7 +64,7 @@ class JZSA_Community {
 			'siteUrlLabel'               => __( 'Sample page URL', 'janzeman-shared-albums-for-google-photos' ),
 			'photographerNameLabel'      => __( 'Photographer / creator name or nickname', 'janzeman-shared-albums-for-google-photos' ),
 			'photographerBioLabel'       => __( 'Short bio / intro', 'janzeman-shared-albums-for-google-photos' ),
-			'photographerBioHelp'        => __( 'A short note about the photographer, creator, studio, or website behind this example.', 'janzeman-shared-albums-for-google-photos' ),
+			'photographerBioHelp'        => __( 'A short note about the photographer, creator, studio, or website behind this sample.', 'janzeman-shared-albums-for-google-photos' ),
 		);
 	}
 
@@ -579,21 +579,21 @@ class JZSA_Community {
 
 		<div class="jzsa-community-intro" style="margin:0px 24px 16px 24px;">
 			<p class="jzsa-help-text" style="margin:0;">
-				<?php esc_html_e( 'This page is a friendly space for sharing album presentation ideas. Browse shortcode examples from other plugin users, learn from their settings, and adapt the layouts to make your own albums more useful, personal, or beautiful.', 'janzeman-shared-albums-for-google-photos' ); ?>
+				<?php esc_html_e( 'This page is a friendly space for sharing album presentation ideas. Browse shortcode samples from other plugin users, learn from their settings, and adapt the layouts to make your own albums more useful, personal, or beautiful.', 'janzeman-shared-albums-for-google-photos' ); ?>
 			</p>
 			<div class="jzsa-community-audience-legend" aria-label="<?php esc_attr_e( 'Audience legend', 'janzeman-shared-albums-for-google-photos' ); ?>">
 				<span class="jzsa-community-audience-chip jzsa-community-audience-chip--plugin">
 					<span class="dashicons dashicons-admin-plugins" aria-hidden="true"></span>
 					<span>
 						<strong><?php esc_html_e( 'Plugin community', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-						<?php esc_html_e( 'WordPress admins and site builders using this plugin can share and explore shortcode examples here.', 'janzeman-shared-albums-for-google-photos' ); ?>
+						<?php esc_html_e( 'WordPress admins and site builders using this plugin can share and explore shortcode samples here.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</span>
 				</span>
 				<span class="jzsa-community-audience-chip jzsa-community-audience-chip--public">
 					<span class="dashicons dashicons-admin-site-alt3" aria-hidden="true"></span>
 					<span>
 						<strong><?php esc_html_e( 'Public showcase', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-						<?php esc_html_e( 'Selected examples may be featured on a public website page for broader audience, but only when the author has given consent.', 'janzeman-shared-albums-for-google-photos' ); ?>
+						<?php esc_html_e( 'Selected samples may be featured on a public website page for broader audience, but only when the author has given consent.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</span>
 				</span>
 			</div>
@@ -613,12 +613,12 @@ class JZSA_Community {
 				<summary class="jzsa-collapsible-summary">
 					<?php esc_html_e( 'Your Plugin Community Account', 'janzeman-shared-albums-for-google-photos' ); ?>
 					<span class="jzsa-summary-badge jzsa-summary-badge--disconnected">
-						<?php esc_html_e( 'Not connected. Connect to publish or rate shortcode examples.', 'janzeman-shared-albums-for-google-photos' ); ?>
+						<?php esc_html_e( 'Not connected. Connect to publish or rate shortcode samples.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</span>
 				</summary>
 			<?php endif; ?>
 			<p class="jzsa-help-text" style="margin-bottom:12px;">
-				<?php esc_html_e( 'Connect to publish your own shortcode examples, manage the examples you shared, and rate examples from other plugin users.', 'janzeman-shared-albums-for-google-photos' ); ?>
+				<?php esc_html_e( 'Connect to publish your own shortcode samples, manage the samples you shared, and rate samples from other plugin users.', 'janzeman-shared-albums-for-google-photos' ); ?>
 			</p>
 			<?php if ( $connected ) : ?>
 				<div class="jzsa-community-status jzsa-community-status--connected">
@@ -748,10 +748,10 @@ class JZSA_Community {
 		<!-- Section 3: Share a Shortcode (connected only) -->
 		<details class="jzsa-section jzsa-community-share-section jzsa-collapsible-section" id="jzsa-publish-details">
 			<summary class="jzsa-collapsible-summary">
-				<?php esc_html_e( 'Share a Shortcode Example', 'janzeman-shared-albums-for-google-photos' ); ?>
+				<?php esc_html_e( 'Share a New Shortcode Sample', 'janzeman-shared-albums-for-google-photos' ); ?>
 			</summary>
 			<p class="jzsa-help-text" style="margin-top:0;">
-				<?php esc_html_e( 'Share a gallery configuration example with other WordPress admins and site builders using this plugin. The goal is to show useful shortcode settings and rendered results that others can adapt.', 'janzeman-shared-albums-for-google-photos' ); ?>
+				<?php esc_html_e( 'Share a gallery configuration sample with other WordPress admins and site builders using this plugin. The goal is to show useful shortcode settings and rendered results that others can adapt.', 'janzeman-shared-albums-for-google-photos' ); ?>
 			</p>
 			<div class="jzsa-community-visibility-note">
 				<span class="jzsa-community-audience-icon jzsa-community-audience-icon--plugin">
@@ -920,7 +920,7 @@ class JZSA_Community {
 		<!-- Section 4: Shortcodes You Shared (connected only) -->
 		<details class="jzsa-section jzsa-community-my-section jzsa-collapsible-section">
 			<summary class="jzsa-collapsible-summary">
-				<?php esc_html_e( 'Your Shared Examples', 'janzeman-shared-albums-for-google-photos' ); ?>
+				<?php esc_html_e( 'Edit / Delete Your Published Samples', 'janzeman-shared-albums-for-google-photos' ); ?>
 				<span class="jzsa-summary-badge" id="jzsa-my-entries-count"></span>
 			</summary>
 			<div id="jzsa-community-my-entries" class="jzsa-community-my-entries" aria-live="polite">
@@ -932,11 +932,11 @@ class JZSA_Community {
 		<!-- Section 5: Community Shortcodes (open by default) -->
 		<details class="jzsa-section jzsa-community-browse-section jzsa-collapsible-section" open>
 			<summary class="jzsa-collapsible-summary">
-				<?php esc_html_e( 'Community Shortcode Examples', 'janzeman-shared-albums-for-google-photos' ); ?>
+				<?php esc_html_e( 'Community Shortcode Samples', 'janzeman-shared-albums-for-google-photos' ); ?>
 				<span class="jzsa-summary-badge" id="jzsa-community-entries-count"></span>
 			</summary>
 			<p class="jzsa-help-text" style="margin-top:0;">
-				<?php esc_html_e( 'Browse shortcode examples shared by other plugin users. These examples are intended for WordPress admins and site builders looking for gallery layout ideas. Copy an example, replace the link parameter with your own album, and use Apply to preview small tweaks until the layout fits your site.', 'janzeman-shared-albums-for-google-photos' ); ?>
+				<?php esc_html_e( 'Browse shortcode samples shared by other plugin users. These samples are intended for WordPress admins and site builders looking for gallery layout ideas. Copy a sample, replace the link parameter with your own album, and use Apply to preview small tweaks until the layout fits your site.', 'janzeman-shared-albums-for-google-photos' ); ?>
 			</p>
 			<div class="jzsa-community-search-row">
 				<input type="search" id="jzsa-community-search" class="regular-text"

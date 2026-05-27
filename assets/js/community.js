@@ -387,7 +387,7 @@
 	}
 
 	/**
-	 * Build a full jzsa-example entry block (DOM element, not HTML string).
+	 * Build a full jzsa-sample entry block (DOM element, not HTML string).
 	 * Includes h3 title, meta/tags, description, code block, lazy preview.
 	 * For My Shortcodes entries also adds Delete + Save buttons.
 	 *
@@ -1354,7 +1354,7 @@
 				(
 					deleteEntries ?
 						'This will disconnect your community account and soft-delete all your published entries.\n\n' :
-						'This will disconnect your community account. Published entries are preserved as community examples.\n\n'
+						'This will disconnect your community account. Published entries are preserved as community samples.\n\n'
 				) +
 				'You can reconnect anytime. Continue?'
 			) ) {
