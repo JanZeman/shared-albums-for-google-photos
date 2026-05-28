@@ -18,11 +18,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class JZSA_Community {
 
-	const OPT_JWT           = 'jzsa_community_jwt';
-	const OPT_DISPLAY_NAME  = 'jzsa_community_display_name';
-	const OPT_DISPLAY_URL   = 'jzsa_community_display_url';
-	const NONCE_NOTICE_KEY  = 'jzsa_community_notice_';
+	const OPT_JWT             = 'jzsa_community_jwt';
+	const OPT_DISPLAY_NAME    = 'jzsa_community_display_name';
+	const OPT_DISPLAY_URL     = 'jzsa_community_display_url';
+	const OPT_INSTALL_SECRET  = 'jzsa_install_secret';
+	const NONCE_NOTICE_KEY    = 'jzsa_community_notice_';
 	const AUTH_CHALLENGE_PREFIX = 'jzsa_community_auth_challenge_';
+	const SIGNIN_PENDING_PREFIX = 'jzsa_community_signin_pending_';
 
 	/**
 	 * Constructor — register all hooks.
@@ -32,12 +34,18 @@ class JZSA_Community {
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 
 		// Auth flow
-		add_action( 'wp_ajax_jzsa_community_request_magic_link', array( $this, 'ajax_request_magic_link' ) );
+		add_action( 'wp_ajax_jzsa_community_signin_start', array( $this, 'ajax_signin_start' ) );
+		add_action( 'wp_ajax_jzsa_community_signin_poll',  array( $this, 'ajax_signin_poll' ) );
+
+		// Install management
+		add_action( 'wp_ajax_jzsa_community_list_installs',   array( $this, 'ajax_list_installs' ) );
+		add_action( 'wp_ajax_jzsa_community_remove_install',  array( $this, 'ajax_remove_install' ) );
 
 		// Browse & write
 		add_action( 'wp_ajax_jzsa_community_browse',               array( $this, 'ajax_browse' ) );
 		add_action( 'wp_ajax_jzsa_community_publish',              array( $this, 'ajax_publish' ) );
 		add_action( 'wp_ajax_jzsa_community_delete_entry',         array( $this, 'ajax_delete_entry' ) );
+		add_action( 'wp_ajax_jzsa_community_signout',              array( $this, 'ajax_signout' ) );
 		add_action( 'wp_ajax_jzsa_community_delete_account',       array( $this, 'ajax_delete_account' ) );
 		add_action( 'wp_ajax_jzsa_community_update_display_name',  array( $this, 'ajax_update_display_name' ) );
 		add_action( 'wp_ajax_jzsa_community_update_display_url',   array( $this, 'ajax_update_display_url' ) );
@@ -345,6 +353,70 @@ class JZSA_Community {
 	}
 
 	/**
+	 * Ensure this WP install has a random install secret in wp_options.
+	 *
+	 * Generated once on first call (typically at plugin activation, but the
+	 * lazy fallback in get_install_secret_hash() covers upgrades from
+	 * pre-secret versions). 256 bits of entropy, stored hex-encoded, never
+	 * autoloaded, never sent to the browser or to the API — only its
+	 * SHA-256 hash leaves the server.
+	 *
+	 * @return void
+	 */
+	public static function ensure_install_secret() {
+		$existing = get_option( self::OPT_INSTALL_SECRET, '' );
+		if ( '' !== $existing ) {
+			return;
+		}
+		update_option(
+			self::OPT_INSTALL_SECRET,
+			bin2hex( random_bytes( 32 ) ),
+			false // not autoloaded
+		);
+	}
+
+	/**
+	 * Return SHA-256(install_secret) for the X-JZSA-Install header.
+	 * Generates the secret on demand if missing (upgrade path safety net).
+	 *
+	 * @return string 64-char lowercase hex string
+	 */
+	public static function get_install_secret_hash() {
+		$secret = (string) get_option( self::OPT_INSTALL_SECRET, '' );
+		if ( '' === $secret ) {
+			self::ensure_install_secret();
+			$secret = (string) get_option( self::OPT_INSTALL_SECRET, '' );
+		}
+		return hash( 'sha256', $secret );
+	}
+
+	/**
+	 * Build the default header set for outbound community API calls.
+	 *
+	 * Always includes X-JZSA-Install. Optionally adds Bearer auth and a
+	 * JSON Content-Type. Use this for every wp_remote_* call to the
+	 * community API so per-install authorization is uniform.
+	 *
+	 * @param array{auth?: bool, json?: bool} $opts
+	 * @return array<string, string>
+	 */
+	public static function api_headers( array $opts = array() ) {
+		$headers = array(
+			'X-JZSA-Install' => self::get_install_secret_hash(),
+		);
+		if ( ! empty( $opts['auth'] ) ) {
+			$jwt = self::get_jwt();
+			if ( '' !== $jwt ) {
+				$headers['Authorization'] = 'Bearer ' . $jwt;
+			}
+		}
+		if ( ! empty( $opts['json'] ) ) {
+			$headers['Content-Type'] = 'application/json';
+		}
+		return $headers;
+	}
+
+	/**
 	 * Cached result of verify_connection() for the current request.
 	 * Prevents the double HTTP call that happens when enqueue_scripts() and
 	 * render_content() both call verify_connection() on the same page load.
@@ -422,9 +494,9 @@ class JZSA_Community {
 		$response = wp_remote_get(
 			JZSA_COMMUNITY_API_URL . '/v1/me',
 			array(
-				'headers' => array(
-					'Authorization' => 'Bearer ' . $jwt,
-					'Accept'        => 'application/json',
+				'headers' => array_merge(
+					self::api_headers( array( 'auth' => true ) ),
+					array( 'Accept' => 'application/json' )
 				),
 				'timeout' => 8,
 			)
@@ -538,13 +610,19 @@ class JZSA_Community {
 
 		<?php if ( 'connected' === $notice ) : ?>
 		<div class="notice notice-success is-dismissible jzsa-community-notice">
-			<p><?php esc_html_e( 'Successfully connected to the JZSA Community!', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+			<p><?php esc_html_e( 'Signed in to community.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 		</div>
 		<?php endif; ?>
 
-		<?php if ( 'disconnected' === $notice ) : ?>
+		<?php if ( 'signed_out' === $notice ) : ?>
 		<div class="notice notice-info is-dismissible jzsa-community-notice">
-			<p><?php esc_html_e( 'Disconnected from the JZSA Community.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+			<p><?php esc_html_e( 'Signed out of this site.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+		</div>
+		<?php endif; ?>
+
+		<?php if ( 'account_deleted' === $notice ) : ?>
+		<div class="notice notice-info is-dismissible jzsa-community-notice">
+			<p><?php esc_html_e( 'Community account permanently deleted.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 		</div>
 		<?php endif; ?>
 
@@ -606,31 +684,31 @@ class JZSA_Community {
 					<?php esc_html_e( 'Your Plugin Community Account', 'janzeman-shared-albums-for-google-photos' ); ?>
 					<span class="jzsa-summary-badge jzsa-summary-badge--connected">
 						<span class="dashicons dashicons-yes-alt"></span>
-						<?php esc_html_e( 'Connected', 'janzeman-shared-albums-for-google-photos' ); ?>
+						<?php esc_html_e( 'Signed in', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</span>
 				</summary>
 			<?php else : ?>
 				<summary class="jzsa-collapsible-summary">
 					<?php esc_html_e( 'Your Plugin Community Account', 'janzeman-shared-albums-for-google-photos' ); ?>
 					<span class="jzsa-summary-badge jzsa-summary-badge--disconnected">
-						<?php esc_html_e( 'Not connected. Connect to publish or rate shortcode samples.', 'janzeman-shared-albums-for-google-photos' ); ?>
+						<?php esc_html_e( 'Not signed in. Sign in to publish or rate shortcode samples.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</span>
 				</summary>
 			<?php endif; ?>
 			<p class="jzsa-help-text" style="margin-bottom:12px;">
-				<?php esc_html_e( 'Connect to publish your own shortcode samples, manage the samples you shared, and rate samples from other plugin users.', 'janzeman-shared-albums-for-google-photos' ); ?>
+				<?php esc_html_e( 'Sign in to publish your own shortcode samples, manage the samples you shared, and rate samples from other plugin users.', 'janzeman-shared-albums-for-google-photos' ); ?>
 			</p>
 			<?php if ( $connected ) : ?>
 				<div class="jzsa-community-status jzsa-community-status--connected">
 					<span class="dashicons dashicons-yes-alt" style="color:#46b450; font-size:22px; vertical-align:middle; margin-right:6px;"></span>
-					<strong><?php esc_html_e( 'Connected to Community', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-					<button type="button" class="button-link jzsa-community-disconnect-btn" style="margin-left:14px; color:#d63638;">
-						<?php esc_html_e( 'Disconnect', 'janzeman-shared-albums-for-google-photos' ); ?>
-					</button>
-					<button type="button" class="button-link jzsa-community-delete-account-entries-btn" style="margin-left:8px; color:#d63638;">
-						<?php esc_html_e( 'Disconnect and delete all my entries', 'janzeman-shared-albums-for-google-photos' ); ?>
+					<strong><?php esc_html_e( 'Signed in to community', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+					<button type="button" class="button button-secondary jzsa-community-signout-btn" style="margin-left:14px;">
+						<?php esc_html_e( 'Sign out of this site', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</button>
 				</div>
+				<p class="jzsa-help-text" style="margin-top:6px; margin-bottom:0;">
+					<?php esc_html_e( 'Signing out clears the local credential on this site. You can sign back in any time without re-confirming by email.', 'janzeman-shared-albums-for-google-photos' ); ?>
+				</p>
 				<!-- Display name row -->
 				<div class="jzsa-community-display-name-row" style="margin-top:10px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
 					<span style="font-size:13px; color:#50575e;"><?php esc_html_e( 'Display author name:', 'janzeman-shared-albums-for-google-photos' ); ?></span>
@@ -665,9 +743,9 @@ class JZSA_Community {
 						<span id="jzsa-display-name-result" class="jzsa-community-result" aria-live="polite"></span>
 					</span>
 				</div>
-				<!-- Display URL row -->
+				<!-- Profile link row -->
 				<div class="jzsa-community-display-url-row" style="margin-top:10px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
-					<span style="font-size:13px; color:#50575e;"><?php esc_html_e( 'Display site URL:', 'janzeman-shared-albums-for-google-photos' ); ?></span>
+					<span style="font-size:13px; color:#50575e;"><?php esc_html_e( 'Profile link:', 'janzeman-shared-albums-for-google-photos' ); ?></span>
 					<span id="jzsa-display-url-view" style="font-weight:600;">
 						<?php
 						$saved_url = get_user_meta( get_current_user_id(), self::OPT_DISPLAY_URL, true ) ?: '';
@@ -684,7 +762,7 @@ class JZSA_Community {
 					<span id="jzsa-display-url-edit-row" style="display:none; align-items:center; gap:6px; flex-wrap:wrap;">
 						<input type="url" id="jzsa-display-url-input" maxlength="2048"
 							value="<?php echo esc_attr( get_user_meta( get_current_user_id(), self::OPT_DISPLAY_URL, true ) ?: '' ); ?>"
-							placeholder="<?php esc_attr_e( 'https://example.com', 'janzeman-shared-albums-for-google-photos' ); ?>"
+							placeholder="<?php esc_attr_e( 'https://your-portfolio.example', 'janzeman-shared-albums-for-google-photos' ); ?>"
 							style="width:260px;">
 						<button type="button" class="button button-primary" id="jzsa-display-url-save-btn">
 							<?php esc_html_e( 'Save', 'janzeman-shared-albums-for-google-photos' ); ?>
@@ -698,16 +776,61 @@ class JZSA_Community {
 						<span id="jzsa-display-url-result" class="jzsa-community-result" aria-live="polite"></span>
 					</span>
 				</div>
+				<!-- Your authorized sites -->
+				<details class="jzsa-community-installs-section jzsa-collapsible-section" style="margin-top:20px;">
+					<summary class="jzsa-collapsible-summary">
+						<?php esc_html_e( 'Your authorized sites', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</summary>
+					<p class="jzsa-help-text" style="margin-top:6px;">
+						<?php esc_html_e( 'WordPress sites you have signed in from. Removing a site revokes its access — signing in again from that site will require a fresh email confirmation. To leave the account from this site, use Sign out (keeps it authorized) or Delete account (permanent).', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</p>
+					<div id="jzsa-community-installs-list" class="jzsa-community-installs-list" aria-live="polite">
+						<p class="jzsa-help-text" style="color:#666;">
+							<?php esc_html_e( 'Loading…', 'janzeman-shared-albums-for-google-photos' ); ?>
+						</p>
+					</div>
+				</details>
+
+				<!-- Destructive panel: delete the whole community account -->
+				<details class="jzsa-community-danger-zone" style="margin-top:24px; border-top:1px solid #dcdcde; padding-top:12px;">
+					<summary style="cursor:pointer; color:#d63638; font-weight:600;">
+						<?php esc_html_e( 'Delete community account', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</summary>
+					<p class="jzsa-help-text" style="margin-top:8px;">
+						<?php esc_html_e( 'Permanently removes your account and email from our database, all shortcodes you have shared in the community, all ratings you have given to other community shortcodes, and access from any other WordPress sites you have signed in from. This cannot be undone.', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</p>
+					<p style="margin-top:10px;">
+						<button type="button" class="button jzsa-community-delete-account-btn" style="color:#d63638; border-color:#d63638;">
+							<?php esc_html_e( 'Delete my community account', 'janzeman-shared-albums-for-google-photos' ); ?>
+						</button>
+					</p>
+				</details>
 			<?php else : ?>
 				<p class="jzsa-help-text" style="margin-top:6px;">
-					<?php esc_html_e( 'Privacy: Your email is never sent. Your site URL is verified, then stored only as a one-way hash.', 'janzeman-shared-albums-for-google-photos' ); ?>
+					<?php esc_html_e( 'Privacy: Your email is used to confirm it is really you and is stored to identify your account. You can delete your account from this page at any time to permanently remove it.', 'janzeman-shared-albums-for-google-photos' ); ?>
 				</p>
 				<?php
 				$current_user           = wp_get_current_user();
 				$suggested_connect_name = sanitize_text_field( $current_user->display_name ?? '' );
 				$suggested_connect_name = self::truncate_string( $suggested_connect_name, 50 );
 				$suggested_connect_url  = self::normalize_display_url( home_url() );
+				$suggested_connect_email = sanitize_email( $current_user->user_email ?? '' );
 				?>
+				<p class="jzsa-community-email-row" style="margin-top:10px; display:flex; align-items:center; flex-wrap:nowrap; gap:6px;">
+					<label for="jzsa-connect-email" style="font-size:13px; color:#50575e; white-space:nowrap;">
+						<?php esc_html_e( 'Email:', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</label>
+					<input type="email" id="jzsa-connect-email" maxlength="254" required
+						value="<?php echo esc_attr( $suggested_connect_email ); ?>"
+						placeholder="<?php esc_attr_e( 'you@example.com', 'janzeman-shared-albums-for-google-photos' ); ?>"
+						style="width:260px;">
+					<span class="description" style="white-space:nowrap;">
+						<?php esc_html_e( 'Required. We email you a one-time confirmation link.', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</span>
+				</p>
+				<p class="jzsa-help-text" style="margin-top:4px; margin-bottom:8px;">
+					<?php esc_html_e( 'Running multiple WordPress sites? Use the same email on each to keep everything under one community account.', 'janzeman-shared-albums-for-google-photos' ); ?>
+				</p>
 				<p class="jzsa-community-display-name-row" style="margin-top:10px; display:flex; align-items:center; flex-wrap:nowrap; gap:6px;">
 					<label for="jzsa-connect-display-name" style="font-size:13px; color:#50575e; white-space:nowrap;">
 						<?php esc_html_e( 'Community display name:', 'janzeman-shared-albums-for-google-photos' ); ?>
@@ -725,30 +848,49 @@ class JZSA_Community {
 				</p>
 				<p class="jzsa-community-display-url-row" style="margin-top:10px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
 					<label for="jzsa-connect-display-url" style="font-size:13px; color:#50575e;">
-						<?php esc_html_e( 'Community display URL:', 'janzeman-shared-albums-for-google-photos' ); ?>
+						<?php esc_html_e( 'Profile link:', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</label>
 					<input type="url" id="jzsa-connect-display-url" maxlength="2048"
 						value="<?php echo esc_attr( $suggested_connect_url ); ?>"
-						placeholder="<?php esc_attr_e( 'Optional public URL…', 'janzeman-shared-albums-for-google-photos' ); ?>"
+						placeholder="<?php esc_attr_e( 'https://your-portfolio.example', 'janzeman-shared-albums-for-google-photos' ); ?>"
 						style="width:260px;">
 					<span class="description">
-						<?php esc_html_e( 'Optional display URL for your community profile.', 'janzeman-shared-albums-for-google-photos' ); ?>
+						<?php esc_html_e( 'Optional. Any URL — your portfolio, social profile, or one of your sites.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</span>
+				</p>
+				<p class="jzsa-help-text" style="margin-top:4px; margin-bottom:8px; font-style:italic;">
+					<?php esc_html_e( 'If you already have a community account under this email, your existing display name and profile link will be kept — anything you type above is only used if this is a new account.', 'janzeman-shared-albums-for-google-photos' ); ?>
 				</p>
 				<p style="margin-top:12px;">
 					<button type="button" class="button button-primary jzsa-community-connect-btn">
-						<?php esc_html_e( 'Connect to Plugin Community', 'janzeman-shared-albums-for-google-photos' ); ?>
+						<?php esc_html_e( 'Sign in to community', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</button>
 					<span class="jzsa-community-auth-status" aria-live="polite" style="margin-left:12px;"></span>
 				</p>
+				<div class="jzsa-community-pending-panel" style="display:none; margin-top:14px; padding:12px 14px; border:1px solid #dcdcde; border-radius:4px; background:#f6f7f7;">
+					<p style="margin:0 0 6px;">
+						<strong><?php esc_html_e( 'Check your email.', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+						<?php esc_html_e( 'We sent a one-time confirmation link to', 'janzeman-shared-albums-for-google-photos' ); ?>
+						<span class="jzsa-community-pending-email" style="font-weight:600;"></span>.
+					</p>
+					<p class="jzsa-help-text" style="margin:0 0 6px;">
+						<?php esc_html_e( 'Click the link in the email to finish signing in. This page will update automatically. The link is valid for 15 minutes.', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</p>
+					<p style="margin:0;">
+						<button type="button" class="button-link jzsa-community-pending-cancel-btn">
+							<?php esc_html_e( 'Cancel', 'janzeman-shared-albums-for-google-photos' ); ?>
+						</button>
+						<span class="jzsa-community-pending-status" aria-live="polite" style="margin-left:12px; color:#666; font-size:12px;"></span>
+					</p>
+				</div>
 			<?php endif; ?>
 		</details>
 
 		<?php if ( $connected ) : ?>
-		<!-- Section 3: Share a Shortcode (connected only) -->
+		<!-- Section 3: Share a New Sample (connected only) -->
 		<details class="jzsa-section jzsa-community-share-section jzsa-collapsible-section" id="jzsa-publish-details">
 			<summary class="jzsa-collapsible-summary">
-				<?php esc_html_e( 'Share a New Shortcode Sample', 'janzeman-shared-albums-for-google-photos' ); ?>
+				<?php esc_html_e( 'Share a New Sample', 'janzeman-shared-albums-for-google-photos' ); ?>
 			</summary>
 			<p class="jzsa-help-text" style="margin-top:0;">
 				<?php esc_html_e( 'Share a gallery configuration sample with other WordPress admins and site builders using this plugin. The goal is to show useful shortcode settings and rendered results that others can adapt.', 'janzeman-shared-albums-for-google-photos' ); ?>
@@ -917,7 +1059,7 @@ class JZSA_Community {
 			</p>
 		</details>
 
-		<!-- Section 4: Shortcodes You Shared (connected only) -->
+		<!-- Section 4: Edit / Delete Your Published Samples (connected only) -->
 		<details class="jzsa-section jzsa-community-my-section jzsa-collapsible-section">
 			<summary class="jzsa-collapsible-summary">
 				<?php esc_html_e( 'Edit / Delete Your Published Samples', 'janzeman-shared-albums-for-google-photos' ); ?>
@@ -929,10 +1071,10 @@ class JZSA_Community {
 		</details>
 		<?php endif; ?>
 
-		<!-- Section 5: Community Shortcodes (open by default) -->
+		<!-- Section 5: Community Samples (open by default) -->
 		<details class="jzsa-section jzsa-community-browse-section jzsa-collapsible-section" open>
 			<summary class="jzsa-collapsible-summary">
-				<?php esc_html_e( 'Community Shortcode Samples', 'janzeman-shared-albums-for-google-photos' ); ?>
+				<?php esc_html_e( 'Community Samples', 'janzeman-shared-albums-for-google-photos' ); ?>
 				<span class="jzsa-summary-badge" id="jzsa-community-entries-count"></span>
 			</summary>
 			<p class="jzsa-help-text" style="margin-top:0;">
@@ -982,58 +1124,66 @@ class JZSA_Community {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Connect to the community: compute identity hash and exchange it for a JWT
-	 * in a single server-to-server call. No email or OTP involved.
+	 * Sign in to community — start the email-verification flow.
+	 *
+	 * Sends email + install_secret_hash + display_name + display_url +
+	 * site_url + verification_url + challenge to /v1/auth/start. The backend
+	 * either issues a JWT immediately (idempotent reconnect — this install
+	 * is already authorized for this email) or queues a pending verification
+	 * and emails the user a one-time confirmation link. In the second case
+	 * the JS polls ajax_signin_poll until the user clicks the link.
 	 */
-	public function ajax_request_magic_link() {
+	public function ajax_signin_start() {
 		check_ajax_referer( 'jzsa_community', 'nonce' );
 
 		if ( ! current_user_can( jzsa_get_admin_capability() ) ) {
 			wp_send_json_error( 'Unauthorized.', 403 );
 		}
 
-		$user          = wp_get_current_user();
-		$site_url      = home_url();
-		$challenge     = wp_generate_password( 40, false, false );
-		$transient_key = self::AUTH_CHALLENGE_PREFIX . hash( 'sha256', $challenge );
-		$identity_hash = hash( 'sha256', $user->user_email . '|' . $site_url );
-		$display_name  = sanitize_text_field( wp_unslash( $_POST['display_name'] ?? '' ) );
-		$display_url   = self::normalize_display_url( wp_unslash( $_POST['display_url'] ?? '' ) );
+		$email        = sanitize_email( wp_unslash( $_POST['email'] ?? '' ) );
+		$display_name = sanitize_text_field( wp_unslash( $_POST['display_name'] ?? '' ) );
+		$display_url  = self::normalize_display_url( wp_unslash( $_POST['display_url'] ?? '' ) );
 
-		if ( empty( $display_name ) || self::letter_count( $display_name ) < 3 ) {
+		if ( '' === $email || ! is_email( $email ) ) {
+			wp_send_json_error( __( 'Please enter a valid email address.', 'janzeman-shared-albums-for-google-photos' ) );
+			return;
+		}
+		if ( '' === $display_name || self::letter_count( $display_name ) < 3 ) {
 			wp_send_json_error( __( 'Display name must contain at least 3 letters.', 'janzeman-shared-albums-for-google-photos' ) );
 			return;
 		}
-
 		if ( self::string_length( $display_name ) > 50 ) {
 			wp_send_json_error( __( 'Display name must be 50 characters or fewer.', 'janzeman-shared-albums-for-google-photos' ) );
 			return;
 		}
-
 		if ( ! self::is_valid_display_url( $display_url ) ) {
-			wp_send_json_error( __( 'Please enter a valid display URL, or leave it empty.', 'janzeman-shared-albums-for-google-photos' ) );
+			wp_send_json_error( __( 'Please enter a valid URL for your profile link, or leave it empty.', 'janzeman-shared-albums-for-google-photos' ) );
 			return;
 		}
 
+		$site_url      = home_url();
+		$challenge     = wp_generate_password( 40, false, false );
+		$transient_key = self::AUTH_CHALLENGE_PREFIX . hash( 'sha256', $challenge );
 		set_transient( $transient_key, $challenge, 5 * MINUTE_IN_SECONDS );
 
-		// Keep mutable profile data out of the auth/connect request. Display
-		// names are updated only through /v1/me/display-name after auth.
-		$connect_payload = array(
-			'identity_hash'    => $identity_hash,
-			'site_url'         => $site_url,
-			'verification_url' => rest_url( 'jzsa/v1/community-challenge' ),
-			'challenge'        => $challenge,
+		$payload = array(
+			'email'               => $email,
+			'display_name'        => $display_name,
+			'site_url'            => $site_url,
+			'install_secret_hash' => self::get_install_secret_hash(),
+			'verification_url'    => rest_url( 'jzsa/v1/community-challenge' ),
+			'challenge'           => $challenge,
 		);
+		if ( '' !== $display_url ) {
+			$payload['display_url'] = $display_url;
+		}
 
 		$response = wp_remote_post(
-			JZSA_COMMUNITY_API_URL . '/v1/auth/connect',
+			JZSA_COMMUNITY_API_URL . '/v1/auth/start',
 			array(
-				'headers' => array(
-					'Content-Type' => 'application/json',
-				),
-				'body'    => wp_json_encode( $connect_payload ),
-				'timeout' => 10,
+				'headers' => self::api_headers( array( 'json' => true ) ),
+				'body'    => wp_json_encode( $payload ),
+				'timeout' => 15,
 			)
 		);
 
@@ -1044,9 +1194,13 @@ class JZSA_Community {
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		if ( ! is_array( $body ) ) {
+			$body = array();
+		}
+
 		if ( 200 !== $code ) {
 			delete_transient( $transient_key );
-			$body = json_decode( wp_remote_retrieve_body( $response ), true );
 			wp_send_json_error(
 				$body['error'] ?? sprintf(
 					/* translators: %d: HTTP status code */
@@ -1057,68 +1211,123 @@ class JZSA_Community {
 			return;
 		}
 
-		$body = json_decode( wp_remote_retrieve_body( $response ), true );
-		$jwt  = $body['jwt'] ?? '';
+		$state = isset( $body['state'] ) ? (string) $body['state'] : '';
 
-		if ( empty( $jwt ) ) {
-			delete_transient( $transient_key );
-			wp_send_json_error( __( 'Invalid response from community server.', 'janzeman-shared-albums-for-google-photos' ) );
+		if ( 'connected' === $state ) {
+			// Idempotent reconnect: install was already authorized for this email.
+			self::store_signin_response( $body, $display_name, $display_url );
+			wp_send_json_success( array( 'state' => 'connected' ) );
 			return;
 		}
 
-		update_user_meta( get_current_user_id(), self::OPT_JWT, $jwt );
-
-		$server_display_name = sanitize_text_field( $body['display_name'] ?? '' );
-		if ( '' !== $display_name && $display_name !== $server_display_name ) {
-			$display_name_response = wp_remote_request(
-				JZSA_COMMUNITY_API_URL . '/v1/me/display-name',
-				array(
-					'method'  => 'PUT',
-					'headers' => array(
-						'Content-Type'  => 'application/json',
-						'Authorization' => 'Bearer ' . $jwt,
-					),
-					'body'    => wp_json_encode( array( 'display_name' => $display_name ) ),
-					'timeout' => 10,
-				)
-			);
-
-			if ( ! is_wp_error( $display_name_response ) && 200 === wp_remote_retrieve_response_code( $display_name_response ) ) {
-				$display_name_body  = json_decode( wp_remote_retrieve_body( $display_name_response ), true );
-				$server_display_name = sanitize_text_field( $display_name_body['display_name'] ?? $display_name );
+		if ( 'pending' === $state ) {
+			$pending_id = isset( $body['pending_id'] ) ? (int) $body['pending_id'] : 0;
+			if ( $pending_id <= 0 ) {
+				wp_send_json_error( __( 'Invalid response from community server.', 'janzeman-shared-albums-for-google-photos' ) );
+				return;
 			}
+			// Hold the pending id locally so the polling loop can resume even if
+			// the user reloads the admin page mid-flight (transient TTL gives a
+			// 16-minute window — just past the backend's 15-minute pending TTL).
+			set_transient(
+				self::SIGNIN_PENDING_PREFIX . get_current_user_id(),
+				$pending_id,
+				16 * MINUTE_IN_SECONDS
+			);
+			wp_send_json_success( array( 'state' => 'pending', 'email' => $email ) );
+			return;
 		}
 
-		if ( '' !== $server_display_name ) {
-			update_user_meta( get_current_user_id(), self::OPT_DISPLAY_NAME, $server_display_name );
+		delete_transient( $transient_key );
+		wp_send_json_error( __( 'Unexpected response from community server.', 'janzeman-shared-albums-for-google-photos' ) );
+	}
+
+	/**
+	 * Poll the backend for an in-progress sign-in. The JS calls this every
+	 * few seconds after ajax_signin_start returned state=pending. The first
+	 * call after the user clicks the confirmation link returns the JWT.
+	 */
+	public function ajax_signin_poll() {
+		check_ajax_referer( 'jzsa_community', 'nonce' );
+
+		if ( ! current_user_can( jzsa_get_admin_capability() ) ) {
+			wp_send_json_error( 'Unauthorized.', 403 );
 		}
 
-		$server_display_url = '';
-		$display_url_response = wp_remote_request(
-			JZSA_COMMUNITY_API_URL . '/v1/me/display-url',
+		$transient_key = self::SIGNIN_PENDING_PREFIX . get_current_user_id();
+		$pending_id    = (int) get_transient( $transient_key );
+		if ( $pending_id <= 0 ) {
+			wp_send_json_error( array( 'state' => 'not_found' ) );
+			return;
+		}
+
+		$response = wp_remote_get(
+			JZSA_COMMUNITY_API_URL . '/v1/auth/poll?pending_id=' . $pending_id,
 			array(
-				'method'  => 'PUT',
-				'headers' => array(
-					'Content-Type'  => 'application/json',
-					'Authorization' => 'Bearer ' . $jwt,
-				),
-				'body'    => wp_json_encode( array( 'display_url' => $display_url ) ),
-				'timeout' => 10,
+				'headers' => self::api_headers(),
+				'timeout' => 8,
 			)
 		);
 
-		if ( ! is_wp_error( $display_url_response ) && 200 === wp_remote_retrieve_response_code( $display_url_response ) ) {
-			$display_url_body  = json_decode( wp_remote_retrieve_body( $display_url_response ), true );
-			$server_display_url = sanitize_url( $display_url_body['display_url'] ?? '' );
+		if ( is_wp_error( $response ) ) {
+			self::json_error_server_unreachable();
+			return;
 		}
 
-		if ( '' !== $server_display_url ) {
-			update_user_meta( get_current_user_id(), self::OPT_DISPLAY_URL, $server_display_url );
+		$code = wp_remote_retrieve_response_code( $response );
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		if ( ! is_array( $body ) ) {
+			$body = array();
+		}
+
+		if ( 202 === $code ) {
+			wp_send_json_success( array( 'state' => 'pending' ) );
+			return;
+		}
+
+		if ( 200 === $code ) {
+			delete_transient( $transient_key );
+			self::store_signin_response( $body );
+			wp_send_json_success( array( 'state' => 'connected' ) );
+			return;
+		}
+
+		// 404 = pending not found, 410 = expired. Either way, give up locally.
+		delete_transient( $transient_key );
+		$state = ( 410 === $code ) ? 'expired' : 'not_found';
+		wp_send_json_error( array( 'state' => $state ) );
+	}
+
+	/**
+	 * Persist the JWT + profile fields returned by /auth/start (connected
+	 * branch) or /auth/poll. Server-side display_name/url win when both are
+	 * present — the account is the source of truth across all installs.
+	 *
+	 * @param array  $body       Parsed JSON response from the API.
+	 * @param string $typed_name Optional fallback used only if the API did
+	 *                           not return a value (fresh signup).
+	 * @param string $typed_url  Same as $typed_name, for display_url.
+	 */
+	private static function store_signin_response( array $body, string $typed_name = '', string $typed_url = '' ) {
+		$jwt = isset( $body['jwt'] ) ? (string) $body['jwt'] : '';
+		if ( '' === $jwt ) {
+			return;
+		}
+		update_user_meta( get_current_user_id(), self::OPT_JWT, $jwt );
+
+		$server_name = isset( $body['display_name'] ) ? sanitize_text_field( (string) $body['display_name'] ) : '';
+		$name        = '' !== $server_name ? $server_name : $typed_name;
+		if ( '' !== $name ) {
+			update_user_meta( get_current_user_id(), self::OPT_DISPLAY_NAME, $name );
+		}
+
+		$server_url = isset( $body['display_url'] ) ? sanitize_url( (string) $body['display_url'] ) : '';
+		$url        = '' !== $server_url ? $server_url : $typed_url;
+		if ( '' !== $url ) {
+			update_user_meta( get_current_user_id(), self::OPT_DISPLAY_URL, $url );
 		} else {
 			delete_user_meta( get_current_user_id(), self::OPT_DISPLAY_URL );
 		}
-
-		wp_send_json_success();
 	}
 
 	/**
@@ -1156,9 +1365,12 @@ class JZSA_Community {
 
 		$request_args = array(
 			'timeout' => 10,
-			'headers' => array(
-				'X-JZSA-Plugin-Key' => JZSA_COMMUNITY_PLUGIN_READ_KEY,
-				'Accept'            => 'application/json',
+			'headers' => array_merge(
+				self::api_headers(),
+				array(
+					'X-JZSA-Plugin-Key' => JZSA_COMMUNITY_PLUGIN_READ_KEY,
+					'Accept'            => 'application/json',
+				)
 			),
 		);
 		$jwt = self::get_jwt();
@@ -1239,10 +1451,7 @@ class JZSA_Community {
 		$response = wp_remote_post(
 			JZSA_COMMUNITY_API_URL . '/v1/entries',
 			array(
-				'headers' => array(
-					'Content-Type'  => 'application/json',
-					'Authorization' => 'Bearer ' . $jwt,
-				),
+				'headers' => self::api_headers( array( 'auth' => true, 'json' => true ) ),
 				'body'    => wp_json_encode( $payload ),
 				'timeout' => 10,
 			)
@@ -1297,7 +1506,7 @@ class JZSA_Community {
 			JZSA_COMMUNITY_API_URL . '/v1/entries/' . $entry_id,
 			array(
 				'method'  => 'DELETE',
-				'headers' => array( 'Authorization' => 'Bearer ' . $jwt ),
+				'headers' => self::api_headers( array( 'auth' => true ) ),
 				'timeout' => 10,
 			)
 		);
@@ -1322,7 +1531,141 @@ class JZSA_Community {
 	}
 
 	/**
-	 * Delete the connected account and all its entries (permanent).
+	 * List authorized installs for the current account (proxy to
+	 * GET /v1/me/installs). Used by the "Your authorized sites" panel.
+	 */
+	public function ajax_list_installs() {
+		check_ajax_referer( 'jzsa_community', 'nonce' );
+
+		if ( ! current_user_can( jzsa_get_admin_capability() ) ) {
+			wp_send_json_error( 'Unauthorized.', 403 );
+		}
+
+		$jwt = self::get_jwt();
+		if ( empty( $jwt ) ) {
+			wp_send_json_error( __( 'Not signed in.', 'janzeman-shared-albums-for-google-photos' ) );
+			return;
+		}
+
+		$response = wp_remote_get(
+			JZSA_COMMUNITY_API_URL . '/v1/me/installs',
+			array(
+				'headers' => self::api_headers( array( 'auth' => true ) ),
+				'timeout' => 10,
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			self::json_error_server_unreachable();
+			return;
+		}
+
+		$code = wp_remote_retrieve_response_code( $response );
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		if ( 200 !== $code || ! is_array( $body ) ) {
+			wp_send_json_error(
+				sprintf(
+					/* translators: %d: HTTP status code */
+					__( 'Could not load your authorized sites (%d).', 'janzeman-shared-albums-for-google-photos' ),
+					$code
+				)
+			);
+			return;
+		}
+
+		wp_send_json_success( $body );
+	}
+
+	/**
+	 * Revoke one authorized install (proxy to DELETE /v1/me/installs/:id).
+	 * The backend refuses to revoke the install making the request (409
+	 * cannot_revoke_current_install) — for that case the user should Sign
+	 * out or Delete account instead.
+	 */
+	public function ajax_remove_install() {
+		check_ajax_referer( 'jzsa_community', 'nonce' );
+
+		if ( ! current_user_can( jzsa_get_admin_capability() ) ) {
+			wp_send_json_error( 'Unauthorized.', 403 );
+		}
+
+		$jwt = self::get_jwt();
+		if ( empty( $jwt ) ) {
+			wp_send_json_error( __( 'Not signed in.', 'janzeman-shared-albums-for-google-photos' ) );
+			return;
+		}
+
+		$install_id = absint( $_POST['install_id'] ?? 0 );
+		if ( $install_id <= 0 ) {
+			wp_send_json_error( __( 'Invalid install id.', 'janzeman-shared-albums-for-google-photos' ) );
+			return;
+		}
+
+		$response = wp_remote_request(
+			JZSA_COMMUNITY_API_URL . '/v1/me/installs/' . $install_id,
+			array(
+				'method'  => 'DELETE',
+				'headers' => self::api_headers( array( 'auth' => true ) ),
+				'timeout' => 10,
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			self::json_error_server_unreachable();
+			return;
+		}
+
+		$code = wp_remote_retrieve_response_code( $response );
+		if ( 204 === $code ) {
+			wp_send_json_success();
+			return;
+		}
+
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		if ( ! is_array( $body ) ) {
+			$body = array();
+		}
+		wp_send_json_error(
+			array(
+				'code'    => $body['error'] ?? null,
+				'message' => sprintf(
+					/* translators: %d: HTTP status code */
+					__( 'Could not remove that site (%d).', 'janzeman-shared-albums-for-google-photos' ),
+					$code
+				),
+			)
+		);
+	}
+
+	/**
+	 * Sign out of this site (local-only).
+	 *
+	 * Clears the JWT and cached profile from this WP install's user_meta.
+	 * Does not touch the community backend — the install remains authorized
+	 * on the account, so signing in again from this site does not require a
+	 * fresh email confirmation. Use ajax_delete_account for permanent
+	 * account removal.
+	 */
+	public function ajax_signout() {
+		check_ajax_referer( 'jzsa_community', 'nonce' );
+
+		if ( ! current_user_can( jzsa_get_admin_capability() ) ) {
+			wp_send_json_error( 'Unauthorized.', 403 );
+		}
+
+		delete_user_meta( get_current_user_id(), self::OPT_JWT );
+		delete_user_meta( get_current_user_id(), self::OPT_DISPLAY_NAME );
+		delete_user_meta( get_current_user_id(), self::OPT_DISPLAY_URL );
+		set_transient( self::NONCE_NOTICE_KEY . get_current_user_id(), 'signed_out', 60 );
+		wp_send_json_success();
+	}
+
+	/**
+	 * Delete the community account (permanent, hard delete server-side).
+	 *
+	 * Calls DELETE /v1/me which cascade-removes the user row, their
+	 * authorized installs, their published entries, their ratings, and the
+	 * interaction events on their entries. No way to undo.
 	 */
 	public function ajax_delete_account() {
 		check_ajax_referer( 'jzsa_community', 'nonce' );
@@ -1333,21 +1676,15 @@ class JZSA_Community {
 
 		$jwt = self::get_jwt();
 		if ( empty( $jwt ) ) {
-			wp_send_json_error( __( 'Not connected.', 'janzeman-shared-albums-for-google-photos' ) );
+			wp_send_json_error( __( 'Not signed in.', 'janzeman-shared-albums-for-google-photos' ) );
 			return;
 		}
-
-		$delete_entries = filter_var( wp_unslash( $_POST['delete_entries'] ?? false ), FILTER_VALIDATE_BOOLEAN );
 
 		$response = wp_remote_request(
 			JZSA_COMMUNITY_API_URL . '/v1/me',
 			array(
 				'method'  => 'DELETE',
-				'headers' => array(
-					'Authorization' => 'Bearer ' . $jwt,
-					'Content-Type'  => 'application/json',
-				),
-				'body'    => wp_json_encode( array( 'delete_entries' => $delete_entries ) ),
+				'headers' => self::api_headers( array( 'auth' => true ) ),
 				'timeout' => 10,
 			)
 		);
@@ -1362,7 +1699,7 @@ class JZSA_Community {
 			delete_user_meta( get_current_user_id(), self::OPT_JWT );
 			delete_user_meta( get_current_user_id(), self::OPT_DISPLAY_NAME );
 			delete_user_meta( get_current_user_id(), self::OPT_DISPLAY_URL );
-			set_transient( self::NONCE_NOTICE_KEY . get_current_user_id(), 'disconnected', 60 );
+			set_transient( self::NONCE_NOTICE_KEY . get_current_user_id(), 'account_deleted', 60 );
 			wp_send_json_success();
 		} else {
 			wp_send_json_error(
@@ -1394,7 +1731,7 @@ class JZSA_Community {
 		$response = wp_remote_get(
 			JZSA_COMMUNITY_API_URL . '/v1/me',
 			array(
-				'headers' => array( 'Authorization' => 'Bearer ' . $jwt ),
+				'headers' => self::api_headers( array( 'auth' => true ) ),
 				'timeout' => 10,
 			)
 		);
@@ -1498,10 +1835,7 @@ class JZSA_Community {
 			JZSA_COMMUNITY_API_URL . '/v1/entries/' . $entry_id,
 			array(
 				'method'  => 'PATCH',
-				'headers' => array(
-					'Content-Type'  => 'application/json',
-					'Authorization' => 'Bearer ' . $jwt,
-				),
+				'headers' => self::api_headers( array( 'auth' => true, 'json' => true ) ),
 				'body'    => wp_json_encode( $body ),
 				'timeout' => 10,
 			)
@@ -1564,10 +1898,7 @@ class JZSA_Community {
 			JZSA_COMMUNITY_API_URL . '/v1/me/display-name',
 			array(
 				'method'  => 'PUT',
-				'headers' => array(
-					'Content-Type'  => 'application/json',
-					'Authorization' => 'Bearer ' . $jwt,
-				),
+				'headers' => self::api_headers( array( 'auth' => true, 'json' => true ) ),
 				'body'    => wp_json_encode( array( 'display_name' => $display_name ) ),
 				'timeout' => 10,
 			)
@@ -1614,7 +1945,7 @@ class JZSA_Community {
 		$display_url = self::normalize_display_url( wp_unslash( $_POST['display_url'] ?? '' ) );
 
 		if ( ! self::is_valid_display_url( $display_url ) ) {
-			wp_send_json_error( __( 'Please enter a valid display URL, or leave it empty.', 'janzeman-shared-albums-for-google-photos' ) );
+			wp_send_json_error( __( 'Please enter a valid URL for your profile link, or leave it empty.', 'janzeman-shared-albums-for-google-photos' ) );
 			return;
 		}
 
@@ -1622,10 +1953,7 @@ class JZSA_Community {
 			JZSA_COMMUNITY_API_URL . '/v1/me/display-url',
 			array(
 				'method'  => 'PUT',
-				'headers' => array(
-					'Content-Type'  => 'application/json',
-					'Authorization' => 'Bearer ' . $jwt,
-				),
+				'headers' => self::api_headers( array( 'auth' => true, 'json' => true ) ),
 				'body'    => wp_json_encode( array( 'display_url' => $display_url ) ),
 				'timeout' => 10,
 			)
@@ -1683,13 +2011,9 @@ class JZSA_Community {
 
 		$count = min( $count, 5 );
 
-		$headers = array( 'Content-Type' => 'application/json' );
-
 		// Forward JWT if connected so the server can apply self-exclusion.
-		$jwt = self::get_jwt();
-		if ( $jwt ) {
-			$headers['Authorization'] = 'Bearer ' . $jwt;
-		}
+		// Always send X-JZSA-Install so optionalAuth can tie the JWT to this install.
+		$headers = self::api_headers( array( 'auth' => true, 'json' => true ) );
 
 		wp_remote_post(
 			JZSA_COMMUNITY_API_URL . '/v1/entries/' . $entry_id . '/interact',
@@ -1736,10 +2060,7 @@ class JZSA_Community {
 		$response = wp_remote_post(
 			JZSA_COMMUNITY_API_URL . '/v1/entries/' . $entry_id . '/rate',
 			array(
-				'headers' => array(
-					'Content-Type'  => 'application/json',
-					'Authorization' => 'Bearer ' . $jwt,
-				),
+				'headers' => self::api_headers( array( 'auth' => true, 'json' => true ) ),
 				'body'    => wp_json_encode( array( 'rating' => $rating ) ),
 				'timeout' => 10,
 			)

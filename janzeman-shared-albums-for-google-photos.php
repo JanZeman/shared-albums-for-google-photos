@@ -246,6 +246,12 @@ function jzsa_activate() {
 	jzsa_clear_all_plugin_caches();
 	update_option( JZSA_VERSION_OPTION, JZSA_VERSION, false );
 
+	// Generate the per-install secret used to bind community JWTs to this WP
+	// install. Idempotent — does nothing if it's already there.
+	if ( class_exists( 'JZSA_Community' ) ) {
+		JZSA_Community::ensure_install_secret();
+	}
+
 	// Set a transient to redirect to the Guide page after activation.
 	set_transient( 'jzsa_activation_redirect', true, 30 );
 }

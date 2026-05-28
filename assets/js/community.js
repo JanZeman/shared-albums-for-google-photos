@@ -1,8 +1,8 @@
 /**
  * Community Page JavaScript
  *
- * Handles: Browse entries, Connect / Disconnect, Publish, Delete entry,
- *          Delete account.
+ * Handles: Browse entries, Sign in / Sign out, Publish, Delete entry,
+ *          Delete community account.
  *
  * All write calls proxy through WP AJAX so the JWT stays server-side.
  *
@@ -485,7 +485,7 @@
 			if ( isOwnEntry ) {
 				starsEl.title = 'You cannot rate your own sample';
 			} else if ( ! isCommunityConnected() ) {
-				starsEl.title = 'Connect to the community to rate entries';
+				starsEl.title = 'Sign in to community to rate entries';
 			}
 			for ( var si = 1; si <= 5; si++ ) {
 				var starBtn = document.createElement( 'button' );
@@ -1010,7 +1010,7 @@
 					if ( ! isCommunityConnected() ) {
 						event.preventDefault();
 						event.stopPropagation();
-						showRatingTooltip( starsEl, 'Connect first to rate samples.' );
+						showRatingTooltip( starsEl, 'Sign in first to rate samples.' );
 					}
 				}, true );
 			}
@@ -1025,7 +1025,7 @@
 					return;
 				}
 				if ( ! isCommunityConnected() ) {
-					showRatingTooltip( starsEl, 'Connect first to rate samples.' );
+					showRatingTooltip( starsEl, 'Sign in first to rate samples.' );
 					return;
 				}
 				if ( myEntryIds.has( entryIdForRating ) ) {
@@ -1251,21 +1251,28 @@
 	}
 
 	/* -----------------------------------------------------------------------
-	 * Auth — Connect
+	 * Auth — Sign in
 	 * -------------------------------------------------------------------- */
 
+	var SIGNIN_POLL_INTERVAL_MS = 3000;
+	var SIGNIN_POLL_TIMEOUT_MS  = 16 * 60 * 1000; // matches backend pending TTL + a small buffer
+
 	function initConnect() {
-		var btn = qs( '.jzsa-community-connect-btn' );
-		var statusEl = qs( '.jzsa-community-auth-status' );
+		var btn           = qs( '.jzsa-community-connect-btn' );
+		var statusEl      = qs( '.jzsa-community-auth-status' );
+		var emailEl       = qs( '#jzsa-connect-email' );
 		var displayNameEl = qs( '#jzsa-connect-display-name' );
-		var displayUrlEl = qs( '#jzsa-connect-display-url' );
-		var generateBtn = qs( '#jzsa-connect-display-name-generate-btn' );
+		var displayUrlEl  = qs( '#jzsa-connect-display-url' );
+		var generateBtn   = qs( '#jzsa-connect-display-name-generate-btn' );
+		var pendingPanel  = qs( '.jzsa-community-pending-panel' );
+		var pendingEmail  = qs( '.jzsa-community-pending-email' );
+		var pendingStatus = qs( '.jzsa-community-pending-status' );
+		var pendingCancel = qs( '.jzsa-community-pending-cancel-btn' );
 
 		if ( ! btn ) {
 			return;
 		}
 
-		// Generate nickname button click handler
 		if ( generateBtn ) {
 			generateBtn.addEventListener( 'click', function () {
 				displayNameEl.value = generateNickname();
@@ -1273,122 +1280,340 @@
 			} );
 		}
 
+		function setStatus( msg, kind ) {
+			if ( ! statusEl ) { return; }
+			statusEl.textContent = msg ? '\u274c ' + msg : '';
+			statusEl.className = 'jzsa-community-auth-status' + ( kind === 'error' ? ' is-error' : '' );
+		}
+
+		function resetButton() {
+			btn.disabled = false;
+			btn.textContent = 'Sign in to community';
+		}
+
+		function reloadAsConnected() {
+			var url = new URL( window.location.href );
+			url.searchParams.set( 'jzsa_just_connected', '1' );
+			window.location.href = url.toString();
+		}
+
+		// Roughly 3-second poll loop. Stops on success, on terminal error
+		// (expired / not_found), or after SIGNIN_POLL_TIMEOUT_MS.
+		var pollTimer    = null;
+		var pollDeadline = 0;
+
+		function stopPolling() {
+			if ( pollTimer ) {
+				clearTimeout( pollTimer );
+				pollTimer = null;
+			}
+		}
+
+		function poll() {
+			if ( Date.now() > pollDeadline ) {
+				stopPolling();
+				if ( pendingStatus ) {
+					pendingStatus.textContent = 'Confirmation link expired. Please try again.';
+				}
+				return;
+			}
+
+			ajaxPost( 'jzsa_community_signin_poll', {} )
+				.then( function ( res ) {
+					if ( res.success && res.data && res.data.state === 'connected' ) {
+						stopPolling();
+						reloadAsConnected();
+						return;
+					}
+					if ( res.success && res.data && res.data.state === 'pending' ) {
+						if ( pendingStatus ) {
+							pendingStatus.textContent = 'Waiting for confirmation\u2026';
+						}
+						pollTimer = setTimeout( poll, SIGNIN_POLL_INTERVAL_MS );
+						return;
+					}
+					// Terminal error: expired or not_found.
+					stopPolling();
+					var state = ( res.data && res.data.state ) || 'unknown';
+					if ( pendingStatus ) {
+						pendingStatus.textContent = state === 'expired'
+							? 'Confirmation link expired. Please try again.'
+							: 'Sign-in cancelled. Please try again.';
+					}
+				} )
+				.catch( function () {
+					// Transient network error \u2014 keep polling rather than giving up.
+					if ( pendingStatus ) {
+						pendingStatus.textContent = 'Could not reach the server, retrying\u2026';
+					}
+					pollTimer = setTimeout( poll, SIGNIN_POLL_INTERVAL_MS );
+				} );
+		}
+
+		function startPolling( email ) {
+			if ( pendingPanel ) { pendingPanel.style.display = ''; }
+			if ( pendingEmail ) { pendingEmail.textContent = email || 'your email'; }
+			if ( pendingStatus ) { pendingStatus.textContent = 'Waiting for confirmation\u2026'; }
+			pollDeadline = Date.now() + SIGNIN_POLL_TIMEOUT_MS;
+			pollTimer = setTimeout( poll, SIGNIN_POLL_INTERVAL_MS );
+		}
+
+		if ( pendingCancel ) {
+			pendingCancel.addEventListener( 'click', function () {
+				stopPolling();
+				if ( pendingPanel ) { pendingPanel.style.display = 'none'; }
+				resetButton();
+			} );
+		}
+
 		btn.addEventListener( 'click', function () {
+			var email       = emailEl ? emailEl.value.trim().toLowerCase() : '';
 			var displayName = displayNameEl ? displayNameEl.value.trim() : '';
-			var displayUrl = displayUrlEl ? normalizeUrlInput( displayUrlEl.value ) : '';
+			var displayUrl  = displayUrlEl ? normalizeUrlInput( displayUrlEl.value ) : '';
+
+			if ( ! email || email.indexOf( '@' ) < 1 ) {
+				setStatus( 'Please enter a valid email address.', 'error' );
+				return;
+			}
 			if ( ! displayName || countLetters( displayName ) < 3 ) {
-				if ( statusEl ) {
-					statusEl.textContent = '\u274c Display name is required, minimum 3 letters.';
-					statusEl.className = 'jzsa-community-auth-status is-error';
-				}
+				setStatus( 'Display name is required, minimum 3 letters.', 'error' );
 				return;
 			}
 			if ( displayName.length > 50 ) {
-				if ( statusEl ) {
-					statusEl.textContent = '\u274c Display name must be 50 characters or fewer.';
-					statusEl.className = 'jzsa-community-auth-status is-error';
-				}
-				return;
-			}
-			if ( displayName.length > 50 ) {
-				if ( statusEl ) {
-					statusEl.textContent = '\u274c Display name must be 50 characters or fewer.';
-					statusEl.className = 'jzsa-community-auth-status is-error';
-				}
+				setStatus( 'Display name must be 50 characters or fewer.', 'error' );
 				return;
 			}
 			if ( displayUrl && ! isValidDisplayUrl( displayUrl ) ) {
-				if ( statusEl ) {
-					statusEl.textContent = '\u274c Please enter a valid display URL, or leave it empty.';
-					statusEl.className = 'jzsa-community-auth-status is-error';
-				}
+				setStatus( 'Please enter a valid URL for your profile link, or leave it empty.', 'error' );
 				return;
 			}
 
 			btn.disabled = true;
-			btn.textContent = 'Connecting\u2026';
-			if ( statusEl ) {
-				statusEl.textContent = '';
-				statusEl.className = 'jzsa-community-auth-status';
-			}
+			btn.textContent = 'Signing in\u2026';
+			setStatus( '' );
 
-			ajaxPost( 'jzsa_community_request_magic_link', { display_name: displayName, display_url: displayUrl } )
+			ajaxPost( 'jzsa_community_signin_start', {
+				email: email,
+				display_name: displayName,
+				display_url: displayUrl,
+			} )
 				.then( function ( res ) {
-					if ( res.success ) {
-						var url = new URL( window.location.href );
-						url.searchParams.set( 'jzsa_just_connected', '1' );
-						window.location.href = url.toString();
-					} else {
-						btn.disabled = false;
-						btn.textContent = 'Connect to Community';
-						if ( statusEl ) {
-							statusEl.textContent = '\u274c ' + ( res.data || 'Failed to connect.' );
-							statusEl.className = 'jzsa-community-auth-status is-error';
-						}
+					if ( ! res.success ) {
+						resetButton();
+						setStatus( res.data || 'Failed to sign in.', 'error' );
+						return;
 					}
+					if ( res.data && res.data.state === 'connected' ) {
+						// Idempotent reconnect \u2014 install already authorized for this email.
+						reloadAsConnected();
+						return;
+					}
+					if ( res.data && res.data.state === 'pending' ) {
+						// Verification email sent. Start polling for the JWT.
+						startPolling( res.data.email || email );
+						return;
+					}
+					resetButton();
+					setStatus( 'Unexpected server response.', 'error' );
 				} )
 				.catch( function () {
-					btn.disabled = false;
-					btn.textContent = 'Connect to Community';
-					if ( statusEl ) {
-						statusEl.textContent = '\u274c Could not reach the server. Please try again.';
-						statusEl.className = 'jzsa-community-auth-status is-error';
-					}
+					resetButton();
+					setStatus( 'Could not reach the server. Please try again.', 'error' );
 				} );
 		} );
 	}
 
 	/* -----------------------------------------------------------------------
-	 * Auth — Disconnect
+	 * Auth — Sign out (local) and Delete account (destructive, server-side)
 	 * -------------------------------------------------------------------- */
 
-	function initDisconnect() {
-		var disconnectBtn = qs( '.jzsa-community-disconnect-btn' );
-		var deleteEntriesBtn = qs( '.jzsa-community-delete-account-entries-btn' );
-		if ( ! disconnectBtn && ! deleteEntriesBtn ) {
+	function initAccountActions() {
+		var signOutBtn      = qs( '.jzsa-community-signout-btn' );
+		var deleteAccountBtn = qs( '.jzsa-community-delete-account-btn' );
+		if ( ! signOutBtn && ! deleteAccountBtn ) {
 			return;
 		}
 
-		function disconnect( btn, deleteEntries ) {
+		// Sign out is a low-risk, local-only action: it just clears the JWT
+		// on this WP install. The install stays authorized on the account,
+		// so signing in again from this site does not require email
+		// confirmation. No confirm dialog — that would be annoying for a
+		// routine action equivalent to closing a browser tab.
+		if ( signOutBtn ) {
+			signOutBtn.addEventListener( 'click', function () {
+				signOutBtn.disabled = true;
+				ajaxPost( 'jzsa_community_signout', {} )
+					.then( function ( res ) {
+						if ( res.success ) {
+							window.location.reload();
+						} else {
+							signOutBtn.disabled = false;
+							alert( res.data || 'Could not sign out.' );
+						}
+					} )
+					.catch( function () {
+						signOutBtn.disabled = false;
+						alert( 'Could not reach the server.' );
+					} );
+			} );
+		}
+
+		// Delete account is permanent and cascades across every install. The
+		// confirm dialog spells out exactly what is being destroyed.
+		if ( deleteAccountBtn ) {
+			deleteAccountBtn.addEventListener( 'click', function () {
+				if ( ! confirm(
+					'Delete your jzsa community account?\n\n' +
+					'This will permanently remove:\n' +
+					'  • Your account and email from our database\n' +
+					'  • All shortcodes you have shared in the community\n' +
+					'  • All ratings you have given to other community shortcodes\n' +
+					'  • Access from any other WordPress sites you have signed in from\n\n' +
+					'This cannot be undone. If you change your mind later you can ' +
+					'create a new account, but past content will not return.\n\n' +
+					'Continue?'
+				) ) {
+					return;
+				}
+
+				deleteAccountBtn.disabled = true;
+
+				ajaxPost( 'jzsa_community_delete_account', {} )
+					.then( function ( res ) {
+						if ( res.success ) {
+							window.location.reload();
+						} else {
+							deleteAccountBtn.disabled = false;
+							alert( res.data || 'Could not delete account.' );
+						}
+					} )
+					.catch( function () {
+						deleteAccountBtn.disabled = false;
+						alert( 'Could not reach the server.' );
+					} );
+			} );
+		}
+	}
+
+	/* -----------------------------------------------------------------------
+	 * Your authorized sites — list + remove
+	 * -------------------------------------------------------------------- */
+
+	function escHtml( s ) {
+		return String( s == null ? '' : s ).replace( /[&<>"']/g, function ( c ) {
+			return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ c ];
+		} );
+	}
+
+	function formatRelative( iso ) {
+		if ( ! iso ) { return ''; }
+		var then = new Date( iso ).getTime();
+		if ( isNaN( then ) ) { return ''; }
+		var diff = Math.max( 0, Date.now() - then );
+		var sec  = Math.floor( diff / 1000 );
+		if ( sec < 60 )      { return 'just now'; }
+		if ( sec < 3600 )    { return Math.floor( sec / 60 ) + 'm ago'; }
+		if ( sec < 86400 )   { return Math.floor( sec / 3600 ) + 'h ago'; }
+		if ( sec < 2592000 ) { return Math.floor( sec / 86400 ) + 'd ago'; }
+		return new Date( iso ).toISOString().slice( 0, 10 );
+	}
+
+	function renderInstalls( installs, container ) {
+		if ( ! installs || installs.length === 0 ) {
+			container.innerHTML = '<p class="jzsa-help-text" style="color:#666;">No authorized sites yet.</p>';
+			return;
+		}
+
+		var rows = installs.map( function ( inst ) {
+			var label = inst.label || 'Site #' + inst.id;
+			var siteHashShort = String( inst.site_hash || '' ).slice( 0, 8 );
+			var lastSeen = formatRelative( inst.last_seen_at );
+			var current = inst.is_current
+				? '<span style="color:#1a7a3a; font-weight:600; margin-left:8px;">(this site)</span>'
+				: '';
+			var btn = inst.is_current
+				? '<button type="button" class="button" disabled title="Use Sign out to leave this site, or Delete account to leave the whole account.">Remove</button>'
+				: '<button type="button" class="button jzsa-community-remove-install-btn" data-install-id="' + inst.id + '" data-install-label="' + escHtml( label ) + '" style="color:#d63638; border-color:#d63638;">Remove</button>';
+
+			return '' +
+				'<div class="jzsa-community-install-row" data-install-id="' + inst.id + '" style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid #f0f0f1;">' +
+					'<div>' +
+						'<div style="font-weight:600;">' + escHtml( label ) + current + '</div>' +
+						'<div style="font-size:12px; color:#666;">' +
+							'site#' + escHtml( siteHashShort ) +
+							( lastSeen ? ' · last used ' + escHtml( lastSeen ) : '' ) +
+						'</div>' +
+					'</div>' +
+					'<div>' + btn + '</div>' +
+				'</div>';
+		} );
+		container.innerHTML = rows.join( '' );
+	}
+
+	function loadInstalls() {
+		var container = qs( '#jzsa-community-installs-list' );
+		if ( ! container ) { return; }
+
+		ajaxPost( 'jzsa_community_list_installs', {} )
+			.then( function ( res ) {
+				if ( res.success && res.data && Array.isArray( res.data.installs ) ) {
+					renderInstalls( res.data.installs, container );
+				} else {
+					container.innerHTML = '<p class="jzsa-help-text" style="color:#a04;">Could not load your authorized sites.</p>';
+				}
+			} )
+			.catch( function () {
+				container.innerHTML = '<p class="jzsa-help-text" style="color:#a04;">Could not reach the server.</p>';
+			} );
+	}
+
+	function initInstalls() {
+		var container = qs( '#jzsa-community-installs-list' );
+		var section   = qs( '.jzsa-community-installs-section' );
+		if ( ! container || ! section ) {
+			return;
+		}
+
+		// Lazy load when the section is first opened, so signed-in users
+		// who never expand it don't trigger an API call.
+		var loaded = false;
+		section.addEventListener( 'toggle', function () {
+			if ( section.open && ! loaded ) {
+				loaded = true;
+				loadInstalls();
+			}
+		} );
+
+		// Delegate Remove clicks (rows are rendered into innerHTML).
+		container.addEventListener( 'click', function ( ev ) {
+			var btn = ev.target.closest && ev.target.closest( '.jzsa-community-remove-install-btn' );
+			if ( ! btn ) { return; }
+			var id    = btn.getAttribute( 'data-install-id' );
+			var label = btn.getAttribute( 'data-install-label' ) || ( 'Site #' + id );
+
 			if ( ! confirm(
-				(
-					deleteEntries ?
-						'This will disconnect your community account and soft-delete all your published entries.\n\n' :
-						'This will disconnect your community account. Published entries are preserved as community samples.\n\n'
-				) +
-				'You can reconnect anytime. Continue?'
+				'Remove "' + label + '" from your community account?\n\n' +
+				'That site will no longer be able to publish, edit, or rate. Signing in again from it will require a fresh email confirmation.'
 			) ) {
 				return;
 			}
 
 			btn.disabled = true;
-
-			ajaxPost( 'jzsa_community_delete_account', { delete_entries: deleteEntries } )
+			ajaxPost( 'jzsa_community_remove_install', { install_id: id } )
 				.then( function ( res ) {
 					if ( res.success ) {
-						window.location.reload();
+						loadInstalls();
 					} else {
 						btn.disabled = false;
-						alert( res.data || 'Could not disconnect.' );
+						var msg = ( res.data && res.data.message ) || res.data || 'Could not remove that site.';
+						alert( msg );
 					}
 				} )
 				.catch( function () {
 					btn.disabled = false;
 					alert( 'Could not reach the server.' );
 				} );
-		}
-
-		if ( disconnectBtn ) {
-			disconnectBtn.addEventListener( 'click', function () {
-				disconnect( disconnectBtn, false );
-			} );
-		}
-
-		if ( deleteEntriesBtn ) {
-			deleteEntriesBtn.addEventListener( 'click', function () {
-				disconnect( deleteEntriesBtn, true );
-			} );
-		}
+		} );
 	}
 
 	/* -----------------------------------------------------------------------
@@ -1778,7 +2003,7 @@
 		function saveDisplayUrl( value ) {
 			value = normalizeUrlInput( value );
 			if ( value && ! isValidDisplayUrl( value ) ) {
-				setResult( resultEl, 'Please enter a valid display URL, or leave it empty.', false );
+				setResult( resultEl, 'Please enter a valid URL for your profile link, or leave it empty.', false );
 				return;
 			}
 
@@ -1954,7 +2179,8 @@
 		initSearch();
 		initSort();
 		initConnect();
-		initDisconnect();
+		initAccountActions();
+		initInstalls();
 		initPublish();
 		initDisplayName();
 		initDisplayUrl();
