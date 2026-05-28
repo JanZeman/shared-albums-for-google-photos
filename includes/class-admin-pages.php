@@ -390,7 +390,7 @@ class JZSA_Admin_Pages {
 		$info_sample_link  = 'https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR';
 		$this->lazy_sample_previews = true;
 
-		// Reusable UI strings — define once, echo everywhere below.
+		// Reusable UI strings - define once, echo everywhere below.
 		$s_copy            = esc_html__( 'Copy', 'janzeman-shared-albums-for-google-photos' );
 		$s_apply           = esc_html__( 'Apply', 'janzeman-shared-albums-for-google-photos' );
 		$s_revert          = esc_html__( 'Revert', 'janzeman-shared-albums-for-google-photos' );

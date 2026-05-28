@@ -250,7 +250,7 @@
 	}
 
 	/* -----------------------------------------------------------------------
-	 * Entry block builder — used for both Community and My Shortcodes
+	 * Entry block builder - used for both Community and My Shortcodes
 	 * -------------------------------------------------------------------- */
 
 	var ACTION_POINTS = {
@@ -402,7 +402,7 @@
 		var hue = Math.floor( Math.random() * 360 );
 		wrap.style.backgroundColor = 'hsl(' + hue + ', 55%, 95%)';
 		if ( ! isMyEntry ) {
-			// no-op — keep the block for future my-entry-specific styles
+			// no-op - keep the block for future my-entry-specific styles
 		}
 
 		// ---- Header row: title (+ inline tags) + community metadata ----
@@ -626,23 +626,25 @@
 				help.textContent = i18n( 'showcaseConsentHelp' );
 				wrapEl.appendChild( label );
 				wrapEl.appendChild( help );
-				var hideLabel = document.createElement( 'label' );
-				hideLabel.className = 'jzsa-community-showcase-shortcode-visibility';
-				var hideCheckbox = document.createElement( 'input' );
-				hideCheckbox.type = 'checkbox';
-				hideCheckbox.className = 'jzsa-community-my-entry-hide-shortcode-checkbox';
-				hideCheckbox.checked = entry.public_showcase_hide_shortcode ? true : false;
-				hideCheckbox.disabled = true;
-				var hideText = document.createElement( 'span' );
-				hideText.textContent = i18n( 'showcaseHideShortcodeLabel' );
-				hideLabel.appendChild( hideCheckbox );
-				hideLabel.appendChild( hideText );
-				var hideHelp = document.createElement( 'p' );
-				hideHelp.className = 'description jzsa-community-showcase-shortcode-visibility-help';
-				hideHelp.textContent = i18n( 'showcaseHideShortcodeHelp' );
-				wrapEl.appendChild( hideLabel );
-				wrapEl.appendChild( hideHelp );
-				return { wrapper: wrapEl, checkbox: checkbox, hideCheckbox: hideCheckbox };
+				var showLabel = document.createElement( 'label' );
+				showLabel.className = 'jzsa-community-showcase-shortcode-visibility';
+				var showCheckbox = document.createElement( 'input' );
+				showCheckbox.type = 'checkbox';
+				showCheckbox.className = 'jzsa-community-my-entry-show-shortcode-checkbox';
+				// Default true if the field is absent on the server response
+				// (older entries pre-dating the column flip).
+				showCheckbox.checked = entry.public_showcase_show_shortcode === false ? false : true;
+				showCheckbox.disabled = true;
+				var showText = document.createElement( 'span' );
+				showText.textContent = i18n( 'showcaseShowShortcodeLabel' );
+				showLabel.appendChild( showCheckbox );
+				showLabel.appendChild( showText );
+				var showHelp = document.createElement( 'p' );
+				showHelp.className = 'description jzsa-community-showcase-shortcode-visibility-help';
+				showHelp.textContent = i18n( 'showcaseShowShortcodeHelp' );
+				wrapEl.appendChild( showLabel );
+				wrapEl.appendChild( showHelp );
+				return { wrapper: wrapEl, checkbox: checkbox, showCheckbox: showCheckbox };
 			}
 
 			var topConsent = createConsentBlock( 'jzsa-my-entry-consent-top-' + entry.id );
@@ -750,16 +752,17 @@
 			saveRow.appendChild( bottomConsent.wrapper );
 
 			var consentCheckboxes = [ topConsent.checkbox, bottomConsent.checkbox ];
-			var hideShortcodeCheckboxes = [ topConsent.hideCheckbox, bottomConsent.hideCheckbox ];
+			var showShortcodeCheckboxes = [ topConsent.showCheckbox, bottomConsent.showCheckbox ];
 			function syncOwnedShowcaseConsent( checked ) {
 				consentCheckboxes.forEach( function ( checkbox ) {
 					checkbox.checked = checked;
 				} );
-				hideShortcodeCheckboxes.forEach( function ( checkbox ) {
+				// show_shortcode is only editable when consent is on. When
+				// consent flips off, leave the user's stored preference
+				// alone (so it returns if they flip consent back on);
+				// just disable interaction.
+				showShortcodeCheckboxes.forEach( function ( checkbox ) {
 					checkbox.disabled = ! checked;
-					if ( ! checked ) {
-						checkbox.checked = false;
-					}
 				} );
 				syncShowcaseRequiredState(
 					topConsent.checkbox,
@@ -767,8 +770,8 @@
 					[ descriptionRequiredBadge, urlRequiredBadge, photographerRequiredBadge ]
 				);
 			}
-			function syncOwnedHideShortcode( checked ) {
-				hideShortcodeCheckboxes.forEach( function ( checkbox ) {
+			function syncOwnedShowShortcode( checked ) {
+				showShortcodeCheckboxes.forEach( function ( checkbox ) {
 					checkbox.checked = checked;
 				} );
 			}
@@ -778,9 +781,9 @@
 					syncOwnedShowcaseConsent( checkbox.checked );
 				} );
 			} );
-			hideShortcodeCheckboxes.forEach( function ( checkbox ) {
+			showShortcodeCheckboxes.forEach( function ( checkbox ) {
 				checkbox.addEventListener( 'change', function () {
-					syncOwnedHideShortcode( checkbox.checked );
+					syncOwnedShowShortcode( checkbox.checked );
 				} );
 			} );
 
@@ -840,7 +843,7 @@
 			}
 		}
 
-		// Lazy preview — register with the shared IntersectionObserver
+		// Lazy preview - register with the shared IntersectionObserver
 		var previewEl = block.querySelector( '.jzsa-lazy-preview' );
 		if ( previewEl && typeof jzsaObserveLazyPreview === 'function' ) {
 			jzsaObserveLazyPreview( previewEl );
@@ -924,7 +927,7 @@
 		var photographerInput = block.querySelector( '.jzsa-community-my-entry-photographer-name-input' );
 		var bioInput = block.querySelector( '.jzsa-community-my-entry-photographer-bio-input' );
 		var consentCheckbox = block.querySelector( '.jzsa-community-my-entry-consent-checkbox' );
-		var hideShortcodeCheckbox = block.querySelector( '.jzsa-community-my-entry-hide-shortcode-checkbox' );
+		var showShortcodeCheckbox = block.querySelector( '.jzsa-community-my-entry-show-shortcode-checkbox' );
 		if ( urlInput ) {
 			urlInput.addEventListener( 'blur', function () {
 				var val = urlInput.value.trim();
@@ -941,7 +944,10 @@
 				var tags = tagsInput ? tagsInput.value.trim() : '';
 				var siteUrl = normalizeUrlInput( urlInput ? urlInput.value : '' );
 				var showcaseConsent = consentCheckbox ? consentCheckbox.checked : false;
-				var hideShortcode = showcaseConsent && hideShortcodeCheckbox ? hideShortcodeCheckbox.checked : false;
+				// Default true; only consult the checkbox if it exists. The
+				// server-side handler ANDs with consent at render time, so
+				// no need to gate the payload here.
+				var showShortcode = showShortcodeCheckbox ? showShortcodeCheckbox.checked : true;
 				var description = descInput ? descInput.value.trim() : '';
 				var photographerName = photographerInput ? photographerInput.value.trim() : '';
 				var photographerBio = bioInput ? bioInput.value.trim() : '';
@@ -973,7 +979,7 @@
 					photographer_name: photographerName,
 					photographer_bio: photographerBio,
 					public_showcase_consent: showcaseConsent,
-					public_showcase_hide_shortcode: hideShortcode,
+					public_showcase_show_shortcode: showShortcode,
 				} )
 					.then( function ( res ) {
 						saveBtn.disabled = false;
@@ -1251,7 +1257,7 @@
 	}
 
 	/* -----------------------------------------------------------------------
-	 * Auth — Sign in
+	 * Auth - Sign in
 	 * -------------------------------------------------------------------- */
 
 	var SIGNIN_POLL_INTERVAL_MS = 3000;
@@ -1384,7 +1390,7 @@
 				return;
 			}
 			if ( displayUrl && ! isValidDisplayUrl( displayUrl ) ) {
-				setStatus( 'Please enter a valid URL for your profile link, or leave it empty.', 'error' );
+				setStatus( 'Please enter a valid URL for your community profile link, or leave it empty.', 'error' );
 				return;
 			}
 
@@ -1424,7 +1430,7 @@
 	}
 
 	/* -----------------------------------------------------------------------
-	 * Auth — Sign out (local) and Delete account (destructive, server-side)
+	 * Auth - Sign out (local) and Delete account (destructive, server-side)
 	 * -------------------------------------------------------------------- */
 
 	function initAccountActions() {
@@ -1437,7 +1443,7 @@
 		// Sign out is a low-risk, local-only action: it just clears the JWT
 		// on this WP install. The install stays authorized on the account,
 		// so signing in again from this site does not require email
-		// confirmation. No confirm dialog — that would be annoying for a
+		// confirmation. No confirm dialog: that would be annoying for a
 		// routine action equivalent to closing a browser tab.
 		if ( signOutBtn ) {
 			signOutBtn.addEventListener( 'click', function () {
@@ -1496,7 +1502,7 @@
 	}
 
 	/* -----------------------------------------------------------------------
-	 * Your authorized sites — list + remove
+	 * Your authorized sites - list + remove
 	 * -------------------------------------------------------------------- */
 
 	function escHtml( s ) {
@@ -1525,23 +1531,31 @@
 		}
 
 		var rows = installs.map( function ( inst ) {
-			var label = inst.label || 'Site #' + inst.id;
-			var siteHashShort = String( inst.site_hash || '' ).slice( 0, 8 );
+			var siteUrl = String( inst.site_url || '' );
+			// Display: strip the scheme and any trailing slash to make the
+			// URL easier to scan ("shoes.com" reads better than the full
+			// "https://shoes.com/"). The full URL stays in the data attribute
+			// for the confirm dialog.
+			var siteUrlDisplay = siteUrl
+				? siteUrl.replace( /^https?:\/\//i, '' ).replace( /\/+$/, '' )
+				: 'Untitled site';
+			var primary = inst.label || siteUrlDisplay;
+			var secondary = inst.label && siteUrl ? siteUrl : '';
 			var lastSeen = formatRelative( inst.last_seen_at );
 			var current = inst.is_current
 				? '<span style="color:#1a7a3a; font-weight:600; margin-left:8px;">(this site)</span>'
 				: '';
 			var btn = inst.is_current
 				? '<button type="button" class="button" disabled title="Use Sign out to leave this site, or Delete account to leave the whole account.">Remove</button>'
-				: '<button type="button" class="button jzsa-community-remove-install-btn" data-install-id="' + inst.id + '" data-install-label="' + escHtml( label ) + '" style="color:#d63638; border-color:#d63638;">Remove</button>';
+				: '<button type="button" class="button jzsa-community-remove-install-btn" data-install-id="' + inst.id + '" data-install-label="' + escHtml( primary ) + '" style="color:#d63638; border-color:#d63638;">Remove</button>';
 
 			return '' +
 				'<div class="jzsa-community-install-row" data-install-id="' + inst.id + '" style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid #f0f0f1;">' +
 					'<div>' +
-						'<div style="font-weight:600;">' + escHtml( label ) + current + '</div>' +
+						'<div style="font-weight:600;">' + escHtml( primary ) + current + '</div>' +
 						'<div style="font-size:12px; color:#666;">' +
-							'site#' + escHtml( siteHashShort ) +
-							( lastSeen ? ' · last used ' + escHtml( lastSeen ) : '' ) +
+							( secondary ? escHtml( secondary ) + ' · ' : '' ) +
+							( lastSeen ? 'last used ' + escHtml( lastSeen ) : '' ) +
 						'</div>' +
 					'</div>' +
 					'<div>' + btn + '</div>' +
@@ -1696,8 +1710,8 @@
 		var showcaseConsentToggles = Array.prototype.slice.call(
 			document.querySelectorAll( '.jzsa-pub-showcase-consent-toggle' )
 		);
-		var hideShortcodeToggles = Array.prototype.slice.call(
-			document.querySelectorAll( '.jzsa-pub-showcase-hide-shortcode-toggle' )
+		var showShortcodeToggles = Array.prototype.slice.call(
+			document.querySelectorAll( '.jzsa-pub-showcase-show-shortcode-toggle' )
 		);
 		var publishRequiredControls = [
 			qs( '#jzsa-pub-description' ),
@@ -1716,17 +1730,19 @@
 			showcaseConsentToggles.forEach( function ( toggle ) {
 				toggle.checked = checked;
 			} );
-			hideShortcodeToggles.forEach( function ( toggle ) {
+			// show_shortcode is only meaningful while consent is on. Disable
+			// the checkbox when consent is off, but DO NOT touch its checked
+			// state: the field's natural default is true, and we want it to
+			// reappear that way (or with the user's prior choice) when
+			// consent comes back on.
+			showShortcodeToggles.forEach( function ( toggle ) {
 				toggle.disabled = ! checked;
-				if ( ! checked ) {
-					toggle.checked = false;
-				}
 			} );
 			syncShowcaseRequiredState( showcaseConsentEl, publishRequiredControls, publishRequiredBadges );
 		}
 
-		function syncPublishHideShortcode( checked ) {
-			hideShortcodeToggles.forEach( function ( toggle ) {
+		function syncPublishShowShortcode( checked ) {
+			showShortcodeToggles.forEach( function ( toggle ) {
 				toggle.checked = checked;
 			} );
 		}
@@ -1737,9 +1753,9 @@
 				syncPublishShowcaseConsent( toggle.checked );
 			} );
 		} );
-		hideShortcodeToggles.forEach( function ( toggle ) {
+		showShortcodeToggles.forEach( function ( toggle ) {
 			toggle.addEventListener( 'change', function () {
-				syncPublishHideShortcode( toggle.checked );
+				syncPublishShowShortcode( toggle.checked );
 			} );
 		} );
 
@@ -1752,7 +1768,11 @@
 			var photographerName = ( qs( '#jzsa-pub-photographer-name' ) || {} ).value || '';
 			var photographerBio = ( qs( '#jzsa-pub-photographer-bio' ) || {} ).value || '';
 			var showcaseConsent = ( qs( '#jzsa-pub-showcase-consent' ) || {} ).checked || false;
-			var hideShortcode = showcaseConsent && ( ( qs( '#jzsa-pub-showcase-hide-shortcode' ) || {} ).checked || false );
+			// Default true: the checkbox is rendered checked unless the user
+			// explicitly unchecks it. Sent unconditionally so the user's
+			// stored preference survives consent toggling.
+			var showShortcodeEl = qs( '#jzsa-pub-showcase-show-shortcode' );
+			var showShortcode = showShortcodeEl ? showShortcodeEl.checked : true;
 
 			title     = title.trim();
 			shortcode = shortcode.trim();
@@ -1789,7 +1809,7 @@
 				photographer_name:         photographerName,
 				photographer_bio:          photographerBio,
 				public_showcase_consent:   showcaseConsent,
-				public_showcase_hide_shortcode: hideShortcode,
+				public_showcase_show_shortcode: showShortcode,
 			} )
 				.then( function ( res ) {
 					btn.disabled = false;
@@ -1845,7 +1865,7 @@
 	}
 
 	/* -----------------------------------------------------------------------
-	 * Display name — inline edit widget
+	 * Display name - inline edit widget
 	 * -------------------------------------------------------------------- */
 
 	var NICKNAME_ADJECTIVES = [
@@ -2003,7 +2023,7 @@
 		function saveDisplayUrl( value ) {
 			value = normalizeUrlInput( value );
 			if ( value && ! isValidDisplayUrl( value ) ) {
-				setResult( resultEl, 'Please enter a valid URL for your profile link, or leave it empty.', false );
+				setResult( resultEl, 'Please enter a valid URL for your community profile link, or leave it empty.', false );
 				return;
 			}
 
@@ -2086,7 +2106,7 @@
 	}
 
 	/* -----------------------------------------------------------------------
-	 * Dev helper — fill form with random data
+	 * Dev helper - fill form with random data
 	 * -------------------------------------------------------------------- */
 
 	var DEV_ALBUM_LINKS = [

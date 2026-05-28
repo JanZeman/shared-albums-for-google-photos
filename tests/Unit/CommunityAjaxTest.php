@@ -69,7 +69,7 @@ class CommunityAjaxTest extends TestCase {
                 'photographer_name'       => 'Jane Doe',
                 'photographer_bio'        => 'Bio',
                 'public_showcase_consent'        => 'false',
-                'public_showcase_hide_shortcode' => 'false',
+                'public_showcase_show_shortcode' => 'true',
             ),
             $overrides
         );
@@ -199,7 +199,7 @@ class CommunityAjaxTest extends TestCase {
                 'tags'                    => ' Landscape,TRAVEL ',
                 'site_url'                => 'example.com/gallery',
                 'public_showcase_consent'        => 'true',
-                'public_showcase_hide_shortcode' => 'true',
+                'public_showcase_show_shortcode' => 'false',
             )
         );
         $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/entries' ] = $this->response( 201, array( 'id' => 44 ) );
@@ -216,25 +216,45 @@ class CommunityAjaxTest extends TestCase {
         $this->assertSame( array( 'landscape', 'travel' ), $payload['tags'] );
         $this->assertSame( 'https://example.com/gallery', $payload['site_url'] );
         $this->assertTrue( $payload['public_showcase_consent'] );
-        $this->assertTrue( $payload['public_showcase_hide_shortcode'] );
+        $this->assertFalse( $payload['public_showcase_show_shortcode'] );
     }
 
-    public function test_publish_forces_hide_shortcode_false_without_showcase_consent(): void {
+    public function test_publish_show_shortcode_defaults_true_when_missing(): void {
         $this->connect();
         $_POST = $this->validEntryPost(
-            array(
-                'public_showcase_consent'        => 'false',
-                'public_showcase_hide_shortcode' => 'true',
-            )
+            array( 'public_showcase_consent' => 'true' )
         );
-        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/entries' ] = $this->response( 201, array( 'id' => 44 ) );
+        unset( $_POST['public_showcase_show_shortcode'] );
+        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/entries' ] = $this->response( 201, array( 'id' => 45 ) );
 
         $response = $this->callAjax( 'ajax_publish' );
 
         $this->assertTrue( $response->success );
         $payload = json_decode( $GLOBALS['jzsa_test_http_requests'][0]['args']['body'], true );
+        $this->assertTrue( $payload['public_showcase_consent'] );
+        // Default true: the field is sent unconditionally so the user's
+        // preference survives consent toggling.
+        $this->assertTrue( $payload['public_showcase_show_shortcode'] );
+    }
+
+    public function test_publish_show_shortcode_preserved_without_showcase_consent(): void {
+        $this->connect();
+        $_POST = $this->validEntryPost(
+            array(
+                'public_showcase_consent'        => 'false',
+                'public_showcase_show_shortcode' => 'false',
+            )
+        );
+        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/entries' ] = $this->response( 201, array( 'id' => 46 ) );
+
+        $response = $this->callAjax( 'ajax_publish' );
+
+        $this->assertTrue( $response->success );
+        $payload = json_decode( $GLOBALS['jzsa_test_http_requests'][0]['args']['body'], true );
+        // consent is off but the stored preference survives independently;
+        // the showcase renderer ANDs them at display time.
         $this->assertFalse( $payload['public_showcase_consent'] );
-        $this->assertFalse( $payload['public_showcase_hide_shortcode'] );
+        $this->assertFalse( $payload['public_showcase_show_shortcode'] );
     }
 
     public function test_publish_validation_error_happens_before_http_request(): void {
@@ -410,7 +430,7 @@ class CommunityAjaxTest extends TestCase {
             )
         );
         unset( $_POST['public_showcase_consent'] );
-        unset( $_POST['public_showcase_hide_shortcode'] );
+        unset( $_POST['public_showcase_show_shortcode'] );
         $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/entries/9' ] = $this->response( 200 );
 
         $response = $this->callAjax( 'ajax_update_entry' );
@@ -419,7 +439,7 @@ class CommunityAjaxTest extends TestCase {
         $this->assertSame( 'PATCH', $GLOBALS['jzsa_test_http_requests'][0]['method'] );
         $payload = json_decode( $GLOBALS['jzsa_test_http_requests'][0]['args']['body'], true );
         $this->assertArrayNotHasKey( 'public_showcase_consent', $payload );
-        $this->assertArrayNotHasKey( 'public_showcase_hide_shortcode', $payload );
+        $this->assertArrayNotHasKey( 'public_showcase_show_shortcode', $payload );
     }
 
     public function test_update_entry_includes_explicit_false_consent(): void {
@@ -430,7 +450,7 @@ class CommunityAjaxTest extends TestCase {
                 'public_showcase_consent'        => 'false',
             )
         );
-        unset( $_POST['public_showcase_hide_shortcode'] );
+        unset( $_POST['public_showcase_show_shortcode'] );
         $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/entries/9' ] = $this->response( 200 );
 
         $response = $this->callAjax( 'ajax_update_entry' );
@@ -439,8 +459,8 @@ class CommunityAjaxTest extends TestCase {
         $payload = json_decode( $GLOBALS['jzsa_test_http_requests'][0]['args']['body'], true );
         $this->assertArrayHasKey( 'public_showcase_consent', $payload );
         $this->assertFalse( $payload['public_showcase_consent'] );
-        $this->assertArrayHasKey( 'public_showcase_hide_shortcode', $payload );
-        $this->assertFalse( $payload['public_showcase_hide_shortcode'] );
+        // show_shortcode is independent of consent now: not posted = not sent.
+        $this->assertArrayNotHasKey( 'public_showcase_show_shortcode', $payload );
     }
 
     public function test_update_entry_rejects_invalid_id_before_http_request(): void {

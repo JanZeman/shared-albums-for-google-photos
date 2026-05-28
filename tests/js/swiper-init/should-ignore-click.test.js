@@ -3,7 +3,7 @@ import jQuery from 'jquery';
 import { loadHelpers } from '../helpers/loadFromSwiperInit.js';
 
 // shouldIgnoreClick uses jQuery's $(target).closest(selectorList). The production
-// IIFE receives jQuery as its parameter — replicate that by injecting it as $.
+// IIFE receives jQuery as its parameter, so replicate that by injecting it as $.
 const { shouldIgnoreClick } = loadHelpers(['shouldIgnoreClick'], { $: jQuery });
 
 function makeDom(html) {

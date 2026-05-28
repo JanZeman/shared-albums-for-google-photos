@@ -142,7 +142,7 @@
     // ============================================================================
 
     // Fullscreen toggle function (with iPhone pseudo-fullscreen fallback).
-    // Always enters/exits native (or pseudo) fullscreen — lightbox is handled
+    // Always enters/exits native (or pseudo) fullscreen; lightbox is handled
     // separately via toggleLightbox() and the dedicated .swiper-button-lightbox.
     function toggleFullscreen(element, showHints) {
         var showHintsFn = showHints;
@@ -170,7 +170,7 @@
                 $(element).trigger('jzsa:fullscreen-state', [true]);
             } else {
                 // Save scroll position so we can restore it when exiting.
-                // Skip when in lightbox — openLightbox already saved the scroll.
+                // Skip when in lightbox - openLightbox already saved the scroll.
                 if (!inLightbox) {
                     $(element).data('jzsa-scroll-y', window.scrollY || window.pageYOffset);
                 }
@@ -1556,8 +1556,8 @@
         }
 
         maybeEnableRewind(getLoadedPhotos());
-        // Eagerly pre-fetch in both directions regardless of the current position —
-        // each function already knows when there is nothing to fetch (firstIndex === 0,
+        // Eagerly pre-fetch in both directions regardless of the current position.
+        // Each function already knows when there is nothing to fetch (firstIndex === 0,
         // lastIndex >= totalCount - 1) and returns early in those cases. This covers
         // the scenario where the initial chunk is centred in the album and the user
         // navigates backwards before the margin-based ensureBuffer would have fired.
@@ -3716,7 +3716,7 @@
             var isReturningToLightbox = $(containerElement).hasClass('jzsa-lightbox-active');
 
             // Restore original background color.
-            // Skip for lightbox return — the lightbox manages the bg itself.
+            // Skip for lightbox return; the lightbox manages the bg itself.
             if (!isReturningToLightbox && params._originalBgColor !== undefined) {
                 if (params._originalBgColor) {
                     containerElement.style.setProperty('--gallery-bg-color', params._originalBgColor);
@@ -3744,7 +3744,7 @@
             params.slideshowPausedByInteraction = false;
 
             if (isReturningToLightbox) {
-                // Restore fullscreen-mode slideshow — lightbox always uses fs settings.
+                // Restore fullscreen-mode slideshow; lightbox always uses fs settings.
                 if (swiper.autoplay && swiper.autoplay.running) {
                     swiper.autoplay.stop();
                 }
@@ -3859,7 +3859,7 @@
             return;
         }
 
-        // Dedicated lightbox button — opens the lightbox overlay directly.
+        // Dedicated lightbox button - opens the lightbox overlay directly.
         $container.find('.swiper-button-lightbox').on('click', function(e) {
             e.stopPropagation();
             // For carousel per-tile lightbox buttons, navigate to the exact clicked tile first.

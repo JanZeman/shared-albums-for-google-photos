@@ -27,7 +27,7 @@ class JZSA_Community {
 	const SIGNIN_PENDING_PREFIX = 'jzsa_community_signin_pending_';
 
 	/**
-	 * Constructor — register all hooks.
+	 * Constructor. Registers all hooks.
 	 */
 	public function __construct() {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
@@ -64,8 +64,8 @@ class JZSA_Community {
 		return array(
 			'showcaseConsentLabel'       => __( 'Allow this sample to be considered for a future public showcase.', 'janzeman-shared-albums-for-google-photos' ),
 			'showcaseConsentHelp'        => __( 'If selected, this shortcode sample and its rendered preview may later appear on a public plugin showcase outside this admin page. Description, sample page URL, and creator name are required for showcase consideration.', 'janzeman-shared-albums-for-google-photos' ),
-			'showcaseHideShortcodeLabel' => __( 'Prefer to share only photos on the public showcase; hide my shortcode there.', 'janzeman-shared-albums-for-google-photos' ),
-			'showcaseHideShortcodeHelp'  => __( 'Available only when public showcase consideration is enabled. The community directory still shows the masked shortcode.', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseShowShortcodeLabel' => __( 'Also show the shortcode (not only the photos).', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseShowShortcodeHelp'  => __( 'Default: shown. Uncheck if you want the public showcase to display only your photos and not the underlying shortcode. The community directory in this admin page is unaffected; it always shows the masked shortcode.', 'janzeman-shared-albums-for-google-photos' ),
 			'showcaseRequiredBadge'      => __( 'Required for showcase', 'janzeman-shared-albums-for-google-photos' ),
 			'showcaseRequiredMessage'    => __( 'Description, sample page URL, and photographer / creator name are required for public showcase consideration.', 'janzeman-shared-albums-for-google-photos' ),
 			'descriptionLabel'           => __( 'Description', 'janzeman-shared-albums-for-google-photos' ),
@@ -358,7 +358,7 @@ class JZSA_Community {
 	 * Generated once on first call (typically at plugin activation, but the
 	 * lazy fallback in get_install_secret_hash() covers upgrades from
 	 * pre-secret versions). 256 bits of entropy, stored hex-encoded, never
-	 * autoloaded, never sent to the browser or to the API — only its
+	 * autoloaded, never sent to the browser or to the API; only its
 	 * SHA-256 hash leaves the server.
 	 *
 	 * @return void
@@ -464,9 +464,9 @@ class JZSA_Community {
 	 * Verify the stored JWT against the community server.
 	 *
 	 * Returns one of three states:
-	 *   'connected'    — server confirmed the user exists and is not banned
-	 *   'disconnected' — server returned 401/403 (token invalid/expired/banned); JWT cleared
-	 *   'server_error' — server returned 5xx or was unreachable; JWT kept, error shown
+	 *   'connected'    : server confirmed the user exists and is not banned
+	 *   'disconnected' : server returned 401/403 (token invalid/expired/banned); JWT cleared
+	 *   'server_error' : server returned 5xx or was unreachable; JWT kept, error shown
 	 *
 	 * Result is cached for the duration of the current request so calling this
 	 * method from both enqueue_scripts() and render_content() costs only one
@@ -516,13 +516,13 @@ class JZSA_Community {
 		}
 
 		if ( 401 === $code || 403 === $code ) {
-			// Token is invalid, expired or account banned — clear it.
+			// Token is invalid, expired or account banned. Clear it.
 			delete_user_meta( get_current_user_id(), self::OPT_JWT );
 			self::$cached_connection_state = 'disconnected';
 			return self::$cached_connection_state;
 		}
 
-		// 5xx or unexpected — server is having issues, keep the JWT.
+		// 5xx or unexpected: server is having issues, keep the JWT.
 		self::$cached_connection_state = 'server_error';
 		return self::$cached_connection_state;
 	}
@@ -743,9 +743,9 @@ class JZSA_Community {
 						<span id="jzsa-display-name-result" class="jzsa-community-result" aria-live="polite"></span>
 					</span>
 				</div>
-				<!-- Profile link row -->
+				<!-- Community profile link row -->
 				<div class="jzsa-community-display-url-row" style="margin-top:10px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
-					<span style="font-size:13px; color:#50575e;"><?php esc_html_e( 'Profile link:', 'janzeman-shared-albums-for-google-photos' ); ?></span>
+					<span style="font-size:13px; color:#50575e;"><?php esc_html_e( 'Community profile link:', 'janzeman-shared-albums-for-google-photos' ); ?></span>
 					<span id="jzsa-display-url-view" style="font-weight:600;">
 						<?php
 						$saved_url = get_user_meta( get_current_user_id(), self::OPT_DISPLAY_URL, true ) ?: '';
@@ -774,6 +774,9 @@ class JZSA_Community {
 							<?php esc_html_e( 'Cancel', 'janzeman-shared-albums-for-google-photos' ); ?>
 						</button>
 						<span id="jzsa-display-url-result" class="jzsa-community-result" aria-live="polite"></span>
+						<span class="description" style="display:block; margin-top:4px;">
+							<?php esc_html_e( 'Shown next to your name on every sample you publish in the community gallery. A personal link about you (portfolio, social profile, personal site), not the WordPress site this plugin runs on.', 'janzeman-shared-albums-for-google-photos' ); ?>
+						</span>
 					</span>
 				</div>
 				<!-- Your authorized sites -->
@@ -782,7 +785,7 @@ class JZSA_Community {
 						<?php esc_html_e( 'Your authorized sites', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</summary>
 					<p class="jzsa-help-text" style="margin-top:6px;">
-						<?php esc_html_e( 'WordPress sites you have signed in from. Removing a site revokes its access — signing in again from that site will require a fresh email confirmation. To leave the account from this site, use Sign out (keeps it authorized) or Delete account (permanent).', 'janzeman-shared-albums-for-google-photos' ); ?>
+						<?php esc_html_e( 'WordPress sites you have signed in from. Removing a site revokes its access; signing in again from that site will require a fresh email confirmation. To leave the account from this site, use Sign out (keeps it authorized) or Delete account (permanent).', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</p>
 					<div id="jzsa-community-installs-list" class="jzsa-community-installs-list" aria-live="polite">
 						<p class="jzsa-help-text" style="color:#666;">
@@ -810,11 +813,15 @@ class JZSA_Community {
 					<?php esc_html_e( 'Privacy: Your email is used to confirm it is really you and is stored to identify your account. You can delete your account from this page at any time to permanently remove it.', 'janzeman-shared-albums-for-google-photos' ); ?>
 				</p>
 				<?php
-				$current_user           = wp_get_current_user();
-				$suggested_connect_name = sanitize_text_field( $current_user->display_name ?? '' );
-				$suggested_connect_name = self::truncate_string( $suggested_connect_name, 50 );
-				$suggested_connect_url  = self::normalize_display_url( home_url() );
+				$current_user            = wp_get_current_user();
+				$suggested_connect_name  = sanitize_text_field( $current_user->display_name ?? '' );
+				$suggested_connect_name  = self::truncate_string( $suggested_connect_name, 50 );
 				$suggested_connect_email = sanitize_email( $current_user->user_email ?? '' );
+				// Community profile link is intentionally NOT prefilled. It is a personal
+				// presentation link (portfolio, social profile, a personal site)
+				// shown next to the author name on every published sample, and
+				// is usually not the current WP site. Prefilling with home_url()
+				// would push users toward the wrong default.
 				?>
 				<p class="jzsa-community-email-row" style="margin-top:10px; display:flex; align-items:center; flex-wrap:nowrap; gap:6px;">
 					<label for="jzsa-connect-email" style="font-size:13px; color:#50575e; white-space:nowrap;">
@@ -848,18 +855,18 @@ class JZSA_Community {
 				</p>
 				<p class="jzsa-community-display-url-row" style="margin-top:10px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
 					<label for="jzsa-connect-display-url" style="font-size:13px; color:#50575e;">
-						<?php esc_html_e( 'Profile link:', 'janzeman-shared-albums-for-google-photos' ); ?>
+						<?php esc_html_e( 'Community profile link:', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</label>
 					<input type="url" id="jzsa-connect-display-url" maxlength="2048"
-						value="<?php echo esc_attr( $suggested_connect_url ); ?>"
+						value=""
 						placeholder="<?php esc_attr_e( 'https://your-portfolio.example', 'janzeman-shared-albums-for-google-photos' ); ?>"
 						style="width:260px;">
 					<span class="description">
-						<?php esc_html_e( 'Optional. Any URL — your portfolio, social profile, or one of your sites.', 'janzeman-shared-albums-for-google-photos' ); ?>
+						<?php esc_html_e( 'Optional. A personal link about you, shown next to your name on every sample you publish in the community gallery. Most people use their portfolio, social profile, or personal site, not the WordPress site this plugin runs on.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</span>
 				</p>
 				<p class="jzsa-help-text" style="margin-top:4px; margin-bottom:8px; font-style:italic;">
-					<?php esc_html_e( 'If you already have a community account under this email, your existing display name and profile link will be kept — anything you type above is only used if this is a new account.', 'janzeman-shared-albums-for-google-photos' ); ?>
+					<?php esc_html_e( 'If you already have a community account under this email, your existing display name and community profile link will be kept. Anything you type above is only used if this is a new account.', 'janzeman-shared-albums-for-google-photos' ); ?>
 				</p>
 				<p style="margin-top:12px;">
 					<button type="button" class="button button-primary jzsa-community-connect-btn">
@@ -908,6 +915,15 @@ class JZSA_Community {
 			<table class="form-table jzsa-community-publish-table">
 				<tr>
 					<td colspan="2" class="jzsa-community-showcase-consent-cell">
+						<div class="jzsa-community-showcase-scope-warning" style="display:flex; gap:10px; align-items:flex-start; padding:10px 12px; margin-bottom:12px; border-left:4px solid #d97706; background:#fffbeb; border-radius:3px;">
+							<span class="dashicons dashicons-warning" style="color:#d97706; margin-top:2px;" aria-hidden="true"></span>
+							<div>
+								<strong><?php esc_html_e( 'Heads up: the settings below are about a FUTURE public showcase website, not this admin page.', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+								<p class="description" style="margin:4px 0 0;">
+									<?php esc_html_e( 'The public showcase is a separate, externally-visible site (anyone on the internet can read it) that does not exist yet. These checkboxes only affect whether your sample is eligible to appear there, and whether your shortcode shows up next to your photos when it does. They have no effect on what other WordPress admins see on this Community page; those settings are above.', 'janzeman-shared-albums-for-google-photos' ); ?>
+								</p>
+							</div>
+						</div>
 						<label style="display:flex; align-items:center; gap:8px;">
 							<input type="checkbox" id="jzsa-pub-showcase-consent" class="jzsa-pub-showcase-consent-toggle" value="1">
 							<span class="jzsa-community-audience-icon jzsa-community-audience-icon--public">
@@ -919,11 +935,11 @@ class JZSA_Community {
 							<?php echo esc_html( $i18n['showcaseConsentHelp'] ); ?>
 						</p>
 						<label class="jzsa-community-showcase-shortcode-visibility">
-							<input type="checkbox" id="jzsa-pub-showcase-hide-shortcode" class="jzsa-pub-showcase-hide-shortcode-toggle" value="1" disabled>
-							<span><?php echo esc_html( $i18n['showcaseHideShortcodeLabel'] ); ?></span>
+							<input type="checkbox" id="jzsa-pub-showcase-show-shortcode" class="jzsa-pub-showcase-show-shortcode-toggle" value="1" checked disabled>
+							<span><?php echo esc_html( $i18n['showcaseShowShortcodeLabel'] ); ?></span>
 						</label>
 						<p class="description jzsa-community-showcase-shortcode-visibility-help">
-							<?php echo esc_html( $i18n['showcaseHideShortcodeHelp'] ); ?>
+							<?php echo esc_html( $i18n['showcaseShowShortcodeHelp'] ); ?>
 						</p>
 					</td>
 				</tr>
@@ -1028,6 +1044,15 @@ class JZSA_Community {
 				</tr>
 			</table>
 			<div class="jzsa-community-showcase-consent-bottom">
+				<div class="jzsa-community-showcase-scope-warning" style="display:flex; gap:10px; align-items:flex-start; padding:10px 12px; margin-bottom:12px; border-left:4px solid #d97706; background:#fffbeb; border-radius:3px;">
+					<span class="dashicons dashicons-warning" style="color:#d97706; margin-top:2px;" aria-hidden="true"></span>
+					<div>
+						<strong><?php esc_html_e( 'Heads up: the settings below are about a FUTURE public showcase website, not this admin page.', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+						<p class="description" style="margin:4px 0 0;">
+							<?php esc_html_e( 'The public showcase is a separate, externally-visible site (anyone on the internet can read it) that does not exist yet. These checkboxes only affect whether your sample is eligible to appear there, and whether your shortcode shows up next to your photos when it does. They have no effect on what other WordPress admins see on this Community page.', 'janzeman-shared-albums-for-google-photos' ); ?>
+						</p>
+					</div>
+				</div>
 				<label style="display:flex; align-items:center; gap:8px;">
 					<input type="checkbox" id="jzsa-pub-showcase-consent-bottom" class="jzsa-pub-showcase-consent-toggle" value="1">
 					<span class="jzsa-community-audience-icon jzsa-community-audience-icon--public">
@@ -1039,11 +1064,11 @@ class JZSA_Community {
 					<?php echo esc_html( $i18n['showcaseConsentHelp'] ); ?>
 				</p>
 				<label class="jzsa-community-showcase-shortcode-visibility">
-					<input type="checkbox" id="jzsa-pub-showcase-hide-shortcode-bottom" class="jzsa-pub-showcase-hide-shortcode-toggle" value="1" disabled>
-					<span><?php echo esc_html( $i18n['showcaseHideShortcodeLabel'] ); ?></span>
+					<input type="checkbox" id="jzsa-pub-showcase-show-shortcode-bottom" class="jzsa-pub-showcase-show-shortcode-toggle" value="1" checked disabled>
+					<span><?php echo esc_html( $i18n['showcaseShowShortcodeLabel'] ); ?></span>
 				</label>
 				<p class="description jzsa-community-showcase-shortcode-visibility-help">
-					<?php echo esc_html( $i18n['showcaseHideShortcodeHelp'] ); ?>
+					<?php echo esc_html( $i18n['showcaseShowShortcodeHelp'] ); ?>
 				</p>
 			</div>
 			<p style="margin-top:12px;">
@@ -1124,11 +1149,11 @@ class JZSA_Community {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Sign in to community — start the email-verification flow.
+	 * Sign in to community. Starts the email-verification flow.
 	 *
 	 * Sends email + install_secret_hash + display_name + display_url +
 	 * site_url + verification_url + challenge to /v1/auth/start. The backend
-	 * either issues a JWT immediately (idempotent reconnect — this install
+	 * either issues a JWT immediately (idempotent reconnect - this install
 	 * is already authorized for this email) or queues a pending verification
 	 * and emails the user a one-time confirmation link. In the second case
 	 * the JS polls ajax_signin_poll until the user clicks the link.
@@ -1157,7 +1182,7 @@ class JZSA_Community {
 			return;
 		}
 		if ( ! self::is_valid_display_url( $display_url ) ) {
-			wp_send_json_error( __( 'Please enter a valid URL for your profile link, or leave it empty.', 'janzeman-shared-albums-for-google-photos' ) );
+			wp_send_json_error( __( 'Please enter a valid URL for your community profile link, or leave it empty.', 'janzeman-shared-albums-for-google-photos' ) );
 			return;
 		}
 
@@ -1201,13 +1226,9 @@ class JZSA_Community {
 
 		if ( 200 !== $code ) {
 			delete_transient( $transient_key );
-			wp_send_json_error(
-				$body['error'] ?? sprintf(
-					/* translators: %d: HTTP status code */
-					__( 'Community server returned an error (%d). Please try again.', 'janzeman-shared-albums-for-google-photos' ),
-					$code
-				)
-			);
+			$api_error = isset( $body['error'] ) ? (string) $body['error'] : '';
+			$message   = self::signin_error_message( $api_error, $code );
+			wp_send_json_error( $message );
 			return;
 		}
 
@@ -1228,7 +1249,7 @@ class JZSA_Community {
 			}
 			// Hold the pending id locally so the polling loop can resume even if
 			// the user reloads the admin page mid-flight (transient TTL gives a
-			// 16-minute window — just past the backend's 15-minute pending TTL).
+			// 16-minute window - just past the backend's 15-minute pending TTL).
 			set_transient(
 				self::SIGNIN_PENDING_PREFIX . get_current_user_id(),
 				$pending_id,
@@ -1299,9 +1320,39 @@ class JZSA_Community {
 	}
 
 	/**
+	 * Translate a /auth/start API error code into a user-facing message.
+	 * Falls back to a generic "server returned an error (NNN)" line when
+	 * the code is unrecognized so new backend errors do not surface as
+	 * blank strings.
+	 *
+	 * @param string $api_error The `error` field from the API JSON, or empty string.
+	 * @param int    $http_code The HTTP status the API returned.
+	 * @return string A localized, user-facing error message.
+	 */
+	private static function signin_error_message( string $api_error, int $http_code ): string {
+		switch ( $api_error ) {
+			case 'email_send_failed':
+				return __( 'Email sending failed. Please try again in a moment. If the problem persists, please report a bug.', 'janzeman-shared-albums-for-google-photos' );
+			case 'site_verification_failed':
+				return __( 'We could not verify that this site is running the plugin. Make sure the plugin is active and reachable, then try again.', 'janzeman-shared-albums-for-google-photos' );
+			case 'install_already_bound':
+				return __( 'This WordPress install is already linked to a different community account. Sign out from the other account first, or use Delete account to release it.', 'janzeman-shared-albums-for-google-photos' );
+			case 'too_many_installs':
+				return __( 'You have reached the maximum number of authorized sites on this account. Remove an old one from "Your authorized sites" before adding another.', 'janzeman-shared-albums-for-google-photos' );
+			case 'account_banned':
+				return __( 'This community account has been suspended. Please contact support.', 'janzeman-shared-albums-for-google-photos' );
+		}
+		return sprintf(
+			/* translators: %d: HTTP status code */
+			__( 'Community server returned an error (%d). Please try again.', 'janzeman-shared-albums-for-google-photos' ),
+			$http_code
+		);
+	}
+
+	/**
 	 * Persist the JWT + profile fields returned by /auth/start (connected
 	 * branch) or /auth/poll. Server-side display_name/url win when both are
-	 * present — the account is the source of truth across all installs.
+	 * present. The account is the source of truth across all installs.
 	 *
 	 * @param array  $body       Parsed JSON response from the API.
 	 * @param string $typed_name Optional fallback used only if the API did
@@ -1419,7 +1470,12 @@ class JZSA_Community {
 		$photographer_name = sanitize_text_field( wp_unslash( $_POST['photographer_name'] ?? '' ) );
 		$photographer_bio  = sanitize_textarea_field( wp_unslash( $_POST['photographer_bio'] ?? '' ) );
 		$consent     = filter_var( wp_unslash( $_POST['public_showcase_consent'] ?? false ), FILTER_VALIDATE_BOOLEAN );
-		$hide_shortcode = $consent && filter_var( wp_unslash( $_POST['public_showcase_hide_shortcode'] ?? false ), FILTER_VALIDATE_BOOLEAN );
+		// Default TRUE: most authors want the shortcode visible alongside
+		// their photos on the showcase. Stored unconditionally; the
+		// showcase renderer ANDs it with consent at display time.
+		$show_shortcode = array_key_exists( 'public_showcase_show_shortcode', $_POST )
+			? filter_var( wp_unslash( $_POST['public_showcase_show_shortcode'] ), FILTER_VALIDATE_BOOLEAN )
+			: true;
 		if ( ! empty( $entry_url ) && ! preg_match( '#^https?://#i', $entry_url ) ) {
 			$entry_url = 'https://' . $entry_url;
 		}
@@ -1445,7 +1501,7 @@ class JZSA_Community {
 			'photographer_name'       => $photographer_name ?: null,
 			'photographer_bio'        => $photographer_bio ?: null,
 			'public_showcase_consent'        => $consent,
-			'public_showcase_hide_shortcode' => $hide_shortcode,
+			'public_showcase_show_shortcode' => $show_shortcode,
 		);
 
 		$response = wp_remote_post(
@@ -1579,7 +1635,7 @@ class JZSA_Community {
 	/**
 	 * Revoke one authorized install (proxy to DELETE /v1/me/installs/:id).
 	 * The backend refuses to revoke the install making the request (409
-	 * cannot_revoke_current_install) — for that case the user should Sign
+	 * cannot_revoke_current_install). For that case the user should Sign
 	 * out or Delete account instead.
 	 */
 	public function ajax_remove_install() {
@@ -1641,7 +1697,7 @@ class JZSA_Community {
 	 * Sign out of this site (local-only).
 	 *
 	 * Clears the JWT and cached profile from this WP install's user_meta.
-	 * Does not touch the community backend — the install remains authorized
+	 * Does not touch the community backend; the install remains authorized
 	 * on the account, so signing in again from this site does not require a
 	 * fresh email confirmation. Use ajax_delete_account for permanent
 	 * account removal.
@@ -1792,8 +1848,8 @@ class JZSA_Community {
 		$consent = array_key_exists( 'public_showcase_consent', $_POST )
 			? filter_var( wp_unslash( $_POST['public_showcase_consent'] ), FILTER_VALIDATE_BOOLEAN )
 			: null;
-		$hide_shortcode = array_key_exists( 'public_showcase_hide_shortcode', $_POST )
-			? filter_var( wp_unslash( $_POST['public_showcase_hide_shortcode'] ), FILTER_VALIDATE_BOOLEAN )
+		$show_shortcode = array_key_exists( 'public_showcase_show_shortcode', $_POST )
+			? filter_var( wp_unslash( $_POST['public_showcase_show_shortcode'] ), FILTER_VALIDATE_BOOLEAN )
 			: null;
 
 		if ( ! $entry_id ) {
@@ -1823,12 +1879,12 @@ class JZSA_Community {
 		);
 		if ( $consent !== null ) {
 			$body['public_showcase_consent'] = $consent;
-			if ( false === $consent ) {
-				$body['public_showcase_hide_shortcode'] = false;
-			}
 		}
-		if ( $hide_shortcode !== null ) {
-			$body['public_showcase_hide_shortcode'] = true === $consent && $hide_shortcode;
+		// show_shortcode is the author's stated preference, stored
+		// unconditionally. The showcase renderer ANDs it with consent at
+		// render time so it does not need to be coupled here.
+		if ( $show_shortcode !== null ) {
+			$body['public_showcase_show_shortcode'] = $show_shortcode;
 		}
 
 		$response = wp_remote_request(
@@ -1945,7 +2001,7 @@ class JZSA_Community {
 		$display_url = self::normalize_display_url( wp_unslash( $_POST['display_url'] ?? '' ) );
 
 		if ( ! self::is_valid_display_url( $display_url ) ) {
-			wp_send_json_error( __( 'Please enter a valid URL for your profile link, or leave it empty.', 'janzeman-shared-albums-for-google-photos' ) );
+			wp_send_json_error( __( 'Please enter a valid URL for your community profile link, or leave it empty.', 'janzeman-shared-albums-for-google-photos' ) );
 			return;
 		}
 
@@ -2029,7 +2085,7 @@ class JZSA_Community {
 			)
 		);
 
-		// Always return success — fire-and-forget, client should not be blocked.
+		// Always return success - fire-and-forget, client should not be blocked.
 		wp_send_json_success();
 	}
 

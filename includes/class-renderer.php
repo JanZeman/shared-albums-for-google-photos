@@ -198,7 +198,7 @@ class JZSA_Renderer {
 			);
 		}
 
-		// Dedicated lightbox and fullscreen buttons — each independently rendered.
+		// Dedicated lightbox and fullscreen buttons - each independently rendered.
 		// Both appear when the author explicitly sets both (jzsa-has-dual-expand
 		// class added above shifts the lightbox button left of the fullscreen one).
 		// Carousel omits the global lightbox button: per-tile buttons (jzsa-carousel-tile-fs-enabled)

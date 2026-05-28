@@ -1184,12 +1184,12 @@ class JZSA_Shared_Albums {
 			return $color;
 		}
 
-		// rgb() / rgba() — e.g. rgba(0,0,0,0.7)
+		// rgb() / rgba() - e.g. rgba(0,0,0,0.7)
 		if ( preg_match( '/^rgba?\(\s*(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\s*,\s*(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\s*,\s*(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(?:\s*,\s*(?:1|0|0?\.\d+))?\s*\)$/i', $color ) ) {
 			return $color;
 		}
 
-		// hsl() / hsla() — e.g. hsla(0,0%,0%,0.7)
+		// hsl() / hsla() - e.g. hsla(0,0%,0%,0.7)
 		if ( preg_match( '/^hsla?\(\s*(?:360|3[0-5]\d|[012]?\d\d?)\s*,\s*(?:100|[1-9]?\d)%\s*,\s*(?:100|[1-9]?\d)%(?:\s*,\s*(?:1|0|0?\.\d+))?\s*\)$/i', $color ) ) {
 			return $color;
 		}

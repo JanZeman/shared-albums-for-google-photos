@@ -247,7 +247,7 @@ function jzsa_activate() {
 	update_option( JZSA_VERSION_OPTION, JZSA_VERSION, false );
 
 	// Generate the per-install secret used to bind community JWTs to this WP
-	// install. Idempotent — does nothing if it's already there.
+	// install. Idempotent - does nothing if it's already there.
 	if ( class_exists( 'JZSA_Community' ) ) {
 		JZSA_Community::ensure_install_secret();
 	}
