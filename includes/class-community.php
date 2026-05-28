@@ -935,7 +935,7 @@ class JZSA_Community {
 							<?php echo esc_html( $i18n['showcaseConsentHelp'] ); ?>
 						</p>
 						<label class="jzsa-community-showcase-shortcode-visibility">
-							<input type="checkbox" id="jzsa-pub-showcase-show-shortcode" class="jzsa-pub-showcase-show-shortcode-toggle" value="1" checked disabled>
+							<input type="checkbox" id="jzsa-pub-showcase-show-shortcode" class="jzsa-pub-showcase-show-shortcode-toggle" value="1" disabled>
 							<span><?php echo esc_html( $i18n['showcaseShowShortcodeLabel'] ); ?></span>
 						</label>
 						<p class="description jzsa-community-showcase-shortcode-visibility-help">
@@ -1064,7 +1064,7 @@ class JZSA_Community {
 					<?php echo esc_html( $i18n['showcaseConsentHelp'] ); ?>
 				</p>
 				<label class="jzsa-community-showcase-shortcode-visibility">
-					<input type="checkbox" id="jzsa-pub-showcase-show-shortcode-bottom" class="jzsa-pub-showcase-show-shortcode-toggle" value="1" checked disabled>
+					<input type="checkbox" id="jzsa-pub-showcase-show-shortcode-bottom" class="jzsa-pub-showcase-show-shortcode-toggle" value="1" disabled>
 					<span><?php echo esc_html( $i18n['showcaseShowShortcodeLabel'] ); ?></span>
 				</label>
 				<p class="description jzsa-community-showcase-shortcode-visibility-help">
