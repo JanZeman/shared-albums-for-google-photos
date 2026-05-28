@@ -146,6 +146,7 @@ The plugin provides clear feedback:
 
 = 2.3.2 =
 * Email flow for Community feature
+* Extensive unit and end-to-end testing
 
 = 2.3.1 =
 * Tested with WordPress 7.0
