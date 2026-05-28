@@ -336,7 +336,7 @@ class CommunityAjaxTest extends TestCase {
         $this->connect();
         update_user_meta( 1, JZSA_Community::OPT_DISPLAY_NAME, 'Jane' );
         update_user_meta( 1, JZSA_Community::OPT_DISPLAY_URL, 'https://example.com' );
-        $_POST = array( 'delete_entries' => 'true' );
+        $_POST = array();
         $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/me' ] = $this->response( 204 );
 
         $response = $this->callAjax( 'ajax_delete_account' );
@@ -345,10 +345,17 @@ class CommunityAjaxTest extends TestCase {
         $this->assertSame( '', get_user_meta( 1, JZSA_Community::OPT_JWT, true ) );
         $this->assertSame( '', get_user_meta( 1, JZSA_Community::OPT_DISPLAY_NAME, true ) );
         $this->assertSame( '', get_user_meta( 1, JZSA_Community::OPT_DISPLAY_URL, true ) );
-        $this->assertSame( 'disconnected', get_transient( JZSA_Community::NONCE_NOTICE_KEY . '1' ) );
+        // The post-delete notice is rendered as "Community account permanently deleted.";
+        // see render_content() in class-community.php for the matching branch.
+        $this->assertSame( 'account_deleted', get_transient( JZSA_Community::NONCE_NOTICE_KEY . '1' ) );
 
-        $payload = json_decode( $GLOBALS['jzsa_test_http_requests'][0]['args']['body'], true );
-        $this->assertTrue( $payload['delete_entries'] );
+        // The new DELETE /me has no body. The delete_entries parameter is gone:
+        // account deletion is always a hard delete, FK cascades remove entries
+        // along with the account.
+        $this->assertSame( 'DELETE', $GLOBALS['jzsa_test_http_requests'][0]['method'] );
+        $this->assertArrayNotHasKey( 'body', array_filter( $GLOBALS['jzsa_test_http_requests'][0]['args'], static function ( $v ) {
+            return $v !== null && $v !== '';
+        } ) );
     }
 
     public function test_delete_account_failure_keeps_local_connection_state(): void {
@@ -563,7 +570,8 @@ class CommunityAjaxTest extends TestCase {
         $response = $this->callAjax( 'ajax_update_display_url' );
 
         $this->assertFalse( $response->success );
-        $this->assertStringContainsString( 'valid display URL', $response->data );
+        // Wording updated when the field was renamed "Display URL" -> "Profile link".
+        $this->assertStringContainsString( 'valid URL for your', $response->data );
         $this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
     }
 
@@ -705,89 +713,110 @@ class CommunityAjaxTest extends TestCase {
         $this->assertStringContainsString( '500', $response->data );
     }
 
-	    public function test_request_magic_link_rejects_invalid_display_name_before_http_request(): void {
-	        $_POST = array(
-	            'display_name' => '12',
+    // -------------------------------------------------------------------------
+    // signin_start: input validation
+    //
+    // These tests target ajax_signin_start, which replaced the old
+    // ajax_request_magic_link in step 8. The new flow posts to
+    // /v1/auth/start with email + install_secret_hash + display fields,
+    // and the API responds with either state=connected (immediate JWT,
+    // idempotent reconnect) or state=pending (verification email sent,
+    // plugin polls /v1/auth/poll until the user clicks the link).
+    // -------------------------------------------------------------------------
+
+    public function test_signin_start_rejects_invalid_email_before_http_request(): void {
+        $_POST = array(
+            'email'        => 'not-an-email',
+            'display_name' => 'Jane Doe',
             'display_url'  => '',
         );
 
-        $response = $this->callAjax( 'ajax_request_magic_link' );
+        $response = $this->callAjax( 'ajax_signin_start' );
 
         $this->assertFalse( $response->success );
-	        $this->assertStringContainsString( 'at least 3 letters', $response->data );
-	        $this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
-	    }
+        $this->assertStringContainsString( 'valid email', $response->data );
+        $this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
+    }
 
-	    public function test_request_magic_link_invalid_server_body_clears_challenge_and_keeps_disconnected(): void {
-	        $_POST = array(
-	            'display_name' => 'Jane Doe',
-	            'display_url'  => '',
-	        );
-	        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/auth/connect' ] = $this->response( 200, array(
-	            'display_name' => 'Jane Doe',
-	        ) );
-
-	        $response = $this->callAjax( 'ajax_request_magic_link' );
-
-	        $this->assertFalse( $response->success );
-	        $this->assertSame( 'Invalid response from community server.', $response->data );
-	        $this->assertSame( '', get_user_meta( 1, JZSA_Community::OPT_JWT, true ) );
-	        $this->assertSame( array(), $GLOBALS['jzsa_test_transients'] );
-	    }
-
-	    public function test_request_magic_link_partial_profile_sync_still_connects_with_local_fallbacks(): void {
-	        $_POST = array(
-	            'display_name' => 'Jane Doe',
-	            'display_url'  => 'example.com/profile',
-	        );
-	        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/auth/connect' ] = $this->response( 200, array(
-	            'jwt'          => 'server-jwt',
-	            'display_name' => 'Old Name',
-	        ) );
-	        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/me/display-name' ] = new WP_Error( 'timeout', 'offline' );
-	        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/me/display-url' ] = $this->response( 500, array(
-	            'error' => 'Nope',
-	        ) );
-
-	        $response = $this->callAjax( 'ajax_request_magic_link' );
-
-	        $this->assertTrue( $response->success );
-	        $this->assertSame( 'server-jwt', get_user_meta( 1, JZSA_Community::OPT_JWT, true ) );
-	        $this->assertSame( 'Old Name', get_user_meta( 1, JZSA_Community::OPT_DISPLAY_NAME, true ) );
-	        $this->assertSame( '', get_user_meta( 1, JZSA_Community::OPT_DISPLAY_URL, true ) );
-	        $this->assertCount( 3, $GLOBALS['jzsa_test_http_requests'] );
-	    }
-
-	    public function test_request_magic_link_success_saves_jwt_profile_and_transient(): void {
-	        $_POST = array(
-	            'display_name' => 'Jane Doe',
-            'display_url'  => 'example.com/profile',
+    public function test_signin_start_rejects_invalid_display_name_before_http_request(): void {
+        $_POST = array(
+            'email'        => 'jane@example.com',
+            'display_name' => '12',
+            'display_url'  => '',
         );
-        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/auth/connect' ] = $this->response( 200, array(
-            'jwt'          => 'server-jwt',
-            'display_name' => 'Old Name',
-        ) );
-        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/me/display-name' ] = $this->response( 200, array(
-            'display_name' => 'Jane Server',
-        ) );
-        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/me/display-url' ] = $this->response( 200, array(
-            'display_url' => 'https://example.com/profile',
+
+        $response = $this->callAjax( 'ajax_signin_start' );
+
+        $this->assertFalse( $response->success );
+        $this->assertStringContainsString( 'at least 3 letters', $response->data );
+        $this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
+    }
+
+    public function test_signin_start_pending_response_stores_pending_id_and_challenge(): void {
+        $_POST = array(
+            'email'        => 'jane@example.com',
+            'display_name' => 'Jane Doe',
+            'display_url'  => '',
+        );
+        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/auth/start' ] = $this->response( 200, array(
+            'state'      => 'pending',
+            'pending_id' => 42,
+            'email'      => 'jane@example.com',
         ) );
 
-        $response = $this->callAjax( 'ajax_request_magic_link' );
+        $response = $this->callAjax( 'ajax_signin_start' );
 
         $this->assertTrue( $response->success );
+        $this->assertSame( 'pending', $response->data['state'] );
+        // JWT not stored yet; that happens on a successful poll.
+        $this->assertSame( '', get_user_meta( 1, JZSA_Community::OPT_JWT, true ) );
+        // Two transients land: the site-verification challenge (so the API's
+        // verification fetch can match) and the pending_id (so the polling
+        // loop can pick it back up if the admin page reloads mid-flight).
+        $transient_keys = array_keys( $GLOBALS['jzsa_test_transients'] );
+        $this->assertContains( JZSA_Community::SIGNIN_PENDING_PREFIX . '1', $transient_keys );
+        $this->assertSame( 42, $GLOBALS['jzsa_test_transients'][ JZSA_Community::SIGNIN_PENDING_PREFIX . '1' ] );
+        $this->assertNotEmpty( array_filter( $transient_keys, static function ( $k ) {
+            return strpos( $k, JZSA_Community::AUTH_CHALLENGE_PREFIX ) === 0;
+        } ) );
+
+        // Payload is fully self-contained: no follow-up display-name/url PUTs.
+        $this->assertCount( 1, $GLOBALS['jzsa_test_http_requests'] );
+        $body = json_decode( $GLOBALS['jzsa_test_http_requests'][0]['args']['body'], true );
+        $this->assertSame( 'jane@example.com', $body['email'] );
+        $this->assertSame( 'Jane Doe', $body['display_name'] );
+        $this->assertArrayHasKey( 'install_secret_hash', $body );
+        $this->assertArrayHasKey( 'challenge', $body );
+    }
+
+    public function test_signin_start_connected_response_stores_jwt_and_profile_immediately(): void {
+        // The "connected" branch fires when the install was already authorized
+        // for this email (idempotent reconnect). No email confirmation needed.
+        $_POST = array(
+            'email'        => 'jane@example.com',
+            'display_name' => 'Jane Local',
+            'display_url'  => 'example.com/profile',
+        );
+        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/auth/start' ] = $this->response( 200, array(
+            'state'        => 'connected',
+            'jwt'          => 'server-jwt',
+            'display_name' => 'Jane Server',
+            'display_url'  => 'https://example.com/server-profile',
+        ) );
+
+        $response = $this->callAjax( 'ajax_signin_start' );
+
+        $this->assertTrue( $response->success );
+        $this->assertSame( 'connected', $response->data['state'] );
         $this->assertSame( 'server-jwt', get_user_meta( 1, JZSA_Community::OPT_JWT, true ) );
+        // Server-side values win over the typed-locally values; the account
+        // is the source of truth across all signed-in installs.
         $this->assertSame( 'Jane Server', get_user_meta( 1, JZSA_Community::OPT_DISPLAY_NAME, true ) );
-        $this->assertSame( 'https://example.com/profile', get_user_meta( 1, JZSA_Community::OPT_DISPLAY_URL, true ) );
+        $this->assertSame( 'https://example.com/server-profile', get_user_meta( 1, JZSA_Community::OPT_DISPLAY_URL, true ) );
 
-        $connect_payload = json_decode( $GLOBALS['jzsa_test_http_requests'][0]['args']['body'], true );
-        $this->assertArrayHasKey( 'challenge', $connect_payload );
-        $this->assertStringStartsWith( JZSA_Community::AUTH_CHALLENGE_PREFIX, array_key_first( $GLOBALS['jzsa_test_transients'] ) );
-
-	        $url_payload = json_decode( $GLOBALS['jzsa_test_http_requests'][2]['args']['body'], true );
-	        $this->assertSame( 'https://example.com/profile', $url_payload['display_url'] );
-	    }
+        // No pending_id transient on the connected branch.
+        $this->assertArrayNotHasKey( JZSA_Community::SIGNIN_PENDING_PREFIX . '1', $GLOBALS['jzsa_test_transients'] );
+    }
 
 	    public function test_register_rest_routes_registers_public_challenge_endpoint(): void {
 	        $this->community->register_rest_routes();
@@ -991,80 +1020,95 @@ class CommunityAjaxTest extends TestCase {
 	        $this->assertSame( 'https://old.example', get_user_meta( 1, JZSA_Community::OPT_DISPLAY_URL, true ) );
 	    }
 
-	    // -------------------------------------------------------------------------
-	    // request_magic_link: display name / URL validation and HTTP error branches
-	    // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // signin_start: display name / URL validation and HTTP error branches
+    // -------------------------------------------------------------------------
 
-	    public function test_request_magic_link_display_name_over_50_chars_rejected(): void {
-	        $_POST = array(
-	            'display_name' => str_repeat( 'a', 51 ),
-	            'display_url'  => '',
-	        );
+    public function test_signin_start_display_name_over_50_chars_rejected(): void {
+        $_POST = array(
+            'email'        => 'jane@example.com',
+            'display_name' => str_repeat( 'a', 51 ),
+            'display_url'  => '',
+        );
 
-	        $response = $this->callAjax( 'ajax_request_magic_link' );
+        $response = $this->callAjax( 'ajax_signin_start' );
 
-	        $this->assertFalse( $response->success );
-	        $this->assertStringContainsString( '50 characters', $response->data );
-	        $this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
-	    }
+        $this->assertFalse( $response->success );
+        $this->assertStringContainsString( '50 characters', $response->data );
+        $this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
+    }
 
-	    public function test_request_magic_link_invalid_display_url_rejected(): void {
-	        $_POST = array(
-	            'display_name' => 'Jane Doe',
-	            'display_url'  => 'http://',
-	        );
+    public function test_signin_start_invalid_display_url_rejected(): void {
+        $_POST = array(
+            'email'        => 'jane@example.com',
+            'display_name' => 'Jane Doe',
+            'display_url'  => 'http://',
+        );
 
-	        $response = $this->callAjax( 'ajax_request_magic_link' );
+        $response = $this->callAjax( 'ajax_signin_start' );
 
-	        $this->assertFalse( $response->success );
-	        $this->assertStringContainsString( 'valid display URL', $response->data );
-	        $this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
-	    }
+        $this->assertFalse( $response->success );
+        // Wording updated when "Display URL" was renamed to "Profile link"
+        // earlier in the redesign.
+        $this->assertStringContainsString( 'valid URL', $response->data );
+        $this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
+    }
 
-	    public function test_request_magic_link_wp_error_from_connect_clears_transient_and_returns_unreachable(): void {
-	        $_POST = array(
-	            'display_name' => 'Jane Doe',
-	            'display_url'  => '',
-	        );
-	        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/auth/connect' ] = new WP_Error( 'timeout', 'offline' );
+    public function test_signin_start_wp_error_returns_unreachable_and_clears_pending(): void {
+        $_POST = array(
+            'email'        => 'jane@example.com',
+            'display_name' => 'Jane Doe',
+            'display_url'  => '',
+        );
+        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/auth/start' ] = new WP_Error( 'timeout', 'offline' );
 
-	        $response = $this->callAjax( 'ajax_request_magic_link' );
+        $response = $this->callAjax( 'ajax_signin_start' );
 
-	        $this->assertFalse( $response->success );
-	        $this->assertStringContainsString( 'community server', $response->data );
-	        $this->assertSame( array(), $GLOBALS['jzsa_test_transients'] );
-	        $this->assertSame( '', get_user_meta( 1, JZSA_Community::OPT_JWT, true ) );
-	    }
+        $this->assertFalse( $response->success );
+        $this->assertStringContainsString( 'community server', $response->data );
+        $this->assertSame( '', get_user_meta( 1, JZSA_Community::OPT_JWT, true ) );
+        // The challenge transient gets cleared on WP_Error so the API does not
+        // race against a stale matching challenge if the user retries.
+        $this->assertArrayNotHasKey( JZSA_Community::SIGNIN_PENDING_PREFIX . '1', $GLOBALS['jzsa_test_transients'] );
+    }
 
-	    public function test_request_magic_link_server_non_200_returns_body_error_message(): void {
-	        $_POST = array(
-	            'display_name' => 'Jane Doe',
-	            'display_url'  => '',
-	        );
-	        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/auth/connect' ] = $this->response( 409, array(
-	            'error' => 'Identity already registered.',
-	        ) );
+    public function test_signin_start_email_send_failed_maps_to_friendly_message(): void {
+        // signin_error_message() translates known API error codes into
+        // user-facing strings. 'email_send_failed' is the most common case
+        // (Resend down, key missing in dev, etc.) and gets a specific
+        // "please try again, report a bug if it persists" message instead
+        // of the generic status-code fallback.
+        $_POST = array(
+            'email'        => 'jane@example.com',
+            'display_name' => 'Jane Doe',
+            'display_url'  => '',
+        );
+        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/auth/start' ] = $this->response( 503, array(
+            'error' => 'email_send_failed',
+        ) );
 
-	        $response = $this->callAjax( 'ajax_request_magic_link' );
+        $response = $this->callAjax( 'ajax_signin_start' );
 
-	        $this->assertFalse( $response->success );
-	        $this->assertSame( 'Identity already registered.', $response->data );
-	        $this->assertSame( array(), $GLOBALS['jzsa_test_transients'] );
-	    }
+        $this->assertFalse( $response->success );
+        $this->assertStringContainsString( 'Email sending failed', $response->data );
+        $this->assertStringContainsString( 'report a bug', $response->data );
+    }
 
-	    public function test_request_magic_link_server_non_200_falls_back_to_status_code(): void {
-	        $_POST = array(
-	            'display_name' => 'Jane Doe',
-	            'display_url'  => '',
-	        );
-	        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/auth/connect' ] = $this->rawResponse( 503, 'Service Unavailable' );
+    public function test_signin_start_unknown_error_falls_back_to_status_code(): void {
+        $_POST = array(
+            'email'        => 'jane@example.com',
+            'display_name' => 'Jane Doe',
+            'display_url'  => '',
+        );
+        $GLOBALS['jzsa_test_http_responses'][ JZSA_COMMUNITY_API_URL . '/v1/auth/start' ] = $this->rawResponse( 502, 'Bad Gateway' );
 
-	        $response = $this->callAjax( 'ajax_request_magic_link' );
+        $response = $this->callAjax( 'ajax_signin_start' );
 
-	        $this->assertFalse( $response->success );
-	        $this->assertStringContainsString( '503', $response->data );
-	        $this->assertSame( array(), $GLOBALS['jzsa_test_transients'] );
-	    }
+        $this->assertFalse( $response->success );
+        // No body.error to translate, no known status branch, so the
+        // generic "Community server returned an error (NNN)" fires.
+        $this->assertStringContainsString( '502', $response->data );
+    }
 
 	    // -------------------------------------------------------------------------
 	    // update_display_name: empty and over-length rejections
@@ -1097,12 +1141,13 @@ class CommunityAjaxTest extends TestCase {
 	    // -------------------------------------------------------------------------
 
 	    public function test_delete_account_requires_connection(): void {
-	        $_POST = array( 'delete_entries' => 'true' );
+	        $_POST = array();
 
 	        $response = $this->callAjax( 'ajax_delete_account' );
 
 	        $this->assertFalse( $response->success );
-	        $this->assertStringContainsString( 'Not connected', $response->data );
+	        // Wording flipped during the Connect -> Sign in rename in step 8.
+	        $this->assertStringContainsString( 'Not signed in', $response->data );
 	        $this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
 	    }
 

@@ -195,6 +195,16 @@ if ( ! function_exists( 'sanitize_text_field' ) ) {
 if ( ! function_exists( 'sanitize_textarea_field' ) ) {
     function sanitize_textarea_field( $str ) { return trim( strip_tags( (string) $str ) ); }
 }
+if ( ! function_exists( 'sanitize_email' ) ) {
+    function sanitize_email( $email ) {
+        return strtolower( trim( filter_var( (string) $email, FILTER_SANITIZE_EMAIL ) ?: '' ) );
+    }
+}
+if ( ! function_exists( 'is_email' ) ) {
+    function is_email( $email ) {
+        return filter_var( (string) $email, FILTER_VALIDATE_EMAIL ) ? $email : false;
+    }
+}
 if ( ! function_exists( 'get_current_user_id' ) ) {
     function get_current_user_id() { return $GLOBALS['jzsa_test_current_user_id'] ?? 1; }
 }
