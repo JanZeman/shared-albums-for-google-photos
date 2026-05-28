@@ -128,8 +128,12 @@ test.describe('Community - account (connected)', () => {
         await expect(page.locator('.jzsa-summary-badge--connected')).toBeAttached({ timeout: 5_000 });
     });
 
-    test('disconnect button is present', async ({ page }) => {
-        await expect(page.locator('.jzsa-community-disconnect-btn')).toBeAttached();
+    test('sign-out button is present', async ({ page }) => {
+        // Renamed from "disconnect" to "sign out" during the community-auth
+        // redesign. The button's local-only semantics are unchanged: it
+        // clears the JWT from this WP install's user_meta but leaves the
+        // install authorized on the account.
+        await expect(page.locator('.jzsa-community-signout-btn')).toBeAttached();
     });
 
     test('display name is shown', async ({ page }) => {
@@ -273,22 +277,30 @@ test.describe('Community - publish form validation', () => {
         await expect(page.locator('#jzsa-publish-result')).toContainText('required', { timeout: 5_000 });
     });
 
-    test('showcase shortcode hiding is disabled until showcase consent is enabled', async ({ page }) => {
-        const hideShortcode = page.locator('#jzsa-pub-showcase-hide-shortcode');
+    test('showcase show-shortcode checkbox mirrors showcase consent state', async ({ page }) => {
+        // Field flipped from "hide on showcase" (negative, default off) to
+        // "show on showcase" (positive, default on) during the redesign.
+        // Visual behaviour: when consent is off the checkbox is disabled
+        // AND visually unchecked. When consent is on it is enabled AND
+        // visually checked (default). Toggling consent flips both states
+        // on both the top and the bottom copies of the control.
+        const showShortcode = page.locator('#jzsa-pub-showcase-show-shortcode');
 
-        await expect(hideShortcode).toBeDisabled();
-        await expect(hideShortcode).not.toBeChecked();
+        await expect(showShortcode).toBeDisabled();
+        await expect(showShortcode).not.toBeChecked();
 
         await page.check('#jzsa-pub-showcase-consent');
-        await expect(hideShortcode).toBeEnabled();
+        await expect(showShortcode).toBeEnabled();
+        await expect(showShortcode).toBeChecked();
+        await expect(page.locator('#jzsa-pub-showcase-show-shortcode-bottom')).toBeChecked();
 
-        await hideShortcode.check();
-        await expect(page.locator('#jzsa-pub-showcase-hide-shortcode-bottom')).toBeChecked();
+        await showShortcode.uncheck();
+        await expect(page.locator('#jzsa-pub-showcase-show-shortcode-bottom')).not.toBeChecked();
 
         await page.uncheck('#jzsa-pub-showcase-consent');
-        await expect(hideShortcode).toBeDisabled();
-        await expect(hideShortcode).not.toBeChecked();
-        await expect(page.locator('#jzsa-pub-showcase-hide-shortcode-bottom')).not.toBeChecked();
+        await expect(showShortcode).toBeDisabled();
+        await expect(showShortcode).not.toBeChecked();
+        await expect(page.locator('#jzsa-pub-showcase-show-shortcode-bottom')).not.toBeChecked();
     });
 });
 

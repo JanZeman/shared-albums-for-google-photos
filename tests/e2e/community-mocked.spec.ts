@@ -225,7 +225,9 @@ test.describe('Community - mocked AJAX flows', () => {
         await page.fill('#jzsa-pub-site-url', 'example.test/published');
         await page.fill('#jzsa-pub-photographer-name', 'Mock Publisher');
         await page.check('#jzsa-pub-showcase-consent');
-        await page.check('#jzsa-pub-showcase-hide-shortcode');
+        // After enabling consent, the show-shortcode checkbox becomes
+        // enabled and visually checked (default true). Leave it checked
+        // to assert the default-true payload below.
         await page.click('#jzsa-community-publish-btn');
 
         await expect(page.locator('#jzsa-publish-result')).toContainText('Published!', { timeout: 10_000 });

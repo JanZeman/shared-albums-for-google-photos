@@ -276,6 +276,178 @@ delete_user_meta( $disconnected_id, 'jzsa_community_display_name' );
 delete_user_meta( $disconnected_id, 'jzsa_community_display_url' );
 echo "Ensured disconnected user {$disconnected_user} (#{$disconnected_id})\n";
 
+/**
+ * Drive the new email-verification sign-in flow end-to-end for a WP user,
+ * bypassing the actual email step by reading the pending token straight
+ * from the API database. Used by the Playwright fixtures so the
+ * connected-only UI (publish form, my-entries section, star ratings)
+ * renders for tests without a manual sign-in step.
+ *
+ * This evicts whatever community account currently owns this WP install's
+ * `jzsa_install_secret` (because install_secret_hash is globally unique
+ * in user_installs). After this runs, any prior WP user who had signed
+ * in via this install loses access — by design, the test fixture takes
+ * over the install for the duration of the suite. Re-run a manual sign in
+ * from the WP admin afterwards to restore the prior owner.
+ *
+ * Local-dev only. Hardcodes the docker-compose API DB credentials.
+ *
+ * @throws RuntimeException on any HTTP / DB / API failure.
+ */
+function jzsa_e2e_signin_user( int $wp_user_id, string $email, string $display_name ): void {
+	// 1. Make sure the WP install has an install_secret to identify itself.
+	$install_secret = get_option( 'jzsa_install_secret', '' );
+	if ( '' === $install_secret ) {
+		$install_secret = bin2hex( random_bytes( 32 ) );
+		update_option( 'jzsa_install_secret', $install_secret, false );
+	}
+	$install_hash = hash( 'sha256', $install_secret );
+
+	// Idempotency: if dev already has a JWT that the API accepts, skip the
+	// whole flow. Saves burning per-email rate-limit budget when fixtures
+	// run repeatedly (the API caps /auth/start at 3 per email per hour).
+	$existing_jwt = get_user_meta( $wp_user_id, 'jzsa_community_jwt', true );
+	if ( is_string( $existing_jwt ) && '' !== $existing_jwt ) {
+		$probe = wp_remote_get(
+			JZSA_COMMUNITY_API_URL . '/v1/me',
+			array(
+				'headers' => array(
+					'Authorization'  => 'Bearer ' . $existing_jwt,
+					'X-JZSA-Install' => $install_hash,
+					'Accept'         => 'application/json',
+				),
+				'timeout' => 5,
+			)
+		);
+		if ( ! is_wp_error( $probe ) && 200 === wp_remote_retrieve_response_code( $probe ) ) {
+			echo "  (existing JWT still valid; skipping live sign-in)\n";
+			return;
+		}
+	}
+
+	// 2. Evict prior bindings on the API side so /auth/start does not bounce
+	// us with `install_already_bound` or `email already exists`.
+	$db = new mysqli( 'mariadb', 'jzsa_api', 'jzsa_api', 'jzsa_api', 3306 );
+	if ( $db->connect_error ) {
+		throw new RuntimeException( "Could not connect to jzsa_api DB: {$db->connect_error}" );
+	}
+	$stmt = $db->prepare( 'DELETE FROM user_installs WHERE install_secret_hash = ?' );
+	$stmt->bind_param( 's', $install_hash );
+	$stmt->execute();
+	$stmt->close();
+	$stmt = $db->prepare( 'DELETE FROM users WHERE email = ?' );
+	$stmt->bind_param( 's', $email );
+	$stmt->execute();
+	$stmt->close();
+	$stmt = $db->prepare( 'DELETE FROM pending_verifications WHERE email = ?' );
+	$stmt->bind_param( 's', $email );
+	$stmt->execute();
+	$stmt->close();
+
+	// 3. Generate the WP-side challenge transient (the API's site
+	// verification will fetch /community-challenge with this value).
+	$challenge       = wp_generate_password( 40, false, false );
+	$challenge_key   = 'jzsa_community_auth_challenge_' . hash( 'sha256', $challenge );
+	set_transient( $challenge_key, $challenge, 5 * MINUTE_IN_SECONDS );
+
+	// 4. POST /v1/auth/start. Expect state=pending (fresh email, fresh install).
+	$start = wp_remote_post(
+		JZSA_COMMUNITY_API_URL . '/v1/auth/start',
+		array(
+			'headers' => array(
+				'Content-Type'   => 'application/json',
+				'X-JZSA-Install' => $install_hash,
+			),
+			'body'    => wp_json_encode( array(
+				'email'               => $email,
+				'display_name'        => $display_name,
+				'site_url'            => home_url(),
+				'install_secret_hash' => $install_hash,
+				'verification_url'    => rest_url( 'jzsa/v1/community-challenge' ),
+				'challenge'           => $challenge,
+			) ),
+			'timeout' => 15,
+		)
+	);
+	if ( is_wp_error( $start ) ) {
+		$db->close();
+		throw new RuntimeException( '/auth/start request failed: ' . $start->get_error_message() );
+	}
+	$start_code = wp_remote_retrieve_response_code( $start );
+	$start_body = json_decode( wp_remote_retrieve_body( $start ), true );
+	if ( 200 !== $start_code ) {
+		$db->close();
+		throw new RuntimeException( "/auth/start returned {$start_code}: " . wp_remote_retrieve_body( $start ) );
+	}
+	if ( ( $start_body['state'] ?? '' ) !== 'pending' ) {
+		// Unlikely after eviction; defensively use the connected response if it appears.
+		if ( ( $start_body['state'] ?? '' ) === 'connected' && ! empty( $start_body['jwt'] ) ) {
+			$db->close();
+			update_user_meta( $wp_user_id, 'jzsa_community_jwt', $start_body['jwt'] );
+			return;
+		}
+		$db->close();
+		throw new RuntimeException( 'Unexpected /auth/start state: ' . wp_remote_retrieve_body( $start ) );
+	}
+	$pending_id = (int) $start_body['pending_id'];
+
+	// 5. Read the one-time confirmation token straight from the DB (the API
+	// only emits it via email; this fixture intentionally bypasses that).
+	$stmt = $db->prepare( 'SELECT token FROM pending_verifications WHERE id = ?' );
+	$stmt->bind_param( 'i', $pending_id );
+	$stmt->execute();
+	$row = $stmt->get_result()->fetch_assoc();
+	$stmt->close();
+	$db->close();
+	if ( empty( $row['token'] ) ) {
+		throw new RuntimeException( "No token row for pending_id {$pending_id}" );
+	}
+	$token = $row['token'];
+
+	// 6. Click the confirm link (server-to-server). 200 = pending row marked
+	// confirmed and user_installs row created.
+	$confirm = wp_remote_get(
+		JZSA_COMMUNITY_API_URL . '/v1/auth/confirm?token=' . rawurlencode( $token ),
+		array( 'timeout' => 10 )
+	);
+	if ( is_wp_error( $confirm ) ) {
+		throw new RuntimeException( '/auth/confirm request failed: ' . $confirm->get_error_message() );
+	}
+	if ( 200 !== wp_remote_retrieve_response_code( $confirm ) ) {
+		throw new RuntimeException( '/auth/confirm returned ' . wp_remote_retrieve_response_code( $confirm ) );
+	}
+
+	// 7. Poll for the JWT. Confirm flushes the pending → connected state
+	// immediately, so one poll is enough; loop briefly for resilience.
+	$jwt = null;
+	for ( $i = 0; $i < 5; $i++ ) {
+		$poll = wp_remote_get(
+			JZSA_COMMUNITY_API_URL . '/v1/auth/poll?pending_id=' . $pending_id,
+			array(
+				'headers' => array( 'X-JZSA-Install' => $install_hash ),
+				'timeout' => 5,
+			)
+		);
+		if ( is_wp_error( $poll ) ) {
+			continue;
+		}
+		if ( 200 === wp_remote_retrieve_response_code( $poll ) ) {
+			$poll_body = json_decode( wp_remote_retrieve_body( $poll ), true );
+			$jwt = $poll_body['jwt'] ?? null;
+			break;
+		}
+		// 202 means still pending; very unlikely right after confirm but possible.
+		usleep( 500_000 );
+	}
+	if ( empty( $jwt ) ) {
+		throw new RuntimeException( '/auth/poll never returned a JWT for pending ' . $pending_id );
+	}
+
+	update_user_meta( $wp_user_id, 'jzsa_community_jwt', $jwt );
+	update_user_meta( $wp_user_id, 'jzsa_community_display_name', $display_name );
+	delete_user_meta( $wp_user_id, 'jzsa_community_display_url' );
+}
+
 $connected_user = jzsa_e2e_env( 'JZSA_E2E_CONNECTED_USER', $admin_user );
 $connected_id   = username_exists( $connected_user );
 $connected_jwt  = getenv( 'JZSA_E2E_CONNECTED_JWT' );
@@ -283,7 +455,21 @@ if ( $connected_id && false !== $connected_jwt && '' !== $connected_jwt ) {
 	update_user_meta( (int) $connected_id, 'jzsa_community_jwt', $connected_jwt );
 	echo "Set connected JWT for {$connected_user} (#{$connected_id}) from JZSA_E2E_CONNECTED_JWT\n";
 } elseif ( $connected_id ) {
-	echo "Preserved existing connected state for {$connected_user} (#{$connected_id})\n";
+	// No env JWT supplied. Drive the live sign-in flow against the local
+	// API so the e2e suite has a working connected user without a manual
+	// sign-in step. Evicts any prior community account owner of this
+	// install — see jzsa_e2e_signin_user() for the trade-off.
+	try {
+		jzsa_e2e_signin_user(
+			(int) $connected_id,
+			"e2e-{$connected_user}@example.test",
+			'E2E Test User'
+		);
+		echo "Programmatically signed in {$connected_user} (#{$connected_id}) via the live API\n";
+	} catch ( Throwable $e ) {
+		fwrite( STDERR, "WARNING: Auto sign-in for {$connected_user} failed: " . $e->getMessage() . "\n" );
+		fwrite( STDERR, "  E2E tests requiring connected state will fail until {$connected_user} has a JWT.\n" );
+	}
 }
 
 echo "E2E fixture setup complete.\n";
