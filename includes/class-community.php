@@ -874,21 +874,26 @@ class JZSA_Community {
 					</button>
 					<span class="jzsa-community-auth-status" aria-live="polite" style="margin-left:12px;"></span>
 				</p>
-				<div class="jzsa-community-pending-panel" style="display:none; margin-top:14px; padding:12px 14px; border:1px solid #dcdcde; border-radius:4px; background:#f6f7f7;">
-					<p style="margin:0 0 6px;">
-						<strong><?php esc_html_e( 'Check your email.', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-						<?php esc_html_e( 'We sent a one-time confirmation link to', 'janzeman-shared-albums-for-google-photos' ); ?>
-						<span class="jzsa-community-pending-email" style="font-weight:600;"></span>.
-					</p>
-					<p class="jzsa-help-text" style="margin:0 0 6px;">
-						<?php esc_html_e( 'Click the link in the email to finish signing in. This page will update automatically. The link is valid for 15 minutes.', 'janzeman-shared-albums-for-google-photos' ); ?>
-					</p>
-					<p style="margin:0;">
-						<button type="button" class="button-link jzsa-community-pending-cancel-btn">
-							<?php esc_html_e( 'Cancel', 'janzeman-shared-albums-for-google-photos' ); ?>
-						</button>
-						<span class="jzsa-community-pending-status" aria-live="polite" style="margin-left:12px; color:#666; font-size:12px;"></span>
-					</p>
+				<div class="jzsa-community-pending-panel" style="display:none; margin-top:18px; padding:16px 18px 16px 16px; border:2px solid #2271b1; border-left-width:6px; border-radius:6px; background:#f0f6fc; box-shadow:0 1px 0 rgba(0,0,0,0.04);">
+					<div style="display:flex; gap:14px; align-items:flex-start;">
+						<span class="dashicons dashicons-email-alt" aria-hidden="true" style="color:#2271b1; font-size:32px; width:32px; height:32px; flex-shrink:0; margin-top:2px;"></span>
+						<div style="flex:1; min-width:0;">
+							<p style="margin:0 0 6px; font-size:15px; color:#1d2327;">
+								<strong style="font-size:16px;"><?php esc_html_e( 'Check your email.', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+								<?php esc_html_e( 'We sent a one-time confirmation link to', 'janzeman-shared-albums-for-google-photos' ); ?>
+								<span class="jzsa-community-pending-email" style="font-weight:700; color:#2271b1;"></span>.
+							</p>
+							<p class="jzsa-help-text" style="margin:0 0 10px; color:#3c434a;">
+								<?php esc_html_e( 'Click the link in the email to finish signing in. This page will update automatically. The link is valid for 15 minutes.', 'janzeman-shared-albums-for-google-photos' ); ?>
+							</p>
+							<p style="margin:0; display:flex; align-items:center; gap:12px;">
+								<button type="button" class="button-link jzsa-community-pending-cancel-btn">
+									<?php esc_html_e( 'Cancel', 'janzeman-shared-albums-for-google-photos' ); ?>
+								</button>
+								<span class="jzsa-community-pending-status" aria-live="polite" style="color:#50575e; font-size:12px;"></span>
+							</p>
+						</div>
+					</div>
 				</div>
 			<?php endif; ?>
 		</details>
