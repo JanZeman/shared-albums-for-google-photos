@@ -386,6 +386,24 @@
 		setTimeout( function () { tip.remove(); }, 2500 );
 	}
 
+	// Opens the community account <details> section, scrolls it into view, and
+	// focuses the email input. Invoked from the inline "Sign in to rate" hint
+	// and from the disconnected click on the rating stars.
+	function focusSignInForm() {
+		var section = document.querySelector( '.jzsa-community-account-section' );
+		if ( section && section.tagName === 'DETAILS' && ! section.open ) {
+			section.open = true;
+		}
+		var emailEl = document.getElementById( 'jzsa-connect-email' );
+		var target  = emailEl || section;
+		if ( target && target.scrollIntoView ) {
+			target.scrollIntoView( { behavior: 'smooth', block: 'center' } );
+		}
+		if ( emailEl ) {
+			setTimeout( function () { emailEl.focus(); }, 300 );
+		}
+	}
+
 	/**
 	 * Build a full jzsa-sample entry block (DOM element, not HTML string).
 	 * Includes h3 title, meta/tags, description, code block, lazy preview.
@@ -480,12 +498,17 @@
 			var starsEl = document.createElement( 'span' );
 			var isOwnEntry = myEntryIds.has( String( entry.id ) );
 			if ( isOwnEntry ) { ratingWrap.classList.add( 'is-own' ); }
+			// Stars are visually disabled both for own entries and for
+			// signed-out visitors (avoids pretending the click will record a
+			// rating). The dedicated "Sign in to rate" row below is the
+			// primary CTA; clicking the grayed stars also routes there as a
+			// fallback (see ratingWrapEl and starsEl click handlers).
 			starsEl.className = 'jzsa-community-entry-stars'
-				+ ( ( ! isCommunityConnected() || isOwnEntry ) ? ' is-disabled' : '' );
+				+ ( ( isOwnEntry || ! isCommunityConnected() ) ? ' is-disabled' : '' );
 			if ( isOwnEntry ) {
 				starsEl.title = 'You cannot rate your own sample';
 			} else if ( ! isCommunityConnected() ) {
-				starsEl.title = 'Sign in to community to rate entries';
+				starsEl.title = 'Sign in to rate this sample';
 			}
 			for ( var si = 1; si <= 5; si++ ) {
 				var starBtn = document.createElement( 'button' );
@@ -520,6 +543,28 @@
 			statsLine.appendChild( scoreEl );
 			statsLine.appendChild( ratingWrap );
 			headerRight.appendChild( statsLine );
+
+			// Anonymous-visitor cue on its own row beneath the stars. Hidden
+			// for signed-in users and for own entries. Clicking opens the
+			// account section and focuses the email input.
+			if ( ! isCommunityConnected() && ! isOwnEntry ) {
+				var signinHintRow = document.createElement( 'div' );
+				signinHintRow.className = 'jzsa-community-entry-signin-hint-row';
+				signinHintRow.style.cssText = 'text-align:right; margin-top:2px;';
+				var signinHint = document.createElement( 'button' );
+				signinHint.type = 'button';
+				signinHint.className = 'jzsa-community-rating-signin-hint';
+				signinHint.textContent = 'Sign in to rate';
+				signinHint.style.cssText = 'background:none; border:0; padding:0; margin:0; font-size:12px; font-style:italic; color:#2271b1; cursor:pointer; text-decoration:underline;';
+				signinHint.addEventListener( 'click', function ( event ) {
+					event.preventDefault();
+					event.stopPropagation();
+					focusSignInForm();
+				} );
+				signinHintRow.appendChild( signinHint );
+				headerRight.appendChild( signinHintRow );
+			}
+
 			header.appendChild( headerRight );
 		}
 
@@ -1012,9 +1057,16 @@
 			if ( ratingWrapEl ) {
 				ratingWrapEl.addEventListener( 'click', function ( event ) {
 					if ( ! isCommunityConnected() ) {
+						// Don't hijack clicks on the inline "Sign in to rate"
+						// affordance — it has its own handler that already
+						// scrolls + focuses, and we want the default action
+						// (focus) to land naturally.
+						if ( event.target.closest( '.jzsa-community-rating-signin-hint' ) ) {
+							return;
+						}
 						event.preventDefault();
 						event.stopPropagation();
-						showRatingTooltip( starsEl, 'Sign in first to rate samples.' );
+						focusSignInForm();
 					}
 				}, true );
 			}
@@ -1029,7 +1081,7 @@
 					return;
 				}
 				if ( ! isCommunityConnected() ) {
-					showRatingTooltip( starsEl, 'Sign in first to rate samples.' );
+					focusSignInForm();
 					return;
 				}
 				if ( myEntryIds.has( entryIdForRating ) ) {
