@@ -520,7 +520,29 @@ class JZSA_Community {
 		}
 
 		if ( 401 === $code || 403 === $code ) {
-			// Token is invalid, expired or account banned. Clear it.
+			// Token is invalid, expired, account banned, or the install row
+			// was reassigned to another community account (silent takeover on
+			// the same WP install). Clear the local JWT and stash a one-shot
+			// transient explaining WHY so the next page render can show a
+			// meaningful notice instead of just landing on a logged-out state.
+			$body          = json_decode( wp_remote_retrieve_body( $response ), true );
+			$api_error_key = is_array( $body ) && isset( $body['error'] ) ? (string) $body['error'] : '';
+			switch ( $api_error_key ) {
+				case 'install_not_authorized':
+				case 'install_missing':
+					$notice_value = 'session_replaced';
+					break;
+				case 'Account not found':
+					$notice_value = 'account_deleted_remote';
+					break;
+				case 'Account is banned':
+					$notice_value = 'account_banned';
+					break;
+				default:
+					$notice_value = 'token_invalid';
+					break;
+			}
+			set_transient( self::NONCE_NOTICE_KEY . get_current_user_id(), $notice_value, 5 * MINUTE_IN_SECONDS );
 			delete_user_meta( get_current_user_id(), self::OPT_JWT );
 			self::$cached_connection_state = 'disconnected';
 			return self::$cached_connection_state;
@@ -630,6 +652,47 @@ class JZSA_Community {
 		</div>
 		<?php endif; ?>
 
+		<?php
+		// Notices set by verify_connection() when the API rejected the stored
+		// JWT. Each one tells the user WHY they're suddenly signed out, so
+		// they don't think the page is broken.
+		?>
+		<?php if ( 'session_replaced' === $notice ) : ?>
+		<div class="notice notice-warning is-dismissible jzsa-community-notice">
+			<p>
+				<strong><?php esc_html_e( 'Signed out: another community account took over this WordPress install.', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+				<?php esc_html_e( 'Only one community account can be bound to a given WordPress install at a time. Someone (possibly you, from another WP admin user) signed in to a different community account from this site, which replaced your binding. Sign in again with your email to restore access. Anything you previously published is still on your community account.', 'janzeman-shared-albums-for-google-photos' ); ?>
+			</p>
+		</div>
+		<?php endif; ?>
+
+		<?php if ( 'account_deleted_remote' === $notice ) : ?>
+		<div class="notice notice-warning is-dismissible jzsa-community-notice">
+			<p>
+				<strong><?php esc_html_e( 'Signed out: your community account no longer exists.', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+				<?php esc_html_e( 'The community server reports that this account has been deleted. If you did not delete it yourself, you can create a fresh account with the same or a different email below.', 'janzeman-shared-albums-for-google-photos' ); ?>
+			</p>
+		</div>
+		<?php endif; ?>
+
+		<?php if ( 'account_banned' === $notice ) : ?>
+		<div class="notice notice-error is-dismissible jzsa-community-notice">
+			<p>
+				<strong><?php esc_html_e( 'Signed out: this community account has been suspended.', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+				<?php esc_html_e( 'Please contact the plugin author if you believe this is a mistake.', 'janzeman-shared-albums-for-google-photos' ); ?>
+			</p>
+		</div>
+		<?php endif; ?>
+
+		<?php if ( 'token_invalid' === $notice ) : ?>
+		<div class="notice notice-warning is-dismissible jzsa-community-notice">
+			<p>
+				<strong><?php esc_html_e( 'Signed out: your community session expired or became invalid.', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+				<?php esc_html_e( 'Sign in again with your email to continue.', 'janzeman-shared-albums-for-google-photos' ); ?>
+			</p>
+		</div>
+		<?php endif; ?>
+
 		<?php if ( 'server_error' === $connection_state ) : ?>
 		<div class="notice notice-error is-dismissible jzsa-community-notice">
 			<p>
@@ -663,6 +726,7 @@ class JZSA_Community {
 			<p class="jzsa-help-text" style="margin:0;">
 				<?php esc_html_e( 'This page is a friendly space for sharing album presentation ideas. Browse shortcode samples from other plugin users, learn from their settings, and adapt the layouts to make your own albums more useful, personal, or beautiful.', 'janzeman-shared-albums-for-google-photos' ); ?>
 			</p>
+			<?php if ( $connected ) : // Audience legend explains plugin-community vs public-showcase distinctions that only matter when publishing. Hide it for signed-out visitors to keep the top of the page focused on the sign-in CTA. ?>
 			<div class="jzsa-community-audience-legend" aria-label="<?php esc_attr_e( 'Audience legend', 'janzeman-shared-albums-for-google-photos' ); ?>">
 				<span class="jzsa-community-audience-chip jzsa-community-audience-chip--plugin">
 					<span class="dashicons dashicons-admin-plugins" aria-hidden="true"></span>
@@ -679,10 +743,19 @@ class JZSA_Community {
 					</span>
 				</span>
 			</div>
+			<?php endif; ?>
 		</div>
 
 		<!-- Section 2: Account -->
-		<details class="jzsa-section jzsa-community-account-section jzsa-collapsible-section" <?php echo $just_connected ? 'open' : ''; ?>>
+		<?php
+		// Open by default when the visitor isn't signed in — otherwise the
+		// only sign-in CTA is the small summary badge of a collapsed
+		// <details>, which first-time visitors miss. Also open right after a
+		// successful confirmation so the "you're in" state is visible without
+		// an extra click.
+		$account_open_attr = ( $just_connected || ! $connected ) ? 'open' : '';
+		?>
+		<details class="jzsa-section jzsa-community-account-section jzsa-collapsible-section" <?php echo esc_attr( $account_open_attr ); ?>>
 			<?php if ( $connected ) : ?>
 				<summary class="jzsa-collapsible-summary">
 					<?php esc_html_e( 'Your Plugin Community Account', 'janzeman-shared-albums-for-google-photos' ); ?>

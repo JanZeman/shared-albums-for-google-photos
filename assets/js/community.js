@@ -1340,6 +1340,15 @@
 			if ( ! statusEl ) { return; }
 			statusEl.textContent = msg ? '\u274c ' + msg : '';
 			statusEl.className = 'jzsa-community-auth-status' + ( kind === 'error' ? ' is-error' : '' );
+			// On any sign-in error, surface the recovery option so the user
+			// doesn't have to discover the doubly-nested "Trouble signing in?"
+			// disclosure on their own. Harmless if already open.
+			if ( kind === 'error' && msg ) {
+				var recoveryEl = document.querySelector( '.jzsa-community-signin-recovery' );
+				if ( recoveryEl && recoveryEl.tagName === 'DETAILS' ) {
+					recoveryEl.open = true;
+				}
+			}
 		}
 
 		function resetButton() {
