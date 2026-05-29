@@ -760,7 +760,7 @@ class JZSA_Community {
 
 		<!-- Section 2: Account -->
 		<?php
-		// Open by default when the visitor isn't signed in — otherwise the
+		// Open by default when the visitor isn't signed in - otherwise the
 		// only sign-in CTA is the small summary badge of a collapsed
 		// <details>, which first-time visitors miss. Also open right after a
 		// successful confirmation so the "you're in" state is visible without

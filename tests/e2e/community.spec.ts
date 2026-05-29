@@ -78,7 +78,7 @@ test.describe('Community - page structure', () => {
 });
 
 // -------------------------------------------------------------------------
-// Account — not connected (jan)
+// Account - not connected (jan)
 // -------------------------------------------------------------------------
 
 test.describe('Community - account (not connected)', () => {
@@ -113,7 +113,7 @@ test.describe('Community - account (not connected)', () => {
 });
 
 // -------------------------------------------------------------------------
-// Account — connected (dev)
+// Account - connected (dev)
 // -------------------------------------------------------------------------
 
 test.describe('Community - account (connected)', () => {
@@ -223,7 +223,7 @@ test.describe('Community - browse section', () => {
 });
 
 // -------------------------------------------------------------------------
-// Publish form — client-side validation (connected, dev)
+// Publish form - client-side validation (connected, dev)
 // -------------------------------------------------------------------------
 
 test.describe('Community - publish form validation', () => {
@@ -304,7 +304,7 @@ test.describe('Community - publish form validation', () => {
 });
 
 // -------------------------------------------------------------------------
-// Publish form — structure (connected)
+// Publish form - structure (connected)
 // -------------------------------------------------------------------------
 
 test.describe('Community - publish form structure', () => {

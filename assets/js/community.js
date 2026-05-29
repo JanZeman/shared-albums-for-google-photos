@@ -1062,7 +1062,7 @@
 				ratingWrapEl.addEventListener( 'click', function ( event ) {
 					if ( ! isCommunityConnected() ) {
 						// Don't hijack clicks on the inline "Sign in to rate"
-						// affordance — it has its own handler that already
+						// affordance - it has its own handler that already
 						// scrolls + focuses, and we want the default action
 						// (focus) to land naturally.
 						if ( event.target.closest( '.jzsa-community-rating-signin-hint' ) ) {
@@ -2300,7 +2300,7 @@
 	}
 
 	/* -----------------------------------------------------------------------
-	 * Showcase scope warning — collapsible "Got it" / "?" toggle
+	 * Showcase scope warning - collapsible "Got it" / "?" toggle
 	 * -------------------------------------------------------------------- */
 
 	function initShowcaseWarningToggle() {

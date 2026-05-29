@@ -501,7 +501,7 @@ if ( $connected_id && false !== $connected_jwt && '' !== $connected_jwt ) {
 	// No env JWT supplied. Drive the live sign-in flow against the local
 	// API so the e2e suite has a working connected user without a manual
 	// sign-in step. Evicts any prior community account owner of this
-	// install — see jzsa_e2e_signin_user() for the trade-off.
+	// install - see jzsa_e2e_signin_user() for the trade-off.
 	try {
 		jzsa_e2e_signin_user(
 			(int) $connected_id,
