@@ -278,29 +278,28 @@ test.describe('Community - publish form validation', () => {
     });
 
     test('showcase show-shortcode checkbox mirrors showcase consent state', async ({ page }) => {
-        // Field flipped from "hide on showcase" (negative, default off) to
-        // "show on showcase" (positive, default on) during the redesign.
-        // Visual behaviour: when consent is off the checkbox is disabled
-        // AND visually unchecked. When consent is on it is enabled AND
-        // visually checked (default). Toggling consent flips both states
-        // on both the top and the bottom copies of the control.
+        // Both checkboxes default to CHECKED. Toggling consent off disables
+        // and visually unchecks show; toggling consent back on re-enables
+        // and re-checks it. The publish form has a single consent panel
+        // now (the duplicate at the top of the table was removed); ids no
+        // longer carry a -bottom suffix.
+        const consent       = page.locator('#jzsa-pub-showcase-consent');
         const showShortcode = page.locator('#jzsa-pub-showcase-show-shortcode');
 
-        await expect(showShortcode).toBeDisabled();
-        await expect(showShortcode).not.toBeChecked();
-
-        await page.check('#jzsa-pub-showcase-consent');
+        await expect(consent).toBeChecked();
         await expect(showShortcode).toBeEnabled();
         await expect(showShortcode).toBeChecked();
-        await expect(page.locator('#jzsa-pub-showcase-show-shortcode-bottom')).toBeChecked();
 
-        await showShortcode.uncheck();
-        await expect(page.locator('#jzsa-pub-showcase-show-shortcode-bottom')).not.toBeChecked();
-
-        await page.uncheck('#jzsa-pub-showcase-consent');
+        await consent.uncheck();
         await expect(showShortcode).toBeDisabled();
         await expect(showShortcode).not.toBeChecked();
-        await expect(page.locator('#jzsa-pub-showcase-show-shortcode-bottom')).not.toBeChecked();
+
+        await consent.check();
+        await expect(showShortcode).toBeEnabled();
+        await expect(showShortcode).toBeChecked();
+
+        await showShortcode.uncheck();
+        await expect(showShortcode).not.toBeChecked();
     });
 });
 

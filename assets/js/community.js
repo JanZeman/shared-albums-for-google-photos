@@ -652,9 +652,6 @@
 				return { wrapper: wrapEl, checkbox: checkbox, showCheckbox: showCheckbox };
 			}
 
-			var topConsent = createConsentBlock( 'jzsa-my-entry-consent-top-' + entry.id );
-			appendTableRow( null, [ topConsent.wrapper ], { cellClass: 'jzsa-community-showcase-consent-cell' } );
-
 			var titleInput = document.createElement( 'input' );
 			titleInput.type = 'text';
 			titleInput.className = 'regular-text jzsa-community-my-entry-title-input';
@@ -752,12 +749,10 @@
 
 			saveRow.appendChild( editTable );
 
-			var bottomConsent = createConsentBlock( 'jzsa-my-entry-consent-bottom-' + entry.id );
-			bottomConsent.wrapper.className += ' jzsa-community-showcase-consent-bottom';
-			saveRow.appendChild( bottomConsent.wrapper );
+			var consentBlock = createConsentBlock( 'jzsa-my-entry-consent-' + entry.id );
+			consentBlock.wrapper.className += ' jzsa-community-showcase-consent-cell';
+			saveRow.appendChild( consentBlock.wrapper );
 
-			var consentCheckboxes = [ topConsent.checkbox, bottomConsent.checkbox ];
-			var showShortcodeCheckboxes = [ topConsent.showCheckbox, bottomConsent.showCheckbox ];
 			// Visual: show-shortcode follows consent. When consent goes off
 			// the checkbox is disabled AND visually unchecked. When consent
 			// goes on it becomes enabled AND visually checked (the default).
@@ -765,41 +760,25 @@
 			// so this visual change does not silently flip the stored value.
 			function syncOwnedShowcaseConsent( checked, opts ) {
 				var fromUserAction = opts && opts.fromUserAction;
-				consentCheckboxes.forEach( function ( checkbox ) {
-					checkbox.checked = checked;
-				} );
-				showShortcodeCheckboxes.forEach( function ( checkbox ) {
-					checkbox.disabled = ! checked;
-					// On user-driven consent change, mirror consent into the
-					// show checkbox. On the initial render call we preserve
-					// whatever the per-entry init already set (which can be
-					// false even when consent is true, for entries the user
-					// has explicitly opted out of shortcode-on-showcase).
-					if ( fromUserAction ) {
-						checkbox.checked = checked;
-					}
-				} );
+				consentBlock.checkbox.checked   = checked;
+				consentBlock.showCheckbox.disabled = ! checked;
+				// On user-driven consent change, mirror consent into the
+				// show checkbox. On the initial render call we preserve
+				// whatever the per-entry init already set (which can be
+				// false even when consent is true, for entries the user
+				// has explicitly opted out of shortcode-on-showcase).
+				if ( fromUserAction ) {
+					consentBlock.showCheckbox.checked = checked;
+				}
 				syncShowcaseRequiredState(
-					topConsent.checkbox,
+					consentBlock.checkbox,
 					[ descriptionInput, urlInput, photographerInput ],
 					[ descriptionRequiredBadge, urlRequiredBadge, photographerRequiredBadge ]
 				);
 			}
-			function syncOwnedShowShortcode( checked ) {
-				showShortcodeCheckboxes.forEach( function ( checkbox ) {
-					checkbox.checked = checked;
-				} );
-			}
 			syncOwnedShowcaseConsent( entry.public_showcase_consent ? true : false );
-			consentCheckboxes.forEach( function ( checkbox ) {
-				checkbox.addEventListener( 'change', function () {
-					syncOwnedShowcaseConsent( checkbox.checked, { fromUserAction: true } );
-				} );
-			} );
-			showShortcodeCheckboxes.forEach( function ( checkbox ) {
-				checkbox.addEventListener( 'change', function () {
-					syncOwnedShowShortcode( checkbox.checked );
-				} );
+			consentBlock.checkbox.addEventListener( 'change', function () {
+				syncOwnedShowcaseConsent( consentBlock.checkbox.checked, { fromUserAction: true } );
 			} );
 
 			var saveBtn = document.createElement( 'button' );
@@ -1444,6 +1423,46 @@
 				.catch( function () {
 					resetButton();
 					setStatus( 'Could not reach the server. Please try again.', 'error' );
+				} );
+		} );
+	}
+
+	/* -----------------------------------------------------------------------
+	 * Auth - Reset this site's community state (last-resort recovery)
+	 * -------------------------------------------------------------------- */
+
+	function initResetInstallState() {
+		var btn = qs( '.jzsa-community-reset-install-btn' );
+		if ( ! btn ) {
+			return;
+		}
+		btn.addEventListener( 'click', function () {
+			if ( ! confirm(
+				'Reset this WordPress site\'s community state?\n\n' +
+				'This will:\n' +
+				'  - forget this site\'s local credential (you and any other WP admin will appear signed out)\n' +
+				'  - regenerate the site\'s identifier so the next sign-in starts fresh\n\n' +
+				'This will NOT:\n' +
+				'  - delete your community account\n' +
+				'  - delete any sample you have already published\n\n' +
+				'Use only when sign-in keeps failing for an unclear reason. Continue?'
+			) ) {
+				return;
+			}
+
+			btn.disabled = true;
+			ajaxPost( 'jzsa_community_reset_install_state', {} )
+				.then( function ( res ) {
+					if ( res.success ) {
+						window.location.reload();
+					} else {
+						btn.disabled = false;
+						alert( res.data || 'Could not reset.' );
+					}
+				} )
+				.catch( function () {
+					btn.disabled = false;
+					alert( 'Could not reach the server.' );
 				} );
 		} );
 	}
@@ -2224,6 +2243,7 @@
 		initSearch();
 		initSort();
 		initConnect();
+		initResetInstallState();
 		initAccountActions();
 		initInstalls();
 		initPublish();

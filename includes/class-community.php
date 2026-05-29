@@ -37,6 +37,10 @@ class JZSA_Community {
 		add_action( 'wp_ajax_jzsa_community_signin_start', array( $this, 'ajax_signin_start' ) );
 		add_action( 'wp_ajax_jzsa_community_signin_poll',  array( $this, 'ajax_signin_poll' ) );
 
+		// Local-only recovery: clears all community state from this WP install
+		// so the user can start over without the API needing to be reachable.
+		add_action( 'wp_ajax_jzsa_community_reset_install_state', array( $this, 'ajax_reset_install_state' ) );
+
 		// Install management
 		add_action( 'wp_ajax_jzsa_community_list_installs',   array( $this, 'ajax_list_installs' ) );
 		add_action( 'wp_ajax_jzsa_community_remove_install',  array( $this, 'ajax_remove_install' ) );
@@ -874,14 +878,14 @@ class JZSA_Community {
 					</button>
 					<span class="jzsa-community-auth-status" aria-live="polite" style="margin-left:12px;"></span>
 				</p>
-				<div class="jzsa-community-pending-panel" style="display:none; margin-top:18px; padding:16px 18px 16px 16px; border:2px solid #2271b1; border-left-width:6px; border-radius:6px; background:#f0f6fc; box-shadow:0 1px 0 rgba(0,0,0,0.04);">
+				<div class="jzsa-community-pending-panel" style="display:none; margin-top:18px; padding:16px 18px 16px 16px; border:2px solid #d63638; border-left-width:6px; border-radius:6px; background:#fdf2f2; box-shadow:0 1px 0 rgba(0,0,0,0.04);">
 					<div style="display:flex; gap:14px; align-items:flex-start;">
-						<span class="dashicons dashicons-email-alt" aria-hidden="true" style="color:#2271b1; font-size:32px; width:32px; height:32px; flex-shrink:0; margin-top:2px;"></span>
+						<span class="dashicons dashicons-email-alt" aria-hidden="true" style="color:#d63638; font-size:32px; width:32px; height:32px; flex-shrink:0; margin-top:2px;"></span>
 						<div style="flex:1; min-width:0;">
 							<p style="margin:0 0 6px; font-size:15px; color:#1d2327;">
 								<strong style="font-size:16px;"><?php esc_html_e( 'Check your email.', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
 								<?php esc_html_e( 'We sent a one-time confirmation link to', 'janzeman-shared-albums-for-google-photos' ); ?>
-								<span class="jzsa-community-pending-email" style="font-weight:700; color:#2271b1;"></span>.
+								<span class="jzsa-community-pending-email" style="font-weight:700; color:#b32d2e;"></span>.
 							</p>
 							<p class="jzsa-help-text" style="margin:0 0 10px; color:#3c434a;">
 								<?php esc_html_e( 'Click the link in the email to finish signing in. This page will update automatically. The link is valid for 15 minutes.', 'janzeman-shared-albums-for-google-photos' ); ?>
@@ -895,6 +899,19 @@ class JZSA_Community {
 						</div>
 					</div>
 				</div>
+				<details class="jzsa-community-signin-recovery" style="margin-top:18px; font-size:13px;">
+					<summary style="cursor:pointer; color:#50575e;">
+						<?php esc_html_e( 'Trouble signing in?', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</summary>
+					<p class="jzsa-help-text" style="margin:8px 0;">
+						<?php esc_html_e( 'If signing in keeps failing for an unclear reason, you can reset this WordPress site\'s community state and start over. This does NOT delete any community account; it only forgets this site\'s local credential and identifier so the next sign-in starts fresh. Any sample you have already published stays on your community account and remains visible to others.', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</p>
+					<p style="margin:8px 0 0;">
+						<button type="button" class="button jzsa-community-reset-install-btn" style="color:#d63638; border-color:#d63638;">
+							<?php esc_html_e( 'Reset this site\'s community state', 'janzeman-shared-albums-for-google-photos' ); ?>
+						</button>
+					</p>
+				</details>
 			<?php endif; ?>
 		</details>
 
@@ -918,36 +935,6 @@ class JZSA_Community {
 				</div>
 			</div>
 			<table class="form-table jzsa-community-publish-table">
-				<tr>
-					<td colspan="2" class="jzsa-community-showcase-consent-cell">
-						<div class="jzsa-community-showcase-scope-warning" style="display:flex; gap:10px; align-items:flex-start; padding:10px 12px; margin-bottom:12px; border-left:4px solid #d97706; background:#fffbeb; border-radius:3px;">
-							<span class="dashicons dashicons-warning" style="color:#d97706; margin-top:2px;" aria-hidden="true"></span>
-							<div>
-								<strong><?php esc_html_e( 'Heads up: the settings below are about a FUTURE public showcase website, not this admin page.', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-								<p class="description" style="margin:4px 0 0;">
-									<?php esc_html_e( 'The public showcase is a separate, externally-visible site (anyone on the internet can read it) that does not exist yet. These checkboxes only affect whether your sample is eligible to appear there, and whether your shortcode shows up next to your photos when it does. They have no effect on what other WordPress admins see on this Community page; those settings are above.', 'janzeman-shared-albums-for-google-photos' ); ?>
-								</p>
-							</div>
-						</div>
-						<label style="display:flex; align-items:center; gap:8px;">
-							<input type="checkbox" id="jzsa-pub-showcase-consent" class="jzsa-pub-showcase-consent-toggle" value="1">
-							<span class="jzsa-community-audience-icon jzsa-community-audience-icon--public">
-								<span class="dashicons dashicons-admin-site-alt3" aria-hidden="true"></span>
-							</span>
-							<span><?php echo esc_html( $i18n['showcaseConsentLabel'] ); ?></span>
-						</label>
-						<p class="description" style="margin-top:6px;">
-							<?php echo esc_html( $i18n['showcaseConsentHelp'] ); ?>
-						</p>
-						<label class="jzsa-community-showcase-shortcode-visibility">
-							<input type="checkbox" id="jzsa-pub-showcase-show-shortcode" class="jzsa-pub-showcase-show-shortcode-toggle" value="1" disabled>
-							<span><?php echo esc_html( $i18n['showcaseShowShortcodeLabel'] ); ?></span>
-						</label>
-						<p class="description jzsa-community-showcase-shortcode-visibility-help">
-							<?php echo esc_html( $i18n['showcaseShowShortcodeHelp'] ); ?>
-						</p>
-					</td>
-				</tr>
 				<tr>
 					<th scope="row">
 						<label for="jzsa-pub-title">
@@ -1048,7 +1035,7 @@ class JZSA_Community {
 					</td>
 				</tr>
 			</table>
-			<div class="jzsa-community-showcase-consent-bottom">
+			<div class="jzsa-community-showcase-consent-cell">
 				<div class="jzsa-community-showcase-scope-warning" style="display:flex; gap:10px; align-items:flex-start; padding:10px 12px; margin-bottom:12px; border-left:4px solid #d97706; background:#fffbeb; border-radius:3px;">
 					<span class="dashicons dashicons-warning" style="color:#d97706; margin-top:2px;" aria-hidden="true"></span>
 					<div>
@@ -1059,7 +1046,7 @@ class JZSA_Community {
 					</div>
 				</div>
 				<label style="display:flex; align-items:center; gap:8px;">
-					<input type="checkbox" id="jzsa-pub-showcase-consent-bottom" class="jzsa-pub-showcase-consent-toggle" value="1">
+					<input type="checkbox" id="jzsa-pub-showcase-consent" class="jzsa-pub-showcase-consent-toggle" value="1" checked>
 					<span class="jzsa-community-audience-icon jzsa-community-audience-icon--public">
 						<span class="dashicons dashicons-admin-site-alt3" aria-hidden="true"></span>
 					</span>
@@ -1069,7 +1056,7 @@ class JZSA_Community {
 					<?php echo esc_html( $i18n['showcaseConsentHelp'] ); ?>
 				</p>
 				<label class="jzsa-community-showcase-shortcode-visibility">
-					<input type="checkbox" id="jzsa-pub-showcase-show-shortcode-bottom" class="jzsa-pub-showcase-show-shortcode-toggle" value="1" disabled>
+					<input type="checkbox" id="jzsa-pub-showcase-show-shortcode" class="jzsa-pub-showcase-show-shortcode-toggle" value="1" checked>
 					<span><?php echo esc_html( $i18n['showcaseShowShortcodeLabel'] ); ?></span>
 				</label>
 				<p class="description jzsa-community-showcase-shortcode-visibility-help">
@@ -1335,13 +1322,17 @@ class JZSA_Community {
 	 * @return string A localized, user-facing error message.
 	 */
 	private static function signin_error_message( string $api_error, int $http_code ): string {
+		// HTTP-status-first branches catch broad categories (rate limits,
+		// transport errors) regardless of which specific body.error code the
+		// API put in the response.
+		if ( 429 === $http_code ) {
+			return __( 'Too many sign-in attempts in a short period. Please wait a few minutes and try again.', 'janzeman-shared-albums-for-google-photos' );
+		}
 		switch ( $api_error ) {
 			case 'email_send_failed':
 				return __( 'Email sending failed. Please try again in a moment. If the problem persists, please report a bug.', 'janzeman-shared-albums-for-google-photos' );
 			case 'site_verification_failed':
 				return __( 'We could not verify that this site is running the plugin. Make sure the plugin is active and reachable, then try again.', 'janzeman-shared-albums-for-google-photos' );
-			case 'install_already_bound':
-				return __( 'This WordPress install is already linked to a different community account. Sign out from the other account first, or use Delete account to release it.', 'janzeman-shared-albums-for-google-photos' );
 			case 'too_many_installs':
 				return __( 'You have reached the maximum number of authorized sites on this account. Remove an old one from "Your authorized sites" before adding another.', 'janzeman-shared-albums-for-google-photos' );
 			case 'account_banned':
@@ -1696,6 +1687,56 @@ class JZSA_Community {
 				),
 			)
 		);
+	}
+
+	/**
+	 * Local-only recovery: reset all community state for this WP install.
+	 *
+	 * Removes jzsa_install_secret from wp_options (a new one regenerates on
+	 * next sign-in, with a different install_secret_hash, so the API treats
+	 * this WP as a fresh install with no possible conflict). Also clears
+	 * every WP user's jzsa_community_* user_meta on this install, because
+	 * any cached JWTs are now keyed to the old install hash and would fail
+	 * on the next /v1/me anyway.
+	 *
+	 * Does not call the API. Works even when the API is unreachable. The
+	 * previous user_installs row on the API side is left as an orphan that
+	 * the original account owner can clean up from their "Your authorized
+	 * sites" list on any other WP install they have.
+	 *
+	 * Last-resort recovery affordance for users stuck in any sign-in dead
+	 * end. The takeover behavior in /auth/confirm covers the common cases
+	 * automatically; this handler is the manual escape hatch for anything
+	 * the automatic recovery does not.
+	 */
+	public function ajax_reset_install_state() {
+		check_ajax_referer( 'jzsa_community', 'nonce' );
+
+		if ( ! current_user_can( jzsa_get_admin_capability() ) ) {
+			wp_send_json_error( 'Unauthorized.', 403 );
+		}
+
+		delete_option( self::OPT_INSTALL_SECRET );
+
+		// Drop community JWT + profile fields for ALL WP users on this install.
+		// They are all invalid the moment install_secret changes, so leaving
+		// them around would just produce phantom "Signed in" badges.
+		global $wpdb;
+		$wpdb->delete( $wpdb->usermeta, array( 'meta_key' => self::OPT_JWT ) );
+		$wpdb->delete( $wpdb->usermeta, array( 'meta_key' => self::OPT_DISPLAY_NAME ) );
+		$wpdb->delete( $wpdb->usermeta, array( 'meta_key' => self::OPT_DISPLAY_URL ) );
+
+		// Sweep any in-flight sign-in transients so a half-finished attempt
+		// doesn't keep its pending_id around after the reset.
+		$wpdb->query( $wpdb->prepare(
+			"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s OR option_name LIKE %s OR option_name LIKE %s",
+			$wpdb->esc_like( '_transient_' . self::SIGNIN_PENDING_PREFIX ) . '%',
+			$wpdb->esc_like( '_transient_timeout_' . self::SIGNIN_PENDING_PREFIX ) . '%',
+			$wpdb->esc_like( '_transient_' . self::AUTH_CHALLENGE_PREFIX ) . '%',
+			$wpdb->esc_like( '_transient_timeout_' . self::AUTH_CHALLENGE_PREFIX ) . '%'
+		) );
+
+		wp_send_json_success();
 	}
 
 	/**

@@ -277,22 +277,53 @@ delete_user_meta( $disconnected_id, 'jzsa_community_display_url' );
 echo "Ensured disconnected user {$disconnected_user} (#{$disconnected_id})\n";
 
 /**
- * Drive the new email-verification sign-in flow end-to-end for a WP user,
- * bypassing the actual email step by reading the pending token straight
- * from the API database. Used by the Playwright fixtures so the
- * connected-only UI (publish form, my-entries section, star ratings)
- * renders for tests without a manual sign-in step.
+ * Probe whether a community JWT is still accepted by the API for the
+ * install identified by $install_hash. Used by the fixture to decide
+ * whether an existing JWT can be reused (no API mutation needed) vs a
+ * full sign-in flow is required.
+ */
+function jzsa_e2e_jwt_works( string $jwt, string $install_hash ): bool {
+	if ( '' === $jwt ) {
+		return false;
+	}
+	$probe = wp_remote_get(
+		JZSA_COMMUNITY_API_URL . '/v1/me',
+		array(
+			'headers' => array(
+				'Authorization'  => 'Bearer ' . $jwt,
+				'X-JZSA-Install' => $install_hash,
+				'Accept'         => 'application/json',
+			),
+			'timeout' => 5,
+		)
+	);
+	return ! is_wp_error( $probe ) && 200 === wp_remote_retrieve_response_code( $probe );
+}
+
+/**
+ * Make a WP user appear "signed in to community" without disrupting any
+ * existing sign-in on this WP install. Preferred path: borrow a working
+ * JWT from any other WP user on the same install. Fallback: drive the
+ * live sign-in flow (only when nobody is connected).
  *
- * This evicts whatever community account currently owns this WP install's
- * `jzsa_install_secret` (because install_secret_hash is globally unique
- * in user_installs). After this runs, any prior WP user who had signed
- * in via this install loses access — by design, the test fixture takes
- * over the install for the duration of the suite. Re-run a manual sign in
- * from the WP admin afterwards to restore the prior owner.
+ * Why this is non-invasive: multiple WP users on the same WP install all
+ * use the same `jzsa_install_secret` (it lives in `wp_options`, not
+ * `user_meta`). On the API side a single `user_installs` row binds that
+ * install hash to one community account. So once one WP user signs in,
+ * any other WP user can share that JWT and the API treats their calls as
+ * coming from the same install + account. Sufficient for tests, and the
+ * original sign-in (e.g. your manual sign-in as jan) keeps working.
  *
- * Local-dev only. Hardcodes the docker-compose API DB credentials.
+ * Only when nothing on the install is bound do we fall through to the
+ * full sign-in flow, which will create a fresh community account for
+ * $email. That path no longer evicts existing accounts; if the install
+ * is already bound, the borrow path always succeeds first.
  *
- * @throws RuntimeException on any HTTP / DB / API failure.
+ * Local-dev only. Hardcodes the docker-compose API DB credentials for
+ * the fallback path.
+ *
+ * @throws RuntimeException on any HTTP / DB / API failure in the
+ *                           fallback (full sign-in) path.
  */
 function jzsa_e2e_signin_user( int $wp_user_id, string $email, string $display_name ): void {
 	// 1. Make sure the WP install has an install_secret to identify itself.
@@ -303,42 +334,54 @@ function jzsa_e2e_signin_user( int $wp_user_id, string $email, string $display_n
 	}
 	$install_hash = hash( 'sha256', $install_secret );
 
-	// Idempotency: if dev already has a JWT that the API accepts, skip the
-	// whole flow. Saves burning per-email rate-limit budget when fixtures
-	// run repeatedly (the API caps /auth/start at 3 per email per hour).
-	$existing_jwt = get_user_meta( $wp_user_id, 'jzsa_community_jwt', true );
-	if ( is_string( $existing_jwt ) && '' !== $existing_jwt ) {
-		$probe = wp_remote_get(
-			JZSA_COMMUNITY_API_URL . '/v1/me',
-			array(
-				'headers' => array(
-					'Authorization'  => 'Bearer ' . $existing_jwt,
-					'X-JZSA-Install' => $install_hash,
-					'Accept'         => 'application/json',
-				),
-				'timeout' => 5,
-			)
-		);
-		if ( ! is_wp_error( $probe ) && 200 === wp_remote_retrieve_response_code( $probe ) ) {
-			echo "  (existing JWT still valid; skipping live sign-in)\n";
-			return;
-		}
+	// 2. Already signed in? Idempotent no-op.
+	$own_jwt = (string) get_user_meta( $wp_user_id, 'jzsa_community_jwt', true );
+	if ( jzsa_e2e_jwt_works( $own_jwt, $install_hash ) ) {
+		echo "  (existing JWT still valid; skipping live sign-in)\n";
+		return;
 	}
 
-	// 2. Evict prior bindings on the API side so /auth/start does not bounce
-	// us with `install_already_bound` or `email already exists`.
+	// 3. Borrow a JWT from any other WP user on this install whose JWT
+	// the API still accepts. No API mutation, no eviction. The other
+	// user's community account view is shared with this user.
+	global $wpdb;
+	$candidates = $wpdb->get_results( $wpdb->prepare(
+		"SELECT user_id, meta_value
+		   FROM {$wpdb->usermeta}
+		  WHERE meta_key = 'jzsa_community_jwt'
+		    AND meta_value != ''
+		    AND user_id != %d",
+		$wp_user_id
+	) );
+	foreach ( $candidates as $row ) {
+		$other_jwt = (string) $row->meta_value;
+		if ( ! jzsa_e2e_jwt_works( $other_jwt, $install_hash ) ) {
+			continue;
+		}
+		update_user_meta( $wp_user_id, 'jzsa_community_jwt', $other_jwt );
+		$other_name = (string) get_user_meta( (int) $row->user_id, 'jzsa_community_display_name', true );
+		if ( '' !== $other_name ) {
+			update_user_meta( $wp_user_id, 'jzsa_community_display_name', $other_name );
+		}
+		$other_url = (string) get_user_meta( (int) $row->user_id, 'jzsa_community_display_url', true );
+		if ( '' !== $other_url ) {
+			update_user_meta( $wp_user_id, 'jzsa_community_display_url', $other_url );
+		} else {
+			delete_user_meta( $wp_user_id, 'jzsa_community_display_url' );
+		}
+		echo "  (borrowed JWT from WP user #{$row->user_id}; both WP users now share that community account)\n";
+		return;
+	}
+
+	// 4. Nobody is connected on this install. Drive the live sign-in
+	// flow with $email so the fixture sets up a brand-new community
+	// account for the test user. Only clears pending_verifications for
+	// $email (in case a prior /auth/start call burned through rate
+	// limit budget); does NOT touch user_installs or users.
 	$db = new mysqli( 'mariadb', 'jzsa_api', 'jzsa_api', 'jzsa_api', 3306 );
 	if ( $db->connect_error ) {
 		throw new RuntimeException( "Could not connect to jzsa_api DB: {$db->connect_error}" );
 	}
-	$stmt = $db->prepare( 'DELETE FROM user_installs WHERE install_secret_hash = ?' );
-	$stmt->bind_param( 's', $install_hash );
-	$stmt->execute();
-	$stmt->close();
-	$stmt = $db->prepare( 'DELETE FROM users WHERE email = ?' );
-	$stmt->bind_param( 's', $email );
-	$stmt->execute();
-	$stmt->close();
 	$stmt = $db->prepare( 'DELETE FROM pending_verifications WHERE email = ?' );
 	$stmt->bind_param( 's', $email );
 	$stmt->execute();
