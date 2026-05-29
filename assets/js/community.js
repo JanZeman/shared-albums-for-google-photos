@@ -61,7 +61,7 @@
 
 	function showcaseRequiredMessage() {
 		return i18n( 'showcaseRequiredMessage' ) ||
-			'Description, sample page URL, and photographer / creator name are required for public showcase consideration.';
+			'Description, sample page URL, and photographer / creator name are required for Photo lovers community consideration.';
 	}
 
 	function syncShowcaseRequiredState( consentEl, requiredControls, requiredBadges ) {
@@ -534,6 +534,10 @@
 				ratingCount.textContent = rAvg
 					? rAvg + ' \u2605 (' + rCount + ')'
 					: rCount + ( rCount === 1 ? ' rating' : ' ratings' );
+			} else if ( isCommunityConnected() ) {
+				// Signed in and viewing someone else's entry with no ratings yet.
+				// Frame it as an invitation instead of a status report.
+				ratingCount.textContent = 'Be the first to rate';
 			} else {
 				ratingCount.textContent = 'No ratings yet';
 			}
@@ -657,7 +661,7 @@
 				var icon = document.createElement( 'span' );
 				icon.className = 'jzsa-community-audience-icon jzsa-community-audience-icon--public';
 				var iconGlyph = document.createElement( 'span' );
-				iconGlyph.className = 'dashicons dashicons-admin-site-alt3';
+				iconGlyph.className = 'dashicons dashicons-camera-alt';
 				iconGlyph.setAttribute( 'aria-hidden', 'true' );
 				icon.appendChild( iconGlyph );
 				var text = document.createElement( 'span' );
@@ -2296,6 +2300,40 @@
 	}
 
 	/* -----------------------------------------------------------------------
+	 * Showcase scope warning — collapsible "Got it" / "?" toggle
+	 * -------------------------------------------------------------------- */
+
+	function initShowcaseWarningToggle() {
+		var warning      = qs( '.jzsa-community-showcase-scope-warning' );
+		var compactPill  = qs( '.jzsa-community-showcase-scope-warning-compact' );
+		var dismissBtn   = qs( '.jzsa-community-showcase-scope-warning-dismiss' );
+		if ( ! warning || ! compactPill || ! dismissBtn ) {
+			return;
+		}
+
+		function collapseWarning( persist ) {
+			warning.style.display     = 'none';
+			compactPill.style.display = 'inline-flex';
+			compactPill.setAttribute( 'aria-expanded', 'false' );
+			if ( persist ) {
+				// Fire-and-forget. UX state is already updated optimistically;
+				// a failed save just means the user will see the full warning
+				// again next page load, which is harmless.
+				ajaxPost( 'jzsa_community_dismiss_showcase_warning', {} ).catch( function () {} );
+			}
+		}
+
+		function expandWarning() {
+			warning.style.display     = 'flex';
+			compactPill.style.display = 'none';
+			compactPill.setAttribute( 'aria-expanded', 'true' );
+		}
+
+		dismissBtn.addEventListener( 'click', function () { collapseWarning( true ); } );
+		compactPill.addEventListener( 'click', function () { expandWarning(); } );
+	}
+
+	/* -----------------------------------------------------------------------
 	 * Init
 	 * -------------------------------------------------------------------- */
 
@@ -2311,6 +2349,7 @@
 		initDisplayName();
 		initDisplayUrl();
 		initDevFill();
+		initShowcaseWarningToggle();
 
 		// Load the current user's own entries when connected
 		if ( isCommunityConnected() ) {
