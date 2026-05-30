@@ -312,5 +312,6 @@ The "Share Your Shortcode" community feature is entirely optional. Browsing comm
 
 * **Bug reports:** [Open an issue on GitHub](https://github.com/JanZeman/shared-albums-for-google-photos/issues/new)
 * **Feature requests:** [Post on the support forum](https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/)
+* **Privacy, account, or sensitive questions:** email [support@janzeman.com](mailto:support@janzeman.com)
 * **Leave a rating:** [Review on WordPress.org](https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/reviews/#new-post)
 * **Buy Me a Coffee:** [buymeacoffee.com/janzeman](https://www.buymeacoffee.com/janzeman)

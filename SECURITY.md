@@ -8,7 +8,7 @@ The latest released version of Shared Albums for Google Photos (by JanZeman) on 
 
 If you discover a security issue, please report it responsibly by emailing:
 
-- <jan.zeman@gmail.com>
+- <support@janzeman.com>
 
 Please include as much detail as possible (WordPress version, PHP version, reproduction steps, and any proof-of-concept).
 

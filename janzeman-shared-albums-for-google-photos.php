@@ -189,6 +189,7 @@ function jzsa_add_privacy_policy_content() {
 	$content .= '<li><strong>' . esc_html__( 'Star ratings.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'Ratings are stored linked to the user\'s identity hash, not to any directly personal data.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
 	$content .= '<li><strong>' . esc_html__( 'Account deletion.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'You can delete your community account at any time from the plugin admin page. Account deletion removes the stored identity hash, site hash, display name, display URL, and ratings you submitted. You can choose whether published entries are preserved as community examples or hidden at the same time.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
 	$content .= '<li><strong>' . esc_html__( 'No tracking.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'The community server does not use cookies, analytics, or advertising.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
+	$content .= '<li><strong>' . esc_html__( 'Questions or data requests.', 'janzeman-shared-albums-for-google-photos' ) . '</strong> ' . esc_html__( 'Email support@janzeman.com.', 'janzeman-shared-albums-for-google-photos' ) . '</li>';
 	$content .= '</ul>';
 
 	wp_add_privacy_policy_content(

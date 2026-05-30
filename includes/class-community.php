@@ -684,7 +684,7 @@ class JZSA_Community {
 		<div class="notice notice-error is-dismissible jzsa-community-notice">
 			<p>
 				<strong><?php esc_html_e( 'Signed out: this community account has been suspended.', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-				<?php esc_html_e( 'Please contact the plugin author if you believe this is a mistake.', 'janzeman-shared-albums-for-google-photos' ); ?>
+				<?php esc_html_e( 'Please contact support@janzeman.com if you believe this is a mistake.', 'janzeman-shared-albums-for-google-photos' ); ?>
 			</p>
 		</div>
 		<?php endif; ?>
@@ -1450,7 +1450,7 @@ class JZSA_Community {
 			case 'too_many_installs':
 				return __( 'You have reached the maximum number of authorized sites on this account. Remove an old one from "Your authorized sites" before adding another.', 'janzeman-shared-albums-for-google-photos' );
 			case 'account_banned':
-				return __( 'This community account has been suspended. Please contact support.', 'janzeman-shared-albums-for-google-photos' );
+				return __( 'This community account has been suspended. Please contact support@janzeman.com.', 'janzeman-shared-albums-for-google-photos' );
 		}
 		return sprintf(
 			/* translators: %d: HTTP status code */
