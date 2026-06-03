@@ -669,6 +669,7 @@
 					helpBox.style.alignItems = 'flex-start';
 					helpBox.style.padding = '10px 12px';
 					helpBox.style.marginTop = '8px';
+					helpBox.style.marginBottom = '12px';
 					helpBox.style.marginLeft = '28px';
 					helpBox.style.borderLeft = '4px solid #d97706';
 					helpBox.style.background = '#fffbeb';

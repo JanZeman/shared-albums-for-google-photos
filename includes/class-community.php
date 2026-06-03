@@ -66,7 +66,7 @@ class JZSA_Community {
 	private static function get_i18n_strings() {
 		return array(
 			'showcaseConsentLabel'       => __( 'Allow my album to be considered for the future public site showcase.', 'janzeman-shared-albums-for-google-photos' ),
-			'showcaseConsentHelp'        => __( 'This keeps the same community entry eligible for a future public showcase. The shortcode sample is always published on this plugin page. The public website may also show selected allowed entries, with focus on the gallery page and photos; shortcode details will be collapsed by default. Page URL and entry info are required for this consideration.', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseConsentHelp'        => __( 'This keeps the same community entry eligible for a future public showcase. The shortcode sample is always published on this plugin page. The public website may show selected allowed entries, with focus on the gallery page and photos; shortcode details will be collapsed by default.', 'janzeman-shared-albums-for-google-photos' ),
 			'showcaseRequiredBadge'      => __( 'Required for the public site', 'janzeman-shared-albums-for-google-photos' ),
 			'showcaseRequiredMessage'    => __( 'Sample page URL and entry info are required for the public site.', 'janzeman-shared-albums-for-google-photos' ),
 			'descriptionLabel'           => __( 'Description', 'janzeman-shared-albums-for-google-photos' ),
@@ -805,15 +805,15 @@ class JZSA_Community {
 					</p>
 				</details>
 			<?php else : ?>
-				<p class="jzsa-help-text" style="margin-top:6px;">
-					<?php esc_html_e( 'Privacy: Your email is used to confirm it is really you and is stored to identify your account. You can delete your account from this page at any time to permanently remove it.', 'janzeman-shared-albums-for-google-photos' ); ?>
-				</p>
-				<p class="jzsa-help-text" style="margin-top:4px;">
-					<?php esc_html_e( 'We only use your email for sign-in and account-related messages. No newsletters, marketing emails, or spam.', 'janzeman-shared-albums-for-google-photos' ); ?>
-				</p>
-				<?php
-				$current_user            = wp_get_current_user();
-				$suggested_connect_name  = sanitize_text_field( $current_user->display_name ?? '' );
+					<p class="jzsa-help-text" style="margin-top:6px;">
+						<?php esc_html_e( 'Your email confirms your account and is used only for sign-in and account messages. No newsletters, marketing, or spam. You can delete your account here at any time.', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</p>
+					<p class="jzsa-help-text" style="margin-top:4px; margin-bottom:8px;">
+						<?php esc_html_e( 'Running multiple WordPress sites? Use the same email on each to keep everything under one community account.', 'janzeman-shared-albums-for-google-photos' ); ?>
+					</p>
+					<?php
+					$current_user            = wp_get_current_user();
+					$suggested_connect_name  = sanitize_text_field( $current_user->display_name ?? '' );
 				$suggested_connect_name  = self::truncate_string( $suggested_connect_name, 50 );
 				$suggested_connect_email = sanitize_email( $current_user->user_email ?? '' );
 					?>
@@ -829,10 +829,7 @@ class JZSA_Community {
 						<?php esc_html_e( 'Required. We email you a one-time confirmation link.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</span>
 				</p>
-				<p class="jzsa-help-text" style="margin-top:4px; margin-bottom:8px;">
-					<?php esc_html_e( 'Running multiple WordPress sites? Use the same email on each to keep everything under one community account.', 'janzeman-shared-albums-for-google-photos' ); ?>
-				</p>
-				<p class="jzsa-community-display-name-row" style="margin-top:10px; display:flex; align-items:center; flex-wrap:nowrap; gap:6px;">
+					<p class="jzsa-community-display-name-row" style="margin-top:10px; display:flex; align-items:center; flex-wrap:nowrap; gap:6px;">
 					<label for="jzsa-connect-display-name" style="font-size:13px; color:#50575e; white-space:nowrap;">
 						<?php esc_html_e( 'Community display name:', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</label>
@@ -1020,7 +1017,7 @@ class JZSA_Community {
 							<input type="checkbox" id="jzsa-pub-showcase-consent" class="jzsa-pub-showcase-consent-toggle" value="1" checked>
 							<span><?php echo esc_html( $i18n['showcaseConsentLabel'] ); ?></span>
 						</label>
-					<div class="jzsa-community-showcase-scope-warning" style="display:flex; gap:10px; align-items:flex-start; padding:10px 12px; margin-top:8px; margin-left:28px; border-left:4px solid #d97706; background:#fffbeb; border-radius:3px;">
+					<div class="jzsa-community-showcase-scope-warning" style="display:flex; gap:10px; align-items:flex-start; padding:10px 12px; margin-top:8px; margin-bottom:12px; margin-left:28px; border-left:4px solid #d97706; background:#fffbeb; border-radius:3px;">
 						<span class="dashicons dashicons-admin-site-alt3" style="color:#d97706; margin-top:2px;" aria-hidden="true"></span>
 						<p class="description" style="flex:1; margin:0;">
 							<?php echo esc_html( $i18n['showcaseConsentHelp'] ); ?>
