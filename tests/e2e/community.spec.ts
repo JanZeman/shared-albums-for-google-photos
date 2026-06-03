@@ -259,6 +259,7 @@ test.describe('Community - publish form validation', () => {
     test('more than 5 tags shows validation error', async ({ page }) => {
         await page.fill('#jzsa-pub-title', 'My Test Album');
         await setPublishShortcode(page, '[jzsa-album link="https://photos.google.com/share/AF1Qip-test"]');
+        await page.fill('#jzsa-pub-description', 'Enough description to reach tag validation.');
         await page.fill('#jzsa-pub-tags', 'tag1,tag2,tag3,tag4,tag5,tag6');
         await page.click('#jzsa-community-publish-btn');
         await expect(page.locator('#jzsa-publish-result')).toContainText('no more than 5 tags', { timeout: 5_000 });

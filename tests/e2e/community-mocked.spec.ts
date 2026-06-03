@@ -216,17 +216,19 @@ test.describe('Community - mocked AJAX flows', () => {
         await page.fill('#jzsa-pub-description', 'Published through a mocked community API.');
         await page.fill('#jzsa-pub-tags', 'gallery,test');
         await page.fill('#jzsa-pub-site-url', 'example.test/published');
-	        await page.check('#jzsa-pub-showcase-consent');
-	        await page.click('#jzsa-community-publish-btn');
+        await page.fill('#jzsa-pub-entry-info', 'Mocked public showcase context.');
+        await page.check('#jzsa-pub-showcase-consent');
+        await page.click('#jzsa-community-publish-btn');
 
         await expect(page.locator('#jzsa-publish-result')).toContainText('Published!', { timeout: 10_000 });
         const publish = (await mock.requests()).find((request) => request.action === 'jzsa_community_publish');
         expect(publish?.fields).toMatchObject({
-	            title: 'Published From Mock',
-	            tags: 'gallery,test',
-	            site_url: 'https://example.test/published',
-	            public_showcase_consent: 'true',
-	        });
+            title: 'Published From Mock',
+            tags: 'gallery,test',
+            site_url: 'https://example.test/published',
+            entry_info: 'Mocked public showcase context.',
+            public_showcase_consent: 'true',
+        });
         expect(publish?.fields.shortcode).toContain('mode="gallery"');
         await expect.poll(async () => (await mock.requests()).filter((request) => request.action === 'jzsa_community_load_my_entries').length).toBeGreaterThanOrEqual(1);
     });

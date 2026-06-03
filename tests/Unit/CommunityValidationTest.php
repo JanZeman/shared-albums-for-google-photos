@@ -207,10 +207,9 @@ class CommunityValidationTest extends TestCase {
         $this->assertNotSame( '', $result );
     }
 
-    public function test_tag_with_spaces_fails(): void {
+    public function test_space_separated_tags_pass(): void {
         $result = $this->validate( tags_raw: 'my tag' );
-        // "my tag" after normalization splits on comma so becomes one tag "my tag" with a space.
-        $this->assertNotSame( '', $result );
+        $this->assertSame( '', $result );
     }
 
     public function test_tags_with_empty_segments_are_ignored(): void {

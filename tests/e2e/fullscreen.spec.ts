@@ -97,10 +97,7 @@ test.describe('Fullscreen - Firefox limited presentation regression', () => {
     });
 
     test('Firefox applies fullscreen display caps in native fullscreen @cross-browser', async ({ page, browserName }) => {
-        test.skip(browserName !== 'firefox', 'Firefox-specific regression for f7d5911');
-
         const album = await waitForLimitedFullscreenAlbum(page);
-        const zoomContainer = album.locator('.swiper-slide-active .swiper-zoom-container').first();
 
         const hasFirefoxRule = await page.evaluate(() => {
             return Array.from(document.styleSheets).some((sheet) => {
@@ -122,6 +119,12 @@ test.describe('Fullscreen - Firefox limited presentation regression', () => {
 
         await expect(album).toHaveAttribute('data-fullscreen-display-max-width', '320');
         await expect(album).toHaveAttribute('data-fullscreen-display-max-height', '240');
+
+        if (browserName !== 'firefox') {
+            return;
+        }
+
+        const zoomContainer = album.locator('.swiper-slide-active .swiper-zoom-container').first();
 
         await album.locator(SLIDER_FULLSCREEN_BUTTON).click({ force: true });
         await expect
