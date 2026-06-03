@@ -388,7 +388,7 @@ class CommunityAjaxTest extends TestCase {
         $_POST = $this->validEntryPost(
             array(
                 'entry_id'    => '9',
-                'description' => '',
+                'description' => 'Updated description',
                 'tags'        => 'one,two',
             )
         );

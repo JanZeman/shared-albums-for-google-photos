@@ -61,7 +61,7 @@
 
 	function showcaseRequiredMessage() {
 		return i18n( 'showcaseRequiredMessage' ) ||
-			'Description and sample page URL are required for public site showcase consideration.';
+			'Sample page URL and entry info are required for the public site.';
 	}
 
 	function syncShowcaseRequiredState( consentEl, requiredControls, requiredBadges ) {
@@ -157,18 +157,24 @@
 		if ( ! extractCommunityAlbumLink( data.shortcode ) ) {
 			return 'Shortcode must include a valid Google Photos share URL in the link parameter.';
 		}
+		if ( ! data.description ) {
+			return 'Description is required.';
+		}
 		if ( data.description.length > 500 ) {
 			return 'Description must be 500 characters or fewer.';
 		}
 		if ( data.siteUrl && ! isValidHttpUrl( data.siteUrl ) ) {
 			return 'Please enter a valid sample page URL (e.g. https://yoursite.com/page).';
 		}
-		if ( data.entryInfo.length > 500 ) {
-			return 'Entry info must be 500 characters or fewer.';
+		if ( data.entryInfo.length > 256 ) {
+			return 'Entry info must be 256 characters or fewer.';
 		}
-		var tags = data.tags ? data.tags.split( ',' ).map( function ( tag ) {
+		var tags = data.tags ? data.tags.split( /[\s,]+/ ).map( function ( tag ) {
 			return tag.trim();
 		} ).filter( Boolean ) : [];
+		if ( tags.length < 1 ) {
+			return 'Add at least one tag.';
+		}
 		if ( tags.length > 5 ) {
 			return 'Use no more than 5 tags.';
 		}
@@ -177,7 +183,7 @@
 				return 'Tags must be 2-30 characters and use only letters, numbers, and hyphens.';
 			}
 		}
-		if ( data.showcaseConsent && ( ! data.description || ! data.siteUrl ) ) {
+		if ( data.showcaseConsent && ( ! data.siteUrl || ! data.entryInfo ) ) {
 			return showcaseRequiredMessage();
 		}
 		return '';
@@ -619,8 +625,8 @@
 					badge.className = requiredText === 'showcase' ? 'required jzsa-showcase-required-badge' : 'required';
 					if ( requiredText === 'showcase' ) {
 						badge.hidden = true;
-						badge.setAttribute( 'aria-label', 'required for public site showcase consideration' );
-						badge.textContent = i18n( 'showcaseRequiredBadge' ) || 'Required for public site showcase consideration';
+						badge.setAttribute( 'aria-label', 'required for the public site' );
+						badge.textContent = i18n( 'showcaseRequiredBadge' ) || 'Required for the public site';
 					} else {
 						badge.setAttribute( 'aria-label', 'required' );
 						badge.textContent = 'Required';
@@ -719,8 +725,7 @@
 			descriptionInput.maxLength = 500;
 			descriptionInput.rows = 2;
 			descriptionInput.value = entry.description || '';
-			var descriptionLabel = createLabel( descriptionInput.id, i18n( 'descriptionLabel' ) || 'Description', 'showcase' );
-			var descriptionRequiredBadge = descriptionLabel.querySelector( '.jzsa-showcase-required-badge' );
+			var descriptionLabel = createLabel( descriptionInput.id, i18n( 'descriptionLabel' ) || 'Description', 'required' );
 			appendTableRow( descriptionLabel, [ descriptionInput ] );
 
 			var tagsInput = document.createElement( 'input' );
@@ -728,9 +733,9 @@
 			tagsInput.className = 'regular-text jzsa-community-my-entry-tags-input';
 			tagsInput.id = 'jzsa-my-entry-tags-' + entry.id;
 			tagsInput.value = entryTags.join( ', ' );
-			tagsInput.placeholder = 'slider, dark, mosaic  (comma-separated, max 5)';
+			tagsInput.placeholder = 'slider, dark, mosaic  (comma or space separated, max 5)';
 			appendTableRow(
-				createLabel( tagsInput.id, 'Tags' ),
+				createLabel( tagsInput.id, 'Tags', 'required' ),
 				[ tagsInput ]
 			);
 
@@ -751,16 +756,17 @@
 			var bioInput = document.createElement( 'textarea' );
 			bioInput.className = 'large-text jzsa-community-my-entry-info-input';
 			bioInput.id = 'jzsa-my-entry-info-' + entry.id;
-			bioInput.maxLength = 500;
+			bioInput.maxLength = 256;
 			bioInput.rows = 2;
 			bioInput.value = entry.entry_info || '';
 			var bioHelp = document.createElement( 'p' );
 			bioHelp.className = 'description';
 			bioHelp.textContent = i18n( 'entryInfoHelp' );
 			appendTableRow(
-				createLabel( bioInput.id, i18n( 'entryInfoLabel' ) ),
+				createLabel( bioInput.id, i18n( 'entryInfoLabel' ), 'showcase' ),
 				[ bioInput, bioHelp ]
 			);
+			var bioRequiredBadge = editTable.querySelector( 'label[for="' + bioInput.id + '"] .jzsa-showcase-required-badge' );
 
 			saveRow.appendChild( editTable );
 
@@ -772,8 +778,8 @@
 				consentBlock.checkbox.checked   = checked;
 				syncShowcaseRequiredState(
 					consentBlock.checkbox,
-					[ descriptionInput, urlInput ],
-					[ descriptionRequiredBadge, urlRequiredBadge ]
+					[ urlInput, bioInput ],
+					[ urlRequiredBadge, bioRequiredBadge ]
 				);
 			}
 			syncOwnedShowcaseConsent( entry.public_showcase_consent ? true : false );
@@ -1742,8 +1748,8 @@
 			document.querySelectorAll( '.jzsa-pub-showcase-consent-toggle' )
 		);
 		var publishRequiredControls = [
-			qs( '#jzsa-pub-description' ),
 			qs( '#jzsa-pub-site-url' ),
+			qs( '#jzsa-pub-entry-info' ),
 		];
 		var publishRequiredBadges = Array.prototype.slice.call(
 			document.querySelectorAll( '.jzsa-community-publish-table .jzsa-showcase-required-badge' )

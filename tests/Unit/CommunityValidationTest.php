@@ -36,8 +36,8 @@ class CommunityValidationTest extends TestCase {
 	    private function validate(
 	        string $title             = 'Valid Title',
 	        string $shortcode         = self::VALID_SC,
-	        string $description       = '',
-	        string $tags_raw          = '',
+	        string $description       = 'Description',
+	        string $tags_raw          = 'gallery',
 	        string $entry_url         = '',
 	        string $entry_info        = '',
 	        bool   $consent           = false
@@ -152,9 +152,9 @@ class CommunityValidationTest extends TestCase {
         $this->assertStringContainsString( '500', $result );
     }
 
-    public function test_description_empty_passes(): void {
+    public function test_description_empty_fails(): void {
         $result = $this->validate( description: '' );
-        $this->assertSame( '', $result );
+        $this->assertNotSame( '', $result );
     }
 
     // -------------------------------------------------------------------------
@@ -172,9 +172,9 @@ class CommunityValidationTest extends TestCase {
         $this->assertStringContainsString( '5', $result );
     }
 
-    public function test_empty_tags_passes(): void {
+    public function test_empty_tags_fails(): void {
         $result = $this->validate( tags_raw: '' );
-        $this->assertSame( '', $result );
+        $this->assertNotSame( '', $result );
     }
 
     public function test_tag_exactly_2_chars_passes(): void {
@@ -277,15 +277,15 @@ class CommunityValidationTest extends TestCase {
 		    // Entry info
 	    // -------------------------------------------------------------------------
 
-		    public function test_entry_info_500_chars_passes(): void {
-		        $result = $this->validate( entry_info: str_repeat( 'a', 500 ) );
-	        $this->assertSame( '', $result );
-    }
+		    public function test_entry_info_256_chars_passes(): void {
+		        $result = $this->validate( entry_info: str_repeat( 'a', 256 ) );
+		        $this->assertSame( '', $result );
+	    }
 
-    public function test_entry_info_501_chars_fails(): void {
-        $result = $this->validate( entry_info: str_repeat( 'a', 501 ) );
+    public function test_entry_info_257_chars_fails(): void {
+        $result = $this->validate( entry_info: str_repeat( 'a', 257 ) );
         $this->assertNotSame( '', $result );
-        $this->assertStringContainsString( '500', $result );
+        $this->assertStringContainsString( '256', $result );
     }
 
     // -------------------------------------------------------------------------
@@ -301,6 +301,7 @@ class CommunityValidationTest extends TestCase {
 	        $result = $this->validate(
 	            description:       'My description',
 	            entry_url:         'https://example.com/page',
+	            entry_info:        'Public context',
 	            consent:           true
 	        );
 	        $this->assertSame( '', $result );
@@ -310,6 +311,7 @@ class CommunityValidationTest extends TestCase {
 	        $result = $this->validate(
 	            description:       '',
 	            entry_url:         'https://example.com/page',
+	            entry_info:        'Public context',
 	            consent:           true
 	        );
 	        $this->assertNotSame( '', $result );
@@ -319,6 +321,17 @@ class CommunityValidationTest extends TestCase {
 	        $result = $this->validate(
 	            description:       'My description',
 	            entry_url:         '',
+	            entry_info:        'Public context',
+	            consent:           true
+	        );
+	        $this->assertNotSame( '', $result );
+		    }
+
+	    public function test_consent_true_missing_entry_info_fails(): void {
+	        $result = $this->validate(
+	            description:       'My description',
+	            entry_url:         'https://example.com/page',
+	            entry_info:        '',
 	            consent:           true
 	        );
 	        $this->assertNotSame( '', $result );

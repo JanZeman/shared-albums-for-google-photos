@@ -264,11 +264,11 @@ test.describe('Community - publish form validation', () => {
         await expect(page.locator('#jzsa-publish-result')).toContainText('no more than 5 tags', { timeout: 5_000 });
     });
 
-    test('showcase consent without description shows validation error', async ({ page }) => {
+    test('publishing without required public fields shows validation error', async ({ page }) => {
         await page.fill('#jzsa-pub-title', 'My Test Album');
         await setPublishShortcode(page, '[jzsa-album link="https://photos.google.com/share/AF1Qip-test"]');
         await page.check('#jzsa-pub-showcase-consent');
-        // Leave description, site URL, and photographer name empty.
+        // Leave description, site URL, and entry info empty.
         await page.click('#jzsa-community-publish-btn');
         await expect(page.locator('#jzsa-publish-result')).toContainText('required', { timeout: 5_000 });
     });

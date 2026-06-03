@@ -66,13 +66,13 @@ class JZSA_Community {
 	private static function get_i18n_strings() {
 		return array(
 			'showcaseConsentLabel'       => __( 'Allow my album to be considered for the future public site showcase.', 'janzeman-shared-albums-for-google-photos' ),
-			'showcaseConsentHelp'        => __( 'This keeps the same community entry eligible for a future public showcase. The shortcode sample is always published on this plugin page. The public website may also show selected allowed entries, with focus on the gallery page and photos; shortcode details will be collapsed by default. Description and page URL are required for this consideration.', 'janzeman-shared-albums-for-google-photos' ),
-			'showcaseRequiredBadge'      => __( 'Required for public site showcase consideration', 'janzeman-shared-albums-for-google-photos' ),
-			'showcaseRequiredMessage'    => __( 'Description and sample page URL are required for public site showcase consideration.', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseConsentHelp'        => __( 'This keeps the same community entry eligible for a future public showcase. The shortcode sample is always published on this plugin page. The public website may also show selected allowed entries, with focus on the gallery page and photos; shortcode details will be collapsed by default. Page URL and entry info are required for this consideration.', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseRequiredBadge'      => __( 'Required for the public site', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseRequiredMessage'    => __( 'Sample page URL and entry info are required for the public site.', 'janzeman-shared-albums-for-google-photos' ),
 			'descriptionLabel'           => __( 'Description', 'janzeman-shared-albums-for-google-photos' ),
 			'siteUrlLabel'               => __( 'Sample page URL', 'janzeman-shared-albums-for-google-photos' ),
-			'entryInfoLabel'             => __( 'Entry info', 'janzeman-shared-albums-for-google-photos' ),
-			'entryInfoHelp'              => __( 'Optional context about the album, creator, studio, website, or story behind this sample.', 'janzeman-shared-albums-for-google-photos' ),
+			'entryInfoLabel'             => __( 'Info / intro / bio', 'janzeman-shared-albums-for-google-photos' ),
+			'entryInfoHelp'              => __( 'Optional context about the album, creator, studio, website, or story behind this sample. Max 256 chars.', 'janzeman-shared-albums-for-google-photos' ),
 		);
 	}
 
@@ -138,7 +138,7 @@ class JZSA_Community {
 	}
 
 	/**
-	 * Normalize the comma-separated community tags.
+	 * Normalize comma- or whitespace-separated community tags.
 	 *
 	 * @param string $tags_raw Raw tag text.
 	 * @return array
@@ -146,7 +146,7 @@ class JZSA_Community {
 	private static function normalize_community_tags( $tags_raw ) {
 		return array_values(
 			array_filter(
-				array_map( 'strtolower', array_map( 'trim', explode( ',', $tags_raw ) ) )
+					array_map( 'strtolower', array_map( 'trim', preg_split( '/[\s,]+/', $tags_raw ) ?: array() ) )
 			)
 		);
 	}
@@ -179,7 +179,7 @@ class JZSA_Community {
 	 * @param string $title             Entry title.
 	 * @param string $shortcode         Shortcode text.
 	 * @param string $description       Entry description.
-	 * @param string $tags_raw          Raw comma-separated tags.
+	 * @param string $tags_raw          Raw comma- or whitespace-separated tags.
 	 * @param string $entry_url         Sample page URL.
 	 * @param string $entry_info        Optional entry info.
 	 * @param bool   $consent           Public showcase consent.
@@ -202,6 +202,10 @@ class JZSA_Community {
 			return __( 'Shortcode must include a valid Google Photos share URL in the link parameter.', 'janzeman-shared-albums-for-google-photos' );
 		}
 
+		if ( '' === $description ) {
+			return __( 'Description is required.', 'janzeman-shared-albums-for-google-photos' );
+		}
+
 		if ( self::string_length( $description ) > 500 ) {
 			return __( 'Description must be 500 characters or fewer.', 'janzeman-shared-albums-for-google-photos' );
 		}
@@ -210,11 +214,15 @@ class JZSA_Community {
 			return __( 'Please enter a valid sample page URL (e.g. https://yoursite.com/page).', 'janzeman-shared-albums-for-google-photos' );
 		}
 
-		if ( self::string_length( $entry_info ) > 500 ) {
-			return __( 'Entry info must be 500 characters or fewer.', 'janzeman-shared-albums-for-google-photos' );
+		if ( self::string_length( $entry_info ) > 256 ) {
+			return __( 'Entry info must be 256 characters or fewer.', 'janzeman-shared-albums-for-google-photos' );
 		}
 
 		$tags = self::normalize_community_tags( $tags_raw );
+		if ( count( $tags ) < 1 ) {
+			return __( 'Add at least one tag.', 'janzeman-shared-albums-for-google-photos' );
+		}
+
 		if ( count( $tags ) > 5 ) {
 			return __( 'Use no more than 5 tags.', 'janzeman-shared-albums-for-google-photos' );
 		}
@@ -225,7 +233,7 @@ class JZSA_Community {
 			}
 		}
 
-		if ( $consent && ( empty( $description ) || empty( $entry_url ) ) ) {
+		if ( $consent && ( empty( $entry_url ) || empty( $entry_info ) ) ) {
 			$i18n = self::get_i18n_strings();
 			return $i18n['showcaseRequiredMessage'];
 		}
@@ -932,9 +940,11 @@ class JZSA_Community {
 						</label>
 					</th>
 					<td>
-						<p class="description">
-							<?php esc_html_e( 'Paste your shortcode below and click the Apply button to preview what you are about to share.', 'janzeman-shared-albums-for-google-photos' ); ?>
-						</p>
+							<p class="description">
+								<?php esc_html_e( 'Paste your shortcode below and', 'janzeman-shared-albums-for-google-photos' ); ?>
+								<strong><?php esc_html_e( 'click the Apply button', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+								<?php esc_html_e( 'to preview what you are about to share.', 'janzeman-shared-albums-for-google-photos' ); ?>
+							</p>
 						<p class="description">
 							<?php esc_html_e( 'This shortcode sample is always shared on the Plugin page. Leave the public site showcase option enabled only if this same entry may also be considered for the future public website.', 'janzeman-shared-albums-for-google-photos' ); ?>
 						</p>
@@ -946,31 +956,36 @@ class JZSA_Community {
 				</tr>
 				<tr>
 					<th scope="row">
-						<label for="jzsa-pub-description">
-							<?php echo esc_html( $i18n['descriptionLabel'] ); ?>
-							<span class="required jzsa-showcase-required-badge" hidden aria-label="<?php esc_attr_e( 'required for public site showcase consideration', 'janzeman-shared-albums-for-google-photos' ); ?>">
-								<?php echo esc_html( $i18n['showcaseRequiredBadge'] ); ?>
-							</span>
-						</label>
+							<label for="jzsa-pub-description">
+								<?php echo esc_html( $i18n['descriptionLabel'] ); ?>
+								<span class="required" aria-label="<?php esc_attr_e( 'required', 'janzeman-shared-albums-for-google-photos' ); ?>">
+									<?php esc_html_e( 'Required', 'janzeman-shared-albums-for-google-photos' ); ?>
+								</span>
+							</label>
 					</th>
 					<td>
-						<textarea id="jzsa-pub-description" class="large-text" rows="2" maxlength="500" placeholder="<?php esc_attr_e( 'What makes this shortcode interesting or special? A short note helps others decide if it fits their needs.', 'janzeman-shared-albums-for-google-photos' ); ?>"></textarea>
+							<textarea id="jzsa-pub-description" class="large-text" rows="2" maxlength="500" placeholder="<?php esc_attr_e( 'What is your album about? Why do these shortcode settings fit the album content? A short note helps others decide what might fit their needs.', 'janzeman-shared-albums-for-google-photos' ); ?>"></textarea>
 					</td>
 				</tr>
 				<tr>
 					<th scope="row">
-						<label for="jzsa-pub-tags"><?php esc_html_e( 'Tags', 'janzeman-shared-albums-for-google-photos' ); ?></label>
+							<label for="jzsa-pub-tags">
+								<?php esc_html_e( 'Tags', 'janzeman-shared-albums-for-google-photos' ); ?>
+								<span class="required" aria-label="<?php esc_attr_e( 'required', 'janzeman-shared-albums-for-google-photos' ); ?>">
+									<?php esc_html_e( 'Required', 'janzeman-shared-albums-for-google-photos' ); ?>
+								</span>
+							</label>
 					</th>
 					<td>
-						<input type="text" id="jzsa-pub-tags" class="regular-text"
-							placeholder="<?php esc_attr_e( 'slider, dark, mosaic  (comma-separated, max 5)', 'janzeman-shared-albums-for-google-photos' ); ?>">
+							<input type="text" id="jzsa-pub-tags" class="regular-text"
+								placeholder="<?php esc_attr_e( 'slider, dark, mosaic  (comma or space separated, max 5)', 'janzeman-shared-albums-for-google-photos' ); ?>">
 					</td>
 				</tr>
 				<tr>
 					<th scope="row">
 						<label for="jzsa-pub-site-url">
 							<?php echo esc_html( $i18n['siteUrlLabel'] ); ?>
-							<span class="required jzsa-showcase-required-badge" hidden aria-label="<?php esc_attr_e( 'required for public site showcase consideration', 'janzeman-shared-albums-for-google-photos' ); ?>">
+								<span class="required jzsa-showcase-required-badge" hidden aria-label="<?php esc_attr_e( 'required for the public site', 'janzeman-shared-albums-for-google-photos' ); ?>">
 								<?php echo esc_html( $i18n['showcaseRequiredBadge'] ); ?>
 							</span>
 						</label>
@@ -985,10 +1000,15 @@ class JZSA_Community {
 				</tr>
 				<tr>
 					<th scope="row">
-						<label for="jzsa-pub-entry-info"><?php echo esc_html( $i18n['entryInfoLabel'] ); ?></label>
+							<label for="jzsa-pub-entry-info">
+								<?php echo esc_html( $i18n['entryInfoLabel'] ); ?>
+								<span class="required jzsa-showcase-required-badge" hidden aria-label="<?php esc_attr_e( 'required for the public site', 'janzeman-shared-albums-for-google-photos' ); ?>">
+									<?php echo esc_html( $i18n['showcaseRequiredBadge'] ); ?>
+								</span>
+							</label>
 					</th>
 					<td>
-						<textarea id="jzsa-pub-entry-info" class="large-text" rows="2" maxlength="500"></textarea>
+							<textarea id="jzsa-pub-entry-info" class="large-text" rows="2" maxlength="256"></textarea>
 						<p class="description">
 							<?php echo esc_html( $i18n['entryInfoHelp'] ); ?>
 						</p>
@@ -1401,7 +1421,7 @@ class JZSA_Community {
 			return;
 		}
 
-		$entry_info  = self::truncate_string( $entry_info, 500 );
+		$entry_info  = self::truncate_string( $entry_info, 256 );
 		$tags = self::normalize_community_tags( $tags_raw );
 		$tags = array_slice( $tags, 0, 5 );
 
@@ -1818,7 +1838,7 @@ class JZSA_Community {
 			return;
 		}
 
-		$entry_info  = self::truncate_string( $entry_info, 500 );
+		$entry_info  = self::truncate_string( $entry_info, 256 );
 		$tags = self::normalize_community_tags( $tags_raw );
 		$tags = array_slice( $tags, 0, 5 );
 
