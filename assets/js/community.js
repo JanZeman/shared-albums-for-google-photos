@@ -642,16 +642,9 @@
 				checkbox.id = checkboxId;
 				checkbox.className = 'jzsa-community-my-entry-consent-checkbox';
 				checkbox.checked = entry.public_showcase_consent ? true : false;
-				var icon = document.createElement( 'span' );
-				icon.className = 'jzsa-community-audience-icon jzsa-community-audience-icon--public';
-				var iconGlyph = document.createElement( 'span' );
-				iconGlyph.className = 'dashicons dashicons-admin-site-alt3';
-				iconGlyph.setAttribute( 'aria-hidden', 'true' );
-				icon.appendChild( iconGlyph );
 				var text = document.createElement( 'span' );
 				text.textContent = i18n( 'showcaseConsentLabel' );
 				label.appendChild( checkbox );
-				label.appendChild( icon );
 				label.appendChild( text );
 					var help = document.createElement( 'p' );
 					help.className = 'description';
@@ -670,6 +663,7 @@
 					helpBox.style.alignItems = 'flex-start';
 					helpBox.style.padding = '10px 12px';
 					helpBox.style.marginTop = '8px';
+					helpBox.style.marginLeft = '28px';
 					helpBox.style.borderLeft = '4px solid #d97706';
 					helpBox.style.background = '#fffbeb';
 					helpBox.style.borderRadius = '3px';
@@ -702,7 +696,7 @@
 			shortcodeHelp.textContent = 'Edit your shortcode below and click the Apply button to preview your changes.';
 			var shortcodeDestinationHelp = document.createElement( 'p' );
 			shortcodeDestinationHelp.className = 'description';
-			shortcodeDestinationHelp.textContent = 'This shortcode sample is shared on the Plugin page. Use the public site showcase option below only if you also want to submit your public gallery page for future consideration.';
+			shortcodeDestinationHelp.textContent = 'This shortcode sample is always shared on the Plugin page. Leave the public site showcase option enabled only if this same entry may also be considered for the future public website.';
 			var shortcodePrivacy = document.createElement( 'p' );
 			shortcodePrivacy.className = 'description';
 			shortcodePrivacy.textContent = 'Privacy note: Published shortcodes show link="hidden-album-link" instead of the real album link. The unmasked link is kept only for editing and preview rendering.';

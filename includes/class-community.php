@@ -66,7 +66,7 @@ class JZSA_Community {
 	private static function get_i18n_strings() {
 		return array(
 			'showcaseConsentLabel'       => __( 'Allow my album to be considered for the future public site showcase.', 'janzeman-shared-albums-for-google-photos' ),
-			'showcaseConsentHelp'        => __( 'This submits your gallery page to a future public showcase, separate from this plugin page. You can share the shortcode sample here, submit your gallery page there, or do both. The showcase will focus on your page and photos first; shortcode settings may appear only as expandable technical context. Description and page URL are required.', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseConsentHelp'        => __( 'This keeps the same community entry eligible for a future public showcase. The shortcode sample is always published on this plugin page. The public website may also show selected allowed entries, with focus on the gallery page and photos; shortcode details will be collapsed by default. Description and page URL are required for this consideration.', 'janzeman-shared-albums-for-google-photos' ),
 			'showcaseRequiredBadge'      => __( 'Required for public site showcase consideration', 'janzeman-shared-albums-for-google-photos' ),
 			'showcaseRequiredMessage'    => __( 'Description and sample page URL are required for public site showcase consideration.', 'janzeman-shared-albums-for-google-photos' ),
 			'descriptionLabel'           => __( 'Description', 'janzeman-shared-albums-for-google-photos' ),
@@ -936,7 +936,7 @@ class JZSA_Community {
 							<?php esc_html_e( 'Paste your shortcode below and click the Apply button to preview what you are about to share.', 'janzeman-shared-albums-for-google-photos' ); ?>
 						</p>
 						<p class="description">
-							<?php esc_html_e( 'This shortcode sample is shared on the Plugin page. Use the public site showcase option below only if you also want to submit your public gallery page for future consideration.', 'janzeman-shared-albums-for-google-photos' ); ?>
+							<?php esc_html_e( 'This shortcode sample is always shared on the Plugin page. Leave the public site showcase option enabled only if this same entry may also be considered for the future public website.', 'janzeman-shared-albums-for-google-photos' ); ?>
 						</p>
 						<div class="jzsa-code-block jzsa-community-publish-shortcode-block">
 							<code id="jzsa-pub-shortcode" data-placeholder='[jzsa-album link="https://photos.google.com/share/..." mode="slider"]' aria-label="<?php esc_attr_e( 'Shortcode', 'janzeman-shared-albums-for-google-photos' ); ?>"></code>
@@ -995,15 +995,12 @@ class JZSA_Community {
 					</td>
 				</tr>
 				</table>
-				<div class="jzsa-community-showcase-consent-cell">
-					<label style="display:flex; align-items:center; gap:8px;">
-						<input type="checkbox" id="jzsa-pub-showcase-consent" class="jzsa-pub-showcase-consent-toggle" value="1" checked>
-						<span class="jzsa-community-audience-icon jzsa-community-audience-icon--public">
-						<span class="dashicons dashicons-admin-site-alt3" aria-hidden="true"></span>
-						</span>
-						<span><?php echo esc_html( $i18n['showcaseConsentLabel'] ); ?></span>
-					</label>
-					<div class="jzsa-community-showcase-scope-warning" style="display:flex; gap:10px; align-items:flex-start; padding:10px 12px; margin-top:8px; border-left:4px solid #d97706; background:#fffbeb; border-radius:3px;">
+					<div class="jzsa-community-showcase-consent-cell">
+						<label style="display:flex; align-items:center; gap:8px;">
+							<input type="checkbox" id="jzsa-pub-showcase-consent" class="jzsa-pub-showcase-consent-toggle" value="1" checked>
+							<span><?php echo esc_html( $i18n['showcaseConsentLabel'] ); ?></span>
+						</label>
+					<div class="jzsa-community-showcase-scope-warning" style="display:flex; gap:10px; align-items:flex-start; padding:10px 12px; margin-top:8px; margin-left:28px; border-left:4px solid #d97706; background:#fffbeb; border-radius:3px;">
 						<span class="dashicons dashicons-admin-site-alt3" style="color:#d97706; margin-top:2px;" aria-hidden="true"></span>
 						<p class="description" style="flex:1; margin:0;">
 							<?php echo esc_html( $i18n['showcaseConsentHelp'] ); ?>
