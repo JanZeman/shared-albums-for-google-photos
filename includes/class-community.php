@@ -739,10 +739,10 @@ class JZSA_Community {
 				<span class="jzsa-community-audience-chip jzsa-community-audience-chip--plugin">
 					<span class="dashicons dashicons-admin-plugins" aria-hidden="true"></span>
 					<span>
-						<strong><?php esc_html_e( 'WP admins community', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+						<strong><?php esc_html_e( 'Site builder community', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
 						<span class="jzsa-audience-chip-status" style="display:inline-block; margin-left:6px; padding:1px 6px; font-size:11px; font-weight:600; color:#1e7a3b; background:#e6f4ea; border-radius:10px;"><?php esc_html_e( 'This plugin page (live)', 'janzeman-shared-albums-for-google-photos' ); ?></span>
 						<br>
-						<?php esc_html_e( 'Other WordPress admins and site builders see your shortcode samples and settings here. Focus: This plugin, the shortcodes, the technicalities of how the gallery is built.', 'janzeman-shared-albums-for-google-photos' ); ?>
+						<?php esc_html_e( 'People using this plugin see your shortcode samples and settings here. Focus: this plugin, shortcode settings, and how the gallery is built.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</span>
 				</span>
 				<span class="jzsa-community-audience-chip jzsa-community-audience-chip--public">
@@ -1013,7 +1013,7 @@ class JZSA_Community {
 				<?php esc_html_e( 'Share a New Sample', 'janzeman-shared-albums-for-google-photos' ); ?>
 			</summary>
 			<p class="jzsa-help-text" style="margin-top:0;">
-				<?php esc_html_e( 'Share a gallery configuration sample with other WordPress admins and site builders using this plugin. The goal is to show useful shortcode settings and rendered results that others can adapt.', 'janzeman-shared-albums-for-google-photos' ); ?>
+				<?php esc_html_e( 'Share a gallery configuration sample with other people using this plugin. The Site builder community focuses on useful shortcode settings and rendered results that others can adapt.', 'janzeman-shared-albums-for-google-photos' ); ?>
 			</p>
 			<div class="jzsa-community-visibility-note">
 				<span class="jzsa-community-audience-icon jzsa-community-audience-icon--plugin">
@@ -1021,7 +1021,7 @@ class JZSA_Community {
 				</span>
 				<div>
 					<strong><?php esc_html_e( 'Who sees what?', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-					<?php esc_html_e( 'Other WP admins see what you decide to share below.', 'janzeman-shared-albums-for-google-photos' ); ?>
+					<?php esc_html_e( 'People using this plugin see the shortcode sample you decide to share below.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					<strong><?php esc_html_e( 'They do not see the real album link as plain text', 'janzeman-shared-albums-for-google-photos' ); ?></strong><?php esc_html_e( '; published shortcodes replace it with ', 'janzeman-shared-albums-for-google-photos' ); ?><strong><?php esc_html_e( 'link="hidden-album-link"', 'janzeman-shared-albums-for-google-photos' ); ?></strong><?php esc_html_e( '. The unmasked link is stored only for editing and preview rendering.', 'janzeman-shared-albums-for-google-photos' ); ?>
 				</div>
 			</div>
@@ -1212,7 +1212,7 @@ class JZSA_Community {
 				<span class="jzsa-summary-badge" id="jzsa-community-entries-count"></span>
 			</summary>
 			<p class="jzsa-help-text" style="margin-top:0;">
-				<?php esc_html_e( 'Browse shortcode samples shared by other plugin users. These samples are intended for WordPress admins and site builders looking for gallery layout ideas. Copy a sample, replace the link parameter with your own album, and use Apply to preview small tweaks until the layout fits your site.', 'janzeman-shared-albums-for-google-photos' ); ?>
+				<?php esc_html_e( 'Browse shortcode samples shared by other plugin users. These samples are intended for people building gallery pages with this plugin. Copy a sample, replace the link parameter with your own album, and use Apply to preview small tweaks until the layout fits your site.', 'janzeman-shared-albums-for-google-photos' ); ?>
 			</p>
 			<div class="jzsa-community-search-row">
 				<input type="search" id="jzsa-community-search" class="regular-text"
