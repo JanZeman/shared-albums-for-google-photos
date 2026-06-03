@@ -138,6 +138,40 @@ async function installCommunityAjaxMock(page: Page): Promise<{ requests: () => P
                     payload = { success: true, data: { avg_rating: 4.2, rating_count: 9 } };
                     break;
 
+                case 'jzsa_community_list_installs':
+                    payload = {
+                        success: true,
+                        data: {
+                            installs: [
+                                {
+                                    id: 1,
+                                    site_url: 'https://example.test/',
+                                    label: null,
+                                    added_at: '2026-06-01T10:00:00.000Z',
+                                    last_seen_at: '2026-06-01T10:00:00.000Z',
+                                    is_current: false,
+                                },
+                                {
+                                    id: 2,
+                                    site_url: 'https://example.test',
+                                    label: null,
+                                    added_at: '2026-06-03T10:00:00.000Z',
+                                    last_seen_at: '2026-06-03T10:00:00.000Z',
+                                    is_current: true,
+                                },
+                                {
+                                    id: 3,
+                                    site_url: 'https://other.example/',
+                                    label: null,
+                                    added_at: '2026-06-02T10:00:00.000Z',
+                                    last_seen_at: '2026-06-02T10:00:00.000Z',
+                                    is_current: false,
+                                },
+                            ],
+                        },
+                    };
+                    break;
+
                 default:
                     payload = { success: true, data: {} };
             }
@@ -203,6 +237,22 @@ test.describe('Community - mocked AJAX flows', () => {
         await expect.poll(async () => (await mock.requests()).filter((request) => request.action === 'jzsa_community_browse').length).toBeGreaterThanOrEqual(3);
         const lastBrowse = (await mock.requests()).filter((request) => request.action === 'jzsa_community_browse').at(-1);
         expect(lastBrowse?.fields).toMatchObject({ page: '1', q: 'slider', sort: 'newest' });
+    });
+
+    test('authorized sites collapse duplicate site URLs', async ({ page }) => {
+        await installCommunityAjaxMock(page);
+        await page.goto(COMMUNITY_URL);
+
+        const section = page.locator('.jzsa-community-installs-section');
+        await section.evaluate((el) => {
+            el.setAttribute('open', '');
+            el.dispatchEvent(new Event('toggle'));
+        });
+
+        await expect(page.locator('#jzsa-community-installs-list .jzsa-community-install-row')).toHaveCount(2, { timeout: 10_000 });
+        await expect(page.locator('#jzsa-community-installs-list')).toContainText('example.test');
+        await expect(page.locator('#jzsa-community-installs-list')).toContainText('(this site)');
+        await expect(page.locator('#jzsa-community-installs-list')).toContainText('other.example');
     });
 
     test('publish submits a valid shortcode and reloads browse/my entries', async ({ page }) => {

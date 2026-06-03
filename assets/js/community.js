@@ -1563,7 +1563,63 @@
 		return new Date( iso ).toISOString().slice( 0, 10 );
 	}
 
+	function normalizeInstallSiteKey( inst ) {
+		var raw = String( ( inst && inst.site_url ) || '' ).trim().toLowerCase();
+		if ( ! raw ) {
+			return 'install:' + String( ( inst && inst.id ) || '' );
+		}
+
+		try {
+			var parsed = new URL( /^https?:\/\//i.test( raw ) ? raw : 'https://' + raw );
+			var host = parsed.hostname.replace( /^www\./, '' );
+			var path = parsed.pathname.replace( /\/+$/, '' );
+			return host + path;
+		} catch ( e ) {
+			return raw.replace( /^https?:\/\//i, '' ).replace( /^www\./, '' ).replace( /\/+$/, '' );
+		}
+	}
+
+	function installTimestamp( inst ) {
+		var lastSeen = Date.parse( inst && inst.last_seen_at ? inst.last_seen_at : '' );
+		var added    = Date.parse( inst && inst.added_at ? inst.added_at : '' );
+		return isNaN( lastSeen ) ? ( isNaN( added ) ? 0 : added ) : lastSeen;
+	}
+
+	function preferInstall( current, candidate ) {
+		if ( ! current ) {
+			return candidate;
+		}
+		if ( candidate && candidate.is_current && ! current.is_current ) {
+			return candidate;
+		}
+		if ( current.is_current && ! ( candidate && candidate.is_current ) ) {
+			return current;
+		}
+		if ( installTimestamp( candidate ) > installTimestamp( current ) ) {
+			return candidate;
+		}
+		return current;
+	}
+
+	function dedupeInstalls( installs ) {
+		var bySite = {};
+		( installs || [] ).forEach( function ( inst ) {
+			var key = normalizeInstallSiteKey( inst );
+			bySite[ key ] = preferInstall( bySite[ key ], inst );
+		} );
+
+		return Object.keys( bySite ).map( function ( key ) {
+			return bySite[ key ];
+		} ).sort( function ( a, b ) {
+			if ( a.is_current && ! b.is_current ) { return -1; }
+			if ( b.is_current && ! a.is_current ) { return 1; }
+			return installTimestamp( b ) - installTimestamp( a );
+		} );
+	}
+
 	function renderInstalls( installs, container ) {
+		installs = dedupeInstalls( installs );
+
 		if ( ! installs || installs.length === 0 ) {
 			container.innerHTML = '<p class="jzsa-help-text" style="color:#666;">No authorized sites yet.</p>';
 			return;
