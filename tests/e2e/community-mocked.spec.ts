@@ -49,7 +49,7 @@ async function installCommunityAjaxMock(page: Page): Promise<{ requests: () => P
 	            description: 'A deterministic community entry from the Playwright mock.',
 	            tags: ['slider', 'navigation'],
 	            site_url: 'https://example.test/album',
-	            photographer_bio: 'Uses mocked AJAX responses.',
+	            entry_info: 'Uses mocked AJAX responses.',
             interaction_score: 12,
             avg_rating: 3.8,
             rating_count: 4,
@@ -105,7 +105,7 @@ async function installCommunityAjaxMock(page: Page): Promise<{ requests: () => P
 	                        description: fields.description,
 	                        tags: fields.tags ? fields.tags.split(',').map((tag) => tag.trim()) : [],
 	                        site_url: fields.site_url,
-	                        photographer_bio: fields.photographer_bio,
+	                        entry_info: fields.entry_info,
                         public_showcase_consent: fields.public_showcase_consent === 'true',
                     });
                     browseEntries.unshift(published);

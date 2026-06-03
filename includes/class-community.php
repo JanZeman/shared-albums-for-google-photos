@@ -21,7 +21,6 @@ class JZSA_Community {
 	const OPT_JWT             = 'jzsa_community_jwt';
 	const OPT_DISPLAY_NAME    = 'jzsa_community_display_name';
 	const OPT_INSTALL_SECRET  = 'jzsa_install_secret';
-	const OPT_SHOWCASE_WARNING_DISMISSED = 'jzsa_showcase_warning_dismissed';
 	const NONCE_NOTICE_KEY    = 'jzsa_community_notice_';
 	const AUTH_CHALLENGE_PREFIX = 'jzsa_community_auth_challenge_';
 	const SIGNIN_PENDING_PREFIX = 'jzsa_community_signin_pending_';
@@ -57,9 +56,6 @@ class JZSA_Community {
 		add_action( 'wp_ajax_jzsa_community_interact',             array( $this, 'ajax_interact' ) );
 		add_action( 'wp_ajax_jzsa_community_rate',                 array( $this, 'ajax_rate' ) );
 
-		// One-shot UI preference: dismiss the yellow scope warning above the
-		// showcase consent checkbox once the user has read it.
-		add_action( 'wp_ajax_jzsa_community_dismiss_showcase_warning', array( $this, 'ajax_dismiss_showcase_warning' ) );
 	}
 
 	/**
@@ -70,13 +66,13 @@ class JZSA_Community {
 	private static function get_i18n_strings() {
 		return array(
 			'showcaseConsentLabel'       => __( 'Allow my album to be considered for the future public site showcase.', 'janzeman-shared-albums-for-google-photos' ),
-			'showcaseConsentHelp'        => __( 'If selected, the page URL you provide may later appear in the public site showcase, a future public site for a broader photography audience. The showcase will lead with your gallery page and photos; shortcode settings may be available as expandable technical context. Description and page URL are required for consideration.', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseConsentHelp'        => __( 'This submits your gallery page to a future public showcase, separate from this plugin page. You can share the shortcode sample here, submit your gallery page there, or do both. The showcase will focus on your page and photos first; shortcode settings may appear only as expandable technical context. Description and page URL are required.', 'janzeman-shared-albums-for-google-photos' ),
 			'showcaseRequiredBadge'      => __( 'Required for public site showcase consideration', 'janzeman-shared-albums-for-google-photos' ),
 			'showcaseRequiredMessage'    => __( 'Description and sample page URL are required for public site showcase consideration.', 'janzeman-shared-albums-for-google-photos' ),
 			'descriptionLabel'           => __( 'Description', 'janzeman-shared-albums-for-google-photos' ),
 			'siteUrlLabel'               => __( 'Sample page URL', 'janzeman-shared-albums-for-google-photos' ),
-			'photographerBioLabel'       => __( 'Short bio / intro', 'janzeman-shared-albums-for-google-photos' ),
-			'photographerBioHelp'        => __( 'A short note about the photographer, creator, studio, or website behind this sample.', 'janzeman-shared-albums-for-google-photos' ),
+			'entryInfoLabel'             => __( 'Entry info', 'janzeman-shared-albums-for-google-photos' ),
+			'entryInfoHelp'              => __( 'Optional context about the album, creator, studio, website, or story behind this sample.', 'janzeman-shared-albums-for-google-photos' ),
 		);
 	}
 
@@ -185,11 +181,11 @@ class JZSA_Community {
 	 * @param string $description       Entry description.
 	 * @param string $tags_raw          Raw comma-separated tags.
 	 * @param string $entry_url         Sample page URL.
-	 * @param string $photographer_bio  Photographer bio.
+	 * @param string $entry_info        Optional entry info.
 	 * @param bool   $consent           Public showcase consent.
 	 * @return string Error message, or empty string when valid.
 	 */
-	private static function validate_community_entry_payload( $title, $shortcode, $description, $tags_raw, $entry_url, $photographer_bio, $consent ) {
+	private static function validate_community_entry_payload( $title, $shortcode, $description, $tags_raw, $entry_url, $entry_info, $consent ) {
 		if ( '' === $title || self::string_length( $title ) < 3 ) {
 			return __( 'Title must be at least 3 characters.', 'janzeman-shared-albums-for-google-photos' );
 		}
@@ -214,8 +210,8 @@ class JZSA_Community {
 			return __( 'Please enter a valid sample page URL (e.g. https://yoursite.com/page).', 'janzeman-shared-albums-for-google-photos' );
 		}
 
-		if ( self::string_length( $photographer_bio ) > 500 ) {
-			return __( 'Short bio must be 500 characters or fewer.', 'janzeman-shared-albums-for-google-photos' );
+		if ( self::string_length( $entry_info ) > 500 ) {
+			return __( 'Entry info must be 500 characters or fewer.', 'janzeman-shared-albums-for-google-photos' );
 		}
 
 		$tags = self::normalize_community_tags( $tags_raw );
@@ -989,55 +985,31 @@ class JZSA_Community {
 				</tr>
 				<tr>
 					<th scope="row">
-						<label for="jzsa-pub-photographer-bio"><?php echo esc_html( $i18n['photographerBioLabel'] ); ?></label>
+						<label for="jzsa-pub-entry-info"><?php echo esc_html( $i18n['entryInfoLabel'] ); ?></label>
 					</th>
 					<td>
-						<textarea id="jzsa-pub-photographer-bio" class="large-text" rows="2" maxlength="500"></textarea>
+						<textarea id="jzsa-pub-entry-info" class="large-text" rows="2" maxlength="500"></textarea>
 						<p class="description">
-							<?php echo esc_html( $i18n['photographerBioHelp'] ); ?>
+							<?php echo esc_html( $i18n['entryInfoHelp'] ); ?>
 						</p>
 					</td>
 				</tr>
-			</table>
-			<div class="jzsa-community-showcase-consent-cell">
-				<?php
-				// The yellow scope warning. Shown in full on first visit so the user
-				// reads the FUTURE / external nature once; collapsed to a small "?"
-				// pill on subsequent visits via the OPT_SHOWCASE_WARNING_DISMISSED
-				// user meta. Both elements are rendered server-side; JS only flips
-				// inline display so re-expanding never needs another HTTP round-trip.
-				$showcase_warning_dismissed = (bool) get_user_meta( get_current_user_id(), self::OPT_SHOWCASE_WARNING_DISMISSED, true );
-				$warning_initial_display    = $showcase_warning_dismissed ? 'none'         : 'flex';
-				$compact_initial_display    = $showcase_warning_dismissed ? 'inline-flex' : 'none';
-				?>
-				<button type="button" class="jzsa-community-showcase-scope-warning-compact" style="display:<?php echo esc_attr( $compact_initial_display ); ?>; align-items:center; gap:6px; padding:4px 10px; margin-bottom:10px; font-size:12px; color:#92400e; background:#fffbeb; border:1px solid #fde68a; border-radius:12px; cursor:pointer;" aria-expanded="false">
-					<span class="dashicons dashicons-editor-help" style="font-size:14px; width:14px; height:14px;" aria-hidden="true"></span>
-					<?php esc_html_e( 'Why a separate public site showcase?', 'janzeman-shared-albums-for-google-photos' ); ?>
-				</button>
-				<div class="jzsa-community-showcase-scope-warning" style="display:<?php echo esc_attr( $warning_initial_display ); ?>; gap:10px; align-items:flex-start; padding:10px 12px; margin-bottom:12px; border-left:4px solid #d97706; background:#fffbeb; border-radius:3px;">
-					<span class="dashicons dashicons-admin-site-alt3" style="color:#d97706; margin-top:2px;" aria-hidden="true"></span>
-					<div style="flex:1;">
-						<strong><?php esc_html_e( 'The settings below are about the future public site showcase, separate from this plugin page.', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-						<p class="description" style="margin:4px 0 0;">
-							<?php esc_html_e( 'The Plugin page is for shortcode samples. The future public site showcase is for public gallery-page submissions. You can share the shortcode sample here, submit your gallery page there, or do both. The public site showcase will focus first on your gallery page and photos, with shortcode settings available as expandable technical context.', 'janzeman-shared-albums-for-google-photos' ); ?>
+				</table>
+				<div class="jzsa-community-showcase-consent-cell">
+					<label style="display:flex; align-items:center; gap:8px;">
+						<input type="checkbox" id="jzsa-pub-showcase-consent" class="jzsa-pub-showcase-consent-toggle" value="1" checked>
+						<span class="jzsa-community-audience-icon jzsa-community-audience-icon--public">
+						<span class="dashicons dashicons-admin-site-alt3" aria-hidden="true"></span>
+						</span>
+						<span><?php echo esc_html( $i18n['showcaseConsentLabel'] ); ?></span>
+					</label>
+					<div class="jzsa-community-showcase-scope-warning" style="display:flex; gap:10px; align-items:flex-start; padding:10px 12px; margin-top:8px; border-left:4px solid #d97706; background:#fffbeb; border-radius:3px;">
+						<span class="dashicons dashicons-admin-site-alt3" style="color:#d97706; margin-top:2px;" aria-hidden="true"></span>
+						<p class="description" style="flex:1; margin:0;">
+							<?php echo esc_html( $i18n['showcaseConsentHelp'] ); ?>
 						</p>
 					</div>
-					<button type="button" class="jzsa-community-showcase-scope-warning-dismiss" aria-label="<?php esc_attr_e( 'Got it, hide this explanation', 'janzeman-shared-albums-for-google-photos' ); ?>" style="background:none; border:0; cursor:pointer; color:#92400e; padding:2px 4px; font-size:13px; white-space:nowrap; align-self:flex-start;">
-						<span class="dashicons dashicons-no-alt" style="font-size:18px; width:18px; height:18px;" aria-hidden="true"></span>
-						<?php esc_html_e( 'Got it', 'janzeman-shared-albums-for-google-photos' ); ?>
-					</button>
 				</div>
-				<label style="display:flex; align-items:center; gap:8px;">
-					<input type="checkbox" id="jzsa-pub-showcase-consent" class="jzsa-pub-showcase-consent-toggle" value="1" checked>
-					<span class="jzsa-community-audience-icon jzsa-community-audience-icon--public">
-						<span class="dashicons dashicons-admin-site-alt3" aria-hidden="true"></span>
-					</span>
-					<span><?php echo esc_html( $i18n['showcaseConsentLabel'] ); ?></span>
-				</label>
-				<p class="description" style="margin-top:6px;">
-					<?php echo esc_html( $i18n['showcaseConsentHelp'] ); ?>
-				</p>
-			</div>
 			<p style="margin-top:12px;">
 				<button type="button" class="button button-primary" id="jzsa-community-publish-btn">
 					<?php esc_html_e( 'Publish to Community', 'janzeman-shared-albums-for-google-photos' ); ?>
@@ -1420,19 +1392,19 @@ class JZSA_Community {
 		$description = sanitize_textarea_field( wp_unslash( $_POST['description'] ?? '' ) );
 		$tags_raw    = sanitize_text_field( wp_unslash( $_POST['tags'] ?? '' ) );
 		$entry_url   = sanitize_url( wp_unslash( $_POST['site_url'] ?? '' ) );
-		$photographer_bio  = sanitize_textarea_field( wp_unslash( $_POST['photographer_bio'] ?? '' ) );
+		$entry_info  = sanitize_textarea_field( wp_unslash( $_POST['entry_info'] ?? '' ) );
 		$consent     = filter_var( wp_unslash( $_POST['public_showcase_consent'] ?? false ), FILTER_VALIDATE_BOOLEAN );
 		if ( ! empty( $entry_url ) && ! preg_match( '#^https?://#i', $entry_url ) ) {
 			$entry_url = 'https://' . $entry_url;
 		}
 
-		$validation_error = self::validate_community_entry_payload( $title, $shortcode, $description, $tags_raw, $entry_url, $photographer_bio, $consent );
+		$validation_error = self::validate_community_entry_payload( $title, $shortcode, $description, $tags_raw, $entry_url, $entry_info, $consent );
 		if ( $validation_error ) {
 			wp_send_json_error( $validation_error );
 			return;
 		}
 
-		$photographer_bio  = self::truncate_string( $photographer_bio, 500 );
+		$entry_info  = self::truncate_string( $entry_info, 500 );
 		$tags = self::normalize_community_tags( $tags_raw );
 		$tags = array_slice( $tags, 0, 5 );
 
@@ -1443,7 +1415,7 @@ class JZSA_Community {
 			'tags'                    => $tags,
 			'plugin_version'          => JZSA_VERSION,
 			'site_url'                => $entry_url ?: null,
-			'photographer_bio'        => $photographer_bio ?: null,
+			'entry_info'              => $entry_info ?: null,
 			'public_showcase_consent' => $consent,
 		);
 
@@ -1830,7 +1802,7 @@ class JZSA_Community {
 		$description = sanitize_textarea_field( wp_unslash( $_POST['description'] ?? '' ) );
 		$tags_raw  = sanitize_text_field( wp_unslash( $_POST['tags'] ?? '' ) );
 		$entry_url = sanitize_url( wp_unslash( $_POST['site_url'] ?? '' ) );
-		$photographer_bio  = sanitize_textarea_field( wp_unslash( $_POST['photographer_bio'] ?? '' ) );
+		$entry_info  = sanitize_textarea_field( wp_unslash( $_POST['entry_info'] ?? '' ) );
 		if ( ! empty( $entry_url ) && ! preg_match( '#^https?://#i', $entry_url ) ) {
 			$entry_url = 'https://' . $entry_url;
 		}
@@ -1843,13 +1815,13 @@ class JZSA_Community {
 			return;
 		}
 
-		$validation_error = self::validate_community_entry_payload( $title, $shortcode, $description, $tags_raw, $entry_url, $photographer_bio, true === $consent );
+		$validation_error = self::validate_community_entry_payload( $title, $shortcode, $description, $tags_raw, $entry_url, $entry_info, true === $consent );
 		if ( $validation_error ) {
 			wp_send_json_error( $validation_error );
 			return;
 		}
 
-		$photographer_bio  = self::truncate_string( $photographer_bio, 500 );
+		$entry_info  = self::truncate_string( $entry_info, 500 );
 		$tags = self::normalize_community_tags( $tags_raw );
 		$tags = array_slice( $tags, 0, 5 );
 
@@ -1859,7 +1831,7 @@ class JZSA_Community {
 			'description'        => $description,
 			'tags'               => $tags,
 			'site_url'           => $entry_url ?: null,
-			'photographer_bio'   => $photographer_bio ?: null,
+			'entry_info'         => $entry_info ?: null,
 		);
 		if ( $consent !== null ) {
 			$body['public_showcase_consent'] = $consent;
@@ -1958,25 +1930,6 @@ class JZSA_Community {
 			);
 			wp_send_json_error( $msg );
 		}
-	}
-
-	/**
-	 * Persist the user's "I've read the showcase scope warning" state so the
-	 * next page load can render the compact collapsed pill instead of the
-	 * full yellow banner. Stored as a user meta (per-admin), not site-wide,
-	 * because the publish form is shown per-admin and dismissals shouldn't
-	 * propagate between admins. One-shot, fully reversible (the warning can
-	 * be re-expanded on demand via the compact "?" pill).
-	 */
-	public function ajax_dismiss_showcase_warning() {
-		check_ajax_referer( 'jzsa_community', 'nonce' );
-
-		if ( ! current_user_can( jzsa_get_admin_capability() ) ) {
-			wp_send_json_error( 'Unauthorized.', 403 );
-		}
-
-		update_user_meta( get_current_user_id(), self::OPT_SHOWCASE_WARNING_DISMISSED, 1 );
-		wp_send_json_success();
 	}
 
 	/**

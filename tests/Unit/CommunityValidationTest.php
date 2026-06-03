@@ -39,13 +39,13 @@ class CommunityValidationTest extends TestCase {
 	        string $description       = '',
 	        string $tags_raw          = '',
 	        string $entry_url         = '',
-	        string $photographer_bio  = '',
+	        string $entry_info        = '',
 	        bool   $consent           = false
 	    ): string {
 	        return $this->callStatic(
 	            'validate_community_entry_payload',
 	            $title, $shortcode, $description, $tags_raw, $entry_url,
-	            $photographer_bio, $consent
+	            $entry_info, $consent
 	        );
 	    }
 
@@ -64,7 +64,7 @@ class CommunityValidationTest extends TestCase {
 	            description:       'Some description text',
 	            tags_raw:          'landscape, travel',
 	            entry_url:         'https://example.com/page',
-	            photographer_bio:  'Landscape photographer',
+	            entry_info:        'Landscape photographer',
 	            consent:           true
 	        );
         $this->assertSame( '', $result );
@@ -274,16 +274,16 @@ class CommunityValidationTest extends TestCase {
     }
 
     // -------------------------------------------------------------------------
-	    // Photographer bio
+		    // Entry info
 	    // -------------------------------------------------------------------------
 
-	    public function test_photographer_bio_500_chars_passes(): void {
-	        $result = $this->validate( photographer_bio: str_repeat( 'a', 500 ) );
+		    public function test_entry_info_500_chars_passes(): void {
+		        $result = $this->validate( entry_info: str_repeat( 'a', 500 ) );
 	        $this->assertSame( '', $result );
     }
 
-    public function test_photographer_bio_501_chars_fails(): void {
-        $result = $this->validate( photographer_bio: str_repeat( 'a', 501 ) );
+    public function test_entry_info_501_chars_fails(): void {
+        $result = $this->validate( entry_info: str_repeat( 'a', 501 ) );
         $this->assertNotSame( '', $result );
         $this->assertStringContainsString( '500', $result );
     }

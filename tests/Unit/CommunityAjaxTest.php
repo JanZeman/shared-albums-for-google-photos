@@ -66,7 +66,7 @@ class CommunityAjaxTest extends TestCase {
                 'description'             => 'Description',
                 'tags'                    => 'landscape,travel',
                 'site_url'                => 'https://example.com/gallery',
-	                'photographer_bio'        => 'Bio',
+	                'entry_info'              => 'Bio',
                 'public_showcase_consent' => 'false',
             ),
             $overrides

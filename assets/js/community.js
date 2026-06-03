@@ -163,8 +163,8 @@
 		if ( data.siteUrl && ! isValidHttpUrl( data.siteUrl ) ) {
 			return 'Please enter a valid sample page URL (e.g. https://yoursite.com/page).';
 		}
-		if ( data.photographerBio.length > 500 ) {
-			return 'Short bio must be 500 characters or fewer.';
+		if ( data.entryInfo.length > 500 ) {
+			return 'Entry info must be 500 characters or fewer.';
 		}
 		var tags = data.tags ? data.tags.split( ',' ).map( function ( tag ) {
 			return tag.trim();
@@ -653,14 +653,32 @@
 				label.appendChild( checkbox );
 				label.appendChild( icon );
 				label.appendChild( text );
-				var help = document.createElement( 'p' );
-				help.className = 'description';
-				help.style.marginTop = '6px';
-				help.textContent = i18n( 'showcaseConsentHelp' );
-				wrapEl.appendChild( label );
-				wrapEl.appendChild( help );
-				return { wrapper: wrapEl, checkbox: checkbox };
-			}
+					var help = document.createElement( 'p' );
+					help.className = 'description';
+					help.style.flex = '1';
+					help.style.margin = '0';
+					help.textContent = i18n( 'showcaseConsentHelp' );
+					var helpIcon = document.createElement( 'span' );
+					helpIcon.className = 'dashicons dashicons-admin-site-alt3';
+					helpIcon.style.color = '#d97706';
+					helpIcon.style.marginTop = '2px';
+					helpIcon.setAttribute( 'aria-hidden', 'true' );
+					var helpBox = document.createElement( 'div' );
+					helpBox.className = 'jzsa-community-showcase-scope-warning';
+					helpBox.style.display = 'flex';
+					helpBox.style.gap = '10px';
+					helpBox.style.alignItems = 'flex-start';
+					helpBox.style.padding = '10px 12px';
+					helpBox.style.marginTop = '8px';
+					helpBox.style.borderLeft = '4px solid #d97706';
+					helpBox.style.background = '#fffbeb';
+					helpBox.style.borderRadius = '3px';
+					helpBox.appendChild( helpIcon );
+					helpBox.appendChild( help );
+					wrapEl.appendChild( label );
+					wrapEl.appendChild( helpBox );
+					return { wrapper: wrapEl, checkbox: checkbox };
+				}
 
 			var titleInput = document.createElement( 'input' );
 			titleInput.type = 'text';
@@ -737,16 +755,16 @@
 			appendTableRow( urlLabel, [ urlInput, urlRequiredHelp ] );
 
 			var bioInput = document.createElement( 'textarea' );
-			bioInput.className = 'large-text jzsa-community-my-entry-photographer-bio-input';
-			bioInput.id = 'jzsa-my-entry-photographer-bio-' + entry.id;
+			bioInput.className = 'large-text jzsa-community-my-entry-info-input';
+			bioInput.id = 'jzsa-my-entry-info-' + entry.id;
 			bioInput.maxLength = 500;
 			bioInput.rows = 2;
-			bioInput.value = entry.photographer_bio || '';
+			bioInput.value = entry.entry_info || '';
 			var bioHelp = document.createElement( 'p' );
 			bioHelp.className = 'description';
-			bioHelp.textContent = i18n( 'photographerBioHelp' );
+			bioHelp.textContent = i18n( 'entryInfoHelp' );
 			appendTableRow(
-				createLabel( bioInput.id, i18n( 'photographerBioLabel' ) ),
+				createLabel( bioInput.id, i18n( 'entryInfoLabel' ) ),
 				[ bioInput, bioHelp ]
 			);
 
@@ -906,7 +924,7 @@
 		var descInput = block.querySelector( '.jzsa-community-my-entry-description-input' );
 		var tagsInput = block.querySelector( '.jzsa-community-my-entry-tags-input' );
 		var urlInput  = block.querySelector( '.jzsa-community-my-entry-site-url-input' );
-		var bioInput = block.querySelector( '.jzsa-community-my-entry-photographer-bio-input' );
+		var bioInput = block.querySelector( '.jzsa-community-my-entry-info-input' );
 		var consentCheckbox = block.querySelector( '.jzsa-community-my-entry-consent-checkbox' );
 		if ( urlInput ) {
 			urlInput.addEventListener( 'blur', function () {
@@ -925,14 +943,14 @@
 				var siteUrl = normalizeUrlInput( urlInput ? urlInput.value : '' );
 				var showcaseConsent = consentCheckbox ? consentCheckbox.checked : false;
 				var description = descInput ? descInput.value.trim() : '';
-				var photographerBio = bioInput ? bioInput.value.trim() : '';
+				var entryInfo = bioInput ? bioInput.value.trim() : '';
 				var validationError = validateCommunityEntryFields( {
 					title: title,
 					shortcode: shortcode,
 					description: description,
 					tags: tags,
 					siteUrl: siteUrl,
-					photographerBio: photographerBio,
+					entryInfo: entryInfo,
 					showcaseConsent: showcaseConsent,
 				} );
 				if ( validationError ) {
@@ -950,7 +968,7 @@
 					description: description,
 					tags: tags,
 					site_url: siteUrl,
-					photographer_bio: photographerBio,
+					entry_info: entryInfo,
 					public_showcase_consent: showcaseConsent,
 				} )
 					.then( function ( res ) {
@@ -1761,13 +1779,13 @@
 			var desc      = ( qs( '#jzsa-pub-description' ) || {} ).value || '';
 			var tags      = ( qs( '#jzsa-pub-tags' ) || {} ).value || '';
 			var siteUrl   = ( qs( '#jzsa-pub-site-url' ) || {} ).value || '';
-			var photographerBio = ( qs( '#jzsa-pub-photographer-bio' ) || {} ).value || '';
+			var entryInfo = ( qs( '#jzsa-pub-entry-info' ) || {} ).value || '';
 			var showcaseConsent = ( qs( '#jzsa-pub-showcase-consent' ) || {} ).checked || false;
 			title     = title.trim();
 			shortcode = shortcode.trim();
 			desc      = desc.trim();
 			siteUrl   = normalizeUrlInput( siteUrl );
-			photographerBio = photographerBio.trim();
+			entryInfo = entryInfo.trim();
 
 			var validationError = validateCommunityEntryFields( {
 				title: title,
@@ -1775,7 +1793,7 @@
 				description: desc,
 				tags: tags,
 				siteUrl: siteUrl,
-				photographerBio: photographerBio,
+				entryInfo: entryInfo,
 				showcaseConsent: showcaseConsent,
 			} );
 			if ( validationError ) {
@@ -1793,7 +1811,7 @@
 				description:               desc,
 				tags:                      tags,
 				site_url:                  siteUrl,
-				photographer_bio:          photographerBio,
+				entry_info:                entryInfo,
 				public_showcase_consent:   showcaseConsent,
 			} )
 				.then( function ( res ) {
@@ -1803,7 +1821,7 @@
 					if ( res.success ) {
 						setResult( resultEl, '\u2705 Published! Your shortcode is now live in the directory. See the sections below and find it there.', true );
 						// Clear form
-						var fields = [ '#jzsa-pub-title', '#jzsa-pub-description', '#jzsa-pub-tags', '#jzsa-pub-site-url', '#jzsa-pub-photographer-bio' ];
+						var fields = [ '#jzsa-pub-title', '#jzsa-pub-description', '#jzsa-pub-tags', '#jzsa-pub-site-url', '#jzsa-pub-entry-info' ];
 						fields.forEach( function ( sel ) {
 							var el = qs( sel );
 							if ( el ) {
@@ -2071,40 +2089,6 @@
 	}
 
 	/* -----------------------------------------------------------------------
-	 * Showcase scope warning - collapsible "Got it" / "?" toggle
-	 * -------------------------------------------------------------------- */
-
-	function initShowcaseWarningToggle() {
-		var warning      = qs( '.jzsa-community-showcase-scope-warning' );
-		var compactPill  = qs( '.jzsa-community-showcase-scope-warning-compact' );
-		var dismissBtn   = qs( '.jzsa-community-showcase-scope-warning-dismiss' );
-		if ( ! warning || ! compactPill || ! dismissBtn ) {
-			return;
-		}
-
-		function collapseWarning( persist ) {
-			warning.style.display     = 'none';
-			compactPill.style.display = 'inline-flex';
-			compactPill.setAttribute( 'aria-expanded', 'false' );
-			if ( persist ) {
-				// Fire-and-forget. UX state is already updated optimistically;
-				// a failed save just means the user will see the full warning
-				// again next page load, which is harmless.
-				ajaxPost( 'jzsa_community_dismiss_showcase_warning', {} ).catch( function () {} );
-			}
-		}
-
-		function expandWarning() {
-			warning.style.display     = 'flex';
-			compactPill.style.display = 'none';
-			compactPill.setAttribute( 'aria-expanded', 'true' );
-		}
-
-		dismissBtn.addEventListener( 'click', function () { collapseWarning( true ); } );
-		compactPill.addEventListener( 'click', function () { expandWarning(); } );
-	}
-
-	/* -----------------------------------------------------------------------
 	 * Init
 	 * -------------------------------------------------------------------- */
 
@@ -2119,7 +2103,6 @@
 		initPublish();
 		initDisplayName();
 		initDevFill();
-		initShowcaseWarningToggle();
 
 		// Load the current user's own entries when connected
 		if ( isCommunityConnected() ) {
