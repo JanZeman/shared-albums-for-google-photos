@@ -71,12 +71,12 @@ class JZSA_Community {
 	 */
 	private static function get_i18n_strings() {
 		return array(
-			'showcaseConsentLabel'       => __( 'Allow this sample to be considered for the future Photo lovers community.', 'janzeman-shared-albums-for-google-photos' ),
-			'showcaseConsentHelp'        => __( 'If selected, this shortcode sample and its rendered preview may later appear in the Photo lovers community (a future, externally-visible site that does not exist yet). Description, sample page URL, and creator name are required for consideration.', 'janzeman-shared-albums-for-google-photos' ),
-			'showcaseShowShortcodeLabel' => __( 'Also show the shortcode (not only the photos).', 'janzeman-shared-albums-for-google-photos' ),
-			'showcaseShowShortcodeHelp'  => __( 'Default: shown. Uncheck if you want the Photo lovers community to display only your photos and not the underlying shortcode. The WP admins community on this page is unaffected; it always shows the masked shortcode.', 'janzeman-shared-albums-for-google-photos' ),
-			'showcaseRequiredBadge'      => __( 'Required for Photo lovers community', 'janzeman-shared-albums-for-google-photos' ),
-			'showcaseRequiredMessage'    => __( 'Description, sample page URL, and photographer / creator name are required for Photo lovers community consideration.', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseConsentLabel'       => __( 'Allow my album to be considered for the future public site showcase.', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseConsentHelp'        => __( 'If selected, the page URL you provide may later appear in the public site showcase, a future public site for a broader photography audience. The showcase will lead with your gallery page and photos; shortcode settings may be available as expandable technical context when allowed. Description, page URL, and creator name are required for consideration.', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseShowShortcodeLabel' => __( 'Also allow the public site showcase to show the shortcode settings.', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseShowShortcodeHelp'  => __( 'The public site showcase will keep shortcode details collapsed so the photos and your site link stay in focus. Visitors may expand them to see the technical background. Uncheck if you do not want shortcode details available there at all. The Plugin page is unaffected; it always shows the masked shortcode sample.', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseRequiredBadge'      => __( 'Required for public site showcase consideration', 'janzeman-shared-albums-for-google-photos' ),
+			'showcaseRequiredMessage'    => __( 'Description, sample page URL, and photographer / creator name are required for public site showcase consideration.', 'janzeman-shared-albums-for-google-photos' ),
 			'descriptionLabel'           => __( 'Description', 'janzeman-shared-albums-for-google-photos' ),
 			'siteUrlLabel'               => __( 'Sample page URL', 'janzeman-shared-albums-for-google-photos' ),
 			'photographerNameLabel'      => __( 'Photographer / creator name or nickname', 'janzeman-shared-albums-for-google-photos' ),
@@ -739,19 +739,18 @@ class JZSA_Community {
 				<span class="jzsa-community-audience-chip jzsa-community-audience-chip--plugin">
 					<span class="dashicons dashicons-admin-plugins" aria-hidden="true"></span>
 					<span>
-						<strong><?php esc_html_e( 'Site builder community', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-						<span class="jzsa-audience-chip-status" style="display:inline-block; margin-left:6px; padding:1px 6px; font-size:11px; font-weight:600; color:#1e7a3b; background:#e6f4ea; border-radius:10px;"><?php esc_html_e( 'This plugin page (live)', 'janzeman-shared-albums-for-google-photos' ); ?></span>
+						<strong><?php esc_html_e( 'This plugin page', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
 						<br>
-						<?php esc_html_e( 'People using this plugin see your shortcode samples and settings here. Focus: this plugin, shortcode settings, and how the gallery is built.', 'janzeman-shared-albums-for-google-photos' ); ?>
+						<?php esc_html_e( 'People using this plugin see your samples and their settings. The goal is to help them render their albums successfully, so the focus is more on the technical details of the shortcode.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</span>
 				</span>
 				<span class="jzsa-community-audience-chip jzsa-community-audience-chip--public">
-					<span class="dashicons dashicons-camera-alt" aria-hidden="true"></span>
+					<span class="dashicons dashicons-admin-site-alt3" aria-hidden="true"></span>
 					<span>
-						<strong><?php esc_html_e( 'Photo lovers community', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+						<strong><?php esc_html_e( 'Public site showcase', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
 						<span class="jzsa-audience-chip-status" style="display:inline-block; margin-left:6px; padding:1px 6px; font-size:11px; font-weight:600; color:#92400e; background:#fef3c7; border-radius:10px;"><?php esc_html_e( 'External website (does not exist yet)', 'janzeman-shared-albums-for-google-photos' ); ?></span>
 						<br>
-						<?php esc_html_e( 'A future, externally-visible site where selected albums may be featured for a broader photography-loving audience. Focus: The content, the gallery itself, your beautiful photos, only with your explicit consent.', 'janzeman-shared-albums-for-google-photos' ); ?>
+						<?php esc_html_e( 'Optional. A future public site where selected albums may be featured for a broader audience. Here, the photography aspect of your albums will be emphasized. The goal is to inspire others and send more visitors to your site.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</span>
 				</span>
 			</div>
@@ -1013,7 +1012,7 @@ class JZSA_Community {
 				<?php esc_html_e( 'Share a New Sample', 'janzeman-shared-albums-for-google-photos' ); ?>
 			</summary>
 			<p class="jzsa-help-text" style="margin-top:0;">
-				<?php esc_html_e( 'Share a gallery configuration sample with other people using this plugin. The Site builder community focuses on useful shortcode settings and rendered results that others can adapt.', 'janzeman-shared-albums-for-google-photos' ); ?>
+				<?php esc_html_e( 'Share a gallery configuration sample with other people using this plugin. The Plugin page focuses on useful shortcode settings and rendered results that others can adapt.', 'janzeman-shared-albums-for-google-photos' ); ?>
 			</p>
 			<div class="jzsa-community-visibility-note">
 				<span class="jzsa-community-audience-icon jzsa-community-audience-icon--plugin">
@@ -1053,6 +1052,9 @@ class JZSA_Community {
 						<p class="description">
 							<?php esc_html_e( 'Paste your shortcode below and click the Apply button to preview what you are about to share.', 'janzeman-shared-albums-for-google-photos' ); ?>
 						</p>
+						<p class="description">
+							<?php esc_html_e( 'This shortcode sample is shared on the Plugin page. Use the public site showcase option below only if you also want to submit your public gallery page for future consideration.', 'janzeman-shared-albums-for-google-photos' ); ?>
+						</p>
 						<div class="jzsa-code-block jzsa-community-publish-shortcode-block">
 							<code id="jzsa-pub-shortcode" data-placeholder='[jzsa-album link="https://photos.google.com/share/..." mode="slider"]' aria-label="<?php esc_attr_e( 'Shortcode', 'janzeman-shared-albums-for-google-photos' ); ?>"></code>
 						</div>
@@ -1063,7 +1065,7 @@ class JZSA_Community {
 					<th scope="row">
 						<label for="jzsa-pub-description">
 							<?php echo esc_html( $i18n['descriptionLabel'] ); ?>
-							<span class="required jzsa-showcase-required-badge" hidden aria-label="<?php esc_attr_e( 'required for Photo lovers community', 'janzeman-shared-albums-for-google-photos' ); ?>">
+							<span class="required jzsa-showcase-required-badge" hidden aria-label="<?php esc_attr_e( 'required for public site showcase consideration', 'janzeman-shared-albums-for-google-photos' ); ?>">
 								<?php echo esc_html( $i18n['showcaseRequiredBadge'] ); ?>
 							</span>
 						</label>
@@ -1085,7 +1087,7 @@ class JZSA_Community {
 					<th scope="row">
 						<label for="jzsa-pub-site-url">
 							<?php echo esc_html( $i18n['siteUrlLabel'] ); ?>
-							<span class="required jzsa-showcase-required-badge" hidden aria-label="<?php esc_attr_e( 'required for Photo lovers community', 'janzeman-shared-albums-for-google-photos' ); ?>">
+							<span class="required jzsa-showcase-required-badge" hidden aria-label="<?php esc_attr_e( 'required for public site showcase consideration', 'janzeman-shared-albums-for-google-photos' ); ?>">
 								<?php echo esc_html( $i18n['showcaseRequiredBadge'] ); ?>
 							</span>
 						</label>
@@ -1094,7 +1096,7 @@ class JZSA_Community {
 						<input type="url" id="jzsa-pub-site-url" class="regular-text" maxlength="2048"
 							placeholder="<?php esc_attr_e( 'https://yoursite.com/page-with-album', 'janzeman-shared-albums-for-google-photos' ); ?>">
 						<p class="description">
-							<?php esc_html_e( 'A link to the page on your site where this shortcode is used. Shown publicly on your community entry.', 'janzeman-shared-albums-for-google-photos' ); ?>
+							<?php esc_html_e( 'A link to the gallery page on your site. The future public site showcase will feature this link prominently so visitors can see the full context on your site and potentially send you more traffic.', 'janzeman-shared-albums-for-google-photos' ); ?>
 						</p>
 					</td>
 				</tr>
@@ -1102,7 +1104,7 @@ class JZSA_Community {
 					<th scope="row">
 						<label for="jzsa-pub-photographer-name">
 							<?php echo esc_html( $i18n['photographerNameLabel'] ); ?>
-							<span class="required jzsa-showcase-required-badge" hidden aria-label="<?php esc_attr_e( 'required for Photo lovers community', 'janzeman-shared-albums-for-google-photos' ); ?>">
+							<span class="required jzsa-showcase-required-badge" hidden aria-label="<?php esc_attr_e( 'required for public site showcase consideration', 'janzeman-shared-albums-for-google-photos' ); ?>">
 								<?php echo esc_html( $i18n['showcaseRequiredBadge'] ); ?>
 							</span>
 						</label>
@@ -1147,14 +1149,14 @@ class JZSA_Community {
 				?>
 				<button type="button" class="jzsa-community-showcase-scope-warning-compact" style="display:<?php echo esc_attr( $compact_initial_display ); ?>; align-items:center; gap:6px; padding:4px 10px; margin-bottom:10px; font-size:12px; color:#92400e; background:#fffbeb; border:1px solid #fde68a; border-radius:12px; cursor:pointer;" aria-expanded="false">
 					<span class="dashicons dashicons-editor-help" style="font-size:14px; width:14px; height:14px;" aria-hidden="true"></span>
-					<?php esc_html_e( 'Why a separate Photo lovers community?', 'janzeman-shared-albums-for-google-photos' ); ?>
+					<?php esc_html_e( 'Why a separate public site showcase?', 'janzeman-shared-albums-for-google-photos' ); ?>
 				</button>
 				<div class="jzsa-community-showcase-scope-warning" style="display:<?php echo esc_attr( $warning_initial_display ); ?>; gap:10px; align-items:flex-start; padding:10px 12px; margin-bottom:12px; border-left:4px solid #d97706; background:#fffbeb; border-radius:3px;">
-					<span class="dashicons dashicons-camera-alt" style="color:#d97706; margin-top:2px;" aria-hidden="true"></span>
+					<span class="dashicons dashicons-admin-site-alt3" style="color:#d97706; margin-top:2px;" aria-hidden="true"></span>
 					<div style="flex:1;">
-						<strong><?php esc_html_e( 'The settings below are about the future Photo lovers community, not this plugin page.', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+						<strong><?php esc_html_e( 'The settings below are about the future public site showcase, separate from this plugin page.', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
 						<p class="description" style="margin:4px 0 0;">
-							<?php esc_html_e( 'The Photo lovers community will be a separate, externally-visible site so anyone on the internet can read it - not only WP admins. These checkboxes only affect whether your sample is eligible to appear there, and whether your shortcode shows up next to your photos when it does. They have no effect on what other WordPress admins see on this very page.', 'janzeman-shared-albums-for-google-photos' ); ?>
+							<?php esc_html_e( 'The Plugin page is for shortcode samples. The future public site showcase is for public gallery-page submissions. You can share the shortcode sample here, submit your gallery page there, or do both. The public site showcase will focus first on your gallery page and photos, with shortcode settings available as expandable technical context when you allow it.', 'janzeman-shared-albums-for-google-photos' ); ?>
 						</p>
 					</div>
 					<button type="button" class="jzsa-community-showcase-scope-warning-dismiss" aria-label="<?php esc_attr_e( 'Got it, hide this explanation', 'janzeman-shared-albums-for-google-photos' ); ?>" style="background:none; border:0; cursor:pointer; color:#92400e; padding:2px 4px; font-size:13px; white-space:nowrap; align-self:flex-start;">
@@ -1165,7 +1167,7 @@ class JZSA_Community {
 				<label style="display:flex; align-items:center; gap:8px;">
 					<input type="checkbox" id="jzsa-pub-showcase-consent" class="jzsa-pub-showcase-consent-toggle" value="1" checked>
 					<span class="jzsa-community-audience-icon jzsa-community-audience-icon--public">
-						<span class="dashicons dashicons-camera-alt" aria-hidden="true"></span>
+						<span class="dashicons dashicons-admin-site-alt3" aria-hidden="true"></span>
 					</span>
 					<span><?php echo esc_html( $i18n['showcaseConsentLabel'] ); ?></span>
 				</label>
@@ -1583,9 +1585,10 @@ class JZSA_Community {
 		$photographer_name = sanitize_text_field( wp_unslash( $_POST['photographer_name'] ?? '' ) );
 		$photographer_bio  = sanitize_textarea_field( wp_unslash( $_POST['photographer_bio'] ?? '' ) );
 		$consent     = filter_var( wp_unslash( $_POST['public_showcase_consent'] ?? false ), FILTER_VALIDATE_BOOLEAN );
-		// Default TRUE: most authors want the shortcode visible alongside
-		// their photos on the showcase. Stored unconditionally; the
-		// showcase renderer ANDs it with consent at display time.
+		// Default TRUE: most authors are comfortable allowing shortcode
+		// settings on the future public site showcase. Stored
+		// unconditionally; the public renderer ANDs it with consent at
+		// display time.
 		$show_shortcode = array_key_exists( 'public_showcase_show_shortcode', $_POST )
 			? filter_var( wp_unslash( $_POST['public_showcase_show_shortcode'] ), FILTER_VALIDATE_BOOLEAN )
 			: true;
@@ -2044,8 +2047,8 @@ class JZSA_Community {
 			$body['public_showcase_consent'] = $consent;
 		}
 		// show_shortcode is the author's stated preference, stored
-		// unconditionally. The showcase renderer ANDs it with consent at
-		// render time so it does not need to be coupled here.
+		// unconditionally. The public renderer ANDs it with consent at render
+		// time so it does not need to be coupled here.
 		if ( $show_shortcode !== null ) {
 			$body['public_showcase_show_shortcode'] = $show_shortcode;
 		}

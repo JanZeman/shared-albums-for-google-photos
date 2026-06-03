@@ -252,7 +252,7 @@ class CommunityAjaxTest extends TestCase {
         $this->assertTrue( $response->success );
         $payload = json_decode( $GLOBALS['jzsa_test_http_requests'][0]['args']['body'], true );
         // consent is off but the stored preference survives independently;
-        // the showcase renderer ANDs them at display time.
+        // the public renderer ANDs them at display time.
         $this->assertFalse( $payload['public_showcase_consent'] );
         $this->assertFalse( $payload['public_showcase_show_shortcode'] );
     }

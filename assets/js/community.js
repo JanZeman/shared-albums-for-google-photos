@@ -61,7 +61,7 @@
 
 	function showcaseRequiredMessage() {
 		return i18n( 'showcaseRequiredMessage' ) ||
-			'Description, sample page URL, and photographer / creator name are required for Photo lovers community consideration.';
+			'Description, sample page URL, and photographer / creator name are required for public site showcase consideration.';
 	}
 
 	function syncShowcaseRequiredState( consentEl, requiredControls, requiredBadges ) {
@@ -635,8 +635,8 @@
 					badge.className = requiredText === 'showcase' ? 'required jzsa-showcase-required-badge' : 'required';
 					if ( requiredText === 'showcase' ) {
 						badge.hidden = true;
-						badge.setAttribute( 'aria-label', 'required for showcase' );
-						badge.textContent = i18n( 'showcaseRequiredBadge' ) || 'Required for showcase';
+						badge.setAttribute( 'aria-label', 'required for public site showcase consideration' );
+						badge.textContent = i18n( 'showcaseRequiredBadge' ) || 'Required for public site showcase consideration';
 					} else {
 						badge.setAttribute( 'aria-label', 'required' );
 						badge.textContent = 'Required';
@@ -661,7 +661,7 @@
 				var icon = document.createElement( 'span' );
 				icon.className = 'jzsa-community-audience-icon jzsa-community-audience-icon--public';
 				var iconGlyph = document.createElement( 'span' );
-				iconGlyph.className = 'dashicons dashicons-camera-alt';
+				iconGlyph.className = 'dashicons dashicons-admin-site-alt3';
 				iconGlyph.setAttribute( 'aria-hidden', 'true' );
 				icon.appendChild( iconGlyph );
 				var text = document.createElement( 'span' );
@@ -721,6 +721,9 @@
 			var shortcodeHelp = document.createElement( 'p' );
 			shortcodeHelp.className = 'description';
 			shortcodeHelp.textContent = 'Edit your shortcode below and click the Apply button to preview your changes.';
+			var shortcodeDestinationHelp = document.createElement( 'p' );
+			shortcodeDestinationHelp.className = 'description';
+			shortcodeDestinationHelp.textContent = 'This shortcode sample is shared on the Plugin page. Use the public site showcase option below only if you also want to submit your public gallery page for future consideration.';
 			var shortcodePrivacy = document.createElement( 'p' );
 			shortcodePrivacy.className = 'description';
 			shortcodePrivacy.textContent = 'Privacy note: Published shortcodes show link="hidden-album-link" instead of the real album link. The unmasked link is kept only for editing and preview rendering.';
@@ -734,7 +737,7 @@
 			ownedPreview.setAttribute( 'data-lazy-state', 'pending' );
 			appendTableRow(
 				createLabel( ownedCodeEl.id, 'Shortcode', 'required' ),
-				[ shortcodeHelp, shortcodePrivacy, ownedCodeBlock, ownedPreview ]
+				[ shortcodeHelp, shortcodeDestinationHelp, shortcodePrivacy, ownedCodeBlock, ownedPreview ]
 			);
 
 			var descriptionInput = document.createElement( 'textarea' );
@@ -767,7 +770,7 @@
 			urlInput.value = entry.site_url || '';
 			var urlRequiredHelp = document.createElement( 'p' );
 			urlRequiredHelp.className = 'description';
-			urlRequiredHelp.textContent = 'A link to the page on your site where this shortcode is used. Shown publicly on your community entry.';
+			urlRequiredHelp.textContent = 'A link to the gallery page on your site. The future public site showcase will feature this link prominently so visitors can see the full context on your site and potentially send you more traffic.';
 			var urlLabel = createLabel( urlInput.id, i18n( 'siteUrlLabel' ) || 'Sample page URL', 'showcase' );
 			var urlRequiredBadge = urlLabel.querySelector( '.jzsa-showcase-required-badge' );
 			appendTableRow( urlLabel, [ urlInput, urlRequiredHelp ] );
