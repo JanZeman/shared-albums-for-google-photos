@@ -558,6 +558,12 @@
     gap: 3px;
 }
 
+.jzsa-community-publish-table #jzsa-pub-title,
+.jzsa-community-publish-table #jzsa-pub-tags,
+.jzsa-community-publish-table #jzsa-pub-site-url {
+    width: min(100%, 520px);
+}
+
 .jzsa-community-publish-table .jzsa-community-showcase-consent-cell {
     padding-left: 0;
 }

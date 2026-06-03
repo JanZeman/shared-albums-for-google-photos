@@ -733,7 +733,7 @@
 			tagsInput.className = 'regular-text jzsa-community-my-entry-tags-input';
 			tagsInput.id = 'jzsa-my-entry-tags-' + entry.id;
 			tagsInput.value = entryTags.join( ', ' );
-			tagsInput.placeholder = 'slider, dark, mosaic  (comma or space separated, max 5)';
+			tagsInput.placeholder = 'slider, dark, mosaic  (comma or space separated, min 1, max 5)';
 			appendTableRow(
 				createLabel( tagsInput.id, 'Tags', 'required' ),
 				[ tagsInput ]

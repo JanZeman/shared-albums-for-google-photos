@@ -978,7 +978,7 @@ class JZSA_Community {
 					</th>
 					<td>
 							<input type="text" id="jzsa-pub-tags" class="regular-text"
-								placeholder="<?php esc_attr_e( 'slider, dark, mosaic  (comma or space separated, max 5)', 'janzeman-shared-albums-for-google-photos' ); ?>">
+								placeholder="<?php esc_attr_e( 'slider, dark, mosaic  (comma or space separated, min 1, max 5)', 'janzeman-shared-albums-for-google-photos' ); ?>">
 					</td>
 				</tr>
 				<tr>
