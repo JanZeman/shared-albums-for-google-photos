@@ -99,10 +99,6 @@ test.describe('Community - account (not connected)', () => {
         await expect(page.locator('#jzsa-connect-display-name')).toBeAttached();
     });
 
-    test('connect display URL input is present', async ({ page }) => {
-        await expect(page.locator('#jzsa-connect-display-url')).toBeAttached();
-    });
-
     test('publish form section is not rendered when not connected', async ({ page }) => {
         await expect(page.locator('.jzsa-community-share-section')).not.toBeAttached();
     });

@@ -273,7 +273,6 @@ $disconnected_id   = jzsa_e2e_ensure_admin_user( $disconnected_user, $disconnect
 
 delete_user_meta( $disconnected_id, 'jzsa_community_jwt' );
 delete_user_meta( $disconnected_id, 'jzsa_community_display_name' );
-delete_user_meta( $disconnected_id, 'jzsa_community_display_url' );
 echo "Ensured disconnected user {$disconnected_user} (#{$disconnected_id})\n";
 
 /**
@@ -360,16 +359,10 @@ function jzsa_e2e_signin_user( int $wp_user_id, string $email, string $display_n
 		}
 		update_user_meta( $wp_user_id, 'jzsa_community_jwt', $other_jwt );
 		$other_name = (string) get_user_meta( (int) $row->user_id, 'jzsa_community_display_name', true );
-		if ( '' !== $other_name ) {
-			update_user_meta( $wp_user_id, 'jzsa_community_display_name', $other_name );
-		}
-		$other_url = (string) get_user_meta( (int) $row->user_id, 'jzsa_community_display_url', true );
-		if ( '' !== $other_url ) {
-			update_user_meta( $wp_user_id, 'jzsa_community_display_url', $other_url );
-		} else {
-			delete_user_meta( $wp_user_id, 'jzsa_community_display_url' );
-		}
-		echo "  (borrowed JWT from WP user #{$row->user_id}; both WP users now share that community account)\n";
+			if ( '' !== $other_name ) {
+				update_user_meta( $wp_user_id, 'jzsa_community_display_name', $other_name );
+			}
+			echo "  (borrowed JWT from WP user #{$row->user_id}; both WP users now share that community account)\n";
 		return;
 	}
 
@@ -488,7 +481,6 @@ function jzsa_e2e_signin_user( int $wp_user_id, string $email, string $display_n
 
 	update_user_meta( $wp_user_id, 'jzsa_community_jwt', $jwt );
 	update_user_meta( $wp_user_id, 'jzsa_community_display_name', $display_name );
-	delete_user_meta( $wp_user_id, 'jzsa_community_display_url' );
 }
 
 $connected_user = jzsa_e2e_env( 'JZSA_E2E_CONNECTED_USER', $admin_user );

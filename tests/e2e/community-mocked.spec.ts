@@ -46,19 +46,17 @@ async function installCommunityAjaxMock(page: Page): Promise<{ requests: () => P
             title: 'Mocked Slider Example',
             shortcode: `[jzsa-album link="${albumUrl}" mode="slider" show-navigation="true"]`,
             preview_shortcode: `[jzsa-album link="${albumUrl}" mode="slider" show-navigation="true"]`,
-            description: 'A deterministic community entry from the Playwright mock.',
-            tags: ['slider', 'navigation'],
-            site_url: 'https://example.test/album',
-            photographer_name: 'Mock Author',
-            photographer_bio: 'Uses mocked AJAX responses.',
+	            description: 'A deterministic community entry from the Playwright mock.',
+	            tags: ['slider', 'navigation'],
+	            site_url: 'https://example.test/album',
+	            photographer_bio: 'Uses mocked AJAX responses.',
             interaction_score: 12,
             avg_rating: 3.8,
             rating_count: 4,
-            public_showcase_consent: true,
-            author: {
-                display_name: 'Mock Author',
-                display_url: 'https://example.test',
-            },
+	            public_showcase_consent: true,
+	            author: {
+	                display_name: 'Mock Author',
+	            },
             ...overrides,
         });
         const browseEntries = [makeEntry()];
@@ -104,11 +102,10 @@ async function installCommunityAjaxMock(page: Page): Promise<{ requests: () => P
                         id: 303,
                         title: fields.title,
                         shortcode: fields.shortcode,
-                        description: fields.description,
-                        tags: fields.tags ? fields.tags.split(',').map((tag) => tag.trim()) : [],
-                        site_url: fields.site_url,
-                        photographer_name: fields.photographer_name,
-                        photographer_bio: fields.photographer_bio,
+	                        description: fields.description,
+	                        tags: fields.tags ? fields.tags.split(',').map((tag) => tag.trim()) : [],
+	                        site_url: fields.site_url,
+	                        photographer_bio: fields.photographer_bio,
                         public_showcase_consent: fields.public_showcase_consent === 'true',
                     });
                     browseEntries.unshift(published);
@@ -219,22 +216,17 @@ test.describe('Community - mocked AJAX flows', () => {
         await page.fill('#jzsa-pub-description', 'Published through a mocked community API.');
         await page.fill('#jzsa-pub-tags', 'gallery,test');
         await page.fill('#jzsa-pub-site-url', 'example.test/published');
-        await page.fill('#jzsa-pub-photographer-name', 'Mock Publisher');
-        await page.check('#jzsa-pub-showcase-consent');
-        // After enabling consent, the show-shortcode checkbox becomes
-        // enabled and visually checked (default true). Leave it checked
-        // to assert the default-true payload below.
-        await page.click('#jzsa-community-publish-btn');
+	        await page.check('#jzsa-pub-showcase-consent');
+	        await page.click('#jzsa-community-publish-btn');
 
         await expect(page.locator('#jzsa-publish-result')).toContainText('Published!', { timeout: 10_000 });
         const publish = (await mock.requests()).find((request) => request.action === 'jzsa_community_publish');
         expect(publish?.fields).toMatchObject({
-            title: 'Published From Mock',
-            tags: 'gallery,test',
-            site_url: 'https://example.test/published',
-            photographer_name: 'Mock Publisher',
-            public_showcase_consent: 'true',
-        });
+	            title: 'Published From Mock',
+	            tags: 'gallery,test',
+	            site_url: 'https://example.test/published',
+	            public_showcase_consent: 'true',
+	        });
         expect(publish?.fields.shortcode).toContain('mode="gallery"');
         await expect.poll(async () => (await mock.requests()).filter((request) => request.action === 'jzsa_community_load_my_entries').length).toBeGreaterThanOrEqual(1);
     });
@@ -299,15 +291,14 @@ test.describe('Community - mocked AJAX flows', () => {
                     shortcode: '[jzsa-album link="hidden-album-link" mode="gallery"]',
                     preview_shortcode: `[jzsa-album link="${albumUrl}" mode="gallery"]`,
                     description: 'Uses a real album link so the preview renders.',
-                    tags: ['gallery'],
-                    site_url: 'https://example.test/renderable',
-                    photographer_name: 'Render Test',
-                    interaction_score: 0,
+	                    tags: ['gallery'],
+	                    site_url: 'https://example.test/renderable',
+	                    interaction_score: 0,
                     avg_rating: 0,
-                    rating_count: 0,
-                    public_showcase_consent: false,
-                    author: { display_name: 'Render Test', display_url: 'https://example.test' },
-                };
+	                    rating_count: 0,
+	                    public_showcase_consent: false,
+	                    author: { display_name: 'Render Test' },
+	                };
 
                 return new Response(JSON.stringify({
                     success: true,

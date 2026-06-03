@@ -33,22 +33,21 @@ class CommunityValidationTest extends TestCase {
     // validate_community_entry_payload: helpers
     // -------------------------------------------------------------------------
 
-    private function validate(
-        string $title             = 'Valid Title',
-        string $shortcode         = self::VALID_SC,
-        string $description       = '',
-        string $tags_raw          = '',
-        string $entry_url         = '',
-        string $photographer_name = '',
-        string $photographer_bio  = '',
-        bool   $consent           = false
-    ): string {
-        return $this->callStatic(
-            'validate_community_entry_payload',
-            $title, $shortcode, $description, $tags_raw, $entry_url,
-            $photographer_name, $photographer_bio, $consent
-        );
-    }
+	    private function validate(
+	        string $title             = 'Valid Title',
+	        string $shortcode         = self::VALID_SC,
+	        string $description       = '',
+	        string $tags_raw          = '',
+	        string $entry_url         = '',
+	        string $photographer_bio  = '',
+	        bool   $consent           = false
+	    ): string {
+	        return $this->callStatic(
+	            'validate_community_entry_payload',
+	            $title, $shortcode, $description, $tags_raw, $entry_url,
+	            $photographer_bio, $consent
+	        );
+	    }
 
     // -------------------------------------------------------------------------
     // validate_community_entry_payload: happy path
@@ -61,14 +60,13 @@ class CommunityValidationTest extends TestCase {
 
     public function test_valid_payload_with_all_fields_filled(): void {
         $result = $this->validate(
-            title:             'A great album',
-            description:       'Some description text',
-            tags_raw:          'landscape, travel',
-            entry_url:         'https://example.com/page',
-            photographer_name: 'Jane Doe',
-            photographer_bio:  'Landscape photographer',
-            consent:           true
-        );
+	            title:             'A great album',
+	            description:       'Some description text',
+	            tags_raw:          'landscape, travel',
+	            entry_url:         'https://example.com/page',
+	            photographer_bio:  'Landscape photographer',
+	            consent:           true
+	        );
         $this->assertSame( '', $result );
     }
 
@@ -276,23 +274,12 @@ class CommunityValidationTest extends TestCase {
     }
 
     // -------------------------------------------------------------------------
-    // Photographer name / bio
-    // -------------------------------------------------------------------------
+	    // Photographer bio
+	    // -------------------------------------------------------------------------
 
-    public function test_photographer_name_120_chars_passes(): void {
-        $result = $this->validate( photographer_name: str_repeat( 'a', 120 ) );
-        $this->assertSame( '', $result );
-    }
-
-    public function test_photographer_name_121_chars_fails(): void {
-        $result = $this->validate( photographer_name: str_repeat( 'a', 121 ) );
-        $this->assertNotSame( '', $result );
-        $this->assertStringContainsString( '120', $result );
-    }
-
-    public function test_photographer_bio_500_chars_passes(): void {
-        $result = $this->validate( photographer_bio: str_repeat( 'a', 500 ) );
-        $this->assertSame( '', $result );
+	    public function test_photographer_bio_500_chars_passes(): void {
+	        $result = $this->validate( photographer_bio: str_repeat( 'a', 500 ) );
+	        $this->assertSame( '', $result );
     }
 
     public function test_photographer_bio_501_chars_fails(): void {
@@ -302,53 +289,40 @@ class CommunityValidationTest extends TestCase {
     }
 
     // -------------------------------------------------------------------------
-    // Consent requires description, URL, and name
-    // -------------------------------------------------------------------------
+	    // Consent requires description and URL
+	    // -------------------------------------------------------------------------
 
     public function test_consent_true_without_required_fields_fails(): void {
         $result = $this->validate( consent: true );
         $this->assertNotSame( '', $result );
     }
 
-    public function test_consent_true_with_all_required_fields_passes(): void {
-        $result = $this->validate(
-            description:       'My description',
-            entry_url:         'https://example.com/page',
-            photographer_name: 'Jane Doe',
-            consent:           true
-        );
-        $this->assertSame( '', $result );
+	    public function test_consent_true_with_all_required_fields_passes(): void {
+	        $result = $this->validate(
+	            description:       'My description',
+	            entry_url:         'https://example.com/page',
+	            consent:           true
+	        );
+	        $this->assertSame( '', $result );
     }
 
     public function test_consent_true_missing_description_fails(): void {
-        $result = $this->validate(
-            description:       '',
-            entry_url:         'https://example.com/page',
-            photographer_name: 'Jane Doe',
-            consent:           true
-        );
-        $this->assertNotSame( '', $result );
+	        $result = $this->validate(
+	            description:       '',
+	            entry_url:         'https://example.com/page',
+	            consent:           true
+	        );
+	        $this->assertNotSame( '', $result );
     }
 
     public function test_consent_true_missing_url_fails(): void {
-        $result = $this->validate(
-            description:       'My description',
-            entry_url:         '',
-            photographer_name: 'Jane Doe',
-            consent:           true
-        );
-        $this->assertNotSame( '', $result );
-    }
-
-    public function test_consent_true_missing_photographer_name_fails(): void {
-        $result = $this->validate(
-            description:       'My description',
-            entry_url:         'https://example.com/page',
-            photographer_name: '',
-            consent:           true
-        );
-        $this->assertNotSame( '', $result );
-    }
+	        $result = $this->validate(
+	            description:       'My description',
+	            entry_url:         '',
+	            consent:           true
+	        );
+	        $this->assertNotSame( '', $result );
+	    }
 
     // -------------------------------------------------------------------------
     // is_valid_community_sample_url
@@ -379,64 +353,7 @@ class CommunityValidationTest extends TestCase {
     }
 
     // -------------------------------------------------------------------------
-    // is_valid_display_url
-    // -------------------------------------------------------------------------
-
-    public function test_display_url_empty_is_valid(): void {
-        $this->assertTrue( $this->callStatic( 'is_valid_display_url', '' ) );
-    }
-
-    public function test_display_url_https_is_valid(): void {
-        $this->assertTrue( $this->callStatic( 'is_valid_display_url', 'https://example.com' ) );
-    }
-
-    public function test_display_url_ftp_is_invalid(): void {
-        $this->assertFalse( $this->callStatic( 'is_valid_display_url', 'ftp://example.com' ) );
-    }
-
-    public function test_display_url_random_string_is_invalid(): void {
-        $this->assertFalse( $this->callStatic( 'is_valid_display_url', 'hello world' ) );
-    }
-
-    public function test_display_url_host_without_dot_is_valid(): void {
-        $this->assertTrue( $this->callStatic( 'is_valid_display_url', 'https://localhost' ) );
-    }
-
-    public function test_display_url_missing_scheme_is_invalid_before_normalization(): void {
-        $this->assertFalse( $this->callStatic( 'is_valid_display_url', 'example.com' ) );
-    }
-
-    // -------------------------------------------------------------------------
-    // normalize_display_url
-    // -------------------------------------------------------------------------
-
-    public function test_normalize_empty_stays_empty(): void {
-        $this->assertSame( '', $this->callStatic( 'normalize_display_url', '' ) );
-    }
-
-    public function test_normalize_adds_https_when_no_scheme(): void {
-        $result = $this->callStatic( 'normalize_display_url', 'example.com' );
-        $this->assertStringStartsWith( 'https://', $result );
-    }
-
-    public function test_normalize_preserves_existing_https(): void {
-        $result = $this->callStatic( 'normalize_display_url', 'https://example.com' );
-        $this->assertStringStartsWith( 'https://', $result );
-        $this->assertStringNotContainsString( 'https://https://', $result );
-    }
-
-    public function test_normalize_preserves_existing_http(): void {
-        $result = $this->callStatic( 'normalize_display_url', 'http://example.com' );
-        $this->assertStringStartsWith( 'http://', $result );
-    }
-
-    public function test_normalize_trims_whitespace_before_adding_scheme(): void {
-        $result = $this->callStatic( 'normalize_display_url', '  example.com/profile  ' );
-        $this->assertSame( 'https://example.com/profile', $result );
-    }
-
-    // -------------------------------------------------------------------------
-    // extract_community_shortcode_album_link
+	    // extract_community_shortcode_album_link
     // -------------------------------------------------------------------------
 
     public function test_extract_returns_link_from_valid_shortcode(): void {

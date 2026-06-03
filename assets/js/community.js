@@ -61,7 +61,7 @@
 
 	function showcaseRequiredMessage() {
 		return i18n( 'showcaseRequiredMessage' ) ||
-			'Description, sample page URL, and photographer / creator name are required for public site showcase consideration.';
+			'Description and sample page URL are required for public site showcase consideration.';
 	}
 
 	function syncShowcaseRequiredState( consentEl, requiredControls, requiredBadges ) {
@@ -126,18 +126,6 @@
 		}
 	}
 
-	function isValidDisplayUrl( value ) {
-		if ( ! value ) {
-			return true;
-		}
-		try {
-			var parsed = new URL( value );
-			return /^https?:$/i.test( parsed.protocol ) && !! parsed.hostname;
-		} catch ( e ) {
-			return false;
-		}
-	}
-
 	function formatDisplayUrl( value ) {
 		return String( value || '' ).replace( /^https?:\/\//, '' ).replace( /\/$/, '' );
 	}
@@ -175,9 +163,6 @@
 		if ( data.siteUrl && ! isValidHttpUrl( data.siteUrl ) ) {
 			return 'Please enter a valid sample page URL (e.g. https://yoursite.com/page).';
 		}
-		if ( data.photographerName.length > 120 ) {
-			return 'Photographer / creator name must be 120 characters or fewer.';
-		}
 		if ( data.photographerBio.length > 500 ) {
 			return 'Short bio must be 500 characters or fewer.';
 		}
@@ -192,7 +177,7 @@
 				return 'Tags must be 2-30 characters and use only letters, numbers, and hyphens.';
 			}
 		}
-		if ( data.showcaseConsent && ( ! data.description || ! data.siteUrl || ! data.photographerName ) ) {
+		if ( data.showcaseConsent && ( ! data.description || ! data.siteUrl ) ) {
 			return showcaseRequiredMessage();
 		}
 		return '';
@@ -457,15 +442,14 @@
 		}
 
 		if ( ! isMyEntry ) {
-			var authorName = entry.photographer_name ||
-				( ( entry.author && entry.author.display_name ) ? entry.author.display_name : 'Anonymous' );
+			var authorName = ( entry.author && entry.author.display_name ) ? entry.author.display_name : 'Anonymous';
 			var authorEl = document.createElement( 'span' );
 			authorEl.className = 'jzsa-community-entry-author';
 
 			var authorLabel = document.createTextNode( 'Author: ' + authorName );
 			authorEl.appendChild( authorLabel );
 
-			var authorUrl = entry.site_url || ( entry.author && entry.author.display_url ? entry.author.display_url : '' );
+			var authorUrl = entry.site_url || '';
 			if ( authorUrl ) {
 				var entrySep = document.createTextNode( ' · ' );
 				var entryLink = document.createElement( 'a' );
@@ -752,16 +736,6 @@
 			var urlRequiredBadge = urlLabel.querySelector( '.jzsa-showcase-required-badge' );
 			appendTableRow( urlLabel, [ urlInput, urlRequiredHelp ] );
 
-			var photographerInput = document.createElement( 'input' );
-			photographerInput.type = 'text';
-			photographerInput.className = 'regular-text jzsa-community-my-entry-photographer-name-input';
-			photographerInput.id = 'jzsa-my-entry-photographer-name-' + entry.id;
-			photographerInput.maxLength = 120;
-			photographerInput.value = entry.photographer_name || '';
-			var photographerLabel = createLabel( photographerInput.id, i18n( 'photographerNameLabel' ), 'showcase' );
-			var photographerRequiredBadge = photographerLabel.querySelector( '.jzsa-showcase-required-badge' );
-			appendTableRow( photographerLabel, [ photographerInput ] );
-
 			var bioInput = document.createElement( 'textarea' );
 			bioInput.className = 'large-text jzsa-community-my-entry-photographer-bio-input';
 			bioInput.id = 'jzsa-my-entry-photographer-bio-' + entry.id;
@@ -786,8 +760,8 @@
 				consentBlock.checkbox.checked   = checked;
 				syncShowcaseRequiredState(
 					consentBlock.checkbox,
-					[ descriptionInput, urlInput, photographerInput ],
-					[ descriptionRequiredBadge, urlRequiredBadge, photographerRequiredBadge ]
+					[ descriptionInput, urlInput ],
+					[ descriptionRequiredBadge, urlRequiredBadge ]
 				);
 			}
 			syncOwnedShowcaseConsent( entry.public_showcase_consent ? true : false );
@@ -932,7 +906,6 @@
 		var descInput = block.querySelector( '.jzsa-community-my-entry-description-input' );
 		var tagsInput = block.querySelector( '.jzsa-community-my-entry-tags-input' );
 		var urlInput  = block.querySelector( '.jzsa-community-my-entry-site-url-input' );
-		var photographerInput = block.querySelector( '.jzsa-community-my-entry-photographer-name-input' );
 		var bioInput = block.querySelector( '.jzsa-community-my-entry-photographer-bio-input' );
 		var consentCheckbox = block.querySelector( '.jzsa-community-my-entry-consent-checkbox' );
 		if ( urlInput ) {
@@ -952,7 +925,6 @@
 				var siteUrl = normalizeUrlInput( urlInput ? urlInput.value : '' );
 				var showcaseConsent = consentCheckbox ? consentCheckbox.checked : false;
 				var description = descInput ? descInput.value.trim() : '';
-				var photographerName = photographerInput ? photographerInput.value.trim() : '';
 				var photographerBio = bioInput ? bioInput.value.trim() : '';
 				var validationError = validateCommunityEntryFields( {
 					title: title,
@@ -960,7 +932,6 @@
 					description: description,
 					tags: tags,
 					siteUrl: siteUrl,
-					photographerName: photographerName,
 					photographerBio: photographerBio,
 					showcaseConsent: showcaseConsent,
 				} );
@@ -979,7 +950,6 @@
 					description: description,
 					tags: tags,
 					site_url: siteUrl,
-					photographer_name: photographerName,
 					photographer_bio: photographerBio,
 					public_showcase_consent: showcaseConsent,
 				} )
@@ -1277,7 +1247,6 @@
 		var statusEl      = qs( '.jzsa-community-auth-status' );
 		var emailEl       = qs( '#jzsa-connect-email' );
 		var displayNameEl = qs( '#jzsa-connect-display-name' );
-		var displayUrlEl  = qs( '#jzsa-connect-display-url' );
 		var generateBtn   = qs( '#jzsa-connect-display-name-generate-btn' );
 		var pendingPanel  = qs( '.jzsa-community-pending-panel' );
 		var pendingEmail  = qs( '.jzsa-community-pending-email' );
@@ -1393,7 +1362,6 @@
 		btn.addEventListener( 'click', function () {
 			var email       = emailEl ? emailEl.value.trim().toLowerCase() : '';
 			var displayName = displayNameEl ? displayNameEl.value.trim() : '';
-			var displayUrl  = displayUrlEl ? normalizeUrlInput( displayUrlEl.value ) : '';
 
 			if ( ! email || email.indexOf( '@' ) < 1 ) {
 				setStatus( 'Please enter a valid email address.', 'error' );
@@ -1407,11 +1375,6 @@
 				setStatus( 'Display name must be 50 characters or fewer.', 'error' );
 				return;
 			}
-			if ( displayUrl && ! isValidDisplayUrl( displayUrl ) ) {
-				setStatus( 'Please enter a valid URL for your community profile link, or leave it empty.', 'error' );
-				return;
-			}
-
 			btn.disabled = true;
 			btn.textContent = 'Signing in\u2026';
 			setStatus( '' );
@@ -1419,7 +1382,6 @@
 			ajaxPost( 'jzsa_community_signin_start', {
 				email: email,
 				display_name: displayName,
-				display_url: displayUrl,
 			} )
 				.then( function ( res ) {
 					if ( ! res.success ) {
@@ -1721,7 +1683,6 @@
 		description: i18n( 'descriptionLabel' ) || 'Description',
 		tags:        'Tags',
 		site_url:    i18n( 'siteUrlLabel' ) || 'Sample page URL',
-		photographer_name: i18n( 'photographerNameLabel' ) || 'Photographer / creator name',
 	};
 
 	/**
@@ -1771,7 +1732,6 @@
 		var publishRequiredControls = [
 			qs( '#jzsa-pub-description' ),
 			qs( '#jzsa-pub-site-url' ),
-			qs( '#jzsa-pub-photographer-name' ),
 		];
 		var publishRequiredBadges = Array.prototype.slice.call(
 			document.querySelectorAll( '.jzsa-community-publish-table .jzsa-showcase-required-badge' )
@@ -1801,14 +1761,12 @@
 			var desc      = ( qs( '#jzsa-pub-description' ) || {} ).value || '';
 			var tags      = ( qs( '#jzsa-pub-tags' ) || {} ).value || '';
 			var siteUrl   = ( qs( '#jzsa-pub-site-url' ) || {} ).value || '';
-			var photographerName = ( qs( '#jzsa-pub-photographer-name' ) || {} ).value || '';
 			var photographerBio = ( qs( '#jzsa-pub-photographer-bio' ) || {} ).value || '';
 			var showcaseConsent = ( qs( '#jzsa-pub-showcase-consent' ) || {} ).checked || false;
 			title     = title.trim();
 			shortcode = shortcode.trim();
 			desc      = desc.trim();
 			siteUrl   = normalizeUrlInput( siteUrl );
-			photographerName = photographerName.trim();
 			photographerBio = photographerBio.trim();
 
 			var validationError = validateCommunityEntryFields( {
@@ -1817,7 +1775,6 @@
 				description: desc,
 				tags: tags,
 				siteUrl: siteUrl,
-				photographerName: photographerName,
 				photographerBio: photographerBio,
 				showcaseConsent: showcaseConsent,
 			} );
@@ -1836,7 +1793,6 @@
 				description:               desc,
 				tags:                      tags,
 				site_url:                  siteUrl,
-				photographer_name:         photographerName,
 				photographer_bio:          photographerBio,
 				public_showcase_consent:   showcaseConsent,
 			} )
@@ -1847,7 +1803,7 @@
 					if ( res.success ) {
 						setResult( resultEl, '\u2705 Published! Your shortcode is now live in the directory. See the sections below and find it there.', true );
 						// Clear form
-						var fields = [ '#jzsa-pub-title', '#jzsa-pub-description', '#jzsa-pub-tags', '#jzsa-pub-site-url', '#jzsa-pub-photographer-name', '#jzsa-pub-photographer-bio' ];
+						var fields = [ '#jzsa-pub-title', '#jzsa-pub-description', '#jzsa-pub-tags', '#jzsa-pub-site-url', '#jzsa-pub-photographer-bio' ];
 						fields.forEach( function ( sel ) {
 							var el = qs( sel );
 							if ( el ) {
@@ -2011,111 +1967,6 @@
 		}
 	}
 
-	function initDisplayUrl() {
-		var editBtn   = qs( '#jzsa-display-url-edit-btn' );
-		var editRow   = qs( '#jzsa-display-url-edit-row' );
-		var viewSpan  = qs( '#jzsa-display-url-view' );
-		var input     = qs( '#jzsa-display-url-input' );
-		var saveBtn   = qs( '#jzsa-display-url-save-btn' );
-		var clearBtn  = qs( '#jzsa-display-url-clear-btn' );
-		var cancelBtn = qs( '#jzsa-display-url-cancel-btn' );
-		var resultEl  = qs( '#jzsa-display-url-result' );
-
-		if ( ! editBtn || ! editRow || ! viewSpan || ! input ) {
-			return;
-		}
-
-		function showEdit() {
-			editBtn.style.display = 'none';
-			editRow.style.display = 'inline-flex';
-			input.focus();
-			input.select();
-		}
-
-		function hideEdit() {
-			editRow.style.display = 'none';
-			editBtn.style.display = '';
-			if ( resultEl ) {
-				resultEl.textContent = '';
-				resultEl.className = 'jzsa-community-result';
-			}
-		}
-
-		function setDisplayUrlView( value ) {
-			if ( value ) {
-				viewSpan.textContent = formatDisplayUrl( value );
-			} else {
-				viewSpan.innerHTML = '<em style="color:#999;">Not set</em>';
-			}
-		}
-
-		function saveDisplayUrl( value ) {
-			value = normalizeUrlInput( value );
-			if ( value && ! isValidDisplayUrl( value ) ) {
-				setResult( resultEl, 'Please enter a valid URL for your community profile link, or leave it empty.', false );
-				return;
-			}
-
-			if ( saveBtn ) {
-				saveBtn.disabled = true;
-				saveBtn.textContent = 'Saving\u2026';
-			}
-
-			ajaxPost( 'jzsa_community_update_display_url', { display_url: value } )
-				.then( function ( res ) {
-					if ( saveBtn ) {
-						saveBtn.disabled = false;
-						saveBtn.textContent = 'Save';
-					}
-
-					if ( res.success ) {
-						var saved = ( res.data && res.data.display_url ) ? res.data.display_url : '';
-						jzsaCommunity.displayUrl = saved;
-						input.value = saved;
-						setDisplayUrlView( saved );
-						setResult( resultEl, '\u2705 Saved!', true );
-						setTimeout( hideEdit, 1500 );
-					} else {
-						setResult( resultEl, '\u274c ' + ( res.data || 'Could not save.' ), false );
-					}
-				} )
-				.catch( function () {
-					if ( saveBtn ) {
-						saveBtn.disabled = false;
-						saveBtn.textContent = 'Save';
-					}
-					setResult( resultEl, '\u274c Could not reach the server.', false );
-				} );
-		}
-
-		editBtn.addEventListener( 'click', showEdit );
-
-		if ( saveBtn ) {
-			saveBtn.addEventListener( 'click', function () {
-				saveDisplayUrl( input.value );
-			} );
-		}
-		if ( clearBtn ) {
-			clearBtn.addEventListener( 'click', function () {
-				input.value = '';
-				saveDisplayUrl( '' );
-			} );
-		}
-		if ( cancelBtn ) {
-			cancelBtn.addEventListener( 'click', function () {
-				input.value = jzsaCommunity.displayUrl || '';
-				hideEdit();
-			} );
-		}
-		input.addEventListener( 'keydown', function ( e ) {
-			if ( e.key === 'Enter' ) {
-				if ( saveBtn ) saveBtn.click();
-			} else if ( e.key === 'Escape' ) {
-				if ( cancelBtn ) cancelBtn.click();
-			}
-		} );
-	}
-
 	function initSort() {
 		var sortBtns = document.querySelectorAll( '.jzsa-community-sort-btn' );
 		sortBtns.forEach( function ( btn ) {
@@ -2267,7 +2118,6 @@
 		initInstalls();
 		initPublish();
 		initDisplayName();
-		initDisplayUrl();
 		initDevFill();
 		initShowcaseWarningToggle();
 
