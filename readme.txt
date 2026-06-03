@@ -145,7 +145,7 @@ The plugin provides clear feedback:
 == Changelog ==
 
 = 2.3.4 =
-* Email based-login to the Community feature
+* Email based login to the Community feature
 * Extensive unit and end-to-end testing
 
 = 2.3.1 =
