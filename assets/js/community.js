@@ -675,30 +675,7 @@
 				help.textContent = i18n( 'showcaseConsentHelp' );
 				wrapEl.appendChild( label );
 				wrapEl.appendChild( help );
-				var showLabel = document.createElement( 'label' );
-				showLabel.className = 'jzsa-community-showcase-shortcode-visibility';
-				var showCheckbox = document.createElement( 'input' );
-				showCheckbox.type = 'checkbox';
-				showCheckbox.className = 'jzsa-community-my-entry-show-shortcode-checkbox';
-				// Initial visual: checked only when BOTH the stored consent and
-				// the stored show_shortcode are true. When consent is off the
-				// checkbox is shown unchecked + disabled as a UX cue ("this
-				// setting only applies when consent is on"). Default for the
-				// stored value when absent (older entries) is true.
-				var initialConsent = entry.public_showcase_consent ? true : false;
-				var initialShow    = entry.public_showcase_show_shortcode !== false;
-				showCheckbox.checked  = initialConsent && initialShow;
-				showCheckbox.disabled = ! initialConsent;
-				var showText = document.createElement( 'span' );
-				showText.textContent = i18n( 'showcaseShowShortcodeLabel' );
-				showLabel.appendChild( showCheckbox );
-				showLabel.appendChild( showText );
-				var showHelp = document.createElement( 'p' );
-				showHelp.className = 'description jzsa-community-showcase-shortcode-visibility-help';
-				showHelp.textContent = i18n( 'showcaseShowShortcodeHelp' );
-				wrapEl.appendChild( showLabel );
-				wrapEl.appendChild( showHelp );
-				return { wrapper: wrapEl, checkbox: checkbox, showCheckbox: showCheckbox };
+				return { wrapper: wrapEl, checkbox: checkbox };
 			}
 
 			var titleInput = document.createElement( 'input' );
@@ -805,23 +782,8 @@
 			consentBlock.wrapper.className += ' jzsa-community-showcase-consent-cell';
 			saveRow.appendChild( consentBlock.wrapper );
 
-			// Visual: show-shortcode follows consent. When consent goes off
-			// the checkbox is disabled AND visually unchecked. When consent
-			// goes on it becomes enabled AND visually checked (the default).
-			// The submit handler treats consent-off as the default-true case,
-			// so this visual change does not silently flip the stored value.
-			function syncOwnedShowcaseConsent( checked, opts ) {
-				var fromUserAction = opts && opts.fromUserAction;
+			function syncOwnedShowcaseConsent( checked ) {
 				consentBlock.checkbox.checked   = checked;
-				consentBlock.showCheckbox.disabled = ! checked;
-				// On user-driven consent change, mirror consent into the
-				// show checkbox. On the initial render call we preserve
-				// whatever the per-entry init already set (which can be
-				// false even when consent is true, for entries the user
-				// has explicitly opted out of shortcode-on-showcase).
-				if ( fromUserAction ) {
-					consentBlock.showCheckbox.checked = checked;
-				}
 				syncShowcaseRequiredState(
 					consentBlock.checkbox,
 					[ descriptionInput, urlInput, photographerInput ],
@@ -973,7 +935,6 @@
 		var photographerInput = block.querySelector( '.jzsa-community-my-entry-photographer-name-input' );
 		var bioInput = block.querySelector( '.jzsa-community-my-entry-photographer-bio-input' );
 		var consentCheckbox = block.querySelector( '.jzsa-community-my-entry-consent-checkbox' );
-		var showShortcodeCheckbox = block.querySelector( '.jzsa-community-my-entry-show-shortcode-checkbox' );
 		if ( urlInput ) {
 			urlInput.addEventListener( 'blur', function () {
 				var val = urlInput.value.trim();
@@ -990,14 +951,6 @@
 				var tags = tagsInput ? tagsInput.value.trim() : '';
 				var siteUrl = normalizeUrlInput( urlInput ? urlInput.value : '' );
 				var showcaseConsent = consentCheckbox ? consentCheckbox.checked : false;
-				// When consent is on, send whatever the visible checkbox says.
-				// When consent is off, send the default (true) regardless of
-				// the visible state. The visible-unchecked state in that case
-				// is a pure UX cue; the stored preference stays at its default
-				// so the user does not silently lose it by toggling consent.
-				var showShortcode = showcaseConsent
-					? ( showShortcodeCheckbox ? showShortcodeCheckbox.checked : true )
-					: true;
 				var description = descInput ? descInput.value.trim() : '';
 				var photographerName = photographerInput ? photographerInput.value.trim() : '';
 				var photographerBio = bioInput ? bioInput.value.trim() : '';
@@ -1029,7 +982,6 @@
 					photographer_name: photographerName,
 					photographer_bio: photographerBio,
 					public_showcase_consent: showcaseConsent,
-					public_showcase_show_shortcode: showShortcode,
 				} )
 					.then( function ( res ) {
 						saveBtn.disabled = false;
@@ -1816,9 +1768,6 @@
 		var showcaseConsentToggles = Array.prototype.slice.call(
 			document.querySelectorAll( '.jzsa-pub-showcase-consent-toggle' )
 		);
-		var showShortcodeToggles = Array.prototype.slice.call(
-			document.querySelectorAll( '.jzsa-pub-showcase-show-shortcode-toggle' )
-		);
 		var publishRequiredControls = [
 			qs( '#jzsa-pub-description' ),
 			qs( '#jzsa-pub-site-url' ),
@@ -1836,33 +1785,13 @@
 			showcaseConsentToggles.forEach( function ( toggle ) {
 				toggle.checked = checked;
 			} );
-			// Visual: when consent is off the show-shortcode checkbox is
-			// disabled AND visually unchecked. When consent goes on it
-			// becomes enabled AND visually checked (the default). The
-			// submit handler treats consent-off as the default-true case,
-			// so this visual change does not alter what gets stored.
-			showShortcodeToggles.forEach( function ( toggle ) {
-				toggle.disabled = ! checked;
-				toggle.checked  = checked;
-			} );
 			syncShowcaseRequiredState( showcaseConsentEl, publishRequiredControls, publishRequiredBadges );
-		}
-
-		function syncPublishShowShortcode( checked ) {
-			showShortcodeToggles.forEach( function ( toggle ) {
-				toggle.checked = checked;
-			} );
 		}
 
 		syncPublishShowcaseConsent( showcaseConsentEl ? showcaseConsentEl.checked : false );
 		showcaseConsentToggles.forEach( function ( toggle ) {
 			toggle.addEventListener( 'change', function () {
 				syncPublishShowcaseConsent( toggle.checked );
-			} );
-		} );
-		showShortcodeToggles.forEach( function ( toggle ) {
-			toggle.addEventListener( 'change', function () {
-				syncPublishShowShortcode( toggle.checked );
 			} );
 		} );
 
@@ -1875,17 +1804,6 @@
 			var photographerName = ( qs( '#jzsa-pub-photographer-name' ) || {} ).value || '';
 			var photographerBio = ( qs( '#jzsa-pub-photographer-bio' ) || {} ).value || '';
 			var showcaseConsent = ( qs( '#jzsa-pub-showcase-consent' ) || {} ).checked || false;
-			// When consent is on, send whatever the visible checkbox says.
-			// When consent is off, send the default (true) regardless of the
-			// visible state. The visible-unchecked state in that case is a
-			// pure UX cue ("this control does not apply right now"); the
-			// stored preference stays at its default so the user does not
-			// silently lose their show-shortcode default by toggling consent.
-			var showShortcodeEl = qs( '#jzsa-pub-showcase-show-shortcode' );
-			var showShortcode = showcaseConsent
-				? ( showShortcodeEl ? showShortcodeEl.checked : true )
-				: true;
-
 			title     = title.trim();
 			shortcode = shortcode.trim();
 			desc      = desc.trim();
@@ -1921,7 +1839,6 @@
 				photographer_name:         photographerName,
 				photographer_bio:          photographerBio,
 				public_showcase_consent:   showcaseConsent,
-				public_showcase_show_shortcode: showShortcode,
 			} )
 				.then( function ( res ) {
 					btn.disabled = false;

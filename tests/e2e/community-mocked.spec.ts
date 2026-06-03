@@ -55,7 +55,6 @@ async function installCommunityAjaxMock(page: Page): Promise<{ requests: () => P
             avg_rating: 3.8,
             rating_count: 4,
             public_showcase_consent: true,
-            public_showcase_show_shortcode: true,
             author: {
                 display_name: 'Mock Author',
                 display_url: 'https://example.test',
@@ -111,8 +110,6 @@ async function installCommunityAjaxMock(page: Page): Promise<{ requests: () => P
                         photographer_name: fields.photographer_name,
                         photographer_bio: fields.photographer_bio,
                         public_showcase_consent: fields.public_showcase_consent === 'true',
-                        // Default true when missing or anything other than the literal 'false'.
-                        public_showcase_show_shortcode: fields.public_showcase_show_shortcode !== 'false',
                     });
                     browseEntries.unshift(published);
                     myEntries.unshift(published);
@@ -129,7 +126,6 @@ async function installCommunityAjaxMock(page: Page): Promise<{ requests: () => P
                                 description: fields.description,
                                 site_url: fields.site_url,
                                 public_showcase_consent: fields.public_showcase_consent === 'true',
-                                public_showcase_show_shortcode: fields.public_showcase_show_shortcode !== 'false',
                             }
                             : entry
                     ));
@@ -238,9 +234,6 @@ test.describe('Community - mocked AJAX flows', () => {
             site_url: 'https://example.test/published',
             photographer_name: 'Mock Publisher',
             public_showcase_consent: 'true',
-            // show_shortcode defaults to true in the new UI; the publish
-            // form sends it unconditionally.
-            public_showcase_show_shortcode: 'true',
         });
         expect(publish?.fields.shortcode).toContain('mode="gallery"');
         await expect.poll(async () => (await mock.requests()).filter((request) => request.action === 'jzsa_community_load_my_entries').length).toBeGreaterThanOrEqual(1);

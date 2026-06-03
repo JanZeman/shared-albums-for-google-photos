@@ -277,30 +277,6 @@ test.describe('Community - publish form validation', () => {
         await expect(page.locator('#jzsa-publish-result')).toContainText('required', { timeout: 5_000 });
     });
 
-    test('showcase show-shortcode checkbox mirrors showcase consent state', async ({ page }) => {
-        // Both checkboxes default to CHECKED. Toggling consent off disables
-        // and visually unchecks show; toggling consent back on re-enables
-        // and re-checks it. The publish form has a single consent panel
-        // now (the duplicate at the top of the table was removed); ids no
-        // longer carry a -bottom suffix.
-        const consent       = page.locator('#jzsa-pub-showcase-consent');
-        const showShortcode = page.locator('#jzsa-pub-showcase-show-shortcode');
-
-        await expect(consent).toBeChecked();
-        await expect(showShortcode).toBeEnabled();
-        await expect(showShortcode).toBeChecked();
-
-        await consent.uncheck();
-        await expect(showShortcode).toBeDisabled();
-        await expect(showShortcode).not.toBeChecked();
-
-        await consent.check();
-        await expect(showShortcode).toBeEnabled();
-        await expect(showShortcode).toBeChecked();
-
-        await showShortcode.uncheck();
-        await expect(showShortcode).not.toBeChecked();
-    });
 });
 
 // -------------------------------------------------------------------------
