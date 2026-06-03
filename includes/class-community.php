@@ -780,12 +780,12 @@ class JZSA_Community {
 				<summary class="jzsa-collapsible-summary">
 					<?php esc_html_e( 'Your Community Account', 'janzeman-shared-albums-for-google-photos' ); ?>
 					<span class="jzsa-summary-badge jzsa-summary-badge--disconnected">
-						<?php esc_html_e( 'Not signed in. Sign in to publish or rate shortcode samples.', 'janzeman-shared-albums-for-google-photos' ); ?>
+						<?php esc_html_e( 'Not signed in. Sign in to share your gallery and/or shortcode samples with the community.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</span>
 				</summary>
 			<?php endif; ?>
 			<p class="jzsa-help-text" style="margin-bottom:12px;">
-				<?php esc_html_e( 'Sign in to publish your own shortcode samples, manage the samples you shared, and rate samples from other plugin users.', 'janzeman-shared-albums-for-google-photos' ); ?>
+				<?php esc_html_e( 'Sign in to share your gallery page, publish shortcode samples, manage what you shared, and rate samples from other plugin users.', 'janzeman-shared-albums-for-google-photos' ); ?>
 			</p>
 			<?php if ( $connected ) : ?>
 				<div class="jzsa-community-status jzsa-community-status--connected">
@@ -900,6 +900,9 @@ class JZSA_Community {
 			<?php else : ?>
 				<p class="jzsa-help-text" style="margin-top:6px;">
 					<?php esc_html_e( 'Privacy: Your email is used to confirm it is really you and is stored to identify your account. You can delete your account from this page at any time to permanently remove it.', 'janzeman-shared-albums-for-google-photos' ); ?>
+				</p>
+				<p class="jzsa-help-text" style="margin-top:4px;">
+					<?php esc_html_e( 'We only use your email for sign-in and account-related messages. No newsletters, marketing emails, or spam.', 'janzeman-shared-albums-for-google-photos' ); ?>
 				</p>
 				<?php
 				$current_user            = wp_get_current_user();
