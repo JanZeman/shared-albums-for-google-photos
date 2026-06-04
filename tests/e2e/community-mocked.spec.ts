@@ -243,11 +243,15 @@ test.describe('Community - mocked AJAX flows', () => {
         await installCommunityAjaxMock(page);
         await page.goto(COMMUNITY_URL);
 
+        const accountSection = page.locator('.jzsa-community-account-section');
+        await expect(accountSection).toBeVisible({ timeout: 10_000 });
+        if ((await accountSection.getAttribute('open')) === null) {
+            await accountSection.locator(':scope > summary').click();
+        }
+
         const section = page.locator('.jzsa-community-installs-section');
-        await section.evaluate((el) => {
-            el.setAttribute('open', '');
-            el.dispatchEvent(new Event('toggle'));
-        });
+        await expect(section).toBeVisible({ timeout: 10_000 });
+        await section.locator(':scope > summary').click();
 
         await expect(page.locator('#jzsa-community-installs-list .jzsa-community-install-row')).toHaveCount(2, { timeout: 10_000 });
         await expect(page.locator('#jzsa-community-installs-list')).toContainText('example.test');

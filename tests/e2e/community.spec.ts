@@ -62,8 +62,7 @@ test.describe('Community - page structure', () => {
 
     test('page has the audience legend chips', async ({ page }) => {
         const chips = page.locator('.jzsa-community-audience-chip');
-        const count = await chips.count();
-        expect(count).toBe(2);
+        await expect(chips).toHaveCount(2, { timeout: 10_000 });
     });
 
     test('page has an account section', async ({ page }) => {
@@ -271,7 +270,7 @@ test.describe('Community - publish form validation', () => {
         await page.check('#jzsa-pub-showcase-consent');
         // Leave description, site URL, and entry info empty.
         await page.click('#jzsa-community-publish-btn');
-        await expect(page.locator('#jzsa-publish-result')).toContainText('required', { timeout: 5_000 });
+        await expect(page.locator('#jzsa-publish-result')).toContainText('Description must be at least 10 characters', { timeout: 5_000 });
     });
 
 });
