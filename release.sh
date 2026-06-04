@@ -3,14 +3,17 @@
 #
 # Shared Albums for Google Photos (by JanZeman) - Release Script
 #
-# Default:  Bumps version numbers across all files, builds a ZIP package.
-#           Does NOT touch git tags or SVN - safe for local testing.
+# Default:  Test release. Bumps version numbers across all files, builds a ZIP
+#           package, and copies it to ~/Downloads. Does NOT touch git tags or SVN.
 #
-# --now:    Full release. Everything above plus git tag + push and
+# --test:   Same as default; explicit ZIP-only test release.
+#
+# --prod:   Production release. Everything above plus git tag + push and
 #           SVN trunk sync + commit + tag.
 #
-# Usage:    ./release.sh <version>          # build ZIP only
-#           ./release.sh --now <version>    # full release
+# Usage:    ./release.sh <version>          # test release, ZIP only
+#           ./release.sh <version> --test   # test release, ZIP only
+#           ./release.sh <version> --prod   # production release
 #
 
 set -e  # Exit on error
@@ -49,24 +52,44 @@ UNWANTED_RELEASE_PATTERNS=(
 # ---------------------------------------------------------------------------
 # Parse arguments
 # ---------------------------------------------------------------------------
-FULL_RELEASE=0
+RELEASE_MODE="test"
 REQUESTED_VERSION=""
 
 for arg in "$@"; do
     case "$arg" in
-        --now) FULL_RELEASE=1 ;;
-        *)          REQUESTED_VERSION="$arg" ;;
+        --test) RELEASE_MODE="test" ;;
+        --prod) RELEASE_MODE="prod" ;;
+        --now|--zip-only)
+            echo -e "${RED}Error:${NC} '$arg' is no longer supported."
+            echo "Use: $(basename "$0") <version> --test"
+            echo " or: $(basename "$0") <version> --prod"
+            exit 1
+            ;;
+        --*)
+            echo -e "${RED}Error:${NC} Unknown option '$arg'"
+            echo "Use: $(basename "$0") <version> [--test|--prod]"
+            exit 1
+            ;;
+        *)
+            if [ -n "$REQUESTED_VERSION" ]; then
+                echo -e "${RED}Error:${NC} Multiple version arguments: '${REQUESTED_VERSION}' and '${arg}'"
+                exit 1
+            fi
+            REQUESTED_VERSION="$arg"
+            ;;
     esac
 done
 
 if [ -z "$REQUESTED_VERSION" ]; then
-    echo -e "${RED}Usage:${NC} $(basename "$0") [--now] <version>"
+    echo -e "${RED}Usage:${NC} $(basename "$0") <version> [--test|--prod]"
     echo ""
-    echo "  Default:  Bump versions, build ZIP (no git tag, no SVN)"
-    echo "  --now:     Full release (git tag + push, SVN sync + commit)"
+    echo "  Default:  Test release: bump versions, build ZIP, copy ZIP to ~/Downloads"
+    echo "  --test:   Same as default (no git tag, no SVN)"
+    echo "  --prod:   Production release (git tag + push, SVN sync + commit)"
     echo ""
     echo "Example: $(basename "$0") 1.0.39"
-    echo "         $(basename "$0") --now 1.0.39"
+    echo "         $(basename "$0") 1.0.39 --test"
+    echo "         $(basename "$0") 1.0.39 --prod"
     exit 1
 fi
 
@@ -167,11 +190,23 @@ fi
 
 echo -e "${GREEN}✓ All version references verified at ${REQUESTED_VERSION}${NC}"
 
+if [ "$RELEASE_MODE" = "prod" ]; then
+    echo ""
+    echo -e "${YELLOW}Production release requested.${NC}"
+    echo "This will push git changes/tags and publish to WordPress.org SVN if all checks pass."
+    echo "To continue, type exactly: ypsonova"
+    read -r -p "> " PROD_CONFIRMATION
+    if [ "$PROD_CONFIRMATION" != "ypsonova" ]; then
+        echo -e "${RED}Production release cancelled.${NC}"
+        exit 1
+    fi
+fi
+
 # ---------------------------------------------------------------------------
-# Git checks, tagging, and push (only with --now)
+# Git checks, tagging, and push (only with --prod)
 # ---------------------------------------------------------------------------
-if [ "$FULL_RELEASE" -eq 0 ]; then
-    echo -e "${YELLOW}Skipping git checks and tagging (use --now for full release).${NC}"
+if [ "$RELEASE_MODE" = "test" ]; then
+    echo -e "${YELLOW}Skipping git checks and tagging (use --prod for production release).${NC}"
 elif git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     echo -e "${YELLOW}Checking git state...${NC}"
 
@@ -396,6 +431,15 @@ else
     exit 1
 fi
 
+DOWNLOADS_DIR="${HOME}/Downloads"
+DOWNLOADS_ZIP_PATH="${DOWNLOADS_DIR}/${ZIP_NAME}"
+if [ -d "$DOWNLOADS_DIR" ]; then
+    cp -f "$ZIP_PATH" "$DOWNLOADS_ZIP_PATH"
+    echo -e "${GREEN}✓ Copied archive to: ${DOWNLOADS_ZIP_PATH}${NC}"
+else
+    echo -e "${YELLOW}Warning:${NC} Downloads directory not found at ${DOWNLOADS_DIR}; skipping copy."
+fi
+
 # Generate checksums
 echo -e "${YELLOW}Generating checksums...${NC}"
 if command -v md5 &> /dev/null; then
@@ -413,8 +457,8 @@ fi
 
 SYNCED_TO_SVN=0
 
-if [ "$FULL_RELEASE" -eq 0 ]; then
-    echo -e "${YELLOW}Skipping SVN sync (use --now for full release).${NC}"
+if [ "$RELEASE_MODE" = "test" ]; then
+    echo -e "${YELLOW}Skipping SVN sync (use --prod for production release).${NC}"
 else
     # Unzip to temporary release directory and sync into SVN trunk (if present)
     echo -e "${YELLOW}Extracting to temporary release directory...${NC}"
@@ -466,6 +510,9 @@ echo -e "${GREEN}✓ Release package created successfully!${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
 echo -e "${GREEN}Package:${NC}     ${ZIP_PATH}"
+if [ -n "${DOWNLOADS_ZIP_PATH:-}" ] && [ -f "$DOWNLOADS_ZIP_PATH" ]; then
+    echo -e "${GREEN}Downloads:${NC}   ${DOWNLOADS_ZIP_PATH}"
+fi
 echo -e "${GREEN}Extracted:${NC}   ${EXTRACT_DIR}"
 echo -e "${GREEN}Size:${NC}        ${FILE_SIZE}"
 if [ "$SYNCED_TO_SVN" -eq 1 ]; then
@@ -479,12 +526,12 @@ if [ "$SYNCED_TO_SVN" -eq 1 ]; then
     echo "  - If the automatic SVN commit/tagging step (below) fails, follow the printed error message and run the svn commands manually."
 else
     echo "  - Test by installing ${ZIP_NAME} on a WordPress site"
-    echo "  - When ready, run: $(basename "$0") --now ${REQUESTED_VERSION}"
+    echo "  - When ready, run: $(basename "$0") ${REQUESTED_VERSION} --prod"
 fi
 echo ""
 
 # If we synced to SVN, stage new files in SVN, show status, and optionally commit & tag
-if [ "$FULL_RELEASE" -eq 1 ] && [ "$SYNCED_TO_SVN" -eq 1 ] && command -v svn &> /dev/null; then
+if [ "$RELEASE_MODE" = "prod" ] && [ "$SYNCED_TO_SVN" -eq 1 ] && command -v svn &> /dev/null; then
     SVN_ROOT="${SVN_TRUNK%/trunk}"
 
     echo -e "${YELLOW}Running 'svn add . --force' in trunk (no commit yet)...${NC}"

@@ -37,21 +37,31 @@ git add -A && git commit -m "X.Y.Z"
 ./release.sh X.Y.Z
 ```
 
-To **only build the ZIP** (no git tag, no SVN sync - useful for local testing):
+The default mode is a **test release**: it bumps/validates versions, builds the ZIP, and copies it to `~/Downloads`. It does not create a git tag or publish to WordPress.org SVN.
 
 ```bash
-./release.sh --zip-only X.Y.Z
+./release.sh X.Y.Z
+./release.sh X.Y.Z --test
 ```
 
-The full release script will:
+For a **production release**:
+
+```bash
+./release.sh X.Y.Z --prod
+```
+
+Every run copies the generated ZIP to `~/Downloads`, overwriting an existing file with the same name.
+
+The production release script will:
 
 1. **Validate** that the requested version matches all versioned files
 2. **Check git state** - must be on `main` with a clean working tree
 3. **Create and push a git tag** (e.g., `1.0.7`) to origin
 4. **Build a ZIP** at `release/janzeman-shared-albums-for-google-photos-X.Y.Z.zip`
-5. **Sync to SVN trunk** (if the SVN working copy exists)
-6. **Commit to SVN** and create an SVN tag under `tags/X.Y.Z`
-7. **Clean up** temporary build files
+5. **Copy the ZIP** to `~/Downloads/janzeman-shared-albums-for-google-photos-X.Y.Z.zip`
+6. **Sync to SVN trunk** (if the SVN working copy exists)
+7. **Commit to SVN** and create an SVN tag under `tags/X.Y.Z`
+8. **Clean up** temporary build files
 
 ## One-time SVN setup
 
