@@ -69,7 +69,17 @@ The production release script will:
 ./setup-wporg-svn.sh
 ```
 
-This creates a sparse checkout with only `trunk` and `tags` (skipping `assets` and `branches` to save space).
+This creates a normal full WordPress.org SVN checkout, matching the simple setup
+used by earlier releases:
+
+```bash
+mkdir -p release/wp-svn
+svn checkout https://plugins.svn.wordpress.org/janzeman-shared-albums-for-google-photos/ \
+  release/wp-svn/janzeman-shared-albums-for-google-photos
+```
+
+The helper also updates an existing clean checkout. It refuses to modify a dirty
+checkout so release leftovers are not hidden.
 
 If you keep the SVN checkout elsewhere, set `SVN_TRUNK_PATH` when running the production release:
 

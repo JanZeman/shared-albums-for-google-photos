@@ -475,11 +475,8 @@ else
 
         assert_svn_clean "$SVN_ROOT"
 
-        echo -e "${YELLOW}Updating SVN trunk and assets before sync...${NC}"
-        svn update "$SVN_TRUNK" --depth=infinity
-        if [ -d "$SVN_ASSETS" ]; then
-            svn update "$SVN_ASSETS" --depth=files
-        fi
+        echo -e "${YELLOW}Updating SVN working copy before sync...${NC}"
+        svn update "$SVN_ROOT"
 
         assert_svn_clean "$SVN_ROOT"
 
