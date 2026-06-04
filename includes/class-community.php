@@ -186,8 +186,8 @@ class JZSA_Community {
 	 * @return string Error message, or empty string when valid.
 	 */
 	private static function validate_community_entry_payload( $title, $shortcode, $description, $tags_raw, $entry_url, $entry_info, $consent ) {
-		if ( '' === $title || self::string_length( $title ) < 3 ) {
-			return __( 'Title must be at least 3 characters.', 'janzeman-shared-albums-for-google-photos' );
+		if ( '' === $title || self::string_length( $title ) < 10 ) {
+			return __( 'Title must be at least 10 characters.', 'janzeman-shared-albums-for-google-photos' );
 		}
 
 		if ( self::string_length( $title ) > 120 ) {
@@ -202,8 +202,8 @@ class JZSA_Community {
 			return __( 'Shortcode must include a valid Google Photos share URL in the link parameter.', 'janzeman-shared-albums-for-google-photos' );
 		}
 
-		if ( '' === $description ) {
-			return __( 'Description is required.', 'janzeman-shared-albums-for-google-photos' );
+		if ( '' === $description || self::string_length( $description ) < 10 ) {
+			return __( 'Description must be at least 10 characters.', 'janzeman-shared-albums-for-google-photos' );
 		}
 
 		if ( self::string_length( $description ) > 500 ) {

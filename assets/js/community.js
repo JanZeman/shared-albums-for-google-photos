@@ -145,8 +145,8 @@
 	}
 
 	function validateCommunityEntryFields( data ) {
-		if ( ! data.title || data.title.length < 3 ) {
-			return 'Title must be at least 3 characters.';
+		if ( ! data.title || data.title.length < 10 ) {
+			return 'Title must be at least 10 characters.';
 		}
 		if ( data.title.length > 120 ) {
 			return 'Title must be 120 characters or fewer.';
@@ -157,8 +157,8 @@
 		if ( ! extractCommunityAlbumLink( data.shortcode ) ) {
 			return 'Shortcode must include a valid Google Photos share URL in the link parameter.';
 		}
-		if ( ! data.description ) {
-			return 'Description is required.';
+		if ( ! data.description || data.description.length < 10 ) {
+			return 'Description must be at least 10 characters.';
 		}
 		if ( data.description.length > 500 ) {
 			return 'Description must be 500 characters or fewer.';

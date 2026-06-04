@@ -233,13 +233,13 @@ test.describe('Community - publish form validation', () => {
 
     test('empty title shows validation error', async ({ page }) => {
         await page.click('#jzsa-community-publish-btn');
-        await expect(page.locator('#jzsa-publish-result')).toContainText('Title must be at least 3 characters', { timeout: 5_000 });
+        await expect(page.locator('#jzsa-publish-result')).toContainText('Title must be at least 10 characters', { timeout: 5_000 });
     });
 
-    test('title shorter than 3 characters shows validation error', async ({ page }) => {
+    test('title shorter than 10 characters shows validation error', async ({ page }) => {
         await page.fill('#jzsa-pub-title', 'ab');
         await page.click('#jzsa-community-publish-btn');
-        await expect(page.locator('#jzsa-publish-result')).toContainText('Title must be at least 3 characters', { timeout: 5_000 });
+        await expect(page.locator('#jzsa-publish-result')).toContainText('Title must be at least 10 characters', { timeout: 5_000 });
     });
 
     test('valid title but no shortcode shows validation error', async ({ page }) => {

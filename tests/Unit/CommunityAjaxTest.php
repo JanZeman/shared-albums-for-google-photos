@@ -61,7 +61,7 @@ class CommunityAjaxTest extends TestCase {
     private function validEntryPost( array $overrides = array() ): array {
         return array_merge(
             array(
-                'title'                   => 'My Album',
+                'title'                   => 'My Test Album',
                 'shortcode'               => '[jzsa-album link="https://photos.google.com/share/AF1QipTest"]',
                 'description'             => 'Description',
                 'tags'                    => 'landscape,travel',

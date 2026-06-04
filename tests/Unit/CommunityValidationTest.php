@@ -74,14 +74,14 @@ class CommunityValidationTest extends TestCase {
     // Title validation
     // -------------------------------------------------------------------------
 
-    public function test_title_too_short_2_chars_fails(): void {
-        $result = $this->validate( title: 'AB' );
+    public function test_title_too_short_9_chars_fails(): void {
+        $result = $this->validate( title: '123456789' );
         $this->assertNotSame( '', $result );
-        $this->assertStringContainsString( '3', $result );
+        $this->assertStringContainsString( '10', $result );
     }
 
-    public function test_title_exactly_3_chars_passes(): void {
-        $result = $this->validate( title: 'ABC' );
+    public function test_title_exactly_10_chars_passes(): void {
+        $result = $this->validate( title: '1234567890' );
         $this->assertSame( '', $result );
     }
 
@@ -155,6 +155,12 @@ class CommunityValidationTest extends TestCase {
     public function test_description_empty_fails(): void {
         $result = $this->validate( description: '' );
         $this->assertNotSame( '', $result );
+    }
+
+    public function test_description_too_short_9_chars_fails(): void {
+        $result = $this->validate( description: '123456789' );
+        $this->assertNotSame( '', $result );
+        $this->assertStringContainsString( '10', $result );
     }
 
     // -------------------------------------------------------------------------
