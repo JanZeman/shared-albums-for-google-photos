@@ -55,12 +55,12 @@ Every run copies the generated ZIP to `~/Downloads`, overwriting an existing fil
 The production release script will:
 
 1. **Validate** that the requested version matches all versioned files
-2. **Check git state** - must be on `main` with a clean working tree
-3. **Create and push a git tag** (e.g., `1.0.7`) to origin
-4. **Build a ZIP** at `release/janzeman-shared-albums-for-google-photos-X.Y.Z.zip`
-5. **Copy the ZIP** to `~/Downloads/janzeman-shared-albums-for-google-photos-X.Y.Z.zip`
-6. **Sync to SVN trunk** (fails if the SVN working copy is missing)
-7. **Commit to SVN** and create an SVN tag under `tags/X.Y.Z`
+2. **Check git state** - must be on `main` with a clean working tree, and the requested git tag must not already exist locally or on origin
+3. **Build a ZIP** at `release/janzeman-shared-albums-for-google-photos-X.Y.Z.zip`
+4. **Copy the ZIP** to `~/Downloads/janzeman-shared-albums-for-google-photos-X.Y.Z.zip`
+5. **Sync to SVN trunk** (fails if the SVN working copy is missing)
+6. **Commit to SVN** and create an SVN tag under `tags/X.Y.Z`
+7. **Push the git branch, create the git tag, and push the git tag** only after successful SVN delivery
 8. **Clean up** temporary build files
 
 ## One-time SVN setup
@@ -82,5 +82,6 @@ SVN_TRUNK_PATH=/path/to/janzeman-shared-albums-for-google-photos/trunk ./release
 - **"Version in main plugin file is X but you requested Y"** - you forgot to bump one of the three files in step 1.
 - **"git working tree is not clean"** - commit or stash changes first.
 - **"should be run from main/master"** - switch to the main branch.
+- **"git tag already exists"** - delete the failed local/remote tag before retrying if the previous production release did not complete.
 - **SVN commit fails** - check your SVN credentials. WordPress.org SVN uses your wp.org username and password.
 - **SVN trunk not found** - run the one-time SVN setup above in the current clone, or pass `SVN_TRUNK_PATH=/path/to/trunk`.

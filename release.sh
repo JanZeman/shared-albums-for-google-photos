@@ -203,7 +203,7 @@ if [ "$RELEASE_MODE" = "prod" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Git checks, tagging, and push (only with --prod)
+# Git checks and tag preflight (only with --prod)
 # ---------------------------------------------------------------------------
 if [ "$RELEASE_MODE" = "test" ]; then
     echo -e "${YELLOW}Skipping git checks and tagging (use --prod for production release).${NC}"
@@ -225,46 +225,28 @@ elif git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 
     TAG_RAW="${VERSION}"
 
-    tag_points_at_head() {
-        local tag="$1"
-        git rev-parse "$tag" >/dev/null 2>&1 || return 1
-        git tag --points-at HEAD | grep -qx "$tag"
-    }
+    if git rev-parse "$TAG_RAW" >/dev/null 2>&1; then
+        echo -e "${RED}Error:${NC} git tag '${TAG_RAW}' already exists locally."
+        echo "Production release creates the git tag only after successful SVN delivery."
+        echo "Delete or rename the local tag before re-running the release."
+        exit 1
+    fi
 
-    if tag_points_at_head "$TAG_RAW"; then
-        echo -e "${GREEN}✓ Git tag for version ${VERSION} already points at HEAD.${NC}"
-    else
-        # Tag does not point at HEAD; check if it exists at all
-        if git rev-parse "$TAG_RAW" >/dev/null 2>&1; then
-            echo -e "${RED}Error:${NC} git tag '${TAG_RAW}' already exists but does not point at HEAD."
-            echo "Please move HEAD to that tag or delete/adjust the tag manually, then re-run release.sh."
-            exit 1
-        fi
+    if ! REMOTE_TAG_OUTPUT=$(git ls-remote --tags origin "refs/tags/${TAG_RAW}" 2>/dev/null); then
+        echo -e "${RED}Error:${NC} Could not check whether remote git tag '${TAG_RAW}' already exists."
+        echo "Please check network/remote access, then re-run the release."
+        exit 1
+    fi
 
-        echo -e "${YELLOW}Creating git tag ${TAG_RAW} at HEAD...${NC}"
-        if ! git tag -a "${TAG_RAW}" -m "${TAG_RAW}"; then
-            echo -e "${RED}Error:${NC} Failed to create git tag '${TAG_RAW}'."
-            exit 1
-        fi
-
-        echo -e "${YELLOW}Pushing branch ${CURRENT_BRANCH} to origin...${NC}"
-        if ! git push origin "${CURRENT_BRANCH}"; then
-            echo -e "${RED}Error:${NC} Failed to push branch '${CURRENT_BRANCH}' to origin."
-            echo "Please fix the git remote issue and push manually."
-            exit 1
-        fi
-
-        echo -e "${YELLOW}Pushing tag ${TAG_RAW} to origin...${NC}"
-        if ! git push origin "${TAG_RAW}"; then
-            echo -e "${RED}Error:${NC} Failed to push git tag '${TAG_RAW}' to origin."
-            echo "You may need to push the tag manually with: git push origin ${TAG_RAW}"
-            exit 1
-        fi
-
-        echo -e "${GREEN}✓ Git tag ${TAG_RAW} created and pushed to origin.${NC}"
+    if [ -n "$REMOTE_TAG_OUTPUT" ]; then
+        echo -e "${RED}Error:${NC} git tag '${TAG_RAW}' already exists on origin."
+        echo "Production release creates and pushes the git tag only after successful SVN delivery."
+        echo "Delete the remote tag before re-running the release if this failed release should be retried."
+        exit 1
     fi
 else
-    echo -e "${YELLOW}Warning: not in a git repository; skipping git checks.${NC}"
+    echo -e "${RED}Error:${NC} production release must be run from a git repository."
+    exit 1
 fi
 
 echo -e "${BLUE}================================================================${NC}"
@@ -510,32 +492,25 @@ else
     fi
 fi
 
-# Summary
-echo ""
-echo -e "${BLUE}========================================${NC}"
-echo -e "${GREEN}✓ Release package created successfully!${NC}"
-echo -e "${BLUE}========================================${NC}"
-echo ""
-echo -e "${GREEN}Package:${NC}     ${ZIP_PATH}"
-if [ -n "${DOWNLOADS_ZIP_PATH:-}" ] && [ -f "$DOWNLOADS_ZIP_PATH" ]; then
-    echo -e "${GREEN}Downloads:${NC}   ${DOWNLOADS_ZIP_PATH}"
-fi
-echo -e "${GREEN}Extracted:${NC}   ${EXTRACT_DIR}"
-echo -e "${GREEN}Size:${NC}        ${FILE_SIZE}"
-if [ "$SYNCED_TO_SVN" -eq 1 ]; then
-    echo -e "${GREEN}SVN trunk:${NC}   ${SVN_TRUNK}"
-fi
-echo ""
-echo -e "${YELLOW}Next steps:${NC}"
-if [ "$SYNCED_TO_SVN" -eq 1 ]; then
-    echo "  - Git tag has been validated/created and pushed to origin."
-    echo "  - SVN trunk has been synced from the release package."
-    echo "  - If the automatic SVN commit/tagging step (below) fails, follow the printed error message and run the svn commands manually."
-else
+# Test-release summary. Production release prints its summary only after
+# SVN delivery and git tag/push have completed.
+if [ "$RELEASE_MODE" = "test" ]; then
+    echo ""
+    echo -e "${BLUE}========================================${NC}"
+    echo -e "${GREEN}✓ Test release package created successfully!${NC}"
+    echo -e "${BLUE}========================================${NC}"
+    echo ""
+    echo -e "${GREEN}Package:${NC}     ${ZIP_PATH}"
+    if [ -n "${DOWNLOADS_ZIP_PATH:-}" ] && [ -f "$DOWNLOADS_ZIP_PATH" ]; then
+        echo -e "${GREEN}Downloads:${NC}   ${DOWNLOADS_ZIP_PATH}"
+    fi
+    echo -e "${GREEN}Size:${NC}        ${FILE_SIZE}"
+    echo ""
+    echo -e "${YELLOW}Next steps:${NC}"
     echo "  - Test by installing ${ZIP_NAME} on a WordPress site"
     echo "  - When ready, run: $(basename "$0") ${REQUESTED_VERSION} --prod"
+    echo ""
 fi
-echo ""
 
 # If we synced to SVN, stage new files in SVN, show status, and optionally commit & tag
 if [ "$RELEASE_MODE" = "prod" ] && [ "$SYNCED_TO_SVN" -eq 1 ] && command -v svn &> /dev/null; then
@@ -608,6 +583,43 @@ if [ "$RELEASE_MODE" = "prod" ] && [ "$SYNCED_TO_SVN" -eq 1 ] && command -v svn 
             fi
         fi
     fi
+fi
+
+if [ "$RELEASE_MODE" = "prod" ]; then
+    echo -e "${YELLOW}Pushing branch ${CURRENT_BRANCH} to origin after successful SVN delivery...${NC}"
+    if ! git push origin "${CURRENT_BRANCH}"; then
+        echo -e "${RED}Error:${NC} Failed to push branch '${CURRENT_BRANCH}' to origin."
+        echo "SVN delivery succeeded, but git branch push failed. Please fix the git remote issue and push manually."
+        exit 1
+    fi
+
+    echo -e "${YELLOW}Creating git tag ${TAG_RAW} at HEAD after successful SVN delivery...${NC}"
+    if ! git tag -a "${TAG_RAW}" -m "${TAG_RAW}"; then
+        echo -e "${RED}Error:${NC} Failed to create git tag '${TAG_RAW}'."
+        echo "SVN delivery succeeded, but git tag creation failed."
+        exit 1
+    fi
+
+    echo -e "${YELLOW}Pushing git tag ${TAG_RAW} to origin...${NC}"
+    if ! git push origin "${TAG_RAW}"; then
+        echo -e "${RED}Error:${NC} Failed to push git tag '${TAG_RAW}'."
+        echo "SVN delivery succeeded and the local git tag exists. Push it manually with: git push origin ${TAG_RAW}"
+        exit 1
+    fi
+
+    echo ""
+    echo -e "${BLUE}========================================${NC}"
+    echo -e "${GREEN}✓ Production release completed successfully!${NC}"
+    echo -e "${BLUE}========================================${NC}"
+    echo ""
+    echo -e "${GREEN}Package:${NC}     ${ZIP_PATH}"
+    if [ -n "${DOWNLOADS_ZIP_PATH:-}" ] && [ -f "$DOWNLOADS_ZIP_PATH" ]; then
+        echo -e "${GREEN}Downloads:${NC}   ${DOWNLOADS_ZIP_PATH}"
+    fi
+    echo -e "${GREEN}Size:${NC}        ${FILE_SIZE}"
+    echo -e "${GREEN}SVN trunk:${NC}   ${SVN_TRUNK}"
+    echo -e "${GREEN}Git tag:${NC}     ${TAG_RAW}"
+    echo ""
 fi
 
 # Clean up build directory and temporary extract
