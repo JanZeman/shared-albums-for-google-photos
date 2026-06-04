@@ -452,6 +452,15 @@ else
     SVN_TRUNK="${SVN_TRUNK_PATH:-$SVN_TRUNK_DEFAULT}"
 
     if [ -d "$SVN_TRUNK" ]; then
+        SVN_ROOT="${SVN_TRUNK%/trunk}"
+        SVN_ASSETS="${SVN_ROOT}/assets"
+
+        echo -e "${YELLOW}Updating SVN trunk and assets before sync...${NC}"
+        svn update "$SVN_TRUNK" --depth=infinity
+        if [ -d "$SVN_ASSETS" ]; then
+            svn update "$SVN_ASSETS" --depth=files
+        fi
+
         echo -e "${YELLOW}Syncing files into SVN trunk: ${SVN_TRUNK}${NC}"
         # Remove existing plugin files from trunk, but keep .svn metadata
         rm -rf "${SVN_TRUNK}"/*
@@ -459,7 +468,6 @@ else
         SYNCED_TO_SVN=1
 
         # Sync screenshots into SVN assets directory
-        SVN_ASSETS="${SVN_TRUNK%/trunk}/assets"
         SCREENSHOTS_DIR="${SCRIPT_DIR}/screenshots"
         if [ ! -d "$SCREENSHOTS_DIR" ]; then
             echo -e "${RED}Error:${NC} Screenshots directory not found at ${SCREENSHOTS_DIR}"

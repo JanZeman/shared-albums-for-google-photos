@@ -27,10 +27,13 @@ else
 fi
 
 echo "Updating trunk..."
-svn update "${SVN_ROOT}/trunk"
+svn update "${SVN_ROOT}/trunk" --depth=infinity
 
 echo "Updating tags..."
 svn update "${SVN_ROOT}/tags" --depth=immediates
+
+echo "Updating assets..."
+svn update "${SVN_ROOT}/assets" --depth=files
 
 echo ""
 echo "WordPress.org SVN checkout is ready:"
