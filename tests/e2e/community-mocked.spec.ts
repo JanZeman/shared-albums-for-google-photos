@@ -240,6 +240,7 @@ test.describe('Community - mocked AJAX flows', () => {
     });
 
     test('authorized sites collapse duplicate site URLs', async ({ page }) => {
+        test.skip(SKIP_CONNECTED_ON_CI, 'Authorized sites only render for a connected community user; not configured on CI yet.');
         await installCommunityAjaxMock(page);
         await page.goto(COMMUNITY_URL);
 

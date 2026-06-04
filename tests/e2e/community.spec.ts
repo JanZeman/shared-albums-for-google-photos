@@ -19,7 +19,7 @@ const COMMUNITY_URL = '/wp-admin/admin.php?page=janzeman-shared-albums-for-googl
 //      capture its JWT.
 //   2. Add JZSA_E2E_CONNECTED_JWT as a GitHub Actions secret and pass
 //      it through to setup-fixtures.php in .github/workflows/tests.yml.
-//   3. Delete SKIP_CONNECTED_ON_CI and its four call sites below.
+//   3. Delete SKIP_CONNECTED_ON_CI and its call sites below.
 //
 // Affected describes: lines tagged with SKIP_CONNECTED_ON_CI.
 // =====================================================================
@@ -61,6 +61,7 @@ test.describe('Community - page structure', () => {
     });
 
     test('page has the audience legend chips', async ({ page }) => {
+        test.skip(SKIP_CONNECTED_ON_CI, 'Audience legend only renders for a connected community user; not configured on CI yet.');
         const chips = page.locator('.jzsa-community-audience-chip');
         await expect(chips).toHaveCount(2, { timeout: 10_000 });
     });
