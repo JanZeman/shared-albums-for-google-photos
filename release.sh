@@ -437,6 +437,24 @@ if command -v shasum &> /dev/null; then
     echo -e "${GREEN}SHA256:${NC} ${SHA256_HASH}"
 fi
 
+assert_svn_clean() {
+    local svn_root="$1"
+    local status_output
+
+    status_output=$(cd "$svn_root" && svn status trunk assets tags 2>/dev/null || true)
+    if [ -n "$status_output" ]; then
+        echo -e "${RED}Error:${NC} SVN working copy is not clean before release sync."
+        echo "Path: ${svn_root}"
+        echo ""
+        echo "$status_output"
+        echo ""
+        echo "Fix the SVN checkout before retrying. The safest reset for this release-only checkout is:"
+        echo "  rm -rf \"${svn_root}\""
+        echo "  ./setup-wporg-svn.sh"
+        exit 1
+    fi
+}
+
 SYNCED_TO_SVN=0
 
 if [ "$RELEASE_MODE" = "test" ]; then
@@ -455,11 +473,15 @@ else
         SVN_ROOT="${SVN_TRUNK%/trunk}"
         SVN_ASSETS="${SVN_ROOT}/assets"
 
+        assert_svn_clean "$SVN_ROOT"
+
         echo -e "${YELLOW}Updating SVN trunk and assets before sync...${NC}"
         svn update "$SVN_TRUNK" --depth=infinity
         if [ -d "$SVN_ASSETS" ]; then
             svn update "$SVN_ASSETS" --depth=files
         fi
+
+        assert_svn_clean "$SVN_ROOT"
 
         echo -e "${YELLOW}Syncing files into SVN trunk: ${SVN_TRUNK}${NC}"
         # Remove existing plugin files from trunk, but keep .svn metadata

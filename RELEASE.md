@@ -85,3 +85,4 @@ SVN_TRUNK_PATH=/path/to/janzeman-shared-albums-for-google-photos/trunk ./release
 - **"git tag already exists"** - delete the failed local/remote tag before retrying if the previous production release did not complete.
 - **SVN commit fails** - check your SVN credentials. WordPress.org SVN uses your wp.org username and password.
 - **SVN trunk not found** - run the one-time SVN setup above in the current clone, or pass `SVN_TRUNK_PATH=/path/to/trunk`.
+- **SVN working copy is not clean** - reset the release-only checkout with `rm -rf release/wp-svn/janzeman-shared-albums-for-google-photos && ./setup-wporg-svn.sh`.

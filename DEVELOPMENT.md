@@ -38,6 +38,14 @@ the SVN checkout elsewhere, pass the trunk path when releasing:
 SVN_TRUNK_PATH=/path/to/janzeman-shared-albums-for-google-photos/trunk ./release.sh X.Y.Z --prod
 ```
 
+If a production release fails midway and leaves many `A`, `M`, or `!` entries in
+`release/wp-svn/...`, reset that release-only checkout and recreate it:
+
+```bash
+rm -rf release/wp-svn/janzeman-shared-albums-for-google-photos
+./setup-wporg-svn.sh
+```
+
 ## Release Commands
 
 Test release, ZIP only:
