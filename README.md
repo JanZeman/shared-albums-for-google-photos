@@ -101,6 +101,9 @@ If you need to display descriptions longer than 100 characters, you have two opt
 
 ## Development
 
+For local test and release setup, including the WordPress.org SVN checkout used
+for production releases, see [DEVELOPMENT.md](DEVELOPMENT.md).
+
 ### File Structure
 
 ``` txt

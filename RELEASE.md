@@ -4,7 +4,7 @@
 
 - Clean git working tree on `main` branch
 - `svn` CLI installed (for WordPress.org publishing)
-- SVN working copy checked out at `release/wp-svn/janzeman-shared-albums-for-google-photos/` (one-time setup, see below)
+- SVN working copy checked out at `release/wp-svn/janzeman-shared-albums-for-google-photos/` (one-time setup, see below). Production releases fail if this checkout is missing.
 
 ## Steps
 
@@ -59,23 +59,23 @@ The production release script will:
 3. **Create and push a git tag** (e.g., `1.0.7`) to origin
 4. **Build a ZIP** at `release/janzeman-shared-albums-for-google-photos-X.Y.Z.zip`
 5. **Copy the ZIP** to `~/Downloads/janzeman-shared-albums-for-google-photos-X.Y.Z.zip`
-6. **Sync to SVN trunk** (if the SVN working copy exists)
+6. **Sync to SVN trunk** (fails if the SVN working copy is missing)
 7. **Commit to SVN** and create an SVN tag under `tags/X.Y.Z`
 8. **Clean up** temporary build files
 
 ## One-time SVN setup
 
 ```bash
-mkdir -p release/wp-svn
-cd release/wp-svn
-svn checkout https://plugins.svn.wordpress.org/janzeman-shared-albums-for-google-photos/ \
-    janzeman-shared-albums-for-google-photos --depth=immediates
-cd janzeman-shared-albums-for-google-photos
-svn update trunk
-svn update tags --depth=immediates
+./setup-wporg-svn.sh
 ```
 
 This creates a sparse checkout with only `trunk` and `tags` (skipping `assets` and `branches` to save space).
+
+If you keep the SVN checkout elsewhere, set `SVN_TRUNK_PATH` when running the production release:
+
+```bash
+SVN_TRUNK_PATH=/path/to/janzeman-shared-albums-for-google-photos/trunk ./release.sh X.Y.Z --prod
+```
 
 ## Troubleshooting
 
@@ -83,4 +83,4 @@ This creates a sparse checkout with only `trunk` and `tags` (skipping `assets` a
 - **"git working tree is not clean"** - commit or stash changes first.
 - **"should be run from main/master"** - switch to the main branch.
 - **SVN commit fails** - check your SVN credentials. WordPress.org SVN uses your wp.org username and password.
-- **SVN trunk not found** - run the one-time SVN setup above.
+- **SVN trunk not found** - run the one-time SVN setup above in the current clone, or pass `SVN_TRUNK_PATH=/path/to/trunk`.

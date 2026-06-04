@@ -499,7 +499,14 @@ else
             fi
         fi
     else
-        echo -e "${YELLOW}SVN trunk not found at ${SVN_TRUNK}. Skipping SVN sync.${NC}"
+        echo -e "${RED}Error:${NC} SVN trunk not found at ${SVN_TRUNK}."
+        echo "Production release cannot continue without the WordPress.org SVN checkout."
+        echo ""
+        echo "Fix it with:"
+        echo "  ./setup-wporg-svn.sh"
+        echo ""
+        echo "Or set SVN_TRUNK_PATH to an existing SVN trunk checkout and re-run the release."
+        exit 1
     fi
 fi
 
