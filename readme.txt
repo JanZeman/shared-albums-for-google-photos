@@ -4,7 +4,7 @@ Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 7.0
-Stable tag: 2.3.4
+Stable tag: 2.3.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,15 +18,15 @@ Add one shortcode, choose a gallery, slider, or carousel layout, and the plugin 
 It is built for photographers, bloggers, clubs, families, travel sites, event pages,
 and anyone who already organizes photos in Google Photos and wants to show them beautifully on a WordPress site.
 
-= What It Does =
+= Why Install It =
 
-* **Embeds Google Photos albums** - Use a public Google Photos share link in a WordPress shortcode.
-* **Keeps your workflow simple** - Manage the album in Google Photos; show it on your site.
-* **Looks good on any screen** - Responsive gallery, slider, carousel, fullscreen, and lightbox views.
-* **Supports photos and videos** - Display mixed albums without building a separate gallery.
-* **Feels natural to browse** - Swipe, tap, zoom, use keyboard navigation, or start a slideshow.
-* **Includes useful display options** - Show counters, descriptions, dates, image info, download buttons, link buttons, and more.
-* **Handles performance details** - Lazy loading, caching, and progressive loading help large albums feel smooth.
+* **No duplicate uploads** - Keep your photos in Google Photos and show them on your WordPress site.
+* **Less gallery maintenance** - Update the album at the source instead of rebuilding galleries by hand.
+* **A better visitor experience** - Give people a responsive gallery, slider, carousel, fullscreen view, or lightbox.
+* **Photo and video support** - Share mixed albums without splitting them into separate WordPress galleries.
+* **Mobile-friendly browsing** - Let visitors swipe, tap, zoom, navigate, and enjoy slideshows naturally.
+* **Useful presentation options** - Show descriptions, dates, counters, buttons, and image details when they help.
+* **Built for real albums** - Caching, lazy loading, and progressive loading help larger albums stay practical.
 
 = Why People Use It =
 
@@ -37,18 +37,13 @@ This plugin connects the two.
 Instead of exporting photos, uploading them to the media library, rebuilding galleries,
 and repeating the work after every album change, you can share the Google Photos album once and embed it where you need it.
 
-= Setup Is Simple =
+= What Happens After Installing =
 
-1. Share an album in Google Photos and copy its share link.
-2. Add the link to the `[jzsa-album]` shortcode.
-3. Publish the post or page.
+The plugin adds its own WordPress admin menu with a friendly Guide page,
+ready-to-use examples, a live shortcode playground, and the current parameter reference.
 
-Example:
-
-`[jzsa-album link="https://photos.google.com/share/AF1QipNxLo..."]`
-
-The plugin also includes a Settings & Onboarding page with ready-made examples,
-a live shortcode playground, and the full parameter reference.
+Start with a sample, paste your own Google Photos share link,
+preview the result, and place the shortcode where you want the album to appear.
 
 = Community Inspiration =
 
@@ -64,39 +59,8 @@ Community features are optional. You can use the gallery plugin without joining 
 == Installation ==
 
 1. Install and activate the plugin.
-2. Open `Settings -> Shared Albums for Google Photos`.
-3. Start with one of the examples, paste in your own Google Photos album link, and preview the result.
-4. Add the shortcode to any post or page.
-
-== Usage ==
-
-= Basic Shortcode =
-
-`[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]`
-
-= Slider Example =
-
-`[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" show-link-button="true" show-download-button="true"]`
-
-= Shortcode Options =
-
-The only required parameter is **link** - your Google Photos share URL.
-
-Everything else is optional.
-Use the Settings & Onboarding page for the current parameter reference, defaults, examples, and live previews:
-
-`Settings -> Shared Albums for Google Photos`
-
-= Getting Your Album Share Link =
-
-1. Open an album in Google Photos.
-2. Click the share button or use the three-dot menu.
-3. Choose "Create link" or "Get link".
-4. Copy the link and paste it into the shortcode:
-
-`[jzsa-album link="https://photos.google.com/share/AF1QipNxLo..."]`
-
-**Important:** The album must be shared by link. Private albums cannot be embedded.
+2. Open the new `Shared Albums for Google Photos` menu in WordPress admin.
+3. Start with the Guide page and its live examples.
 
 == Screenshots ==
 
@@ -106,7 +70,7 @@ Use the Settings & Onboarding page for the current parameter reference, defaults
 4. Carousel layout with video support
 5. Fullscreen view with description and photo info
 6. Progressive loading from preview to high-resolution image
-7. Live preview in the Settings & Onboarding page
+7. Live preview on the Guide page
 8. Custom description styling
 9. Fullscreen mosaic view
 10. Overlay mosaic strip
@@ -130,31 +94,12 @@ Album data is cached, images load progressively, and visitors do not download th
 
 = Can I customize the appearance? =
 
-Yes. Start with the examples on the Settings & Onboarding page,
-then adjust shortcode options or add your own CSS.
-The main container class is `.jzsa-album`.
+Yes. The plugin includes ready-made examples and many presentation options.
+You can also add your own CSS when you want full visual control.
 
 = Does it work on mobile? =
 
 Yes. The gallery is responsive and supports touch gestures, fullscreen viewing, and mobile-friendly navigation.
-
-= How does the download button work? =
-
-Enable it with `show-download-button="true"` when you want visitors to download the current photo.
-Fullscreen download behavior can be controlled separately with `fullscreen-show-download-button`.
-
-= How does the play/pause button work? =
-
-In fullscreen mode, visitors can start or pause a slideshow with the play/pause button or the spacebar.
-
-= What happens if I update the shortcode? =
-
-The plugin clears the cache for that post when you save it, so shortcode changes take effect immediately.
-
-= What if I use the wrong URL format? =
-
-The plugin shows an error message instead of a broken gallery.
-Most problems are caused by private albums, expired links, empty albums, or links that are not from Google Photos.
 
 = Is this an official Google plugin? =
 
@@ -163,7 +108,7 @@ No. This plugin is not affiliated with or endorsed by Google LLC. Google Photosâ
 == Changelog ==
 
 = 2.3.5 =
-* Minor fixes
+* Improved plugin intro
 
 = 2.3.4 =
 * Email-based login for the Community feature
