@@ -486,7 +486,7 @@ else
         cp -R "${EXTRACT_DIR}/"* "$SVN_TRUNK/"
         SYNCED_TO_SVN=1
 
-        # Sync screenshots into SVN assets directory
+        # Sync WordPress.org visual assets into SVN assets directory
         SCREENSHOTS_DIR="${SCRIPT_DIR}/screenshots"
         if [ ! -d "$SCREENSHOTS_DIR" ]; then
             echo -e "${RED}Error:${NC} Screenshots directory not found at ${SCREENSHOTS_DIR}"
@@ -495,12 +495,19 @@ else
         fi
         if [ -d "$SVN_ASSETS" ]; then
             SCREENSHOT_COUNT=$(find "$SCREENSHOTS_DIR" -maxdepth 1 -type f -name 'screenshot-*' \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | wc -l | tr -d ' ')
+            BANNER_COUNT=$(find "$SCREENSHOTS_DIR" -maxdepth 1 -type f -name 'banner-*' \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | wc -l | tr -d ' ')
             if [ "$SCREENSHOT_COUNT" -gt 0 ]; then
                 echo -e "${YELLOW}Syncing ${SCREENSHOT_COUNT} screenshot(s) into SVN assets: ${SVN_ASSETS}${NC}"
                 # Remove old screenshots from SVN assets, keep other assets (icon, banner, etc.)
                 find "$SVN_ASSETS" -maxdepth 1 -type f -name 'screenshot-*' -delete 2>/dev/null || true
                 find "$SCREENSHOTS_DIR" -maxdepth 1 -type f -name 'screenshot-*' \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -exec cp {} "$SVN_ASSETS/" \;
                 echo -e "${GREEN}✓ Screenshots synced to SVN assets.${NC}"
+                if [ "$BANNER_COUNT" -gt 0 ]; then
+                    echo -e "${YELLOW}Syncing ${BANNER_COUNT} banner asset(s) into SVN assets: ${SVN_ASSETS}${NC}"
+                    find "$SVN_ASSETS" -maxdepth 1 -type f -name 'banner-*' -delete 2>/dev/null || true
+                    find "$SCREENSHOTS_DIR" -maxdepth 1 -type f -name 'banner-*' \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -exec cp {} "$SVN_ASSETS/" \;
+                    echo -e "${GREEN}✓ Banner assets synced to SVN assets.${NC}"
+                fi
             else
                 echo -e "${RED}Error:${NC} No screenshot files found in ${SCREENSHOTS_DIR}"
                 echo "  Please add screenshot-*.{png,jpg,jpeg} files before releasing."
