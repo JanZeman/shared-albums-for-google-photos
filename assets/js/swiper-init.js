@@ -1228,6 +1228,20 @@
         return getContainerPhotos($container).length;
     }
 
+    function clampMosaicVisibleCount(rawCount, thumbCount) {
+        var count = parseInt(rawCount, 10);
+        if (isNaN(count) || count < 1) {
+            count = 1;
+        }
+
+        var total = parseInt(thumbCount, 10);
+        if (isNaN(total) || total < 1) {
+            return count;
+        }
+
+        return Math.min(count, total);
+    }
+
     function findPhotoLocalIndex(photos, globalIndex) {
         for (var i = 0; i < photos.length; i++) {
             if (getPhotoGlobalIndex(photos[i], i) === globalIndex) {
@@ -5688,6 +5702,7 @@
                 $mosaicContainer.find('.swiper-wrapper').html(thumbSlidesHtml);
 
                 var mosaicGap = config.mosaicGap;
+                var mosaicThumbCount = allPhotos.length;
                 $mosaicContainer[0].style.setProperty('--jzsa-mosaic-opacity', mosaicOpacity);
                 if (config.mosaicBackground) {
                     $mosaicContainer[0].style.setProperty('--jzsa-mosaic-background', config.mosaicBackground);
@@ -5714,7 +5729,8 @@
                 }
 
                 function getEffectiveMosaicCount() {
-                    return mosaicCount > 0 ? mosaicCount : computeAutoMosaicCount();
+                    var rawCount = mosaicCount > 0 ? mosaicCount : computeAutoMosaicCount();
+                    return clampMosaicVisibleCount(rawCount, mosaicThumbCount);
                 }
 
                 function buildMosaicConfig(startSlide) {
@@ -5765,7 +5781,10 @@
                     } else {
                         $mosaicContainer.css({ width: '', height: thumbSize + 'px' });
                     }
+                    mosaicPageSize = count;
                     if (mosaicSwiper && !mosaicSwiper.destroyed) {
+                        mosaicSwiper.params.slidesPerView = count;
+                        mosaicSwiper.params.slidesPerGroup = count;
                         mosaicSwiper.update();
                     }
                 }
@@ -5940,7 +5959,7 @@
 
             function getEffectiveFullscreenMosaicCount() {
                 var rawCount = config.fullscreenMosaicCount > 0 ? config.fullscreenMosaicCount : computeAutoFullscreenMosaicCount();
-                return Math.max(1, Math.min(rawCount, fullscreenMosaicThumbCount));
+                return clampMosaicVisibleCount(rawCount, fullscreenMosaicThumbCount);
             }
 
             function applyFullscreenMosaicSlideSize(thumbSize, vertical) {
