@@ -4,7 +4,7 @@ Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 7.0
-Stable tag: 2.3.5
+Stable tag: 2.3.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -107,7 +107,7 @@ No. This plugin is not affiliated with or endorsed by Google LLC. Google Photosâ
 
 == Changelog ==
 
-= 2.3.5 =
+= 2.3.6 =
 * Improved plugin intro
 
 = 2.3.4 =
@@ -261,18 +261,14 @@ This plugin does not collect or store any user data for its core gallery functio
 
 = Community Directory (optional, opt-in) =
 
-The "Share Your Shortcode" community feature is entirely optional. Browsing community samples loads entries from jzsa.janzeman.com. Account, rating, and publishing features are active only when you choose to connect to the community.
+The Community Directory is optional. Browsing samples loads public examples from jzsa.janzeman.com.
+Sign-in, ratings, and publishing are used only when you choose to connect to the community.
 
-* **Email sign-in.** When you sign in to the community, the email address you enter is sent to jzsa.janzeman.com so the community server can send a one-time confirmation link and identify your account. It is used only for sign-in and account-related messages, not newsletters or marketing.
-* **Installation identity.** The plugin also sends a one-way installation secret hash during account connection so the community server can authorize this WordPress site without storing the local secret itself.
-* **Site verification and correlation.** Your site's home URL is transmitted during connection so the community server can verify that the request really came from that WordPress site. The backend stores only a separate SHA-256 hash of the site URL. This hash cannot be reversed to recover the URL. Its purpose is abuse prevention, such as detecting if multiple accounts originate from the same WordPress installation.
-* **Community profile.** If you provide a community display name while connecting or later editing your community profile, it is stored by the community server and may be shown publicly with your shared entries. This field is optional and can be changed.
-* **User-provided account and entry data.** If you publish an entry, the following is stored on jzsa.janzeman.com: title, shortcode, album link extracted from the shortcode, optional description, optional tags, optional sample page URL, optional entry info, plugin version, and whether you submitted the page for future public site showcase consideration. Entries are shown under your community display name when one is set. Entry sample URLs are shown when provided. You control this data.
-* **Album-link masking.** Public community responses show the shared shortcode with the Google Photos URL replaced by `link="hidden-album-link"`. This makes it clear that the album link is intentionally hidden. The real shared album link is still stored by the community server so previews can render. Authenticated community users may receive a private preview shortcode containing the real link, but the visible shared shortcode remains masked.
-* **Anonymous interaction signals.** When someone copies, applies, rates, or previews a community entry, an interaction event may be recorded. The community backend hashes the request IP it sees each day (SHA-256 of IP + date) and never stores it in plain text. Because WordPress proxies these calls, this is normally the WordPress site's server IP rather than the browser user's direct IP.
-* **Star ratings.** Authenticated community users can rate entries (1-5 stars). The rating is stored linked to the user's identity hash, not to any personal data.
-* **Account deletion.** You can delete your community account at any time from the plugin's admin page. Account deletion removes the stored identity hash, site hash, display name, and ratings you submitted. You can choose whether published entries are preserved as community samples or hidden at the same time.
-* **No tracking.** The community backend does not use cookies, analytics, or advertising.
+If you publish an entry, the community service stores the information you submit,
+such as title, shortcode, description, tags, optional sample page URL, and optional display name.
+You can delete your community account from the plugin admin page.
+
+The community backend does not use cookies, analytics, advertising, or newsletters.
 
 == Support ==
 
