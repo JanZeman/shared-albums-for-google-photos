@@ -98,6 +98,20 @@ Use the Settings & Onboarding page for the current parameter reference, defaults
 
 **Important:** The album must be shared by link. Private albums cannot be embedded.
 
+== Screenshots ==
+
+1. Slider layout with navigation and paging
+2. Slider layout with mosaic thumbnails
+3. Gallery layout
+4. Carousel layout with video support
+5. Fullscreen view with description and photo info
+6. Progressive loading from preview to high-resolution image
+7. Live preview in the Settings & Onboarding page
+8. Custom description styling
+9. Fullscreen mosaic view
+10. Overlay mosaic strip
+11. Community Directory for browsing and sharing examples
+
 == Frequently Asked Questions ==
 
 = Does this work with private albums? =
@@ -146,21 +160,10 @@ Most problems are caused by private albums, expired links, empty albums, or link
 
 No. This plugin is not affiliated with or endorsed by Google LLC. Google Photos™ is a trademark of Google LLC.
 
-== Screenshots ==
-
-1. Slider layout with navigation and paging
-2. Slider layout with mosaic thumbnails
-3. Gallery layout
-4. Carousel layout with video support
-5. Fullscreen view with description and photo info
-6. Progressive loading from preview to high-resolution image
-7. Live preview in the Settings & Onboarding page
-8. Custom description styling
-9. Fullscreen mosaic view
-10. Overlay mosaic strip
-11. Community Directory for browsing and sharing examples
-
 == Changelog ==
+
+= 2.3.5 =
+* Minor fixes
 
 = 2.3.4 =
 * Email-based login for the Community feature
