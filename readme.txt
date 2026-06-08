@@ -4,7 +4,7 @@ Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 7.0
-Stable tag: 2.3.6
+Stable tag: 2.3.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -107,8 +107,9 @@ No. This plugin is not affiliated with or endorsed by Google LLC. Google Photosâ
 
 == Changelog ==
 
-= 2.3.6 =
+= 2.3.7 =
 * Improved plugin intro
+* Improve warning about "gallery-columns" in the "justified" mode
 
 = 2.3.4 =
 * Email-based login for the Community feature
