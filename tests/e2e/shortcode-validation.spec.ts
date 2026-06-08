@@ -125,6 +125,18 @@ test.describe('Shortcode validation - parameter values', () => {
         await expect(area).toContainText('12 or lower');
     });
 
+    test('justified layout warns when grid-only gallery parameters are set', async ({ page }) => {
+        await setShortcode(
+            page,
+            `[jzsa-album link="${VALID_LINK}" mode="gallery" gallery-layout="justified" ` +
+                'gallery-columns="5" gallery-sizing="fill"]',
+        );
+        const area = page.locator(VALIDATION);
+        await expect(area).toHaveClass(/jzsa-code-validation--warning/);
+        await expect(area).toContainText('gallery-columns, gallery-sizing are ignored');
+        await expect(area).toContainText('gallery-row-height');
+    });
+
     test('an invalid color value warns', async ({ page }) => {
         await setShortcode(page, `[jzsa-album link="${VALID_LINK}" controls-color="white"]`);
         const area = page.locator(VALIDATION);

@@ -1143,13 +1143,13 @@ class JZSA_Admin_Pages {
 						</div>
 						<p><?php esc_html_e( 'The lightbox is an alternative to native fullscreen: clicking a photo opens it in a dimmed overlay on top of the page, not in the browser\'s fullscreen mode - the page stays underneath. With lightbox-max-width and lightbox-max-height the photo is centered inside a size-capped box, so it opens at a predetermined size instead of wall-to-wall.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" mode="gallery" gallery-layout="justified" limit="9" gallery-gap="8" lightbox-toggle="click" fullscreen-toggle="disabled" lightbox-max-width="1000" lightbox-max-height="700"]';
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" mode="gallery" limit="9" gallery-gap="8" lightbox-toggle="click" fullscreen-toggle="disabled" lightbox-max-width="1000" lightbox-max-height="700"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
 						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-gallery-justified" style="height:auto;">
+					<div class="jzsa-preview-container jzsa-preview-container-gallery-grid" style="height:auto;">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 							echo do_shortcode( $sample_shortcode );
@@ -1269,7 +1269,7 @@ class JZSA_Admin_Pages {
 						</div>
 						<p><?php echo wp_kses( __( 'Gallery mode also supports having both a lightbox button and a fullscreen button at the same time. Set <code>lightbox-toggle="button-only"</code> and <code>fullscreen-toggle="button-only"</code> together: hovering any photo reveals two expand buttons in its top-right corner. The left button opens the lightbox overlay; the right button enters native fullscreen. Your visitor picks whichever experience they prefer, photo by photo.', 'janzeman-shared-albums-for-google-photos' ), array( 'code' => array() ) ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" mode="gallery" gallery-layout="justified" limit="9" gallery-gap="8" lightbox-toggle="button-only" fullscreen-toggle="button-only" lightbox-max-width="1000" lightbox-max-height="700"]';
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" mode="gallery" limit="9" gallery-gap="8" lightbox-toggle="button-only" fullscreen-toggle="button-only" lightbox-max-width="1000" lightbox-max-height="700"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>

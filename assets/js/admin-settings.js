@@ -863,6 +863,7 @@ function jzsaValidateShortcode( raw ) {
 	// Quotes are verified balanced above, so attribute tokenization is safe.
 	var attrRe = /([\w-]+)\s*=\s*"([^"]*)"|([\w-]+)\s*=\s*'([^']*)'|([\w-]+)\s*=\s*([^\s'"\]]+)|"([^"]*)"|'([^']*)'|(\S+)/g;
 	var seen = {};
+	var attrValues = {};
 	var hasLink = false;
 	var match;
 	while ( ( match = attrRe.exec( attrText ) ) ) {
@@ -877,6 +878,7 @@ function jzsaValidateShortcode( raw ) {
 			var rawValue = ( match[ 2 ] !== undefined ) ? match[ 2 ]
 				: ( match[ 4 ] !== undefined ) ? match[ 4 ]
 					: ( match[ 6 ] !== undefined ) ? match[ 6 ] : '';
+			attrValues[ name ] = rawValue;
 
 			if ( name === 'link' ) {
 				hasLink = true;
@@ -928,6 +930,26 @@ function jzsaValidateShortcode( raw ) {
 
 	if ( ! hasLink ) {
 		errors.push( 'Missing required "link" parameter. Add link="https://photos.google.com/share/...".' );
+	}
+
+	if ( ( attrValues[ 'gallery-layout' ] || '' ).trim().toLowerCase() === 'justified' ) {
+		var ignoredJustifiedParams = [
+			'gallery-columns',
+			'gallery-columns-tablet',
+			'gallery-columns-mobile',
+			'gallery-sizing'
+		].filter( function ( paramName ) {
+			return seen[ paramName ];
+		} );
+
+		if ( ignoredJustifiedParams.length ) {
+			warnings.push(
+				'Parameter "gallery-layout" is "justified", so ' +
+				ignoredJustifiedParams.join( ', ' ) +
+				' ' + ( ignoredJustifiedParams.length === 1 ? 'is' : 'are' ) +
+				' ignored. Justified layout uses gallery-row-height, gallery-gap, container width, and photo aspect ratios instead.'
+			);
+		}
 	}
 
 	var state = errors.length ? 'error' : ( warnings.length ? 'warning' : 'ok' );

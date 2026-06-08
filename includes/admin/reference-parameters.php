@@ -64,32 +64,32 @@
 						<tbody>
 							<tr>
 								<td><code>gallery-layout</code></td>
-								<td><?php esc_html_e( 'Gallery layout algorithm: "grid" (equal-size cells) or "justified" (photos fill each row at their natural aspect ratio, like Google Photos)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Gallery layout algorithm: "grid" uses fixed columns with equal-size cells; "justified" ignores gallery-columns and packs photos into full-width rows using gallery-row-height, gallery-gap, container width, and each photo\'s aspect ratio, similar to Google Photos.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>grid</td>
 							</tr>
 							<tr>
 								<td><code>gallery-sizing</code></td>
-								<td><?php esc_html_e( 'Grid gallery sizing: "ratio" keeps a fixed tile ratio (default), while "fill" stretches row heights to fill an explicit control height when width/height and gallery-rows are used.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Grid layout only. "ratio" keeps a fixed tile ratio (default), while "fill" stretches row heights to fill an explicit control height when width/height and gallery-rows are used. Ignored when gallery-layout="justified".', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>ratio</td>
 							</tr>
 							<tr>
 								<td><code>gallery-columns</code></td>
-								<td><?php esc_html_e( 'Number of columns on desktop (grid layout only)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Number of columns on desktop. Applies only when gallery-layout="grid"; ignored when gallery-layout="justified".', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>3</td>
 							</tr>
 							<tr>
 								<td><code>gallery-columns-tablet</code></td>
-								<td><?php esc_html_e( 'Number of columns on tablet screens ≤ 768 px (grid layout only)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Number of columns on tablet screens <= 768 px. Applies only when gallery-layout="grid"; ignored when gallery-layout="justified".', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>2</td>
 							</tr>
 							<tr>
 								<td><code>gallery-columns-mobile</code></td>
-								<td><?php esc_html_e( 'Number of columns on mobile screens ≤ 480 px (grid layout only)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Number of columns on mobile screens <= 480 px. Applies only when gallery-layout="grid"; ignored when gallery-layout="justified".', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>1</td>
 							</tr>
 							<tr>
 								<td><code>gallery-row-height</code></td>
-								<td><?php esc_html_e( 'Target row height in pixels for the justified layout (50-800)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Target row height in pixels for gallery-layout="justified" (50-800). This controls justified density instead of gallery-columns.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>200</td>
 							</tr>
 							<tr>
