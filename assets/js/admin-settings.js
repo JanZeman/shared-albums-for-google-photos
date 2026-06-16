@@ -952,6 +952,18 @@ function jzsaValidateShortcode( raw ) {
 		}
 	}
 
+	var ltToggle = ( attrValues[ 'lightbox-toggle' ] || '' ).trim().toLowerCase();
+	var fsToggle = ( attrValues[ 'fullscreen-toggle' ] || '' ).trim().toLowerCase();
+	var clickValues = [ 'click', 'double-click' ];
+	if ( clickValues.indexOf( ltToggle ) !== -1 && clickValues.indexOf( fsToggle ) !== -1 ) {
+		warnings.push(
+			'Both lightbox-toggle and fullscreen-toggle are set to a click action ("' + ltToggle + '" and "' + fsToggle + '"). ' +
+			'They would compete for the same tap, so the plugin automatically treats fullscreen-toggle as "button-only": ' +
+			'lightbox keeps the click trigger and fullscreen gets its own button in the corner. ' +
+			'To silence this warning, set fullscreen-toggle="button-only" explicitly.'
+		);
+	}
+
 	var state = errors.length ? 'error' : ( warnings.length ? 'warning' : 'ok' );
 	return { state: state, errors: errors, warnings: warnings };
 }

@@ -1248,7 +1248,7 @@ class JZSA_Admin_Pages {
 						</div>
 						<p><?php echo wp_kses( __( 'When both <code>lightbox-toggle</code> and <code>fullscreen-toggle</code> are set, two buttons appear side by side in the top-right corner. The left button (with the center-square icon) opens the CSS lightbox overlay; the right button enters native fullscreen. Your visitor chooses which experience they prefer. Inside the lightbox a fullscreen button is also available, so they can escalate from lightbox to fullscreen without closing first.', 'janzeman-shared-albums-for-google-photos' ), array( 'code' => array(), 'strong' => array() ) ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" lightbox-toggle="button-only" lightbox-max-width="1100" lightbox-max-height="750" fullscreen-toggle="button-only"]';
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" fullscreen-toggle="button-only" lightbox-toggle="button-only" lightbox-max-width="1100" lightbox-max-height="750"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>

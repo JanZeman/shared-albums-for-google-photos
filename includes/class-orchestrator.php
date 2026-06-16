@@ -1590,12 +1590,21 @@ class JZSA_Shared_Albums {
 		// Valid modes: 'button-only' (default), 'click', 'double-click', 'disabled'
 		$valid_modes = array( 'button-only', 'click', 'double-click', 'disabled' );
 
-		if ( in_array( $mode, $valid_modes, true ) ) {
-			return $mode;
+		if ( ! in_array( $mode, $valid_modes, true ) ) {
+			return 'button-only';
 		}
 
-		// Default fallback
-		return 'button-only';
+		// Both triggers set to click/double-click compete for the same tap.
+		// Auto-resolve by demoting fullscreen to button-only so lightbox keeps the click.
+		$click_modes = array( 'click', 'double-click' );
+		if ( in_array( $mode, $click_modes, true ) ) {
+			$lt_mode = $this->parse_lightbox_toggle_mode( $atts );
+			if ( in_array( $lt_mode, $click_modes, true ) ) {
+				return 'button-only';
+			}
+		}
+
+		return $mode;
 	}
 
 	/**
