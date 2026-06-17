@@ -7605,6 +7605,7 @@
         if (!enabled) {
             $container.removeClass('jzsa-gallery-scrollable');
             $container.css('max-height', '');
+            removeGalleryScrollHint($container);
             return;
         }
 
@@ -7615,6 +7616,61 @@
         } else {
             $container.css('max-height', '');
         }
+
+        createGalleryScrollHint($container);
+    }
+
+    function createGalleryScrollHint($container) {
+        var $shell = $container.closest('.jzsa-gallery-shell');
+        if (!$shell.length) {
+            return;
+        }
+
+        removeGalleryScrollHint($container);
+
+        var label = jzsaI18n('scrollForMore') || 'Scroll for more';
+        var $label = $('<span class="jzsa-scroll-hint-label"></span>').text(label);
+        var $icon  = $('<span class="jzsa-scroll-hint-icon" aria-hidden="true"></span>').html(
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 24" fill="none"' +
+            ' stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+            '<path d="M5 10 L5 3 M3 6 L5 3 L7 6"/>' +
+            '<path d="M5 14 L5 21 M3 18 L5 21 L7 18"/>' +
+            '<rect x="13" y="3" width="7" height="18" rx="3.5"/>' +
+            '<circle cx="16.5" cy="7" r="1.5" fill="white" stroke="none"/>' +
+            '</svg>'
+        );
+        var $hint  = $('<div class="jzsa-gallery-scroll-hint" aria-hidden="true"></div>')
+            .append($label)
+            .append($icon);
+        $shell.append($hint);
+
+        // Double rAF ensures the browser has painted opacity:0 before
+        // the transition to opacity:1 starts, giving a clean fade-in.
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                $hint.addClass('jzsa-gallery-scroll-hint--visible');
+            });
+        });
+
+        function fadeOutHint() {
+            clearTimeout(autoHideTimer);
+            $container.off('scroll.jzsaScrollHint');
+            $hint.removeClass('jzsa-gallery-scroll-hint--visible');
+            setTimeout(function() { $hint.remove(); }, 850);
+        }
+
+        var autoHideTimer = setTimeout(fadeOutHint, 3000);
+        $hint.data('jzsa-auto-hide', autoHideTimer);
+
+        $container.one('scroll.jzsaScrollHint', fadeOutHint);
+    }
+
+    function removeGalleryScrollHint($container) {
+        var $shell = $container.closest('.jzsa-gallery-shell');
+        var $existing = $shell.find('.jzsa-gallery-scroll-hint');
+        clearTimeout($existing.data('jzsa-auto-hide'));
+        $existing.remove();
+        $container.off('scroll.jzsaScrollHint');
     }
 
     /**

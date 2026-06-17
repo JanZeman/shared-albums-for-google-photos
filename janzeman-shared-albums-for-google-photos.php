@@ -78,6 +78,7 @@ function jzsa_get_frontend_i18n_strings() {
 		'openMediaLightbox'     => __( 'Open media %d in lightbox', 'janzeman-shared-albums-for-google-photos' ),
 		'closeLightbox'         => __( 'Close', 'janzeman-shared-albums-for-google-photos' ),
 		'lightboxDialogLabel'   => __( 'Photo viewer', 'janzeman-shared-albums-for-google-photos' ),
+		'scrollForMore'         => __( 'Scroll for more', 'janzeman-shared-albums-for-google-photos' ),
 	);
 }
 
