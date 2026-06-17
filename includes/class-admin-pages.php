@@ -21,6 +21,7 @@ class JZSA_Admin_Pages {
 	const SHORTCODE_PARAMETERS_SLUG = 'janzeman-shared-albums-for-google-photos-shortcode-parameters';
 	const PLACEHOLDERS_SLUG         = 'janzeman-shared-albums-for-google-photos-placeholders';
 	const COMMUNITY_SLUG            = 'janzeman-shared-albums-for-google-photos-community';
+	const ANNOUNCEMENT_VERSION      = '1';
 
 	/**
 	 * Whether Guide-page sample shortcodes should emit lazy placeholders instead
@@ -39,6 +40,8 @@ class JZSA_Admin_Pages {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_styles' ) );
 		add_action( 'admin_init', array( $this, 'redirect_from_settings_alias' ) );
 		add_filter( 'pre_do_shortcode_tag', array( $this, 'maybe_render_lazy_sample_placeholder' ), 10, 4 );
+		add_action( 'admin_notices', array( $this, 'render_dashboard_announcement' ) );
+		add_action( 'wp_ajax_jzsa_dismiss_announcement', array( $this, 'handle_dismiss_announcement' ) );
 	}
 
 	/**
@@ -2023,5 +2026,125 @@ class JZSA_Admin_Pages {
 		</div>
 		<?php
 		$this->lazy_sample_previews = false;
+	}
+
+	public function render_dashboard_announcement() {
+		$screen = get_current_screen();
+		if ( ! $screen || 'dashboard' !== $screen->id ) {
+			return;
+		}
+		$dismissed = get_user_meta( get_current_user_id(), 'jzsa_announcement_dismissed', true );
+		if ( $dismissed === self::ANNOUNCEMENT_VERSION ) {
+			return;
+		}
+		$community_url = esc_url( self::get_community_page_url() );
+		$dismiss_nonce = wp_create_nonce( 'jzsa_dismiss_announcement' );
+		$logo_url      = esc_url( JZSA_PLUGIN_URL . 'assets/icon-256x256.gif' );
+		?>
+		<style>
+		#jzsa-announcement {
+			background: #eef9f4;
+			border: 1px solid #b2dfca;
+			border-left: 4px solid #46b450;
+			border-radius: 4px;
+			margin: 5px 0 20px;
+			padding: 0;
+			position: relative;
+			box-shadow: 0 1px 3px rgba( 0, 0, 0, 0.06 );
+		}
+		.jzsa-dash-promo-inner {
+			display: flex;
+			align-items: center;
+			gap: 18px;
+			padding: 18px 48px 18px 20px;
+		}
+		.jzsa-dash-promo-logo {
+			flex-shrink: 0;
+			width: 56px;
+			height: 56px;
+			border-radius: 8px;
+			overflow: hidden;
+			box-shadow: 0 1px 4px rgba( 0, 0, 0, 0.12 );
+		}
+		.jzsa-dash-promo-logo img {
+			width: 100%;
+			height: 100%;
+			display: block;
+		}
+		.jzsa-dash-promo-body {
+			flex: 1;
+			min-width: 0;
+		}
+		.jzsa-dash-promo-body h3 {
+			color: #1d2327;
+			font-size: 15px;
+			font-weight: 700;
+			margin: 0 0 4px;
+			padding: 0;
+			line-height: 1.3;
+		}
+		.jzsa-dash-promo-body p {
+			color: #50575e;
+			font-size: 13px;
+			margin: 0 0 12px;
+			line-height: 1.55;
+		}
+		.jzsa-dash-promo-dismiss {
+			position: absolute;
+			top: 6px;
+			right: 8px;
+			background: none;
+			border: none;
+			color: #8c8f94;
+			font-size: 20px;
+			line-height: 1;
+			cursor: pointer;
+			padding: 2px 6px;
+		}
+		.jzsa-dash-promo-dismiss:hover {
+			color: #1d2327;
+		}
+		</style>
+
+		<div id="jzsa-announcement">
+			<div class="jzsa-dash-promo-inner">
+				<div class="jzsa-dash-promo-logo" aria-hidden="true">
+					<img src="<?php echo $logo_url; ?>" alt="" width="56" height="56">
+				</div>
+				<div class="jzsa-dash-promo-body">
+					<h3><?php esc_html_e( 'Shared Albums now has a Community', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<p><?php esc_html_e( 'Browse real album setups shared by other photographers. Find a shortcode that works for your case, get inspired by what others built, and share your own setup to help newcomers get started.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<a href="<?php echo $community_url; ?>" class="button button-primary"><?php esc_html_e( 'Open Community', 'janzeman-shared-albums-for-google-photos' ); ?></a>
+				</div>
+			</div>
+			<button type="button" class="jzsa-dash-promo-dismiss" aria-label="<?php esc_attr_e( 'Dismiss this notice', 'janzeman-shared-albums-for-google-photos' ); ?>">&times;</button>
+		</div>
+
+		<script>
+		( function() {
+			var notice = document.getElementById( 'jzsa-announcement' );
+			var btn    = notice ? notice.querySelector( '.jzsa-dash-promo-dismiss' ) : null;
+			if ( ! btn ) { return; }
+			btn.addEventListener( 'click', function() {
+				notice.style.transition = 'opacity 0.3s';
+				notice.style.opacity    = '0';
+				setTimeout( function() { notice.style.display = 'none'; }, 320 );
+				var data = new FormData();
+				data.append( 'action', 'jzsa_dismiss_announcement' );
+				data.append( 'nonce',  '<?php echo esc_js( $dismiss_nonce ); ?>' );
+				fetch( window.ajaxurl || '/wp-admin/admin-ajax.php', { method: 'POST', body: data } );
+			} );
+		} )();
+		</script>
+		<?php
+	}
+
+	public function handle_dismiss_announcement() {
+		check_ajax_referer( 'jzsa_dismiss_announcement', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Unauthorized', 403 );
+		}
+		update_user_meta( get_current_user_id(), 'jzsa_announcement_dismissed', self::ANNOUNCEMENT_VERSION );
+		wp_send_json_success();
 	}
 }
