@@ -683,6 +683,11 @@ class JZSA_Admin_Pages {
 						<div class="jzsa-sample-card">
 							<h3><?php echo 'Sample 5: ' . esc_html__( 'Gallery - Scrollable Instead Of Paged', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Use gallery-scrollable="true" with gallery-rows to show a fixed-height, vertically scrollable gallery instead of page controls.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<div class="jzsa-warning-box">
+								<strong><?php esc_html_e( 'Mobile note: nested scrolling', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+								<p><?php esc_html_e( 'This mode creates two nested scroll areas (the gallery and the page). On touch screens, visitors may accidentally scroll the page instead of the gallery, making it appear as if all photos are shown at once.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+								<p><?php esc_html_e( 'If that is a concern, consider Sample 4 (paged gallery) instead. If you do use this mode on mobile, place the gallery in a two-column WordPress layout with the second column left empty and "Stack on mobile" turned off. The visible gap beside the gallery signals to visitors that the gallery is a self-contained scroll area.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							</div>
 						<?php
 							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" corner-radius="16" gallery-rows="2" gallery-scrollable="true" gallery-gap="8" limit="18"]';
 						?>
