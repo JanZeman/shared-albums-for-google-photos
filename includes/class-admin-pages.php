@@ -2054,9 +2054,9 @@ class JZSA_Admin_Pages {
 		}
 		.jzsa-dash-promo-inner {
 			display: flex;
-			align-items: center;
-			gap: 18px;
-			padding: 18px 48px 18px 20px;
+			align-items: flex-start;
+			gap: 20px;
+			padding: 20px 56px 20px 20px;
 		}
 		.jzsa-dash-promo-logo {
 			flex-shrink: 0;
@@ -2074,10 +2074,11 @@ class JZSA_Admin_Pages {
 		.jzsa-dash-promo-body {
 			flex: 1;
 			min-width: 0;
+			padding-top: 2px;
 		}
 		.jzsa-dash-promo-body h3 {
 			color: #1d2327;
-			font-size: 15px;
+			font-size: 16px;
 			font-weight: 700;
 			margin: 0 0 4px;
 			padding: 0;
@@ -2085,9 +2086,9 @@ class JZSA_Admin_Pages {
 		}
 		.jzsa-dash-promo-body p {
 			color: #50575e;
-			font-size: 13px;
+			font-size: 14px;
 			margin: 0 0 12px;
-			line-height: 1.55;
+			line-height: 1.6;
 		}
 		.jzsa-dash-promo-dismiss {
 			position: absolute;
@@ -2104,6 +2105,16 @@ class JZSA_Admin_Pages {
 		.jzsa-dash-promo-dismiss:hover {
 			color: #1d2327;
 		}
+		@media (max-width: 782px) {
+			.jzsa-dash-promo-inner {
+				flex-direction: column;
+				padding-right: 20px;
+			}
+			.jzsa-dash-promo-dismiss {
+				top: 4px;
+				right: 4px;
+			}
+		}
 		</style>
 
 		<div id="jzsa-announcement">
@@ -2113,7 +2124,7 @@ class JZSA_Admin_Pages {
 				</div>
 				<div class="jzsa-dash-promo-body">
 					<h3><?php esc_html_e( 'Shared Albums now has a Community', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<p><?php esc_html_e( 'Browse real album setups shared by other photographers. Find a shortcode that works for your case, get inspired by what others built, and share your own setup to help newcomers get started.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<p><?php esc_html_e( 'Browse real album setups shared by other users. Find a shortcode that works for your case, get inspired by what others built, and share your own setup to help newcomers get started.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<a href="<?php echo $community_url; ?>" class="button button-primary"><?php esc_html_e( 'Open Community', 'janzeman-shared-albums-for-google-photos' ); ?></a>
 				</div>
 			</div>
