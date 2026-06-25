@@ -31,23 +31,23 @@ class OrchestratorConfigTest extends TestCase {
         return $this->reflection->getMethod( $method )->invoke( $this->orchestrator, ...$args );
     }
 
-    public function test_defaults_are_stable_for_gallery_mode(): void {
-        $config = $this->config( array() );
+	public function test_defaults_are_stable_for_gallery_mode(): void {
+		$config = $this->config( array() );
 
         $this->assertSame( 'gallery', $config['mode'] );
         $this->assertSame( 400, $config['width'] );
         $this->assertSame( 300, $config['height'] );
-        $this->assertFalse( $config['width-explicit'] );
-        $this->assertFalse( $config['height-explicit'] );
-        $this->assertSame( 800, $config['source-width'] );
-        $this->assertSame( 600, $config['source-height'] );
-        $this->assertSame( 'button-only', $config['fullscreen-toggle'] );
-        $this->assertSame( 'disabled', $config['lightbox-toggle'] );
-        $this->assertSame( '', $config['info-bottom'] );
-        $this->assertSame( '{page} / {pages}', $config['gallery-info-bottom'] );
-        $this->assertSame( 300, $config['limit'] );
-        $this->assertSame( 128, $config['download-size-warning'] );
-    }
+		$this->assertFalse( $config['width-explicit'] );
+		$this->assertFalse( $config['height-explicit'] );
+		$this->assertSame( 800, $config['source-width'] );
+		$this->assertSame( 600, $config['source-height'] );
+		$this->assertSame( 'disabled', $config['fullscreen-toggle'] );
+		$this->assertSame( 'button-only', $config['lightbox-toggle'] );
+		$this->assertSame( '', $config['info-bottom'] );
+		$this->assertSame( '{page} / {pages}', $config['gallery-info-bottom'] );
+		$this->assertSame( 300, $config['limit'] );
+		$this->assertSame( 128, $config['download-size-warning'] );
+	}
 
     public function test_slider_mode_keeps_legacy_counter_info_bottom_default(): void {
         $config = $this->config( array( 'mode' => 'slider' ) );

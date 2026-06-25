@@ -11,9 +11,9 @@ use JZSA_Shared_Albums;
 /**
  * Tests for fullscreen-toggle / lightbox-toggle interaction in parse_shortcode_config.
  *
- * The critical invariant: when lightbox-toggle is set and fullscreen-toggle is not,
- * fullscreen must default to "disabled" so the lightbox button is shown alone.
- * When both are set explicitly, both values are respected independently.
+ * The critical invariant: when neither expanded mode is explicit, lightbox becomes
+ * the default and fullscreen stays disabled. When fullscreen is explicit, lightbox
+ * stays off unless it is explicitly enabled too.
  */
 class OrchestratorToggleModeTest extends TestCase {
 
@@ -37,10 +37,10 @@ class OrchestratorToggleModeTest extends TestCase {
     // parse_fullscreen_toggle_mode
     // -------------------------------------------------------------------------
 
-    public function test_fullscreen_defaults_to_button_only_without_lightbox(): void {
-        $config = $this->invoke( 'parse_fullscreen_toggle_mode', [] );
-        $this->assertSame( 'button-only', $config );
-    }
+	public function test_fullscreen_defaults_to_disabled_without_explicit_toggle(): void {
+		$config = $this->invoke( 'parse_fullscreen_toggle_mode', [] );
+		$this->assertSame( 'disabled', $config );
+	}
 
     public function test_fullscreen_defaults_to_disabled_when_lightbox_is_set(): void {
         $atts = [ 'lightbox-toggle' => 'button-only' ];
@@ -55,11 +55,11 @@ class OrchestratorToggleModeTest extends TestCase {
     }
 
     public function test_fullscreen_defaults_to_button_only_when_lightbox_is_disabled(): void {
-        // lightbox-toggle="disabled" is a no-op; fullscreen should keep its default.
-        $atts = [ 'lightbox-toggle' => 'disabled' ];
-        $config = $this->invoke( 'parse_fullscreen_toggle_mode', $atts );
-        $this->assertSame( 'button-only', $config );
-    }
+		// lightbox-toggle="disabled" is a no-op; fullscreen should keep its default.
+		$atts = [ 'lightbox-toggle' => 'disabled' ];
+		$config = $this->invoke( 'parse_fullscreen_toggle_mode', $atts );
+		$this->assertSame( 'button-only', $config );
+	}
 
     public function test_fullscreen_defaults_to_button_only_when_lightbox_false_alias_is_used(): void {
         $atts = [ 'lightbox-toggle' => 'no' ];
@@ -95,10 +95,10 @@ class OrchestratorToggleModeTest extends TestCase {
     // parse_lightbox_toggle_mode
     // -------------------------------------------------------------------------
 
-    public function test_lightbox_defaults_to_disabled_when_not_set(): void {
-        $config = $this->invoke( 'parse_lightbox_toggle_mode', [] );
-        $this->assertSame( 'disabled', $config );
-    }
+	public function test_lightbox_defaults_to_button_only_when_not_set(): void {
+		$config = $this->invoke( 'parse_lightbox_toggle_mode', [] );
+		$this->assertSame( 'button-only', $config );
+	}
 
     public function test_lightbox_button_only_accepted(): void {
         $atts = [ 'lightbox-toggle' => 'button-only' ];
