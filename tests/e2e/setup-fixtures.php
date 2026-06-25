@@ -232,6 +232,16 @@ $pages = array(
 			)
 		),
 	),
+	'expanded-fixture'  => array(
+		'title'   => 'Expanded View Fixture',
+		'content' => implode(
+			"\n\n",
+			array(
+				'[jzsa-album link="' . $album_link . '" mode="slider" expanded-toggle="lightbox-button, fullscreen-button" expanded-max-width="640" expanded-max-height="480" expanded-source-width="1200" expanded-source-height="900" expanded-image-fit="contain" expanded-background-color="rgba(0,0,0,0.85)" expanded-corner-radius="12" expanded-controls-color="#123456" expanded-show-navigation="false" expanded-slideshow="manual" expanded-info-top="Shared {item}" expanded-info-bottom="{item} of {items}" expanded-info-font-size="18" expanded-mosaic="true" expanded-mosaic-position="bottom" expanded-mosaic-layout="overlay" expanded-mosaic-count="3" expanded-mosaic-gap="6" expanded-mosaic-opacity="0.4" expanded-mosaic-background="#111111" expanded-mosaic-corner-radius="8"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" expanded-toggle="lightbox-button, fullscreen-button" expanded-max-width="900" lightbox-max-width="700" fullscreen-display-max-width="1100" expanded-info-top="Shared" lightbox-info-top="Lightbox only" fullscreen-info-top="Fullscreen only" expanded-mosaic="true" lightbox-mosaic="false" fullscreen-mosaic="true"]',
+			)
+		),
+	),
 	'feature-fixture'   => array(
 		'title'   => 'Feature Fixture',
 		'content' => implode(

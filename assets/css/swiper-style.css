@@ -1306,12 +1306,19 @@ html.jzsa-lightbox-open body {
     user-select: none;
 }
 
-/* Fullscreen: disable corner-radius - edges meet the screen boundary. */
+/* Fullscreen uses square corners unless an expanded/fullscreen override is set. */
 .jzsa-album:fullscreen,
 .jzsa-album:-webkit-full-screen,
 .jzsa-album.jzsa-pseudo-fullscreen {
     border-radius: 0 !important;
     clip-path: none !important;
+}
+
+.jzsa-album[data-fullscreen-corner-radius]:fullscreen,
+.jzsa-album[data-fullscreen-corner-radius]:-webkit-full-screen,
+.jzsa-album[data-fullscreen-corner-radius].jzsa-pseudo-fullscreen {
+    border-radius: var(--jzsa-fullscreen-corner-radius, 0) !important;
+    clip-path: inset(0 round var(--jzsa-fullscreen-corner-radius, 0)) !important;
 }
 
 /* Gallery loading overlay (shown until first image is ready) */

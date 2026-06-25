@@ -467,6 +467,155 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
+	 * Apply the mode-neutral expanded view settings to missing concrete settings.
+	 *
+	 * Concrete lightbox-* and fullscreen-* parameters always win. When no
+	 * expanded-* parameter is present this returns the original array unchanged,
+	 * preserving the legacy parsing path exactly.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return array Normalized shortcode attributes.
+	 */
+	private function apply_expanded_attribute_defaults( $atts ) {
+		if ( array_key_exists( 'expanded-toggle', $atts ) ) {
+			$toggle = $this->parse_expanded_toggle( $atts['expanded-toggle'] );
+			if ( ! $this->has_non_empty_attribute( $atts, 'lightbox-toggle' ) ) {
+				$atts['lightbox-toggle'] = $toggle['lightbox'];
+			}
+			if ( ! $this->has_non_empty_attribute( $atts, 'fullscreen-toggle' ) ) {
+				$atts['fullscreen-toggle'] = $toggle['fullscreen'];
+			}
+		}
+
+		$expanded_pairs = array(
+			'expanded-max-width'              => array( 'fullscreen-display-max-width', 'lightbox-max-width' ),
+			'expanded-max-height'             => array( 'fullscreen-display-max-height', 'lightbox-max-height' ),
+			'expanded-source-width'           => array( 'fullscreen-source-width', 'lightbox-source-width' ),
+			'expanded-source-height'          => array( 'fullscreen-source-height', 'lightbox-source-height' ),
+			'expanded-image-fit'              => array( 'fullscreen-image-fit', 'lightbox-image-fit' ),
+			'expanded-background-color'       => array( 'fullscreen-background-color', 'lightbox-background-color' ),
+			'expanded-corner-radius'          => array( 'fullscreen-corner-radius', 'lightbox-corner-radius' ),
+			'expanded-controls-color'         => array( 'fullscreen-controls-color', 'lightbox-controls-color' ),
+			'expanded-video-controls-color'   => array( 'fullscreen-video-controls-color', 'lightbox-video-controls-color' ),
+			'expanded-video-controls-autohide' => array( 'fullscreen-video-controls-autohide', 'lightbox-video-controls-autohide' ),
+			'expanded-show-navigation'        => array( 'fullscreen-show-navigation', 'lightbox-show-navigation' ),
+			'expanded-show-link-button'       => array( 'fullscreen-show-link-button', 'lightbox-show-link-button' ),
+			'expanded-show-download-button'   => array( 'fullscreen-show-download-button', 'lightbox-show-download-button' ),
+			'expanded-slideshow'              => array( 'fullscreen-slideshow', 'lightbox-slideshow' ),
+			'expanded-slideshow-delay'        => array( 'fullscreen-slideshow-delay', 'lightbox-slideshow-delay' ),
+			'expanded-slideshow-autoresume'   => array( 'fullscreen-slideshow-autoresume', 'lightbox-slideshow-autoresume' ),
+			'expanded-info-bottom'            => array( 'fullscreen-info-bottom', 'lightbox-info-bottom' ),
+			'expanded-info-top'               => array( 'fullscreen-info-top', 'lightbox-info-top' ),
+			'expanded-info-top-secondary'     => array( 'fullscreen-info-top-secondary', 'lightbox-info-top-secondary' ),
+			'expanded-info-font-size'         => array( 'fullscreen-info-font-size', 'lightbox-info-font-size' ),
+			'expanded-info-font-family'       => array( 'fullscreen-info-font-family', 'lightbox-info-font-family' ),
+			'expanded-info-font-color'        => array( 'fullscreen-info-font-color', 'lightbox-info-font-color' ),
+			'expanded-mosaic'                 => array( 'fullscreen-mosaic', 'lightbox-mosaic' ),
+			'expanded-mosaic-position'        => array( 'fullscreen-mosaic-position', 'lightbox-mosaic-position' ),
+			'expanded-mosaic-layout'          => array( 'fullscreen-mosaic-layout', 'lightbox-mosaic-layout' ),
+			'expanded-mosaic-count'           => array( 'fullscreen-mosaic-count', 'lightbox-mosaic-count' ),
+			'expanded-mosaic-gap'             => array( 'fullscreen-mosaic-gap', 'lightbox-mosaic-gap' ),
+			'expanded-mosaic-opacity'         => array( 'fullscreen-mosaic-opacity', 'lightbox-mosaic-opacity' ),
+			'expanded-mosaic-background'      => array( 'fullscreen-mosaic-background', 'lightbox-mosaic-background' ),
+			'expanded-mosaic-corner-radius'   => array( 'fullscreen-mosaic-corner-radius', 'lightbox-mosaic-corner-radius' ),
+		);
+
+		foreach ( $expanded_pairs as $expanded_key => $concrete_keys ) {
+			$allows_empty = in_array(
+				$expanded_key,
+				array( 'expanded-info-bottom', 'expanded-info-top', 'expanded-info-top-secondary' ),
+				true
+			);
+			$expanded_is_set = $allows_empty
+				? array_key_exists( $expanded_key, $atts )
+				: $this->has_non_empty_attribute( $atts, $expanded_key );
+			if ( ! $expanded_is_set ) {
+				continue;
+			}
+			foreach ( $concrete_keys as $concrete_key ) {
+				$concrete_is_set = $allows_empty
+					? array_key_exists( $concrete_key, $atts )
+					: $this->has_non_empty_attribute( $atts, $concrete_key );
+				if ( ! $concrete_is_set ) {
+					$atts[ $concrete_key ] = $atts[ $expanded_key ];
+				}
+			}
+		}
+
+		return $atts;
+	}
+
+	/**
+	 * Parse expanded-toggle into deterministic concrete toggle modes.
+	 *
+	 * Invalid values disable both modes. The one recoverable conflict is two
+	 * click-driven modes, which safely fall back to separate buttons.
+	 *
+	 * @param mixed $raw Raw expanded-toggle value.
+	 * @return array{lightbox:string,fullscreen:string,valid:bool}
+	 */
+	private function parse_expanded_toggle( $raw ) {
+		$value = strtolower( trim( (string) $raw ) );
+		if ( '' === $value ) {
+			return array( 'lightbox' => 'disabled', 'fullscreen' => 'disabled', 'valid' => false );
+		}
+
+		$tokens = array_map( 'trim', explode( ',', $value ) );
+		if ( 1 === count( $tokens ) && 'disabled' === $tokens[0] ) {
+			return array( 'lightbox' => 'disabled', 'fullscreen' => 'disabled', 'valid' => true );
+		}
+		if ( in_array( 'disabled', $tokens, true ) ) {
+			return array( 'lightbox' => 'disabled', 'fullscreen' => 'disabled', 'valid' => false );
+		}
+
+		$result = array( 'lightbox' => 'disabled', 'fullscreen' => 'disabled', 'valid' => true );
+		$seen   = array();
+		$allowed = array(
+			'lightbox-button'          => array( 'lightbox', 'button-only' ),
+			'lightbox-click'           => array( 'lightbox', 'click' ),
+			'lightbox-double-click'    => array( 'lightbox', 'double-click' ),
+			'fullscreen-button'        => array( 'fullscreen', 'button-only' ),
+			'fullscreen-click'         => array( 'fullscreen', 'click' ),
+			'fullscreen-double-click'  => array( 'fullscreen', 'double-click' ),
+		);
+
+		foreach ( $tokens as $token ) {
+			if ( '' === $token || ! isset( $allowed[ $token ] ) ) {
+				return array( 'lightbox' => 'disabled', 'fullscreen' => 'disabled', 'valid' => false );
+			}
+			list( $mode, $trigger ) = $allowed[ $token ];
+			if ( isset( $seen[ $mode ] ) ) {
+				return array( 'lightbox' => 'disabled', 'fullscreen' => 'disabled', 'valid' => false );
+			}
+			$seen[ $mode ]  = true;
+			$result[ $mode ] = $trigger;
+		}
+
+		$click_modes = array( 'click', 'double-click' );
+		if (
+			in_array( $result['lightbox'], $click_modes, true ) &&
+			in_array( $result['fullscreen'], $click_modes, true )
+		) {
+			$result['lightbox']   = 'button-only';
+			$result['fullscreen'] = 'button-only';
+			$result['valid']      = false;
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Whether an attribute exists and contains a non-empty value.
+	 *
+	 * @param array  $atts Attributes.
+	 * @param string $key  Attribute name.
+	 * @return bool
+	 */
+	private function has_non_empty_attribute( $atts, $key ) {
+		return isset( $atts[ $key ] ) && '' !== trim( (string) $atts[ $key ] );
+	}
+
+	/**
 	 * Parse shortcode attributes into configuration array
 	 *
 	 * @param array  $atts Shortcode attributes
@@ -474,6 +623,8 @@ class JZSA_Shared_Albums {
 	 * @return array Configuration
 	 */
 	private function parse_shortcode_config( $atts, $url ) {
+		$atts = $this->apply_expanded_attribute_defaults( $atts );
+
 		$mode                 = $this->parse_mode( $atts );
 		$show_navigation      = $this->parse_bool( $atts, 'show-navigation', true );
 		$show_link_button     = $this->parse_bool( $atts, 'show-link-button', false );
@@ -547,6 +698,9 @@ class JZSA_Shared_Albums {
 		$fullscreen_info_font_size   = isset( $atts['fullscreen-info-font-size'] )   ? $this->parse_info_font_size( $atts, 'fullscreen-info-font-size', $info_font_size ) : $info_font_size;
 		$fullscreen_info_font_family = isset( $atts['fullscreen-info-font-family'] ) ? $this->parse_info_font_family( $atts, 'fullscreen-info-font-family', $info_font_family ) : $info_font_family;
 		$fullscreen_info_font_color  = isset( $atts['fullscreen-info-font-color'] )  ? $this->parse_color( $atts, 'fullscreen-info-font-color', '' ) : $info_font_color;
+		$lightbox_info_font_size      = isset( $atts['lightbox-info-font-size'] )   ? $this->parse_info_font_size( $atts, 'lightbox-info-font-size', $info_font_size ) : $info_font_size;
+		$lightbox_info_font_family    = isset( $atts['lightbox-info-font-family'] ) ? $this->parse_info_font_family( $atts, 'lightbox-info-font-family', $info_font_family ) : $info_font_family;
+		$lightbox_info_font_color     = isset( $atts['lightbox-info-font-color'] )  ? $this->parse_color( $atts, 'lightbox-info-font-color', '' ) : $info_font_color;
 
 		$fs_sar_key = $this->paired_key( $atts, 'fullscreen-slideshow-autoresume', 'lightbox-slideshow-autoresume' );
 		$fullscreen_slideshow_autoresume = $fs_sar_key !== null
@@ -614,6 +768,7 @@ class JZSA_Shared_Albums {
 				'fullscreen-video-controls-color' => $fullscreen_video_controls_color,
 				'image-fit'            => $this->parse_image_fit( $atts ),
 				'fullscreen-image-fit' => $this->parse_fullscreen_image_fit( $atts ),
+				'fullscreen-corner-radius' => $this->parse_optional_non_negative_int( $atts, 'fullscreen-corner-radius' ),
 				'fullscreen-toggle'          => $this->parse_fullscreen_toggle_mode( $atts ),
 				'interaction-lock'     => $this->parse_bool( $atts, 'interaction-lock', false ),
 				'show-navigation'      => $show_navigation,
@@ -680,17 +835,44 @@ class JZSA_Shared_Albums {
 			'fullscreen-mosaic-gap'      => $this->parse_mosaic_gap( $atts, 'fullscreen-mosaic-gap' ),
 			'fullscreen-mosaic-opacity'  => $this->parse_mosaic_opacity( $atts, 'fullscreen-mosaic-opacity' ),
 			'fullscreen-mosaic-background' => $this->parse_color( $atts, 'fullscreen-mosaic-background', '' ),
+			'lightbox-mosaic'          => isset( $atts['lightbox-mosaic'] )
+				? $this->parse_bool( $atts, 'lightbox-mosaic', false )
+				: $this->parse_fullscreen_mosaic_enabled( $atts ),
+			'lightbox-mosaic-position' => isset( $atts['lightbox-mosaic-position'] )
+				? $this->parse_mosaic_position( $atts, 'lightbox-mosaic-position' )
+				: $this->parse_mosaic_position( $atts, 'fullscreen-mosaic-position' ),
+			'lightbox-mosaic-layout'   => isset( $atts['lightbox-mosaic-layout'] )
+				? $this->parse_fullscreen_mosaic_layout( $atts, 'lightbox-mosaic-layout' )
+				: $this->parse_fullscreen_mosaic_layout( $atts ),
+			'lightbox-mosaic-count'    => isset( $atts['lightbox-mosaic-count'] )
+				? $this->parse_mosaic_count( $atts, 'lightbox-mosaic-count' )
+				: $this->parse_mosaic_count( $atts, 'fullscreen-mosaic-count' ),
+			'lightbox-mosaic-gap'      => isset( $atts['lightbox-mosaic-gap'] )
+				? $this->parse_mosaic_gap( $atts, 'lightbox-mosaic-gap' )
+				: $this->parse_mosaic_gap( $atts, 'fullscreen-mosaic-gap' ),
+			'lightbox-mosaic-opacity'  => isset( $atts['lightbox-mosaic-opacity'] )
+				? $this->parse_mosaic_opacity( $atts, 'lightbox-mosaic-opacity' )
+				: $this->parse_mosaic_opacity( $atts, 'fullscreen-mosaic-opacity' ),
+			'lightbox-mosaic-background' => isset( $atts['lightbox-mosaic-background'] )
+				? $this->parse_color( $atts, 'lightbox-mosaic-background', '' )
+				: $this->parse_color( $atts, 'fullscreen-mosaic-background', '' ),
 
 			// Visual style
 			'corner-radius'        => $this->parse_corner_radius( $atts ),
 			'mosaic-corner-radius' => $this->parse_mosaic_corner_radius( $atts ),
 			'fullscreen-mosaic-corner-radius' => $this->parse_mosaic_corner_radius( $atts, 'fullscreen-mosaic-corner-radius' ),
+			'lightbox-mosaic-corner-radius' => isset( $atts['lightbox-mosaic-corner-radius'] )
+				? $this->parse_mosaic_corner_radius( $atts, 'lightbox-mosaic-corner-radius' )
+				: $this->parse_mosaic_corner_radius( $atts, 'fullscreen-mosaic-corner-radius' ),
 				'info-font-size'       => $info_font_size,
 				'fullscreen-info-font-size' => $fullscreen_info_font_size,
+				'lightbox-info-font-size' => $lightbox_info_font_size,
 				'info-font-family'     => $info_font_family,
 				'fullscreen-info-font-family' => $fullscreen_info_font_family,
+				'lightbox-info-font-family' => $lightbox_info_font_family,
 				'info-font-color'      => $info_font_color,
 				'fullscreen-info-font-color' => $fullscreen_info_font_color,
+				'lightbox-info-font-color' => $lightbox_info_font_color,
 				'info-halo-effect'     => $info_halo_effect,
 				'info-top-halo-effect' => $info_top_halo_effect,
 				'info-top-secondary-halo-effect' => $info_top_secondary_halo_effect,
@@ -762,14 +944,21 @@ class JZSA_Shared_Albums {
 			$gpb = $this->build_legacy_gallery_info_bottom_default( $show_title_compat, $show_counter_compat );
 		}
 
+		$fullscreen_info_bottom = $this->parse_info_box( $atts, 'fullscreen-info-bottom', $fullscreen_b1_default );
+		$fullscreen_info_top = $this->parse_info_box( $atts, array( 'fullscreen-info-top', 'fullscreen-info-top-1' ), $t1 );
+		$fullscreen_info_top_secondary = $this->parse_info_box( $atts, array( 'fullscreen-info-top-secondary', 'fullscreen-info-top-2' ), $t2 );
+
 		return array(
-			'info-bottom'                    => $b1,
-			'fullscreen-info-bottom'         => $this->parse_info_box( $atts, 'fullscreen-info-bottom', $fullscreen_b1_default ),
-			'info-top'                       => $t1,
-			'fullscreen-info-top'            => $this->parse_info_box( $atts, array( 'fullscreen-info-top', 'fullscreen-info-top-1' ), $t1 ),
-			'info-top-secondary'            => $t2,
-			'fullscreen-info-top-secondary' => $this->parse_info_box( $atts, array( 'fullscreen-info-top-secondary', 'fullscreen-info-top-2' ), $t2 ),
-			'gallery-info-bottom'            => $gpb,
+			'info-bottom'                     => $b1,
+			'fullscreen-info-bottom'          => $fullscreen_info_bottom,
+			'lightbox-info-bottom'            => $this->parse_info_box( $atts, 'lightbox-info-bottom', $fullscreen_info_bottom ),
+			'info-top'                        => $t1,
+			'fullscreen-info-top'             => $fullscreen_info_top,
+			'lightbox-info-top'               => $this->parse_info_box( $atts, 'lightbox-info-top', $fullscreen_info_top ),
+			'info-top-secondary'              => $t2,
+			'fullscreen-info-top-secondary'  => $fullscreen_info_top_secondary,
+			'lightbox-info-top-secondary'    => $this->parse_info_box( $atts, 'lightbox-info-top-secondary', $fullscreen_info_top_secondary ),
+			'gallery-info-bottom'             => $gpb,
 		);
 	}
 
@@ -986,6 +1175,21 @@ class JZSA_Shared_Albums {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Parse an optional non-negative integer attribute.
+	 *
+	 * @param array  $atts Shortcode attributes.
+	 * @param string $key  Attribute key.
+	 * @return int|null Non-negative integer or null when omitted.
+	 */
+	private function parse_optional_non_negative_int( $atts, $key ) {
+		if ( ! isset( $atts[ $key ] ) ) {
+			return null;
+		}
+
+		return max( 0, intval( $atts[ $key ] ) );
 	}
 
 	/**
@@ -1350,12 +1554,12 @@ class JZSA_Shared_Albums {
 	 * @param array $atts Shortcode attributes.
 	 * @return string 'outer' or 'overlay'.
 	 */
-	private function parse_fullscreen_mosaic_layout( $atts ) {
-		if ( ! isset( $atts['fullscreen-mosaic-layout'] ) ) {
+	private function parse_fullscreen_mosaic_layout( $atts, $key = 'fullscreen-mosaic-layout' ) {
+		if ( ! isset( $atts[ $key ] ) ) {
 			return 'outer';
 		}
 
-		$value = strtolower( trim( (string) $atts['fullscreen-mosaic-layout'] ) );
+		$value = strtolower( trim( (string) $atts[ $key ] ) );
 
 		if ( in_array( $value, array( 'overlay', 'outer' ), true ) ) {
 			return $value;

@@ -192,6 +192,11 @@ class RendererSliderTest extends TestCase {
         $this->assertStringContainsString( 'data-fullscreen-toggle="button-only"', $html );
     }
 
+    public function test_fullscreen_corner_radius_emitted(): void {
+        $html = $this->render( [ 'fullscreen-corner-radius' => 14 ] );
+        $this->assertStringContainsString( 'data-fullscreen-corner-radius="14"', $html );
+    }
+
     public function test_start_at_emitted(): void {
         $html = $this->render( [ 'start-at' => '3' ] );
         $this->assertStringContainsString( 'data-start-at="3"', $html );

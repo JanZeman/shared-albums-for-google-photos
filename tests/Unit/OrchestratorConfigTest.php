@@ -111,6 +111,114 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertSame( 'button-only', $config['fullscreen-toggle'] );
     }
 
+    public function test_expanded_settings_configure_both_modes(): void {
+        $config = $this->config(
+            [
+                'expanded-toggle'                => 'lightbox-button, fullscreen-click',
+                'expanded-max-width'             => '900',
+                'expanded-max-height'            => '700',
+                'expanded-source-width'          => '1600',
+                'expanded-source-height'         => '1200',
+                'expanded-image-fit'             => 'cover',
+                'expanded-background-color'      => '#112233',
+                'expanded-corner-radius'         => '14',
+                'expanded-controls-color'        => '#445566',
+                'expanded-slideshow'             => 'auto',
+                'expanded-slideshow-delay'       => '7',
+                'expanded-info-top'              => '{description}',
+                'expanded-info-font-size'        => '18',
+                'expanded-mosaic'                => 'true',
+                'expanded-mosaic-position'       => 'left',
+                'expanded-mosaic-layout'         => 'overlay',
+                'expanded-mosaic-count'          => '6',
+                'expanded-mosaic-gap'            => '5',
+                'expanded-mosaic-opacity'        => '0.5',
+                'expanded-mosaic-background'     => '#778899',
+                'expanded-mosaic-corner-radius' => '9',
+            ]
+        );
+
+        $this->assertSame( 'button-only', $config['lightbox-toggle'] );
+        $this->assertSame( 'click', $config['fullscreen-toggle'] );
+        $this->assertSame( 900, $config['lightbox-max-width'] );
+        $this->assertSame( 900, $config['fullscreen-display-max-width'] );
+        $this->assertSame( 700, $config['lightbox-max-height'] );
+        $this->assertSame( 700, $config['fullscreen-display-max-height'] );
+        $this->assertSame( 1600, $config['lightbox-source-width'] );
+        $this->assertSame( 1600, $config['fullscreen-source-width'] );
+        $this->assertSame( 'cover', $config['lightbox-image-fit'] );
+        $this->assertSame( 'cover', $config['fullscreen-image-fit'] );
+        $this->assertSame( '#112233', $config['lightbox-background-color'] );
+        $this->assertSame( '#112233', $config['fullscreen-background-color'] );
+        $this->assertSame( 14, $config['lightbox-corner-radius'] );
+        $this->assertSame( 14, $config['fullscreen-corner-radius'] );
+        $this->assertSame( '#445566', $config['lightbox-controls-color'] );
+        $this->assertSame( '#445566', $config['fullscreen-controls-color'] );
+        $this->assertSame( 'auto', $config['lightbox-slideshow'] );
+        $this->assertSame( 'auto', $config['fullscreen-slideshow'] );
+        $this->assertSame( '{description}', $config['lightbox-info-top'] );
+        $this->assertSame( '{description}', $config['fullscreen-info-top'] );
+        $this->assertSame( 18, $config['lightbox-info-font-size'] );
+        $this->assertSame( 18, $config['fullscreen-info-font-size'] );
+        $this->assertTrue( $config['lightbox-mosaic'] );
+        $this->assertTrue( $config['fullscreen-mosaic'] );
+        $this->assertSame( 'left', $config['lightbox-mosaic-position'] );
+        $this->assertSame( 'left', $config['fullscreen-mosaic-position'] );
+        $this->assertSame( 'overlay', $config['lightbox-mosaic-layout'] );
+        $this->assertSame( 'overlay', $config['fullscreen-mosaic-layout'] );
+        $this->assertSame( 6, $config['lightbox-mosaic-count'] );
+        $this->assertSame( 6, $config['fullscreen-mosaic-count'] );
+        $this->assertSame( 5, $config['lightbox-mosaic-gap'] );
+        $this->assertSame( 5, $config['fullscreen-mosaic-gap'] );
+        $this->assertSame( 0.5, $config['lightbox-mosaic-opacity'] );
+        $this->assertSame( 0.5, $config['fullscreen-mosaic-opacity'] );
+        $this->assertSame( '#778899', $config['lightbox-mosaic-background'] );
+        $this->assertSame( '#778899', $config['fullscreen-mosaic-background'] );
+        $this->assertSame( 9, $config['lightbox-mosaic-corner-radius'] );
+        $this->assertSame( 9, $config['fullscreen-mosaic-corner-radius'] );
+    }
+
+    public function test_specific_settings_override_expanded_settings_per_mode(): void {
+        $config = $this->config(
+            [
+                'expanded-toggle'           => 'lightbox-button, fullscreen-button',
+                'expanded-max-width'        => '900',
+                'expanded-info-top'         => 'Shared',
+                'expanded-mosaic-position'  => 'bottom',
+                'lightbox-max-width'        => '700',
+                'fullscreen-info-top'       => 'Fullscreen only',
+                'lightbox-mosaic-position'  => 'right',
+            ]
+        );
+
+        $this->assertSame( 700, $config['lightbox-max-width'] );
+        $this->assertSame( 900, $config['fullscreen-display-max-width'] );
+        $this->assertSame( 'Shared', $config['lightbox-info-top'] );
+        $this->assertSame( 'Fullscreen only', $config['fullscreen-info-top'] );
+        $this->assertSame( 'right', $config['lightbox-mosaic-position'] );
+        $this->assertSame( 'bottom', $config['fullscreen-mosaic-position'] );
+    }
+
+    public function test_expanded_and_specific_info_boxes_can_be_explicitly_hidden(): void {
+        $shared_hidden = $this->config(
+            [
+                'mode'                 => 'slider',
+                'expanded-info-bottom' => '',
+            ]
+        );
+        $specific_hidden = $this->config(
+            [
+                'expanded-info-top'  => 'Shared',
+                'lightbox-info-top'  => '',
+            ]
+        );
+
+        $this->assertSame( '', $shared_hidden['lightbox-info-bottom'] );
+        $this->assertSame( '', $shared_hidden['fullscreen-info-bottom'] );
+        $this->assertSame( '', $specific_hidden['lightbox-info-top'] );
+        $this->assertSame( 'Shared', $specific_hidden['fullscreen-info-top'] );
+    }
+
     public function test_paired_fullscreen_lightbox_display_options_inherit_both_directions(): void {
         $from_fullscreen = $this->config(
             array(

@@ -167,6 +167,46 @@ class RendererLightboxAttrTest extends TestCase {
         $this->assertStringContainsString( 'data-lightbox-slideshow-autoresume="true"', $html );
     }
 
+    public function test_lightbox_info_overrides_are_emitted(): void {
+        $html = $this->renderLightbox( [
+            'lightbox-info-top'           => '{description}',
+            'lightbox-info-top-secondary' => '{camera}',
+            'lightbox-info-bottom'        => '{item} / {items}',
+            'lightbox-info-font-size'     => 18,
+            'lightbox-info-font-family'   => 'Georgia, serif',
+            'lightbox-info-font-color'    => '#aabbcc',
+        ] );
+
+        $this->assertStringContainsString( 'data-lightbox-info-top="{description}"', $html );
+        $this->assertStringContainsString( 'data-lightbox-info-top-secondary="{camera}"', $html );
+        $this->assertStringContainsString( 'data-lightbox-info-bottom="{item} / {items}"', $html );
+        $this->assertStringContainsString( 'data-lightbox-info-font-size="18"', $html );
+        $this->assertStringContainsString( 'data-lightbox-info-font-family="Georgia, serif"', $html );
+        $this->assertStringContainsString( 'data-lightbox-info-font-color="#aabbcc"', $html );
+    }
+
+    public function test_lightbox_mosaic_overrides_are_emitted(): void {
+        $html = $this->renderLightbox( [
+            'lightbox-mosaic'               => true,
+            'lightbox-mosaic-position'      => 'left',
+            'lightbox-mosaic-layout'        => 'overlay',
+            'lightbox-mosaic-count'         => 6,
+            'lightbox-mosaic-gap'           => 5,
+            'lightbox-mosaic-opacity'       => 0.5,
+            'lightbox-mosaic-background'    => '#112233',
+            'lightbox-mosaic-corner-radius' => 9,
+        ] );
+
+        $this->assertStringContainsString( 'data-lightbox-mosaic="true"', $html );
+        $this->assertStringContainsString( 'data-lightbox-mosaic-position="left"', $html );
+        $this->assertStringContainsString( 'data-lightbox-mosaic-layout="overlay"', $html );
+        $this->assertStringContainsString( 'data-lightbox-mosaic-count="6"', $html );
+        $this->assertStringContainsString( 'data-lightbox-mosaic-gap="5"', $html );
+        $this->assertStringContainsString( 'data-lightbox-mosaic-opacity="0.5"', $html );
+        $this->assertStringContainsString( 'data-lightbox-mosaic-background="#112233"', $html );
+        $this->assertStringContainsString( 'data-lightbox-mosaic-corner-radius="9"', $html );
+    }
+
     // -------------------------------------------------------------------------
     // Lightbox attributes absent when disabled (spot-check additional ones)
     // -------------------------------------------------------------------------

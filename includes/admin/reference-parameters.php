@@ -251,6 +251,51 @@
 						</tbody>
 					</table>
 
+					<h3><?php esc_html_e( 'Expanded View Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<p><?php echo wp_kses_post( __( 'The <code>expanded-*</code> parameters configure lightbox and fullscreen through one shared layer. A concrete <code>lightbox-*</code> or <code>fullscreen-*</code> parameter overrides the matching expanded value for that mode. Existing shortcodes without <code>expanded-*</code> parameters keep their previous behavior.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+					<table class="jzsa-settings-table jzsa-settings-table--params">
+						<thead>
+							<tr>
+								<th><?php esc_html_e( 'Parameter', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Description', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Default', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr><td><code>expanded-toggle</code></td><td><?php echo wp_kses_post( __( 'Selects each enabled expanded mode and its entry method. Accepted tokens are <code>lightbox-button</code>, <code>lightbox-click</code>, <code>lightbox-double-click</code>, <code>fullscreen-button</code>, <code>fullscreen-click</code>, <code>fullscreen-double-click</code>, and <code>disabled</code>. Combine one lightbox token and one fullscreen token with a comma. Both modes cannot use click gestures at the same time.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><em><?php esc_html_e( 'not set', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>expanded-max-width</code></td><td><?php esc_html_e( 'Maximum displayed width for either expanded mode, in pixels.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'not applied', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>expanded-max-height</code></td><td><?php esc_html_e( 'Maximum displayed height for either expanded mode, in pixels.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'not applied', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>expanded-source-width</code></td><td><?php esc_html_e( 'Photo width fetched from Google for either expanded mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>1920</td></tr>
+							<tr><td><code>expanded-source-height</code></td><td><?php esc_html_e( 'Photo height fetched from Google for either expanded mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>1440</td></tr>
+							<tr><td><code>expanded-image-fit</code></td><td><?php esc_html_e( 'Photo fitting for either expanded mode: "contain" or "cover".', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>contain</td></tr>
+							<tr><td><code>expanded-background-color</code></td><td><?php esc_html_e( 'Background or backdrop color for either expanded mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'mode default', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>expanded-corner-radius</code></td><td><?php esc_html_e( 'Corner radius of the displayed expanded frame, in pixels.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>0</td></tr>
+							<tr><td><code>expanded-controls-color</code></td><td><?php esc_html_e( 'Navigation and action control color for either expanded mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits controls-color', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>expanded-video-controls-color</code></td><td><?php esc_html_e( 'Video control color for either expanded mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits video-controls-color', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>expanded-video-controls-autohide</code></td><td><?php esc_html_e( 'Whether video controls auto-hide in either expanded mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits video-controls-autohide', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>expanded-show-navigation</code></td><td><?php esc_html_e( 'Whether previous and next controls are shown in either expanded mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits show-navigation', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>expanded-show-link-button</code></td><td><?php esc_html_e( 'Whether the Google Photos link button is shown in either expanded mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits show-link-button', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>expanded-show-download-button</code></td><td><?php esc_html_e( 'Whether the download button is shown in either expanded mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits show-download-button', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>expanded-slideshow</code></td><td><?php esc_html_e( 'Slideshow behavior for either expanded mode: "auto", "manual", or "disabled".', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>disabled</td></tr>
+							<tr><td><code>expanded-slideshow-delay</code></td><td><?php esc_html_e( 'Slideshow delay for either expanded mode, in seconds.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>5</td></tr>
+							<tr><td><code>expanded-slideshow-autoresume</code></td><td><?php esc_html_e( 'Inactivity delay before an expanded slideshow resumes, or "disabled".', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits slideshow-autoresume', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>expanded-info-bottom</code></td><td><?php esc_html_e( 'Bottom info format in either expanded mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits expanded-mode legacy value', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>expanded-info-top</code></td><td><?php esc_html_e( 'First top info format in either expanded mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits info-top', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>expanded-info-top-secondary</code></td><td><?php esc_html_e( 'Second top info format in either expanded mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits info-top-secondary', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>expanded-info-font-size</code></td><td><?php esc_html_e( 'Info font size in either expanded mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits info-font-size', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>expanded-info-font-family</code></td><td><?php esc_html_e( 'Info font family in either expanded mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits info-font-family', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>expanded-info-font-color</code></td><td><?php esc_html_e( 'Info text color in either expanded mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits info-font-color', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>expanded-mosaic</code></td><td><?php esc_html_e( 'Enable the thumbnail mosaic in either expanded mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>false</td></tr>
+							<tr><td><code>expanded-mosaic-position</code></td><td><?php esc_html_e( 'Expanded mosaic position: "top", "bottom", "left", or "right".', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>bottom</td></tr>
+							<tr><td><code>expanded-mosaic-layout</code></td><td><?php esc_html_e( 'Expanded mosaic layout: "outer" or "overlay".', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>outer</td></tr>
+							<tr><td><code>expanded-mosaic-count</code></td><td><?php esc_html_e( 'Expanded mosaic thumbnail count, or "auto".', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>auto</td></tr>
+							<tr><td><code>expanded-mosaic-gap</code></td><td><?php esc_html_e( 'Gap between expanded mosaic thumbnails, in pixels.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>8</td></tr>
+							<tr><td><code>expanded-mosaic-opacity</code></td><td><?php esc_html_e( 'Opacity of inactive expanded mosaic thumbnails, from 0 to 1.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>0.3</td></tr>
+							<tr><td><code>expanded-mosaic-background</code></td><td><?php esc_html_e( 'Background color of the expanded mosaic strip.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'transparent', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>expanded-mosaic-corner-radius</code></td><td><?php esc_html_e( 'Corner radius of expanded mosaic thumbnails, in pixels.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits mosaic corner radius', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+						</tbody>
+					</table>
+
 					<h3><?php esc_html_e( 'Fullscreen Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 					<table class="jzsa-settings-table jzsa-settings-table--params">
 						<thead>
@@ -300,6 +345,11 @@
 								<td><code>fullscreen-image-fit</code></td>
 								<td>How photos fit the frame in fullscreen: "contain" (default, show whole image, no cropping) or "cover" (fill and crop edges).</td>
 								<td>contain</td>
+							</tr>
+							<tr>
+								<td><code>fullscreen-corner-radius</code></td>
+								<td><?php esc_html_e( 'Fullscreen-only override for expanded-corner-radius, in pixels.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>0</td>
 							</tr>
 							<tr>
 								<td><code>fullscreen-background-color</code></td>
@@ -448,6 +498,20 @@
 								<td><?php echo wp_kses_post( __( 'Height in pixels of photos fetched from Google for display in the lightbox. Directly affects photo quality: higher values load sharper images. Paired with <code>fullscreen-source-height</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 								<td>1440</td>
 							</tr>
+							<tr><td><code>lightbox-info-bottom</code></td><td><?php esc_html_e( 'Lightbox-only override for expanded-info-bottom. When omitted, existing fullscreen info behavior is preserved.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-info-bottom', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-info-top</code></td><td><?php esc_html_e( 'Lightbox-only override for expanded-info-top.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-info-top', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-info-top-secondary</code></td><td><?php esc_html_e( 'Lightbox-only override for expanded-info-top-secondary.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-info-top-secondary', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-info-font-size</code></td><td><?php esc_html_e( 'Lightbox-only override for expanded-info-font-size.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits info-font-size', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-info-font-family</code></td><td><?php esc_html_e( 'Lightbox-only override for expanded-info-font-family.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits info-font-family', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-info-font-color</code></td><td><?php esc_html_e( 'Lightbox-only override for expanded-info-font-color.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits info-font-color', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-mosaic</code></td><td><?php esc_html_e( 'Lightbox-only override for expanded-mosaic.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-mosaic for legacy compatibility', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-mosaic-position</code></td><td><?php esc_html_e( 'Lightbox-only mosaic position override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-mosaic-position', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-mosaic-layout</code></td><td><?php esc_html_e( 'Lightbox-only mosaic layout override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-mosaic-layout', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-mosaic-count</code></td><td><?php esc_html_e( 'Lightbox-only mosaic thumbnail count override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-mosaic-count', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-mosaic-gap</code></td><td><?php esc_html_e( 'Lightbox-only mosaic gap override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-mosaic-gap', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-mosaic-opacity</code></td><td><?php esc_html_e( 'Lightbox-only mosaic opacity override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-mosaic-opacity', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-mosaic-background</code></td><td><?php esc_html_e( 'Lightbox-only mosaic background override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-mosaic-background', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-mosaic-corner-radius</code></td><td><?php esc_html_e( 'Lightbox-only mosaic corner radius override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-mosaic-corner-radius', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 						</tbody>
 					</table>
 

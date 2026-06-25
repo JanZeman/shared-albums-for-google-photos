@@ -269,6 +269,15 @@
         return !!_jzsaLightboxActiveEl;
     }
 
+    function isLightboxPresentationActive(element) {
+        if (!isLightboxActive(element)) {
+            return false;
+        }
+        var nativeFsEl = document.fullscreenElement || document.webkitFullscreenElement ||
+                         document.mozFullScreenElement || document.msFullscreenElement;
+        return nativeFsEl !== element && !$(element).hasClass('jzsa-pseudo-fullscreen');
+    }
+
     function ensureLightboxCloseButton($el) {
         var $btn = $el.children('.jzsa-lightbox-close');
         if (!$btn.length) {
@@ -392,6 +401,9 @@
             var lbVca           = lbVcaAttr !== undefined ? (lbVcaAttr === 'true') : fsParams.videoControlsAutohide;
             var lbShowLink      = $el.attr('data-lightbox-show-link-button') || 'false';
             var lbShowDl        = $el.attr('data-lightbox-show-download-button') || 'false';
+            var lbInfoFontSize  = getInfoFontSizePx($el, 'data-lightbox-info-font-size', fsParams.infoFontSize);
+            var lbInfoFontFamily = getInfoFontFamily($el, 'data-lightbox-info-font-family', fsParams.infoFontFamily);
+            var lbInfoFontColor = getInfoFontColor($el, 'data-lightbox-info-font-color', fsParams.infoFontColor);
 
             // Build one-shot params object: "fullscreen" slots carry lightbox values.
             var lbDisplayParams = {
@@ -405,13 +417,14 @@
                 videoControlsAutohide:        fsParams.videoControlsAutohide,
                 fullscreenVideoControlsAutohide: lbVca,
                 infoFontSize:           fsParams.infoFontSize,
-                fullscreenInfoFontSize: fsParams.infoFontSize,
+                fullscreenInfoFontSize: lbInfoFontSize,
                 infoFontFamily:           fsParams.infoFontFamily,
-                fullscreenInfoFontFamily: fsParams.infoFontFamily,
+                fullscreenInfoFontFamily: lbInfoFontFamily,
                 infoFontColor:           fsParams.infoFontColor,
-                fullscreenInfoFontColor: fsParams.infoFontColor,
+                fullscreenInfoFontColor: lbInfoFontColor,
                 fullscreenDisplayMaxWidth:  null,
                 fullscreenDisplayMaxHeight: null,
+                fullscreenCornerRadius: null,
                 inlineSlideshowAutoresume:    fsParams.inlineSlideshowAutoresume || fsParams.slideshowAutoresume,
                 fullscreenSlideshowAutoresume: fsParams.fullscreenSlideshowAutoresume
             };
@@ -424,6 +437,9 @@
             $el.data('jzsa-orig-fs-show-dl',   $el.attr('data-fullscreen-show-download-button') || 'false');
             $el.attr('data-fullscreen-show-link-button',     lbShowLink);
             $el.attr('data-fullscreen-show-download-button', lbShowDl);
+        }
+        if (swiper && swiper._jzsaExpandedMosaicController) {
+            swiper._jzsaExpandedMosaicController.useLightbox();
         }
 
         $el.trigger('jzsa:fullscreen-state', [true]);
@@ -555,6 +571,9 @@
         if (fsParams) {
             applyFullscreenDisplayOverrides(element, swiper, fsParams, false);
             swiper._jzsaLightboxDisplayParams = null;
+        }
+        if (swiper && swiper._jzsaExpandedMosaicController) {
+            swiper._jzsaExpandedMosaicController.useFullscreen();
         }
 
         // Restore fullscreen-show-link/download-button to their pre-lightbox values.
@@ -871,6 +890,17 @@
         }
 
         return parsed;
+    }
+
+    // Helper: Read an optional non-negative integer data attribute.
+    function readOptionalNonNegativeIntAttr($container, attrName) {
+        var rawValue = $container.attr(attrName);
+        if (rawValue === undefined || rawValue === null || rawValue === '') {
+            return null;
+        }
+
+        var parsed = parseInt(rawValue, 10);
+        return isNaN(parsed) || parsed < 0 ? null : parsed;
     }
 
     // Helper: Parse per-gallery download warning size from data attr (MB -> bytes).
@@ -2516,27 +2546,37 @@
     function readInfoZoneFormats($container) {
         var inline = {};
         var fullscreen = {};
+        var lightbox = {};
         for (var i = 0; i < INFO_BOX_NAMES.length; i++) {
             var zone = INFO_BOX_NAMES[i];
             inline[zone] = $container.attr('data-' + zone) || '';
             fullscreen[zone] = $container.attr('data-fullscreen-' + zone) || inline[zone];
+            lightbox[zone] = $container.attr('data-lightbox-' + zone) || fullscreen[zone];
         }
-        return { inline: inline, fullscreen: fullscreen };
+        return { inline: inline, fullscreen: fullscreen, lightbox: lightbox };
     }
 
-    function getInfoZoneFormat(zoneFormats, zone, fullscreen) {
+    function getInfoZoneFormat(zoneFormats, zone, expandedMode) {
         if (!zoneFormats) {
             return '';
         }
-        return fullscreen
-            ? ((zoneFormats.fullscreen && zoneFormats.fullscreen[zone]) || (zoneFormats.inline && zoneFormats.inline[zone]) || '')
-            : ((zoneFormats.inline && zoneFormats.inline[zone]) || '');
+        if (expandedMode === 'lightbox') {
+            return (zoneFormats.lightbox && zoneFormats.lightbox[zone]) ||
+                (zoneFormats.fullscreen && zoneFormats.fullscreen[zone]) ||
+                (zoneFormats.inline && zoneFormats.inline[zone]) || '';
+        }
+        if (expandedMode) {
+            return (zoneFormats.fullscreen && zoneFormats.fullscreen[zone]) ||
+                (zoneFormats.inline && zoneFormats.inline[zone]) || '';
+        }
+        return (zoneFormats.inline && zoneFormats.inline[zone]) || '';
     }
 
-    function buildInfoBoxHtml(zone, inlineText, fullscreenText) {
+    function buildInfoBoxHtml(zone, inlineText, fullscreenText, lightboxText) {
         return '<div class="jzsa-info-box jzsa-' + zone + '"' +
             ' data-inline="' + escapeHtml(inlineText) + '"' +
             ' data-fullscreen="' + escapeHtml(fullscreenText) + '"' +
+            ' data-lightbox="' + escapeHtml(lightboxText) + '"' +
             (inlineText ? '' : ' style="display:none"') + '>' +
             escapeHtml(inlineText) + '</div>';
     }
@@ -2547,13 +2587,15 @@
             var zone = order[i];
             var inlineFormat = getInfoZoneFormat(zoneFormats, zone, false);
             var fullscreenFormat = getInfoZoneFormat(zoneFormats, zone, true);
-            if (!inlineFormat && !fullscreenFormat) {
+            var lightboxFormat = getInfoZoneFormat(zoneFormats, zone, 'lightbox');
+            if (!inlineFormat && !fullscreenFormat && !lightboxFormat) {
                 continue;
             }
             html += buildInfoBoxHtml(
                 zone,
                 resolveInfoPlaceholders(inlineFormat, photo, context),
-                resolveInfoPlaceholders(fullscreenFormat, photo, context)
+                resolveInfoPlaceholders(fullscreenFormat, photo, context),
+                resolveInfoPlaceholders(lightboxFormat, photo, context)
             );
         }
         return html;
@@ -2652,6 +2694,7 @@
         }
         var all = zoneFormats.inline || {};
         var fs  = zoneFormats.fullscreen || {};
+        var lb  = zoneFormats.lightbox || {};
         var needs = {
             description: false,
             rawCamera: false,
@@ -2660,10 +2703,10 @@
         };
         for (var i = 0; i < INFO_BOX_NAMES.length; i++) {
             var zone = INFO_BOX_NAMES[i];
-            needs.description = needs.description || DESCRIPTION_PLACEHOLDER_RE.test(all[zone] || '') || DESCRIPTION_PLACEHOLDER_RE.test(fs[zone] || '');
-            needs.rawCamera = needs.rawCamera || RAW_CAMERA_PLACEHOLDER_RE.test(all[zone] || '') || RAW_CAMERA_PLACEHOLDER_RE.test(fs[zone] || '');
-            needs.exif = needs.exif || EXIF_PLACEHOLDER_RE.test(all[zone] || '') || EXIF_PLACEHOLDER_RE.test(fs[zone] || '');
-            needs.filename = needs.filename || FILENAME_PLACEHOLDER_RE.test(all[zone] || '') || FILENAME_PLACEHOLDER_RE.test(fs[zone] || '');
+            needs.description = needs.description || DESCRIPTION_PLACEHOLDER_RE.test(all[zone] || '') || DESCRIPTION_PLACEHOLDER_RE.test(fs[zone] || '') || DESCRIPTION_PLACEHOLDER_RE.test(lb[zone] || '');
+            needs.rawCamera = needs.rawCamera || RAW_CAMERA_PLACEHOLDER_RE.test(all[zone] || '') || RAW_CAMERA_PLACEHOLDER_RE.test(fs[zone] || '') || RAW_CAMERA_PLACEHOLDER_RE.test(lb[zone] || '');
+            needs.exif = needs.exif || EXIF_PLACEHOLDER_RE.test(all[zone] || '') || EXIF_PLACEHOLDER_RE.test(fs[zone] || '') || EXIF_PLACEHOLDER_RE.test(lb[zone] || '');
+            needs.filename = needs.filename || FILENAME_PLACEHOLDER_RE.test(all[zone] || '') || FILENAME_PLACEHOLDER_RE.test(fs[zone] || '') || FILENAME_PLACEHOLDER_RE.test(lb[zone] || '');
         }
         return needs;
     }
@@ -3468,9 +3511,16 @@
         } else {
             containerElement.style.removeProperty('--jzsa-fullscreen-display-max-height');
         }
+        if (useFullscreen && typeof params.fullscreenCornerRadius === 'number' && params.fullscreenCornerRadius >= 0) {
+            containerElement.style.setProperty('--jzsa-fullscreen-corner-radius', params.fullscreenCornerRadius + 'px');
+        } else {
+            containerElement.style.removeProperty('--jzsa-fullscreen-corner-radius');
+        }
 
         var activeBottomCenterFormat = useFullscreen
-            ? ($container.attr('data-fullscreen-info-bottom') || $container.attr('data-info-bottom') || '')
+            ? (isLightboxPresentationActive(containerElement)
+                ? ($container.attr('data-lightbox-info-bottom') || $container.attr('data-fullscreen-info-bottom') || $container.attr('data-info-bottom') || '')
+                : ($container.attr('data-fullscreen-info-bottom') || $container.attr('data-info-bottom') || ''))
             : ($container.attr('data-info-bottom') || '');
         $container.attr('data-has-active-bottom-center', activeBottomCenterFormat ? 'true' : 'false');
 
@@ -3574,6 +3624,9 @@
 				var logPrefix = params.browserPrefix ? ' (' + params.browserPrefix + ')' : '';
 				jzsaDebug('🔍 Fullscreen entered for gallery' + logPrefix + ':', params.galleryId);
             params._fullscreenActive = true;
+            if (swiper && swiper._jzsaExpandedMosaicController) {
+                swiper._jzsaExpandedMosaicController.useFullscreen();
+            }
 
             // In carousel mode, switch layout to a single slide in fullscreen
             // while keeping the preview in multi-slide carousel mode.
@@ -3758,6 +3811,9 @@
             params.slideshowPausedByInteraction = false;
 
             if (isReturningToLightbox) {
+                if (swiper && swiper._jzsaExpandedMosaicController) {
+                    swiper._jzsaExpandedMosaicController.useLightbox();
+                }
                 // Restore fullscreen-mode slideshow; lightbox always uses fs settings.
                 if (swiper.autoplay && swiper.autoplay.running) {
                     swiper.autoplay.stop();
@@ -5272,7 +5328,9 @@
                 var $swiperEl = $(swiper.el);
                 var isFs = $swiperEl.hasClass('jzsa-is-fullscreen') || $swiperEl.hasClass('jzsa-pseudo-fullscreen');
                 var format = isFs
-                    ? ($swiperEl.attr('data-fullscreen-info-bottom') || $swiperEl.attr('data-info-bottom') || '')
+                    ? (isLightboxPresentationActive(swiper.el)
+                        ? ($swiperEl.attr('data-lightbox-info-bottom') || $swiperEl.attr('data-fullscreen-info-bottom') || $swiperEl.attr('data-info-bottom') || '')
+                        : ($swiperEl.attr('data-fullscreen-info-bottom') || $swiperEl.attr('data-info-bottom') || ''))
                     : ($swiperEl.attr('data-info-bottom') || '');
 
                 if (!format) {
@@ -5468,6 +5526,10 @@
         var fullscreenInfoFontColorSetting = getInfoFontColor($container, 'data-fullscreen-info-font-color', inlineInfoFontColorSetting);
         var fullscreenDisplayMaxWidthSetting = readOptionalPositiveIntAttr($container, 'data-fullscreen-display-max-width');
         var fullscreenDisplayMaxHeightSetting = readOptionalPositiveIntAttr($container, 'data-fullscreen-display-max-height');
+        var fullscreenCornerRadiusSetting = parseInt($container.attr('data-fullscreen-corner-radius'), 10);
+        if (isNaN(fullscreenCornerRadiusSetting) || fullscreenCornerRadiusSetting < 0) {
+            fullscreenCornerRadiusSetting = null;
+        }
         var inlineVideoControlsAutohideSetting = readBooleanDataAttr($container, 'data-video-controls-autohide', false);
         var fullscreenVideoControlsAutohideSetting = readBooleanDataAttr(
             $container,
@@ -5486,6 +5548,10 @@
         var fullscreenMosaicOpacitySetting = parseFloat($container.attr('data-fullscreen-mosaic-opacity'));
         if (isNaN(fullscreenMosaicOpacitySetting)) {
             fullscreenMosaicOpacitySetting = 0.3;
+        }
+        var lightboxMosaicOpacitySetting = parseFloat($container.attr('data-lightbox-mosaic-opacity'));
+        if (isNaN(lightboxMosaicOpacitySetting)) {
+            lightboxMosaicOpacitySetting = fullscreenMosaicOpacitySetting;
         }
 
         var config = {
@@ -5511,6 +5577,7 @@
                 $container.attr('data-fullscreen-toggle') || 'button-only',
             lightboxToggle: $container.attr('data-lightbox-toggle') || 'disabled',
             fullscreenMosaic: $container.attr('data-fullscreen-mosaic') === 'true',
+            lightboxMosaic: $container.attr('data-lightbox-mosaic') === 'true',
             startAt: $container.attr('data-start-at') || '1',
             showNavigation: inlineShowNavigationSetting,
             fullscreenShowNavigation: fullscreenShowNavigationSetting,
@@ -5526,6 +5593,7 @@
             fullscreenInfoFontColor: fullscreenInfoFontColorSetting,
             fullscreenDisplayMaxWidth: fullscreenDisplayMaxWidthSetting,
             fullscreenDisplayMaxHeight: fullscreenDisplayMaxHeightSetting,
+            fullscreenCornerRadius: fullscreenCornerRadiusSetting,
             videoControlsAutohide: inlineVideoControlsAutohideSetting,
             fullscreenVideoControlsAutohide: fullscreenVideoControlsAutohideSetting,
             albumTitle: $container.attr('data-album-title') || '',
@@ -5544,7 +5612,15 @@
             fullscreenMosaicCount: parseInt($container.attr('data-fullscreen-mosaic-count'), 10) || 0,
             fullscreenMosaicGap: parseInt($container.attr('data-fullscreen-mosaic-gap'), 10) || 8,
             fullscreenMosaicOpacity: fullscreenMosaicOpacitySetting,
-            fullscreenMosaicBackground: $container.attr('data-fullscreen-mosaic-background') || ''
+            fullscreenMosaicBackground: $container.attr('data-fullscreen-mosaic-background') || '',
+            fullscreenMosaicCornerRadius: readOptionalNonNegativeIntAttr($container, 'data-fullscreen-mosaic-corner-radius'),
+            lightboxMosaicPosition: $container.attr('data-lightbox-mosaic-position') || $container.attr('data-fullscreen-mosaic-position') || 'bottom',
+            lightboxMosaicLayout: $container.attr('data-lightbox-mosaic-layout') || $container.attr('data-fullscreen-mosaic-layout') || 'outer',
+            lightboxMosaicCount: parseInt($container.attr('data-lightbox-mosaic-count'), 10) || 0,
+            lightboxMosaicGap: parseInt($container.attr('data-lightbox-mosaic-gap'), 10) || 8,
+            lightboxMosaicOpacity: lightboxMosaicOpacitySetting,
+            lightboxMosaicBackground: $container.attr('data-lightbox-mosaic-background') || '',
+            lightboxMosaicCornerRadius: readOptionalNonNegativeIntAttr($container, 'data-lightbox-mosaic-corner-radius')
         };
 
         // Safe default: show inline play/pause only when normal-mode slideshow is enabled.
@@ -5614,6 +5690,7 @@
         var mosaicCount = config.mosaicCount;
         var mosaicOpacity = config.mosaicOpacity;
         var fullscreenMosaic = config.fullscreenMosaic;
+        var lightboxMosaic = config.lightboxMosaic;
         var fullscreenMosaicPosition = config.fullscreenMosaicPosition;
 
         // console.log('📸 Initializing Swiper for gallery:', galleryId);
@@ -5850,7 +5927,7 @@
         }
 
         function setupFullscreenMosaic(swiper) {
-            if (!fullscreenMosaic || !swiper || !allPhotos.length) {
+            if ((!fullscreenMosaic && !lightboxMosaic) || !swiper || !allPhotos.length) {
                 return null;
             }
 
@@ -5865,19 +5942,14 @@
                 $container.append($fullscreenMosaic);
             }
 
-            $container.attr('data-fullscreen-mosaic', 'true');
-            $container.attr('data-fullscreen-mosaic-position', fullscreenMosaicPosition);
             var fullscreenMosaicThumbCount = allPhotos.length;
             $fullscreenMosaic.find('.swiper-wrapper').html(buildMosaicThumbSlidesHtml(allPhotos));
-            $fullscreenMosaic[0].style.setProperty('--jzsa-mosaic-opacity', config.fullscreenMosaicOpacity);
-            if (config.fullscreenMosaicBackground) {
-                $fullscreenMosaic[0].style.setProperty('--jzsa-mosaic-background', config.fullscreenMosaicBackground);
-            }
             var FULLSCREEN_MOSAIC_TARGET_THUMB_SIZE = 86;
             var fullscreenMosaicEffectiveCount = 1;
             var fullscreenMosaicThumbSize = 1;
             var fullscreenMosaicPageStart = 0;
             var fullscreenMosaicVertical = false;
+            var expandedMosaicEnabled = false;
 
             if (!$fullscreenMosaic.find('.jzsa-mosaic-arrow-prev').length) {
                 $fullscreenMosaic.append(
@@ -6032,6 +6104,33 @@
                 positionFullscreenMosaicPage(fullscreenMosaicPageStart);
             }
 
+            function applyExpandedMosaicSettings(settings) {
+                expandedMosaicEnabled = settings.enabled;
+                fullscreenMosaicPosition = settings.position;
+                config.fullscreenMosaicCount = settings.count;
+                config.fullscreenMosaicGap = settings.gap;
+                config.fullscreenMosaicOpacity = settings.opacity;
+                config.fullscreenMosaicBackground = settings.background;
+
+                $container.attr('data-fullscreen-mosaic', settings.enabled ? 'true' : 'false');
+                $container.attr('data-fullscreen-mosaic-position', settings.position);
+                $container.attr('data-fullscreen-mosaic-layout', settings.layout);
+                $fullscreenMosaic[0].style.setProperty('--jzsa-mosaic-opacity', settings.opacity);
+                if (settings.background) {
+                    $fullscreenMosaic[0].style.setProperty('--jzsa-mosaic-background', settings.background);
+                } else {
+                    $fullscreenMosaic[0].style.removeProperty('--jzsa-mosaic-background');
+                }
+                if (typeof settings.cornerRadius === 'number' && settings.cornerRadius >= 0) {
+                    $fullscreenMosaic[0].style.setProperty('--jzsa-fullscreen-mosaic-corner-radius', settings.cornerRadius + 'px');
+                } else {
+                    $fullscreenMosaic[0].style.removeProperty('--jzsa-fullscreen-mosaic-corner-radius');
+                }
+                resizeFullscreenMosaic();
+                syncFullscreenMosaic();
+                updateFullscreenMosaicState();
+            }
+
             resizeFullscreenMosaic();
 
             function layoutVisibleFullscreenMosaic() {
@@ -6089,8 +6188,9 @@
 
             function updateFullscreenMosaicState() {
                 var isFs = isFullscreen($container[0]) || $container.hasClass('jzsa-is-fullscreen') || $container.hasClass('jzsa-pseudo-fullscreen');
-                $fullscreenMosaic.attr('aria-hidden', isFs ? 'false' : 'true');
-                if (isFs) {
+                var isVisible = isFs && expandedMosaicEnabled;
+                $fullscreenMosaic.attr('aria-hidden', isVisible ? 'false' : 'true');
+                if (isVisible) {
                     scheduleVisibleFullscreenMosaicLayout();
                 }
             }
@@ -6108,11 +6208,37 @@
                 resizeFullscreenMosaic();
                 syncFullscreenMosaic();
             });
-            resizeFullscreenMosaic();
-            syncFullscreenMosaic();
-            updateFullscreenMosaicState();
+            var fullscreenSettings = {
+                enabled: config.fullscreenMosaic,
+                position: config.fullscreenMosaicPosition,
+                layout: config.fullscreenMosaicLayout,
+                count: config.fullscreenMosaicCount,
+                gap: config.fullscreenMosaicGap,
+                opacity: config.fullscreenMosaicOpacity,
+                background: config.fullscreenMosaicBackground,
+                cornerRadius: config.fullscreenMosaicCornerRadius
+            };
+            var lightboxSettings = {
+                enabled: config.lightboxMosaic,
+                position: config.lightboxMosaicPosition,
+                layout: config.lightboxMosaicLayout,
+                count: config.lightboxMosaicCount,
+                gap: config.lightboxMosaicGap,
+                opacity: config.lightboxMosaicOpacity,
+                background: config.lightboxMosaicBackground,
+                cornerRadius: config.lightboxMosaicCornerRadius
+            };
 
-            return null;
+            applyExpandedMosaicSettings(fullscreenSettings);
+
+            return {
+                useFullscreen: function() {
+                    applyExpandedMosaicSettings(fullscreenSettings);
+                },
+                useLightbox: function() {
+                    applyExpandedMosaicSettings(lightboxSettings);
+                }
+            };
         }
 
         // --------------------------------------------------------------------
@@ -6242,7 +6368,7 @@
             // Initialize Swiper (pass the DOM element directly to avoid selector resolution issues)
             var swiper = new Swiper($container[0], swiperConfig);
             swipers[galleryId] = swiper;
-            setupFullscreenMosaic(swiper);
+            swiper._jzsaExpandedMosaicController = setupFullscreenMosaic(swiper);
 
             // Sync mosaic with main gallery: scroll mosaic to keep active thumb visible
             if (mosaicSwiper) {
@@ -6277,7 +6403,8 @@
                 }
                 var boxFmt = $container.attr('data-' + boxName) || '';
                 var boxFsFmt = $container.attr('data-fullscreen-' + boxName) || boxFmt;
-                if (!boxFmt && !boxFsFmt) {
+                var boxLbFmt = $container.attr('data-lightbox-' + boxName) || boxFsFmt;
+                if (!boxFmt && !boxFsFmt && !boxLbFmt) {
                     return;
                 }
                 var $box = $('<div class="jzsa-info-box jzsa-' + boxName + '"></div>');
@@ -6288,7 +6415,7 @@
                     $bottomInfoStack.append($box);
                     hasBottomStackBoxes = true;
                 }
-                containerBoxes.push({ $el: $box, fmt: boxFmt, fsFmt: boxFsFmt });
+                containerBoxes.push({ $el: $box, fmt: boxFmt, fsFmt: boxFsFmt, lbFmt: boxLbFmt });
             }
 
             for (var bi = 0; bi < SAFE_INFO_TOP_ORDER.length; bi++) {
@@ -6307,6 +6434,7 @@
 
             function updateAllInfoBoxes() {
                 var isFs = $container.hasClass('jzsa-is-fullscreen') || $container.hasClass('jzsa-pseudo-fullscreen');
+                var isLb = isLightboxPresentationActive($container[0]);
                 var photoIndex = getSwiperPhotoIndex(swiper);
                 var photo = getContainerPhoto($container, photoIndex);
                 var total = getContainerTotalCount($container);
@@ -6314,7 +6442,7 @@
                 var albumTitle = $container.attr('data-album-title') || '';
                 for (var j = 0; j < containerBoxes.length; j++) {
                     var cb = containerBoxes[j];
-                    var fmt = isFs ? cb.fsFmt : cb.fmt;
+                    var fmt = isLb ? cb.lbFmt : (isFs ? cb.fsFmt : cb.fmt);
                     var text = renderInfoFormat(fmt, photo,
                         $.extend(itemPlaceholders, { albumTitle: albumTitle })
                     );
@@ -6420,6 +6548,7 @@
                 fullscreenInfoFontColor: config.fullscreenInfoFontColor,
                 fullscreenDisplayMaxWidth: config.fullscreenDisplayMaxWidth,
                 fullscreenDisplayMaxHeight: config.fullscreenDisplayMaxHeight,
+                fullscreenCornerRadius: config.fullscreenCornerRadius,
                 videoControlsAutohide: videoControlsAutohide,
                 fullscreenVideoControlsAutohide: fullscreenVideoControlsAutohide,
                 browserPrefix: null,
@@ -6892,6 +7021,7 @@
             'data-fullscreen-mosaic-corner-radius',
             'data-fullscreen-display-max-width',
             'data-fullscreen-display-max-height',
+            'data-fullscreen-corner-radius',
             'data-background-color',
             'data-fullscreen-background-color',
             'data-controls-color',
@@ -6945,6 +7075,20 @@
             'data-lightbox-slideshow',
             'data-lightbox-slideshow-delay',
             'data-lightbox-slideshow-autoresume',
+            'data-lightbox-info-top',
+            'data-lightbox-info-top-secondary',
+            'data-lightbox-info-bottom',
+            'data-lightbox-info-font-size',
+            'data-lightbox-info-font-family',
+            'data-lightbox-info-font-color',
+            'data-lightbox-mosaic',
+            'data-lightbox-mosaic-position',
+            'data-lightbox-mosaic-layout',
+            'data-lightbox-mosaic-count',
+            'data-lightbox-mosaic-gap',
+            'data-lightbox-mosaic-opacity',
+            'data-lightbox-mosaic-background',
+            'data-lightbox-mosaic-corner-radius',
             'data-lightbox-source-width',
             'data-lightbox-source-height'
         ];

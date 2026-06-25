@@ -171,4 +171,125 @@ class OrchestratorToggleModeTest extends TestCase {
         $key = $this->invoke( 'paired_key', $atts, 'fullscreen-controls-color', 'lightbox-controls-color' );
         $this->assertSame( 'fullscreen-controls-color', $key );
     }
+
+    public function test_expanded_toggle_accepts_each_supported_token(): void {
+        $cases = [
+            'disabled'                => [ 'disabled', 'disabled', true ],
+            'lightbox-button'         => [ 'button-only', 'disabled', true ],
+            'lightbox-click'          => [ 'click', 'disabled', true ],
+            'lightbox-double-click'   => [ 'double-click', 'disabled', true ],
+            'fullscreen-button'       => [ 'disabled', 'button-only', true ],
+            'fullscreen-click'        => [ 'disabled', 'click', true ],
+            'fullscreen-double-click' => [ 'disabled', 'double-click', true ],
+        ];
+
+        foreach ( $cases as $raw => [ $lightbox, $fullscreen, $valid ] ) {
+            $parsed = $this->invoke( 'parse_expanded_toggle', $raw );
+            $this->assertSame( $lightbox, $parsed['lightbox'], $raw );
+            $this->assertSame( $fullscreen, $parsed['fullscreen'], $raw );
+            $this->assertSame( $valid, $parsed['valid'], $raw );
+        }
+    }
+
+    public function test_expanded_toggle_accepts_safe_combination_in_any_order(): void {
+        $first = $this->invoke( 'parse_expanded_toggle', 'lightbox-button, fullscreen-click' );
+        $second = $this->invoke( 'parse_expanded_toggle', ' fullscreen-click , lightbox-button ' );
+
+        $this->assertSame( $first, $second );
+        $this->assertSame( 'button-only', $first['lightbox'] );
+        $this->assertSame( 'click', $first['fullscreen'] );
+        $this->assertTrue( $first['valid'] );
+    }
+
+    public function test_expanded_toggle_converts_competing_gestures_to_buttons(): void {
+        $parsed = $this->invoke( 'parse_expanded_toggle', 'lightbox-click, fullscreen-double-click' );
+
+        $this->assertSame( 'button-only', $parsed['lightbox'] );
+        $this->assertSame( 'button-only', $parsed['fullscreen'] );
+        $this->assertFalse( $parsed['valid'] );
+    }
+
+    public function test_expanded_toggle_disables_both_for_other_invalid_values(): void {
+        $values = [
+            '',
+            'lightbox-click, lightbox-button',
+            'disabled, fullscreen-button',
+            'lightbox-hover',
+        ];
+
+        foreach ( $values as $raw ) {
+            $parsed = $this->invoke( 'parse_expanded_toggle', $raw );
+            $this->assertSame( 'disabled', $parsed['lightbox'], $raw );
+            $this->assertSame( 'disabled', $parsed['fullscreen'], $raw );
+            $this->assertFalse( $parsed['valid'], $raw );
+        }
+    }
+
+    public function test_expanded_defaults_leave_legacy_attributes_unchanged(): void {
+        $atts = [
+            'lightbox-toggle'          => 'click',
+            'fullscreen-toggle'        => 'button-only',
+            'fullscreen-controls-color' => '#112233',
+        ];
+
+        $this->assertSame( $atts, $this->invoke( 'apply_expanded_attribute_defaults', $atts ) );
+    }
+
+    public function test_expanded_defaults_fill_both_modes_and_keep_specific_overrides(): void {
+        $atts = [
+            'expanded-toggle'          => 'lightbox-button, fullscreen-click',
+            'expanded-max-width'       => '900',
+            'expanded-controls-color'  => '#112233',
+            'lightbox-max-width'       => '700',
+            'fullscreen-controls-color' => '#445566',
+        ];
+
+        $normalized = $this->invoke( 'apply_expanded_attribute_defaults', $atts );
+
+        $this->assertSame( 'button-only', $normalized['lightbox-toggle'] );
+        $this->assertSame( 'click', $normalized['fullscreen-toggle'] );
+        $this->assertSame( '700', $normalized['lightbox-max-width'] );
+        $this->assertSame( '900', $normalized['fullscreen-display-max-width'] );
+        $this->assertSame( '#112233', $normalized['lightbox-controls-color'] );
+        $this->assertSame( '#445566', $normalized['fullscreen-controls-color'] );
+    }
+
+    public function test_every_expanded_setting_maps_to_both_concrete_modes(): void {
+        $pairs = [
+            'expanded-max-height'             => [ 'fullscreen-display-max-height', 'lightbox-max-height' ],
+            'expanded-source-width'           => [ 'fullscreen-source-width', 'lightbox-source-width' ],
+            'expanded-source-height'          => [ 'fullscreen-source-height', 'lightbox-source-height' ],
+            'expanded-image-fit'              => [ 'fullscreen-image-fit', 'lightbox-image-fit' ],
+            'expanded-background-color'       => [ 'fullscreen-background-color', 'lightbox-background-color' ],
+            'expanded-corner-radius'          => [ 'fullscreen-corner-radius', 'lightbox-corner-radius' ],
+            'expanded-video-controls-color'   => [ 'fullscreen-video-controls-color', 'lightbox-video-controls-color' ],
+            'expanded-video-controls-autohide' => [ 'fullscreen-video-controls-autohide', 'lightbox-video-controls-autohide' ],
+            'expanded-show-navigation'        => [ 'fullscreen-show-navigation', 'lightbox-show-navigation' ],
+            'expanded-show-link-button'       => [ 'fullscreen-show-link-button', 'lightbox-show-link-button' ],
+            'expanded-show-download-button'   => [ 'fullscreen-show-download-button', 'lightbox-show-download-button' ],
+            'expanded-slideshow'              => [ 'fullscreen-slideshow', 'lightbox-slideshow' ],
+            'expanded-slideshow-delay'        => [ 'fullscreen-slideshow-delay', 'lightbox-slideshow-delay' ],
+            'expanded-slideshow-autoresume'   => [ 'fullscreen-slideshow-autoresume', 'lightbox-slideshow-autoresume' ],
+            'expanded-info-bottom'            => [ 'fullscreen-info-bottom', 'lightbox-info-bottom' ],
+            'expanded-info-top'               => [ 'fullscreen-info-top', 'lightbox-info-top' ],
+            'expanded-info-top-secondary'     => [ 'fullscreen-info-top-secondary', 'lightbox-info-top-secondary' ],
+            'expanded-info-font-size'         => [ 'fullscreen-info-font-size', 'lightbox-info-font-size' ],
+            'expanded-info-font-family'       => [ 'fullscreen-info-font-family', 'lightbox-info-font-family' ],
+            'expanded-info-font-color'        => [ 'fullscreen-info-font-color', 'lightbox-info-font-color' ],
+            'expanded-mosaic'                 => [ 'fullscreen-mosaic', 'lightbox-mosaic' ],
+            'expanded-mosaic-position'        => [ 'fullscreen-mosaic-position', 'lightbox-mosaic-position' ],
+            'expanded-mosaic-layout'          => [ 'fullscreen-mosaic-layout', 'lightbox-mosaic-layout' ],
+            'expanded-mosaic-count'           => [ 'fullscreen-mosaic-count', 'lightbox-mosaic-count' ],
+            'expanded-mosaic-gap'             => [ 'fullscreen-mosaic-gap', 'lightbox-mosaic-gap' ],
+            'expanded-mosaic-opacity'         => [ 'fullscreen-mosaic-opacity', 'lightbox-mosaic-opacity' ],
+            'expanded-mosaic-background'      => [ 'fullscreen-mosaic-background', 'lightbox-mosaic-background' ],
+            'expanded-mosaic-corner-radius'   => [ 'fullscreen-mosaic-corner-radius', 'lightbox-mosaic-corner-radius' ],
+        ];
+
+        foreach ( $pairs as $expanded => [ $fullscreen, $lightbox ] ) {
+            $normalized = $this->invoke( 'apply_expanded_attribute_defaults', [ $expanded => 'test-value' ] );
+            $this->assertSame( 'test-value', $normalized[ $fullscreen ], $expanded );
+            $this->assertSame( 'test-value', $normalized[ $lightbox ], $expanded );
+        }
+    }
 }

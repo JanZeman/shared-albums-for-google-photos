@@ -327,6 +327,21 @@ class JZSA_Renderer {
 		if ( ! empty( $config['lightbox-corner-radius'] ) ) {
 			$attrs[] = sprintf( 'data-lightbox-corner-radius="%d"', intval( $config['lightbox-corner-radius'] ) );
 		}
+		foreach ( array( 'info-bottom', 'info-top', 'info-top-secondary' ) as $info_key ) {
+			$config_key = 'lightbox-' . $info_key;
+			if ( ! empty( $config[ $config_key ] ) ) {
+				$attrs[] = sprintf( 'data-%s="%s"', $config_key, esc_attr( $config[ $config_key ] ) );
+			}
+		}
+		if ( isset( $config['lightbox-info-font-size'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-info-font-size="%d"', intval( $config['lightbox-info-font-size'] ) );
+		}
+		if ( ! empty( $config['lightbox-info-font-family'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-info-font-family="%s"', esc_attr( $config['lightbox-info-font-family'] ) );
+		}
+		if ( ! empty( $config['lightbox-info-font-color'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-info-font-color="%s"', esc_attr( $config['lightbox-info-font-color'] ) );
+		}
 
 		// Display settings that JS applies when the lightbox opens.
 		// These are pre-resolved with bidirectional fallback from fullscreen-* by PHP.
@@ -356,6 +371,30 @@ class JZSA_Renderer {
 		}
 		if ( isset( $config['lightbox-slideshow-autoresume'] ) ) {
 			$attrs[] = sprintf( 'data-lightbox-slideshow-autoresume="%s"', esc_attr( $config['lightbox-slideshow-autoresume'] ) );
+		}
+		if ( isset( $config['lightbox-mosaic'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-mosaic="%s"', $config['lightbox-mosaic'] ? 'true' : 'false' );
+		}
+		if ( ! empty( $config['lightbox-mosaic-position'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-mosaic-position="%s"', esc_attr( $config['lightbox-mosaic-position'] ) );
+		}
+		if ( ! empty( $config['lightbox-mosaic-layout'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-mosaic-layout="%s"', esc_attr( $config['lightbox-mosaic-layout'] ) );
+		}
+		if ( isset( $config['lightbox-mosaic-count'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-mosaic-count="%d"', intval( $config['lightbox-mosaic-count'] ) );
+		}
+		if ( isset( $config['lightbox-mosaic-gap'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-mosaic-gap="%d"', intval( $config['lightbox-mosaic-gap'] ) );
+		}
+		if ( isset( $config['lightbox-mosaic-opacity'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-mosaic-opacity="%s"', esc_attr( $config['lightbox-mosaic-opacity'] ) );
+		}
+		if ( ! empty( $config['lightbox-mosaic-background'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-mosaic-background="%s"', esc_attr( $config['lightbox-mosaic-background'] ) );
+		}
+		if ( isset( $config['lightbox-mosaic-corner-radius'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-mosaic-corner-radius="%d"', intval( $config['lightbox-mosaic-corner-radius'] ) );
 		}
 
 		return $attrs;
@@ -512,6 +551,9 @@ class JZSA_Renderer {
 		}
 		if ( isset( $config['fullscreen-display-max-height'] ) && null !== $config['fullscreen-display-max-height'] ) {
 			$attrs[] = sprintf( 'data-fullscreen-display-max-height="%d"', intval( $config['fullscreen-display-max-height'] ) );
+		}
+		if ( isset( $config['fullscreen-corner-radius'] ) && null !== $config['fullscreen-corner-radius'] ) {
+			$attrs[] = sprintf( 'data-fullscreen-corner-radius="%d"', intval( $config['fullscreen-corner-radius'] ) );
 		}
 
 		if ( isset( $config['start-at'] ) && '' !== $config['start-at'] ) {
@@ -809,6 +851,9 @@ class JZSA_Renderer {
 		}
 		if ( isset( $config['fullscreen-display-max-height'] ) && null !== $config['fullscreen-display-max-height'] ) {
 			$attrs[] = sprintf( 'data-fullscreen-display-max-height="%d"', intval( $config['fullscreen-display-max-height'] ) );
+		}
+		if ( isset( $config['fullscreen-corner-radius'] ) && null !== $config['fullscreen-corner-radius'] ) {
+			$attrs[] = sprintf( 'data-fullscreen-corner-radius="%d"', intval( $config['fullscreen-corner-radius'] ) );
 		}
 
 		if ( ! empty( $config['background-color'] ) ) {
