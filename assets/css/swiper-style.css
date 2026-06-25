@@ -699,6 +699,12 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     background-position: center;
 }
 
+/* Lightbox-only albums keep the fullscreen button hidden inline, but show it
+   once the lightbox overlay is open so visitors can escalate to fullscreen. */
+.jzsa-album[data-lightbox-toggle]:not([data-lightbox-toggle="disabled"])[data-fullscreen-toggle="disabled"]:not(.jzsa-lightbox-active):not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) > .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn):not(.jzsa-carousel-slide-overlay-btn) {
+    display: none !important;
+}
+
 /* When in fullscreen, show exit fullscreen icon */
 .jzsa-album:fullscreen .swiper-button-fullscreen:after,
 .jzsa-album:-webkit-full-screen .swiper-button-fullscreen:after {
@@ -1003,9 +1009,9 @@ html.jzsa-lightbox-open body {
     -webkit-appearance: none;
     appearance: none;
 }
-/* When both lightbox and fullscreen buttons coexist, the fullscreen button sits at
-   right: 0 inside the lightbox, so the close button steps left to make room. */
-.jzsa-album.jzsa-has-dual-expand.jzsa-lightbox-active > .jzsa-lightbox-close {
+/* When the lightbox is open and the fullscreen button is present, the close
+   button steps left to make room. */
+.jzsa-album.jzsa-lightbox-active > .jzsa-lightbox-close {
     right: var(--jzsa-controls-circle-size-fs, 55px);
 }
 .jzsa-album.jzsa-lightbox-active > .jzsa-lightbox-close::after {

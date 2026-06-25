@@ -283,7 +283,7 @@
         if (!$btn.length) {
             $btn = $('<button class="jzsa-lightbox-close" type="button"></button>');
             var label = jzsaI18n('closeLightbox') || 'Close';
-            $btn.attr('title', label).attr('aria-label', label);
+            $btn.attr('aria-label', label);
             $btn.on('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -6967,9 +6967,9 @@
         var galLightboxOn     = galLightboxToggle !== 'disabled';
         var galFsToggle       = $galleryContainer.attr('data-fullscreen-toggle') || 'button-only';
         var galFsEnabled      = galFsToggle && galFsToggle !== 'disabled';
-        var galShowFullscreen = galFsEnabled;
+        var galShowFullscreen = galFsEnabled || galLightboxOn;
         if (galLightboxOn) {
-            html += '<div class="swiper-button-lightbox" title="' + jzsaEscapeAttr(jzsaI18n('openLightbox')) + '"></div>';
+            html += '<div class="swiper-button-lightbox"></div>';
         }
         if (galShowFullscreen) {
             html += '<div class="swiper-button-fullscreen"></div>';

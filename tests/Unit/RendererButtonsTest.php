@@ -78,7 +78,7 @@ class RendererButtonsTest extends TestCase {
     // Fullscreen button (.swiper-button-fullscreen)
     // -------------------------------------------------------------------------
 
-    public function test_no_fullscreen_button_when_fullscreen_disabled(): void {
+    public function test_no_fullscreen_button_when_fullscreen_disabled_and_lightbox_off(): void {
         $html = $this->render( [ 'fullscreen-toggle' => 'disabled' ] );
         $this->assertStringNotContainsString( 'swiper-button-fullscreen', $html );
     }
@@ -86,6 +86,11 @@ class RendererButtonsTest extends TestCase {
     public function test_no_fullscreen_button_when_fullscreen_not_set(): void {
         $html = $this->render( [] );
         $this->assertStringNotContainsString( 'swiper-button-fullscreen', $html );
+    }
+
+    public function test_fullscreen_button_present_when_lightbox_is_enabled(): void {
+        $html = $this->render( [ 'lightbox-toggle' => 'button-only' ] );
+        $this->assertStringContainsString( 'swiper-button-fullscreen', $html );
     }
 
     public function test_fullscreen_button_present_in_button_only_mode(): void {
