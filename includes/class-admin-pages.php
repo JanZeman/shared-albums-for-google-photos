@@ -1054,11 +1054,10 @@ class JZSA_Admin_Pages {
 							<summary class="jzsa-collapsible-summary"><?php esc_html_e( 'Viewer (Samples 21-35)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
 							<p class="jzsa-sample-group__description"><?php esc_html_e( 'Lightbox comes first here, then fullscreen, then the combined example at the end. This is the main viewer teaching block.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
-					<div class="jzsa-sample-card">
-						<div class="jzsa-sample-card-header">
-							<h3><?php echo 'Sample 21: ' . esc_html__( 'Viewer - Default Behaviour', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<span class="jzsa-sample-card-hint"><?php echo $s_lightbox_hint; ?></span>
-						</div>
+						<div class="jzsa-sample-card">
+							<div class="jzsa-sample-card-header">
+								<h3><?php echo 'Sample 21: ' . esc_html__( 'Viewer - Default Behaviour', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							</div>
 							<p><?php esc_html_e( 'Viewer is not opened from the photo. The user must tap the dedicated button to enter it. It is in the default mode, so it opens as Lightbox.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
 							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="600" corner-radius="16"]';
@@ -1077,10 +1076,10 @@ class JZSA_Admin_Pages {
 
 						<div class="jzsa-sample-card">
 							<div class="jzsa-sample-card-header">
-								<h3><?php echo 'Sample 22: ' . esc_html__( 'Lightbox - Basic (Click to Open)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+								<h3><?php echo 'Sample 22: ' . esc_html__( 'Lightbox - Open Directly from the Photo', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 								<span class="jzsa-sample-card-hint"><?php echo $s_lightbox_hint; ?></span>
 							</div>
-							<p><?php esc_html_e( 'The simplest Lightbox setup. Click any photo to open the lightbox overlay with prev and next navigation.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'Here the photo itself opens Lightbox. Tap any photo in the slider to enter the overlay with previous and next navigation.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
 							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-click"]';
 						?>

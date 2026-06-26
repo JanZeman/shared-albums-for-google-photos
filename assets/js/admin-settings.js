@@ -36,6 +36,92 @@ function jzsaCopyToClipboard( button, text ) {
 	jzsaFlashButton( button, 'Copied!' );
 }
 
+function jzsaBuildSampleAnchorUrl( sampleId ) {
+	var url = new URL( window.location.href );
+	url.hash = sampleId;
+	return url.toString();
+}
+
+function jzsaEnsureSampleAnchors() {
+	var sampleCards = document.querySelectorAll( '.jzsa-sample-card' );
+
+	sampleCards.forEach( function ( card ) {
+		var title = card.querySelector( 'h3' );
+		if ( ! title ) {
+			return;
+		}
+
+		var match = title.textContent && title.textContent.match( /Sample\s+(\d+):/i );
+		if ( ! match ) {
+			return;
+		}
+
+		var sampleId = 'jzsa-sample-' + match[ 1 ];
+		card.id = sampleId;
+		card.setAttribute( 'tabindex', '-1' );
+
+		var header = card.querySelector( '.jzsa-sample-card-header' );
+		var anchorButton = card.querySelector( '.jzsa-sample-anchor-btn' );
+		if ( ! anchorButton ) {
+			anchorButton = document.createElement( 'button' );
+			anchorButton.type = 'button';
+			anchorButton.className = 'jzsa-sample-anchor-btn';
+			anchorButton.textContent = 'Copy anchor';
+			anchorButton.setAttribute( 'aria-label', 'Copy direct link to this sample' );
+			anchorButton.addEventListener( 'click', function () {
+				jzsaCopyToClipboard( anchorButton, jzsaBuildSampleAnchorUrl( sampleId ) );
+			} );
+		}
+
+		if ( header && ! anchorButton.parentNode ) {
+			header.appendChild( anchorButton );
+		} else if ( ! header && ! anchorButton.parentNode ) {
+			var titleParent = title.parentNode;
+			if ( titleParent ) {
+				var newHeader = document.createElement( 'div' );
+				newHeader.className = 'jzsa-sample-card-header';
+				titleParent.insertBefore( newHeader, title );
+				newHeader.appendChild( title );
+				newHeader.appendChild( anchorButton );
+			}
+		}
+	} );
+}
+
+function jzsaScrollToSampleAnchor() {
+	var hash = window.location.hash;
+	if ( ! hash ) {
+		return;
+	}
+
+	var target = document.querySelector( hash );
+	if ( ! target ) {
+		return;
+	}
+
+	var details = target.closest( 'details.jzsa-collapsible-section' );
+	if ( details && ! details.open ) {
+		details.open = true;
+	}
+
+	window.requestAnimationFrame( function () {
+		window.requestAnimationFrame( function () {
+			target.scrollIntoView( { block: 'start', behavior: 'auto' } );
+		} );
+	} );
+}
+
+function jzsaInitSampleAnchorScroll() {
+	if ( document.readyState === 'complete' ) {
+		window.setTimeout( jzsaScrollToSampleAnchor, 0 );
+		return;
+	}
+
+	window.addEventListener( 'load', function () {
+		jzsaScrollToSampleAnchor();
+	}, { once: true } );
+}
+
 function jzsaGetPreviewAjaxConfig() {
 	if ( typeof jzsaAjax !== 'undefined' && jzsaAjax && jzsaAjax.ajaxUrl && jzsaAjax.previewNonce ) {
 		return jzsaAjax;
@@ -493,12 +579,54 @@ var JZSA_KNOWN_PARAMS = [
  */
 var JZSA_LEGACY_PARAMS = [
 	'cache-refresh', 'show-counter', 'show-title', 'fullscreen-show-counter',
-	'fullscreen-show-title', 'gallery-page-bottom'
+	'fullscreen-show-title', 'gallery-page-bottom',
+	'info-top-1', 'info-top-2', 'fullscreen-info-top-1',
+	'fullscreen-info-top-2'
 ];
+
+/**
+ * Accepted legacy names that should not appear in newly published examples.
+ * They still work for backward compatibility, but Guide and Community samples
+ * should use the current parameter names.
+ */
+var JZSA_OBSOLETE_PARAM_REPLACEMENTS = ( function () {
+	var replacements = {
+		'cache-refresh': 'album-cache-refresh',
+		'gallery-page-bottom': 'gallery-info-bottom',
+		'show-title': 'info-bottom',
+		'show-counter': 'info-bottom',
+		'fullscreen-show-title': 'fullscreen-info-bottom',
+		'fullscreen-show-counter': 'fullscreen-info-bottom',
+		'info-top-1': 'info-top',
+		'info-top-2': 'info-top-secondary',
+		'fullscreen-info-top-1': 'fullscreen-info-top',
+		'fullscreen-info-top-2': 'fullscreen-info-top-secondary'
+	};
+	var suffixes = [
+		'toggle', 'max-width', 'max-height', 'source-width', 'source-height',
+		'image-fit', 'background-color', 'corner-radius', 'controls-color',
+		'video-controls-color', 'video-controls-autohide', 'show-navigation',
+		'show-link-button', 'show-download-button', 'slideshow',
+		'slideshow-delay', 'slideshow-autoresume', 'info-bottom',
+		'info-top', 'info-top-secondary', 'info-font-size',
+		'info-font-family', 'info-font-color', 'mosaic',
+		'mosaic-position', 'mosaic-layout', 'mosaic-count', 'mosaic-gap',
+		'mosaic-opacity', 'mosaic-background', 'mosaic-corner-radius'
+	];
+
+	suffixes.forEach( function ( suffix ) {
+		replacements[ 'expanded-' + suffix ] = 'viewer-' + suffix;
+	} );
+
+	return replacements;
+}() );
 
 var JZSA_PARAM_SET = ( function () {
 	var set = {};
 	JZSA_KNOWN_PARAMS.concat( JZSA_LEGACY_PARAMS ).forEach( function ( name ) {
+		set[ name ] = true;
+	} );
+	Object.keys( JZSA_OBSOLETE_PARAM_REPLACEMENTS ).forEach( function ( name ) {
 		set[ name ] = true;
 	} );
 	return set;
@@ -987,6 +1115,13 @@ function jzsaValidateShortcode( raw ) {
 				continue;
 			}
 
+			if ( JZSA_OBSOLETE_PARAM_REPLACEMENTS[ name ] ) {
+				warnings.push(
+					'Parameter "' + name + '" is obsolete. Use "' +
+					JZSA_OBSOLETE_PARAM_REPLACEMENTS[ name ] + '" instead.'
+				);
+			}
+
 			// Known parameter: check that its value matches the expected type.
 			var valueIssue = jzsaValidateValue( name, rawValue );
 			if ( valueIssue ) {
@@ -1263,6 +1398,9 @@ function jzsaInitAdminSettings() {
 	document.querySelectorAll( '.jzsa-sample-card' ).forEach( function ( el ) {
 		el.style.background = 'hsl(' + Math.floor( Math.random() * 360 ) + ', 55%, 95%)';
 	} );
+
+	jzsaEnsureSampleAnchors();
+	jzsaInitSampleAnchorScroll();
 
 	var sampleGroups = document.querySelectorAll( '.jzsa-sample-group.jzsa-collapsible-section' );
 	var sampleGroupToggle = document.getElementById( 'jzsa-toggle-sample-groups' );

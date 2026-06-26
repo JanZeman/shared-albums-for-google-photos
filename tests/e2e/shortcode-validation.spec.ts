@@ -58,6 +58,22 @@ test.describe('Shortcode validation - Playground live feedback', () => {
         await expect(area).toContainText('did you mean "mode"');
     });
 
+    test('obsolete parameters warn with the preferred replacement', async ({ page }) => {
+        await setShortcode(page, '[jzsa-album link="https://photos.google.com/share/x" cache-refresh="24"]');
+        const area = page.locator(VALIDATION);
+        await expect(area).toHaveClass(/jzsa-code-validation--warning/);
+        await expect(area).toContainText('Parameter "cache-refresh" is obsolete');
+        await expect(area).toContainText('Use "album-cache-refresh" instead');
+    });
+
+    test('legacy expanded viewer aliases warn with viewer replacements', async ({ page }) => {
+        await setShortcode(page, '[jzsa-album link="https://photos.google.com/share/x" expanded-max-width="900"]');
+        const area = page.locator(VALIDATION);
+        await expect(area).toHaveClass(/jzsa-code-validation--warning/);
+        await expect(area).toContainText('Parameter "expanded-max-width" is obsolete');
+        await expect(area).toContainText('Use "viewer-max-width" instead');
+    });
+
     test('an unterminated quote reports an error', async ({ page }) => {
         await setShortcode(page, '[jzsa-album link="https://photos.google.com/share/x]');
         const area = page.locator(VALIDATION);

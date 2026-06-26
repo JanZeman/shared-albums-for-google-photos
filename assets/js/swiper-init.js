@@ -262,6 +262,32 @@
         return bd;
     }
 
+    function getSampleCardAnchorId(element) {
+        if (!element) {
+            return '';
+        }
+
+        var card = $(element).closest('.jzsa-sample-card');
+        if (!card.length) {
+            return '';
+        }
+
+        return card.attr('id') || '';
+    }
+
+    function restoreSampleCardAnchor(anchorId) {
+        if (!anchorId) {
+            return;
+        }
+
+        var target = document.getElementById(anchorId);
+        if (!target || !target.scrollIntoView) {
+            return;
+        }
+
+        target.scrollIntoView({ block: 'start', behavior: 'auto' });
+    }
+
     function isLightboxActive(element) {
         if (element) {
             return $(element).hasClass('jzsa-lightbox-active');
@@ -322,6 +348,7 @@
 
         // Remember scroll + make the box opaque (mirrors pseudo-fullscreen).
         $el.data('jzsa-scroll-y', window.scrollY || window.pageYOffset);
+        $el.data('jzsa-sample-anchor-id', getSampleCardAnchorId(element));
         $el.data('jzsaLightboxOriginalBg', element.style.getPropertyValue('--gallery-bg-color'));
         var fsBgRaw = $el.attr('data-fullscreen-background-color') || $el.attr('data-background-color') || '';
         var boxBg = (fsBgRaw && fsBgRaw !== 'transparent') ? fsBgRaw : '#000';
@@ -585,6 +612,16 @@
 
         $el.trigger('jzsa:fullscreen-state', [false]);
         notifyGalleryOnFullscreenExit(element, swiper);
+
+        var sampleAnchorId = $el.data('jzsa-sample-anchor-id');
+        if (sampleAnchorId) {
+            window.requestAnimationFrame(function () {
+                window.requestAnimationFrame(function () {
+                    restoreSampleCardAnchor(sampleAnchorId);
+                });
+            });
+        }
+        $el.removeData('jzsa-sample-anchor-id');
 
         _jzsaLightboxActiveEl = null;
         // Only restore focus when the lightbox was opened via keyboard. For mouse-

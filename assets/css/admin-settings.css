@@ -545,6 +545,7 @@
     padding: 16px 18px 24px;
     border-bottom: none;
     border-radius: 6px;
+    scroll-margin-top: 96px;
 }
 
 .jzsa-sample-card:last-child {
@@ -584,6 +585,25 @@
     white-space: nowrap;
     margin-left: auto;
     flex-shrink: 0;
+}
+
+.jzsa-sample-anchor-btn {
+    margin-left: 6px;
+    padding: 2px 8px;
+    min-height: 24px;
+    border: 1px solid #c3c4c7;
+    border-radius: 3px;
+    background: #f6f7f7;
+    color: #2271b1;
+    font-size: 11px;
+    line-height: 1.4;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.jzsa-sample-anchor-btn:hover {
+    background: #fff;
+    border-color: #2271b1;
 }
 
 /* Settings Table */
