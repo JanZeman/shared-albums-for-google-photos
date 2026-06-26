@@ -1306,9 +1306,9 @@ class JZSA_Admin_Pages {
 								<h3><?php echo 'Sample 33: ' . esc_html__( 'Viewer Fit - Fullscreen Override', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 								<span class="jzsa-sample-card-hint"><?php esc_html_e( 'Lightbox contains, Fullscreen covers', 'janzeman-shared-albums-for-google-photos' ); ?></span>
 							</div>
-							<p><?php esc_html_e( 'Mode-specific fit settings can override the shared behaviour. This keeps Lightbox in the default contain fit, while fullscreen-image-fit makes Fullscreen crop to cover the available screen.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'fullscreen-image-fit overrides the shared fit for Fullscreen only. Lightbox stays at contain because that is the viewer-image-fit default: when viewer-image-fit is not set it is already contain, so omitting it here is enough to keep Lightbox contained.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-image-fit="contain" fullscreen-image-fit="cover"]';
+							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" fullscreen-image-fit="cover"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>

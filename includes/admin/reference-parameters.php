@@ -252,7 +252,7 @@
 					</table>
 
 					<h3><?php esc_html_e( 'Viewer Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<p><?php echo wp_kses_post( __( 'The <code>viewer-*</code> parameters configure Lightbox and Fullscreen through one shared layer. A concrete <code>lightbox-*</code> or <code>fullscreen-*</code> parameter overrides the matching viewer value for that mode only. When neither a <code>lightbox-*</code> nor a <code>fullscreen-*</code> override is present, the two modes share the same value. The default viewer is Lightbox: omitting <code>viewer-toggle</code> is equivalent to <code>viewer-toggle="lightbox-button"</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+					<p><?php echo wp_kses_post( __( 'Viewer parameters follow a three-tier hierarchy. <code>viewer-*</code> sets the shared baseline for both Lightbox and Fullscreen. <code>lightbox-*</code> overrides that value for Lightbox only. <code>fullscreen-*</code> overrides it for Fullscreen only. There is no sideways inheritance: setting a <code>fullscreen-*</code> parameter never affects Lightbox, and setting a <code>lightbox-*</code> parameter never affects Fullscreen. When a concrete mode parameter is omitted, the mode inherits the <code>viewer-*</code> value; when the <code>viewer-*</code> parameter is also omitted, the mode uses its own default. The default viewer is Lightbox: omitting <code>viewer-toggle</code> is equivalent to <code>viewer-toggle="lightbox-button"</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 					<table class="jzsa-settings-table jzsa-settings-table--params">
 						<thead>
 							<tr>
