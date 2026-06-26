@@ -3848,8 +3848,14 @@
                 notifyGalleryOnFullscreenExit(containerElement, swiper);
             } else {
                 // Back in lightbox: keep jzsa-is-fullscreen (lightbox uses it),
-                // re-apply fullscreen display settings, skip scroll restore.
-                applyFullscreenDisplayOverrides(containerElement, swiper, params, true);
+                // re-apply lightbox display settings, skip scroll restore.
+                var lightboxDisplayParams = swiper && swiper._jzsaLightboxDisplayParams;
+                applyFullscreenDisplayOverrides(
+                    containerElement,
+                    swiper,
+                    lightboxDisplayParams || params,
+                    true
+                );
                 clearCountdownRing($(containerElement));
             }
 

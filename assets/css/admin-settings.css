@@ -118,6 +118,14 @@
     margin: 0 0 20px 0;
 }
 
+.jzsa-sample-group + .jzsa-sample-group {
+    margin-top: 28px;
+}
+
+.jzsa-sample-group[open] {
+    margin-bottom: 40px;
+}
+
 .jzsa-sample-group > summary {
     cursor: pointer;
     font-size: 14px;
