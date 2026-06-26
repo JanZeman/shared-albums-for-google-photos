@@ -1264,6 +1264,39 @@ function jzsaInitAdminSettings() {
 		el.style.background = 'hsl(' + Math.floor( Math.random() * 360 ) + ', 55%, 95%)';
 	} );
 
+	var sampleGroups = document.querySelectorAll( '.jzsa-sample-group.jzsa-collapsible-section' );
+	var sampleGroupToggle = document.getElementById( 'jzsa-toggle-sample-groups' );
+	if ( sampleGroupToggle && sampleGroups.length ) {
+		var collapseLabel = sampleGroupToggle.getAttribute( 'data-collapse-label' ) || 'Collapse sample groups';
+		var expandLabel = sampleGroupToggle.getAttribute( 'data-expand-label' ) || 'Expand sample groups';
+		var setSampleGroupToggleLabel = function () {
+			var allOpen = true;
+			sampleGroups.forEach( function ( group ) {
+				if ( ! group.open ) {
+					allOpen = false;
+				}
+			} );
+			sampleGroupToggle.textContent = allOpen ? collapseLabel : expandLabel;
+			sampleGroupToggle.setAttribute( 'aria-expanded', allOpen ? 'true' : 'false' );
+		};
+		sampleGroupToggle.addEventListener( 'click', function () {
+			var allOpen = true;
+			sampleGroups.forEach( function ( group ) {
+				if ( ! group.open ) {
+					allOpen = false;
+				}
+			} );
+			sampleGroups.forEach( function ( group ) {
+				group.open = ! allOpen;
+			} );
+			setSampleGroupToggleLabel();
+		} );
+		sampleGroups.forEach( function ( group ) {
+			group.addEventListener( 'toggle', setSampleGroupToggleLabel );
+		} );
+		setSampleGroupToggleLabel();
+	}
+
 	// Wire the Clear Cache buttons.
 	var clearCacheBtns = document.querySelectorAll( '[data-jzsa-clear-cache-scope]' );
 	var clearCacheResult = document.getElementById( 'jzsa-clear-cache-result' );
