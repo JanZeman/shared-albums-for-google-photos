@@ -1059,7 +1059,7 @@ class JZSA_Admin_Pages {
 							<h3><?php echo 'Sample 21: ' . esc_html__( 'Viewer - Default Behaviour', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<span class="jzsa-sample-card-hint"><?php echo $s_lightbox_hint; ?></span>
 						</div>
-							<p><?php esc_html_e( 'Lightbox is the default viewer. No viewer toggle is needed here - click any photo to open the default overlay.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'Viewer is not opened from the photo. The user must tap the dedicated button to enter it. It is in the default mode, so it opens as Lightbox.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
 							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="600" corner-radius="16"]';
 						?>
