@@ -68,16 +68,23 @@ class LegacyExpandedCompatibilityTest extends TestCase {
 		);
 	}
 
-	public function test_every_production_sample_is_in_the_compatibility_baseline(): void {
+	public function test_every_production_sample_avoids_legacy_toggle_attributes(): void {
 		$sample_cases = self::productionSampleCases();
-		$fixture      = self::fixture();
-		$expected     = array_filter(
-			array_keys( $fixture['hashes'] ),
-			static fn ( string $name ): bool => str_starts_with( $name, 'sample-' )
-		);
 
-		$this->assertCount( 56, $sample_cases );
-		$this->assertSame( $expected, array_keys( $sample_cases ) );
+		$this->assertCount( 54, $sample_cases );
+
+		foreach ( $sample_cases as $case_name => $atts ) {
+			$this->assertArrayNotHasKey(
+				'lightbox-toggle',
+				$atts,
+				$case_name . ' should use expanded-toggle instead of lightbox-toggle'
+			);
+			$this->assertArrayNotHasKey(
+				'fullscreen-toggle',
+				$atts,
+				$case_name . ' should use expanded-toggle instead of fullscreen-toggle'
+			);
+		}
 	}
 
 	public static function legacyCases(): iterable {
