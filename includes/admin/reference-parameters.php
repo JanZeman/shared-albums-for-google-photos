@@ -252,7 +252,7 @@
 					</table>
 
 					<h3><?php esc_html_e( 'Viewer Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<p><?php echo wp_kses_post( __( 'The <code>viewer-*</code> parameters configure lightbox and fullscreen through one shared layer. A concrete <code>lightbox-*</code> or <code>fullscreen-*</code> parameter overrides the matching viewer value for that mode. Existing shortcodes without <code>viewer-*</code> parameters keep their previous behavior.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+					<p><?php echo wp_kses_post( __( 'The <code>viewer-*</code> parameters configure Lightbox and Fullscreen through one shared layer. A concrete <code>lightbox-*</code> or <code>fullscreen-*</code> parameter overrides the matching viewer value for that mode only. When neither a <code>lightbox-*</code> nor a <code>fullscreen-*</code> override is present, the two modes share the same value. The default viewer is Lightbox: omitting <code>viewer-toggle</code> is equivalent to <code>viewer-toggle="lightbox-button"</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 					<table class="jzsa-settings-table jzsa-settings-table--params">
 						<thead>
 							<tr>
@@ -262,7 +262,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr><td><code>viewer-toggle</code></td><td><?php echo wp_kses_post( __( 'Selects each enabled viewer mode and its entry method. Accepted tokens are <code>lightbox-button</code>, <code>lightbox-click</code>, <code>lightbox-double-click</code>, <code>fullscreen-button</code>, <code>fullscreen-click</code>, <code>fullscreen-double-click</code>, and <code>disabled</code>. Combine one lightbox token and one fullscreen token with a comma. Both modes cannot use click gestures at the same time.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><em><?php esc_html_e( 'not set', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>viewer-toggle</code></td><td><?php echo wp_kses_post( __( 'Selects each enabled viewer mode and its entry method. Accepted tokens are <code>lightbox-button</code>, <code>lightbox-click</code>, <code>lightbox-double-click</code>, <code>fullscreen-button</code>, <code>fullscreen-click</code>, <code>fullscreen-double-click</code>, and <code>disabled</code>. Combine one lightbox token and one fullscreen token with a comma. Both modes cannot use click gestures at the same time.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><em><?php esc_html_e( 'lightbox-button', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 							<tr><td><code>viewer-max-width</code></td><td><?php esc_html_e( 'Maximum displayed width for either viewer mode, in pixels.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'not applied', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 							<tr><td><code>viewer-max-height</code></td><td><?php esc_html_e( 'Maximum displayed height for either viewer mode, in pixels.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'not applied', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 							<tr><td><code>viewer-source-width</code></td><td><?php esc_html_e( 'Photo width fetched from Google for either viewer mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>1920</td></tr>
