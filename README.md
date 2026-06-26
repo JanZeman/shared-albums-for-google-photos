@@ -104,6 +104,13 @@ If you need to display descriptions longer than 100 characters, you have two opt
 For local test and release setup, including the WordPress.org SVN checkout used
 for production releases, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
+### Viewer parity rule
+
+Lightbox and Fullscreen are two implementations of the same Viewer concept.
+When a behavior makes sense in both modes, mirror it between them unless there
+is a concrete technical or UX reason not to. This includes discoverability
+helpers such as first-time gesture hints.
+
 ### File Structure
 
 ``` txt

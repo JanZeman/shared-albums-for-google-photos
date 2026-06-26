@@ -322,10 +322,11 @@
         return $btn;
     }
 
-    function openLightbox(element) {
+    function openLightbox(element, showHints) {
         if (!element || isLightboxActive(element)) {
             return;
         }
+        var showHintsFn = showHints;
         if (_jzsaLightboxActiveEl && _jzsaLightboxActiveEl !== element) {
             closeLightbox(_jzsaLightboxActiveEl);
         }
@@ -470,6 +471,9 @@
         }
 
         $el.trigger('jzsa:fullscreen-state', [true]);
+        if (typeof showHintsFn === 'function') {
+            showHintsFn();
+        }
 
         _jzsaLightboxKeyHandler = function(e) {
             if (e.key === 'Escape' || e.keyCode === 27) {
@@ -636,11 +640,11 @@
         _jzsaLightboxOpenedByKeyboard = false;
     }
 
-    function toggleLightbox(element) {
+    function toggleLightbox(element, showHints) {
         if (isLightboxActive(element)) {
             closeLightbox(element);
         } else {
-            openLightbox(element);
+            openLightbox(element, showHints);
         }
     }
 
@@ -648,14 +652,20 @@
     // HINT SYSTEM
     // ============================================================================
 
-    // Show gesture hints (only first few times entering fullscreen, global counter across all albums)
-    // To reset for testing: localStorage.removeItem('jzsa-hints-counter')
-    function createHintSystem(galleryId) {
-        var HINTS_STORAGE_KEY = 'jzsa-hints-counter'; // Global counter for all albums
+    // Show gesture hints only the first few times, with a global counter across all albums.
+    // To reset fullscreen hints for testing: localStorage.removeItem('jzsa-hints-counter')
+    // To reset lightbox hints for testing: localStorage.removeItem('jzsa-lightbox-hints-counter')
+    function createHintSystem(galleryId, storageKey, hintLines) {
+        var HINTS_STORAGE_KEY = storageKey || 'jzsa-hints-counter'; // Global counter for all albums
         var MAX_HINT_DISPLAYS = 1; // Maximum number of times to show hints
         var HINT_FADE_IN_DELAY = 100; // ms
         var HINT_FADE_OUT_DELAY = 500; // ms
         var HINT_DISPLAY_DURATION = 9500; // ms - how long hint stays visible
+        var DEFAULT_HINTS = [
+            'Click / tap / swipe left or right to browse photos',
+            'Press Esc or tap \u29C9 to exit fullscreen'
+        ];
+        var configuredHints = hintLines && hintLines.length ? hintLines : DEFAULT_HINTS;
 
         return function showHints() {
             // Check if we should show hints
@@ -670,9 +680,7 @@
                 localStorage.setItem(HINTS_STORAGE_KEY, String(hintCount + 1));
 
                 // Build hint message
-                var hints = [];
-                hints.push('Click / tap / swipe left or right to browse photos');
-                hints.push('Press Esc or tap \u29C9 to exit fullscreen');
+                var hints = configuredHints.slice();
 
                 if (hints.length === 0) {
                     return; // No hints to show
@@ -3984,7 +3992,7 @@
                     }
                 }
             }
-            toggleLightbox($container[0]);
+            toggleLightbox($container[0], params.showHintsOnLightbox);
         });
 
         var $fullscreenBtn = $container.find('.swiper-button-fullscreen');
@@ -4694,7 +4702,7 @@
                     e.preventDefault();
                     e.stopImmediatePropagation();
                     jzsaDebug('🔍 Single-click toggling lightbox');
-                    toggleLightbox($container[0]);
+                    toggleLightbox($container[0], params.showHintsOnLightbox);
                 }
             });
         } else if (lightboxGesture === 'double-click') {
@@ -4704,7 +4712,7 @@
                     e.stopImmediatePropagation();
                     clearPendingNavClick();
                     jzsaDebug('🔍 Double-click toggling lightbox');
-                    toggleLightbox($container[0]);
+                    toggleLightbox($container[0], params.showHintsOnLightbox);
                 }
             });
             $container.on('touchend', function(e) {
@@ -4712,7 +4720,7 @@
                     handleDoubleTap(e, function() {
                         clearPendingNavClick();
                         jzsaDebug('🔍 Double-tap toggling lightbox');
-                        toggleLightbox($container[0]);
+                        toggleLightbox($container[0], params.showHintsOnLightbox);
                     });
                 }
             });
@@ -6552,6 +6560,13 @@
             if (fullscreenToggle !== 'button-only') {
                 showHintsOnFullscreen = createHintSystem(galleryId);
             }
+            var showHintsOnLightbox = null;
+            if (config.lightboxToggle && config.lightboxToggle !== 'button-only' && config.lightboxToggle !== 'disabled') {
+                showHintsOnLightbox = createHintSystem(galleryId, 'jzsa-lightbox-hints-counter', [
+                    'Click / tap / swipe left or right to browse photos',
+                    'Press Esc or tap \u29C9 to close Lightbox'
+                ]);
+            }
 
             var slideshowPausedByInteraction = false;
 
@@ -6647,7 +6662,8 @@
                 fullscreenSlideshow: fullscreenSlideshow,
                 fullscreenSlideshowDelay: fullscreenSlideshowDelay,
                 slideshowPausedByInteraction: slideshowPausedByInteraction,
-                showHintsOnFullscreen: showHintsOnFullscreen
+                showHintsOnFullscreen: showHintsOnFullscreen,
+                showHintsOnLightbox: showHintsOnLightbox
             };
 
             setupFullscreenButton(swiper, $container, fullscreenParams);
@@ -9234,6 +9250,17 @@
         slideshowId = buildGallerySlideshow($container);
         $slideshow = $('#' + slideshowId);
         initializeSwiper($slideshow[0], 'slideshow');
+        var showHintsOnGalleryFullscreen = null;
+        if (fullscreenToggle !== 'button-only' && fullscreenToggle !== 'disabled') {
+            showHintsOnGalleryFullscreen = createHintSystem(slideshowId);
+        }
+        var showHintsOnGalleryLightbox = null;
+        if (lightboxMode !== 'button-only' && lightboxMode !== 'disabled') {
+            showHintsOnGalleryLightbox = createHintSystem(slideshowId, 'jzsa-lightbox-hints-counter', [
+                'Click / tap / swipe left or right to browse photos',
+                'Press Esc or tap \u29C9 to close Lightbox'
+            ]);
+        }
 
         var fullscreenSyncNamespace = '.jzsaGalleryFullscreen-' + ($container.attr('id') || 'gallery');
         $(document).off(
@@ -9290,13 +9317,13 @@
             }
             clearGalleryAutoplayTimer();
             if (forcedMode === 'lightbox') {
-                toggleLightbox($slideshow[0]);
+                toggleLightbox($slideshow[0], showHintsOnGalleryLightbox);
             } else if (forcedMode === 'fullscreen') {
-                toggleFullscreen($slideshow[0]);
+                toggleFullscreen($slideshow[0], showHintsOnGalleryFullscreen);
             } else if (elementUsesLightbox($slideshow[0])) {
-                toggleLightbox($slideshow[0]);
+                toggleLightbox($slideshow[0], showHintsOnGalleryLightbox);
             } else {
-                toggleFullscreen($slideshow[0]);
+                toggleFullscreen($slideshow[0], showHintsOnGalleryFullscreen);
             }
         }
 

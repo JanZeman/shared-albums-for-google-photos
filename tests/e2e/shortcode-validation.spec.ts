@@ -74,6 +74,14 @@ test.describe('Shortcode validation - Playground live feedback', () => {
         await expect(area).toContainText('Use "viewer-max-width" instead');
     });
 
+    test('legacy fullscreen display bounds warn with fullscreen max replacements', async ({ page }) => {
+        await setShortcode(page, '[jzsa-album link="https://photos.google.com/share/x" fullscreen-display-max-width="900"]');
+        const area = page.locator(VALIDATION);
+        await expect(area).toHaveClass(/jzsa-code-validation--warning/);
+        await expect(area).toContainText('Parameter "fullscreen-display-max-width" is obsolete');
+        await expect(area).toContainText('Use "fullscreen-max-width" instead');
+    });
+
     test('an unterminated quote reports an error', async ({ page }) => {
         await setShortcode(page, '[jzsa-album link="https://photos.google.com/share/x]');
         const area = page.locator(VALIDATION);
@@ -172,7 +180,7 @@ test.describe('Shortcode validation - parameter values', () => {
             page,
             `[jzsa-album link="${VALID_LINK}" mode="slider" limit="12" ` +
                 'gallery-columns="3" controls-color="#1A2B3C" show-navigation="true" ' +
-                'slideshow-delay="4-12" mosaic-opacity="0.4"]',
+                'slideshow-delay="4-12" mosaic-opacity="0.4" fullscreen-max-width="900"]',
         );
         const area = page.locator(VALIDATION);
         await expect(area).not.toBeVisible();

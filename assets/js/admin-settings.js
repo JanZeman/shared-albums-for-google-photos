@@ -532,6 +532,7 @@ var JZSA_KNOWN_PARAMS = [
 	'fullscreen-display-max-height', 'fullscreen-display-max-width',
 	'fullscreen-image-fit', 'fullscreen-info-bottom', 'fullscreen-info-font-color',
 	'fullscreen-info-font-family', 'fullscreen-info-font-size',
+	'fullscreen-max-height', 'fullscreen-max-width',
 	'fullscreen-info-top', 'fullscreen-info-top-secondary', 'fullscreen-mosaic',
 	'fullscreen-mosaic-background', 'fullscreen-mosaic-corner-radius',
 	'fullscreen-mosaic-count', 'fullscreen-mosaic-gap', 'fullscreen-mosaic-layout',
@@ -600,7 +601,9 @@ var JZSA_OBSOLETE_PARAM_REPLACEMENTS = ( function () {
 		'info-top-1': 'info-top',
 		'info-top-2': 'info-top-secondary',
 		'fullscreen-info-top-1': 'fullscreen-info-top',
-		'fullscreen-info-top-2': 'fullscreen-info-top-secondary'
+		'fullscreen-info-top-2': 'fullscreen-info-top-secondary',
+		'fullscreen-display-max-width': 'fullscreen-max-width',
+		'fullscreen-display-max-height': 'fullscreen-max-height'
 	};
 	var suffixes = [
 		'toggle', 'max-width', 'max-height', 'source-width', 'source-height',
@@ -719,6 +722,7 @@ var JZSA_VALUE_RULES = ( function () {
 		'source-width', 'source-height', 'fullscreen-source-width',
 		'fullscreen-source-height', 'lightbox-source-width', 'lightbox-source-height',
 		'fullscreen-display-max-width', 'fullscreen-display-max-height',
+		'fullscreen-max-width', 'fullscreen-max-height',
 		'lightbox-max-width', 'lightbox-max-height',
 		'viewer-source-width', 'viewer-source-height',
 		'viewer-max-width', 'viewer-max-height'

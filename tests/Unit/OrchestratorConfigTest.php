@@ -539,6 +539,29 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertNull( $config['lightbox-max-height'] );
     }
 
+    public function test_fullscreen_max_alias_sets_display_bounds(): void {
+        $config = $this->config(
+            array(
+                'fullscreen-max-width' => '1200',
+                'fullscreen-max-height' => '800',
+            )
+        );
+
+        $this->assertSame( 1200, $config['fullscreen-display-max-width'] );
+        $this->assertSame( 800, $config['fullscreen-display-max-height'] );
+    }
+
+    public function test_fullscreen_max_alias_overrides_legacy_display_bounds(): void {
+        $config = $this->config(
+            array(
+                'fullscreen-max-width' => '1200',
+                'fullscreen-display-max-width' => '900',
+            )
+        );
+
+        $this->assertSame( 1200, $config['fullscreen-display-max-width'] );
+    }
+
     public function test_parse_dimension_accepts_auto_keyword(): void {
         $auto   = $this->invoke( 'parse_dimension', array( 'width' => 'auto' ), 'width', 400 );
         $upper  = $this->invoke( 'parse_dimension', array( 'width' => 'AUTO' ), 'width', 400 );

@@ -168,7 +168,7 @@ No. This plugin is not affiliated with or endorsed by Google LLC. Google Photosâ
 * Lighter loading for large sliders
 
 = 2.0.9 =
-* New `fullscreen-display-max-width` and `fullscreen-display-max-height`
+* New `fullscreen-max-width` and `fullscreen-max-height`
 * New `info-wrap` and info text alignment parameters
 * New `gallery-buttons-on-mobile` behavior for touch devices
 * Responsive layout improvements

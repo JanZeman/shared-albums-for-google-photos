@@ -96,7 +96,7 @@ Create these published pages with exactly these slugs and shortcode order.
 
 [jzsa-album link="YOUR_LINK" mode="gallery" lightbox-toggle="button-only" fullscreen-toggle="button-only"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" fullscreen-toggle="button-only" fullscreen-display-max-width="320" fullscreen-display-max-height="240"]
+[jzsa-album link="YOUR_LINK" mode="slider" fullscreen-toggle="button-only" fullscreen-max-width="320" fullscreen-max-height="240"]
 ```
 
 ### `slideshow-fixture`

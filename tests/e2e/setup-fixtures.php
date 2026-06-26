@@ -180,7 +180,7 @@ $pages = array(
 				'[jzsa-album link="' . $album_link . '" mode="slider" lightbox-toggle="button-only" fullscreen-toggle="button-only"]',
 				'[jzsa-album link="' . $album_link . '" mode="gallery" lightbox-toggle="button-only" fullscreen-toggle="disabled"]',
 				'[jzsa-album link="' . $album_link . '" mode="gallery" lightbox-toggle="button-only" fullscreen-toggle="button-only"]',
-				'[jzsa-album link="' . $album_link . '" mode="slider" fullscreen-toggle="button-only" fullscreen-display-max-width="320" fullscreen-display-max-height="240"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" fullscreen-toggle="button-only" fullscreen-max-width="320" fullscreen-max-height="240"]',
 			)
 		),
 	),
@@ -238,7 +238,7 @@ $pages = array(
 			"\n\n",
 			array(
 				'[jzsa-album link="' . $album_link . '" mode="slider" viewer-toggle="lightbox-button, fullscreen-button" viewer-max-width="640" viewer-max-height="480" viewer-source-width="1200" viewer-source-height="900" viewer-image-fit="contain" viewer-background-color="rgba(0,0,0,0.85)" viewer-corner-radius="12" viewer-controls-color="#123456" viewer-show-navigation="false" viewer-slideshow="manual" viewer-info-top="Shared {item}" viewer-info-bottom="{item} of {items}" viewer-info-font-size="18" viewer-mosaic="true" viewer-mosaic-position="bottom" viewer-mosaic-layout="overlay" viewer-mosaic-count="3" viewer-mosaic-gap="6" viewer-mosaic-opacity="0.4" viewer-mosaic-background="#111111" viewer-mosaic-corner-radius="8"]',
-				'[jzsa-album link="' . $album_link . '" mode="slider" viewer-toggle="lightbox-button, fullscreen-button" viewer-max-width="900" lightbox-max-width="700" fullscreen-display-max-width="1100" viewer-info-top="Shared" lightbox-info-top="Lightbox only" fullscreen-info-top="Fullscreen only" viewer-mosaic="true" lightbox-mosaic="false" fullscreen-mosaic="true"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" viewer-toggle="lightbox-button, fullscreen-button" viewer-max-width="900" lightbox-max-width="700" fullscreen-max-width="1100" viewer-info-top="Shared" lightbox-info-top="Lightbox only" fullscreen-info-top="Fullscreen only" viewer-mosaic="true" lightbox-mosaic="false" fullscreen-mosaic="true"]',
 			)
 		),
 	),

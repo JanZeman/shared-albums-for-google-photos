@@ -476,6 +476,13 @@ class JZSA_Shared_Albums {
 	 * @return array Normalized shortcode attributes.
 	 */
 	private function apply_viewer_attribute_defaults( $atts ) {
+		if ( $this->has_non_empty_attribute( $atts, 'fullscreen-max-width' ) ) {
+			$atts['fullscreen-display-max-width'] = $atts['fullscreen-max-width'];
+		}
+		if ( $this->has_non_empty_attribute( $atts, 'fullscreen-max-height' ) ) {
+			$atts['fullscreen-display-max-height'] = $atts['fullscreen-max-height'];
+		}
+
 		if ( array_key_exists( 'viewer-toggle', $atts ) ) {
 			$toggle = $this->parse_viewer_toggle( $atts['viewer-toggle'] );
 			if ( ! $this->has_non_empty_attribute( $atts, 'lightbox-toggle' ) ) {

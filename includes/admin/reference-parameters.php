@@ -317,13 +317,13 @@
 								<td>1440</td>
 							</tr>
 							<tr>
-								<td><code>fullscreen-display-max-width</code></td>
-								<td>Maximum displayed photo width in fullscreen, in pixels. Keeps the photo centered and preserves aspect ratio inside the capped box. Does not change the fetched source image; use <code>fullscreen-source-width</code> for that.</td>
+								<td><code>fullscreen-max-width</code></td>
+								<td>Maximum displayed photo width in fullscreen, in pixels. Keeps the photo centered and preserves aspect ratio inside the capped box. Does not change the fetched source image; use <code>fullscreen-source-width</code> for that. Legacy alias: <code>fullscreen-display-max-width</code>.</td>
 								<td><em>not applied</em></td>
 							</tr>
 							<tr>
-								<td><code>fullscreen-display-max-height</code></td>
-								<td>Maximum displayed photo height in fullscreen, in pixels. Keeps the photo centered and preserves aspect ratio inside the capped box. Does not change the fetched source image; use <code>fullscreen-source-height</code> for that.</td>
+								<td><code>fullscreen-max-height</code></td>
+								<td>Maximum displayed photo height in fullscreen, in pixels. Keeps the photo centered and preserves aspect ratio inside the capped box. Does not change the fetched source image; use <code>fullscreen-source-height</code> for that. Legacy alias: <code>fullscreen-display-max-height</code>.</td>
 								<td><em>not applied</em></td>
 							</tr>
 							<tr>
