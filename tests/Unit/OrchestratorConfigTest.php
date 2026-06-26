@@ -111,30 +111,30 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertSame( 'button-only', $config['fullscreen-toggle'] );
     }
 
-    public function test_expanded_settings_configure_both_modes(): void {
+    public function test_viewer_settings_configure_both_modes(): void {
         $config = $this->config(
             [
-                'expanded-toggle'                => 'lightbox-button, fullscreen-click',
-                'expanded-max-width'             => '900',
-                'expanded-max-height'            => '700',
-                'expanded-source-width'          => '1600',
-                'expanded-source-height'         => '1200',
-                'expanded-image-fit'             => 'cover',
-                'expanded-background-color'      => '#112233',
-                'expanded-corner-radius'         => '14',
-                'expanded-controls-color'        => '#445566',
-                'expanded-slideshow'             => 'auto',
-                'expanded-slideshow-delay'       => '7',
-                'expanded-info-top'              => '{description}',
-                'expanded-info-font-size'        => '18',
-                'expanded-mosaic'                => 'true',
-                'expanded-mosaic-position'       => 'left',
-                'expanded-mosaic-layout'         => 'overlay',
-                'expanded-mosaic-count'          => '6',
-                'expanded-mosaic-gap'            => '5',
-                'expanded-mosaic-opacity'        => '0.5',
-                'expanded-mosaic-background'     => '#778899',
-                'expanded-mosaic-corner-radius' => '9',
+                'viewer-toggle'                  => 'lightbox-button, fullscreen-click',
+                'viewer-max-width'               => '900',
+                'viewer-max-height'              => '700',
+                'viewer-source-width'            => '1600',
+                'viewer-source-height'           => '1200',
+                'viewer-image-fit'               => 'cover',
+                'viewer-background-color'        => '#112233',
+                'viewer-corner-radius'           => '14',
+                'viewer-controls-color'          => '#445566',
+                'viewer-slideshow'               => 'auto',
+                'viewer-slideshow-delay'         => '7',
+                'viewer-info-top'                => '{description}',
+                'viewer-info-font-size'          => '18',
+                'viewer-mosaic'                  => 'true',
+                'viewer-mosaic-position'         => 'left',
+                'viewer-mosaic-layout'           => 'overlay',
+                'viewer-mosaic-count'            => '6',
+                'viewer-mosaic-gap'              => '5',
+                'viewer-mosaic-opacity'          => '0.5',
+                'viewer-mosaic-background'       => '#778899',
+                'viewer-mosaic-corner-radius'    => '9',
             ]
         );
 
@@ -178,16 +178,16 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertSame( 9, $config['fullscreen-mosaic-corner-radius'] );
     }
 
-    public function test_specific_settings_override_expanded_settings_per_mode(): void {
+    public function test_specific_settings_override_viewer_settings_per_mode(): void {
         $config = $this->config(
             [
-                'expanded-toggle'           => 'lightbox-button, fullscreen-button',
-                'expanded-max-width'        => '900',
-                'expanded-info-top'         => 'Shared',
-                'expanded-mosaic-position'  => 'bottom',
-                'lightbox-max-width'        => '700',
-                'fullscreen-info-top'       => 'Fullscreen only',
-                'lightbox-mosaic-position'  => 'right',
+                'viewer-toggle'            => 'lightbox-button, fullscreen-button',
+                'viewer-max-width'         => '900',
+                'viewer-info-top'          => 'Shared',
+                'viewer-mosaic-position'   => 'bottom',
+                'lightbox-max-width'       => '700',
+                'fullscreen-info-top'      => 'Fullscreen only',
+                'lightbox-mosaic-position' => 'right',
             ]
         );
 
@@ -199,17 +199,17 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertSame( 'bottom', $config['fullscreen-mosaic-position'] );
     }
 
-    public function test_expanded_and_specific_info_boxes_can_be_explicitly_hidden(): void {
+    public function test_viewer_and_specific_info_boxes_can_be_explicitly_hidden(): void {
         $shared_hidden = $this->config(
             [
                 'mode'                 => 'slider',
-                'expanded-info-bottom' => '',
+                'viewer-info-bottom' => '',
             ]
         );
         $specific_hidden = $this->config(
             [
-                'expanded-info-top'  => 'Shared',
-                'lightbox-info-top'  => '',
+                'viewer-info-top'   => 'Shared',
+                'lightbox-info-top' => '',
             ]
         );
 

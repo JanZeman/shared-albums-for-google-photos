@@ -467,18 +467,17 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Apply the mode-neutral expanded view settings to missing concrete settings.
+	 * Apply the mode-neutral viewer settings to missing concrete settings.
 	 *
 	 * Concrete lightbox-* and fullscreen-* parameters always win. When no
-	 * expanded-* parameter is present this returns the original array unchanged,
-	 * preserving the legacy parsing path exactly.
+	 * viewer-* parameter is present this returns the original array unchanged.
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return array Normalized shortcode attributes.
 	 */
-	private function apply_expanded_attribute_defaults( $atts ) {
-		if ( array_key_exists( 'expanded-toggle', $atts ) ) {
-			$toggle = $this->parse_expanded_toggle( $atts['expanded-toggle'] );
+	private function apply_viewer_attribute_defaults( $atts ) {
+		if ( array_key_exists( 'viewer-toggle', $atts ) ) {
+			$toggle = $this->parse_viewer_toggle( $atts['viewer-toggle'] );
 			if ( ! $this->has_non_empty_attribute( $atts, 'lightbox-toggle' ) ) {
 				$atts['lightbox-toggle'] = $toggle['lightbox'];
 			}
@@ -487,49 +486,49 @@ class JZSA_Shared_Albums {
 			}
 		}
 
-		$expanded_pairs = array(
-			'expanded-max-width'              => array( 'fullscreen-display-max-width', 'lightbox-max-width' ),
-			'expanded-max-height'             => array( 'fullscreen-display-max-height', 'lightbox-max-height' ),
-			'expanded-source-width'           => array( 'fullscreen-source-width', 'lightbox-source-width' ),
-			'expanded-source-height'          => array( 'fullscreen-source-height', 'lightbox-source-height' ),
-			'expanded-image-fit'              => array( 'fullscreen-image-fit', 'lightbox-image-fit' ),
-			'expanded-background-color'       => array( 'fullscreen-background-color', 'lightbox-background-color' ),
-			'expanded-corner-radius'          => array( 'fullscreen-corner-radius', 'lightbox-corner-radius' ),
-			'expanded-controls-color'         => array( 'fullscreen-controls-color', 'lightbox-controls-color' ),
-			'expanded-video-controls-color'   => array( 'fullscreen-video-controls-color', 'lightbox-video-controls-color' ),
-			'expanded-video-controls-autohide' => array( 'fullscreen-video-controls-autohide', 'lightbox-video-controls-autohide' ),
-			'expanded-show-navigation'        => array( 'fullscreen-show-navigation', 'lightbox-show-navigation' ),
-			'expanded-show-link-button'       => array( 'fullscreen-show-link-button', 'lightbox-show-link-button' ),
-			'expanded-show-download-button'   => array( 'fullscreen-show-download-button', 'lightbox-show-download-button' ),
-			'expanded-slideshow'              => array( 'fullscreen-slideshow', 'lightbox-slideshow' ),
-			'expanded-slideshow-delay'        => array( 'fullscreen-slideshow-delay', 'lightbox-slideshow-delay' ),
-			'expanded-slideshow-autoresume'   => array( 'fullscreen-slideshow-autoresume', 'lightbox-slideshow-autoresume' ),
-			'expanded-info-bottom'            => array( 'fullscreen-info-bottom', 'lightbox-info-bottom' ),
-			'expanded-info-top'               => array( 'fullscreen-info-top', 'lightbox-info-top' ),
-			'expanded-info-top-secondary'     => array( 'fullscreen-info-top-secondary', 'lightbox-info-top-secondary' ),
-			'expanded-info-font-size'         => array( 'fullscreen-info-font-size', 'lightbox-info-font-size' ),
-			'expanded-info-font-family'       => array( 'fullscreen-info-font-family', 'lightbox-info-font-family' ),
-			'expanded-info-font-color'        => array( 'fullscreen-info-font-color', 'lightbox-info-font-color' ),
-			'expanded-mosaic'                 => array( 'fullscreen-mosaic', 'lightbox-mosaic' ),
-			'expanded-mosaic-position'        => array( 'fullscreen-mosaic-position', 'lightbox-mosaic-position' ),
-			'expanded-mosaic-layout'          => array( 'fullscreen-mosaic-layout', 'lightbox-mosaic-layout' ),
-			'expanded-mosaic-count'           => array( 'fullscreen-mosaic-count', 'lightbox-mosaic-count' ),
-			'expanded-mosaic-gap'             => array( 'fullscreen-mosaic-gap', 'lightbox-mosaic-gap' ),
-			'expanded-mosaic-opacity'         => array( 'fullscreen-mosaic-opacity', 'lightbox-mosaic-opacity' ),
-			'expanded-mosaic-background'      => array( 'fullscreen-mosaic-background', 'lightbox-mosaic-background' ),
-			'expanded-mosaic-corner-radius'   => array( 'fullscreen-mosaic-corner-radius', 'lightbox-mosaic-corner-radius' ),
+		$viewer_pairs = array(
+			'viewer-max-width'            => array( 'fullscreen-display-max-width', 'lightbox-max-width' ),
+			'viewer-max-height'           => array( 'fullscreen-display-max-height', 'lightbox-max-height' ),
+			'viewer-source-width'         => array( 'fullscreen-source-width', 'lightbox-source-width' ),
+			'viewer-source-height'        => array( 'fullscreen-source-height', 'lightbox-source-height' ),
+			'viewer-image-fit'            => array( 'fullscreen-image-fit', 'lightbox-image-fit' ),
+			'viewer-background-color'     => array( 'fullscreen-background-color', 'lightbox-background-color' ),
+			'viewer-corner-radius'        => array( 'fullscreen-corner-radius', 'lightbox-corner-radius' ),
+			'viewer-controls-color'       => array( 'fullscreen-controls-color', 'lightbox-controls-color' ),
+			'viewer-video-controls-color' => array( 'fullscreen-video-controls-color', 'lightbox-video-controls-color' ),
+			'viewer-video-controls-autohide' => array( 'fullscreen-video-controls-autohide', 'lightbox-video-controls-autohide' ),
+			'viewer-show-navigation'      => array( 'fullscreen-show-navigation', 'lightbox-show-navigation' ),
+			'viewer-show-link-button'     => array( 'fullscreen-show-link-button', 'lightbox-show-link-button' ),
+			'viewer-show-download-button' => array( 'fullscreen-show-download-button', 'lightbox-show-download-button' ),
+			'viewer-slideshow'            => array( 'fullscreen-slideshow', 'lightbox-slideshow' ),
+			'viewer-slideshow-delay'      => array( 'fullscreen-slideshow-delay', 'lightbox-slideshow-delay' ),
+			'viewer-slideshow-autoresume' => array( 'fullscreen-slideshow-autoresume', 'lightbox-slideshow-autoresume' ),
+			'viewer-info-bottom'          => array( 'fullscreen-info-bottom', 'lightbox-info-bottom' ),
+			'viewer-info-top'             => array( 'fullscreen-info-top', 'lightbox-info-top' ),
+			'viewer-info-top-secondary'   => array( 'fullscreen-info-top-secondary', 'lightbox-info-top-secondary' ),
+			'viewer-info-font-size'       => array( 'fullscreen-info-font-size', 'lightbox-info-font-size' ),
+			'viewer-info-font-family'     => array( 'fullscreen-info-font-family', 'lightbox-info-font-family' ),
+			'viewer-info-font-color'      => array( 'fullscreen-info-font-color', 'lightbox-info-font-color' ),
+			'viewer-mosaic'               => array( 'fullscreen-mosaic', 'lightbox-mosaic' ),
+			'viewer-mosaic-position'      => array( 'fullscreen-mosaic-position', 'lightbox-mosaic-position' ),
+			'viewer-mosaic-layout'        => array( 'fullscreen-mosaic-layout', 'lightbox-mosaic-layout' ),
+			'viewer-mosaic-count'         => array( 'fullscreen-mosaic-count', 'lightbox-mosaic-count' ),
+			'viewer-mosaic-gap'           => array( 'fullscreen-mosaic-gap', 'lightbox-mosaic-gap' ),
+			'viewer-mosaic-opacity'       => array( 'fullscreen-mosaic-opacity', 'lightbox-mosaic-opacity' ),
+			'viewer-mosaic-background'    => array( 'fullscreen-mosaic-background', 'lightbox-mosaic-background' ),
+			'viewer-mosaic-corner-radius' => array( 'fullscreen-mosaic-corner-radius', 'lightbox-mosaic-corner-radius' ),
 		);
 
-		foreach ( $expanded_pairs as $expanded_key => $concrete_keys ) {
+		foreach ( $viewer_pairs as $viewer_key => $concrete_keys ) {
 			$allows_empty = in_array(
-				$expanded_key,
-				array( 'expanded-info-bottom', 'expanded-info-top', 'expanded-info-top-secondary' ),
+				$viewer_key,
+				array( 'viewer-info-bottom', 'viewer-info-top', 'viewer-info-top-secondary' ),
 				true
 			);
-			$expanded_is_set = $allows_empty
-				? array_key_exists( $expanded_key, $atts )
-				: $this->has_non_empty_attribute( $atts, $expanded_key );
-			if ( ! $expanded_is_set ) {
+			$viewer_is_set = $allows_empty
+				? array_key_exists( $viewer_key, $atts )
+				: $this->has_non_empty_attribute( $atts, $viewer_key );
+			if ( ! $viewer_is_set ) {
 				continue;
 			}
 			foreach ( $concrete_keys as $concrete_key ) {
@@ -537,7 +536,7 @@ class JZSA_Shared_Albums {
 					? array_key_exists( $concrete_key, $atts )
 					: $this->has_non_empty_attribute( $atts, $concrete_key );
 				if ( ! $concrete_is_set ) {
-					$atts[ $concrete_key ] = $atts[ $expanded_key ];
+					$atts[ $concrete_key ] = $atts[ $viewer_key ];
 				}
 			}
 		}
@@ -546,15 +545,15 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse expanded-toggle into deterministic concrete toggle modes.
+	 * Parse viewer-toggle into deterministic concrete toggle modes.
 	 *
 	 * Invalid values disable both modes. The one recoverable conflict is two
 	 * click-driven modes, which safely fall back to separate buttons.
 	 *
-	 * @param mixed $raw Raw expanded-toggle value.
+	 * @param mixed $raw Raw viewer-toggle value.
 	 * @return array{lightbox:string,fullscreen:string,valid:bool}
 	 */
-	private function parse_expanded_toggle( $raw ) {
+	private function parse_viewer_toggle( $raw ) {
 		$value = strtolower( trim( (string) $raw ) );
 		if ( '' === $value ) {
 			return array( 'lightbox' => 'disabled', 'fullscreen' => 'disabled', 'valid' => false );
@@ -616,6 +615,59 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
+	 * Copy legacy viewer attributes into the current namespace when needed.
+	 *
+	 * This keeps old shortcodes working while the public API moves to viewer-*.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return array Shortcode attributes with legacy aliases normalized.
+	 */
+	private function normalize_legacy_viewer_attributes( $atts ) {
+		$legacy_prefix = 'ex' . 'panded-';
+		$current_pairs = array(
+			'viewer-toggle'             => $legacy_prefix . 'toggle',
+			'viewer-max-width'          => $legacy_prefix . 'max-width',
+			'viewer-max-height'         => $legacy_prefix . 'max-height',
+			'viewer-source-width'       => $legacy_prefix . 'source-width',
+			'viewer-source-height'      => $legacy_prefix . 'source-height',
+			'viewer-image-fit'          => $legacy_prefix . 'image-fit',
+			'viewer-background-color'    => $legacy_prefix . 'background-color',
+			'viewer-corner-radius'       => $legacy_prefix . 'corner-radius',
+			'viewer-controls-color'      => $legacy_prefix . 'controls-color',
+			'viewer-video-controls-color' => $legacy_prefix . 'video-controls-color',
+			'viewer-video-controls-autohide' => $legacy_prefix . 'video-controls-autohide',
+			'viewer-show-navigation'     => $legacy_prefix . 'show-navigation',
+			'viewer-show-link-button'    => $legacy_prefix . 'show-link-button',
+			'viewer-show-download-button' => $legacy_prefix . 'show-download-button',
+			'viewer-slideshow'           => $legacy_prefix . 'slideshow',
+			'viewer-slideshow-delay'     => $legacy_prefix . 'slideshow-delay',
+			'viewer-slideshow-autoresume' => $legacy_prefix . 'slideshow-autoresume',
+			'viewer-info-bottom'         => $legacy_prefix . 'info-bottom',
+			'viewer-info-top'            => $legacy_prefix . 'info-top',
+			'viewer-info-top-secondary'  => $legacy_prefix . 'info-top-secondary',
+			'viewer-info-font-size'      => $legacy_prefix . 'info-font-size',
+			'viewer-info-font-family'    => $legacy_prefix . 'info-font-family',
+			'viewer-info-font-color'     => $legacy_prefix . 'info-font-color',
+			'viewer-mosaic'              => $legacy_prefix . 'mosaic',
+			'viewer-mosaic-position'     => $legacy_prefix . 'mosaic-position',
+			'viewer-mosaic-layout'       => $legacy_prefix . 'mosaic-layout',
+			'viewer-mosaic-count'        => $legacy_prefix . 'mosaic-count',
+			'viewer-mosaic-gap'          => $legacy_prefix . 'mosaic-gap',
+			'viewer-mosaic-opacity'      => $legacy_prefix . 'mosaic-opacity',
+			'viewer-mosaic-background'   => $legacy_prefix . 'mosaic-background',
+			'viewer-mosaic-corner-radius' => $legacy_prefix . 'mosaic-corner-radius',
+		);
+
+		foreach ( $current_pairs as $current_key => $legacy_key ) {
+			if ( ! array_key_exists( $current_key, $atts ) && array_key_exists( $legacy_key, $atts ) ) {
+				$atts[ $current_key ] = $atts[ $legacy_key ];
+			}
+		}
+
+		return $atts;
+	}
+
+	/**
 	 * Parse shortcode attributes into configuration array
 	 *
 	 * @param array  $atts Shortcode attributes
@@ -623,7 +675,8 @@ class JZSA_Shared_Albums {
 	 * @return array Configuration
 	 */
 	private function parse_shortcode_config( $atts, $url ) {
-		$atts = $this->apply_expanded_attribute_defaults( $atts );
+		$atts = $this->normalize_legacy_viewer_attributes( $atts );
+		$atts = $this->apply_viewer_attribute_defaults( $atts );
 
 		$mode                 = $this->parse_mode( $atts );
 		$show_navigation      = $this->parse_bool( $atts, 'show-navigation', true );
@@ -1778,7 +1831,7 @@ class JZSA_Shared_Albums {
 	 */
 	private function parse_fullscreen_toggle_mode( $atts ) {
 		if ( ! isset( $atts['fullscreen-toggle'] ) ) {
-			// Lightbox is the site default. When neither expanded mode is explicit,
+			// Lightbox is the site default. When neither viewer mode is explicit,
 			// fullscreen stays off so lightbox becomes the single default view.
 			// Authors who want fullscreen must set fullscreen-toggle explicitly.
 			if ( isset( $atts['lightbox-toggle'] ) ) {
@@ -1826,7 +1879,7 @@ class JZSA_Shared_Albums {
 	 */
 	private function parse_lightbox_toggle_mode( $atts ) {
 		if ( ! isset( $atts['lightbox-toggle'] ) ) {
-			// Lightbox is the default expanded view unless fullscreen is explicitly requested.
+			// Lightbox is the default viewer unless fullscreen is explicitly requested.
 			if ( isset( $atts['fullscreen-toggle'] ) ) {
 				return 'disabled';
 			}

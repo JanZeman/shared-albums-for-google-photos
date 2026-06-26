@@ -2556,16 +2556,16 @@
         return { inline: inline, fullscreen: fullscreen, lightbox: lightbox };
     }
 
-    function getInfoZoneFormat(zoneFormats, zone, expandedMode) {
+    function getInfoZoneFormat(zoneFormats, zone, viewerMode) {
         if (!zoneFormats) {
             return '';
         }
-        if (expandedMode === 'lightbox') {
+        if (viewerMode === 'lightbox') {
             return (zoneFormats.lightbox && zoneFormats.lightbox[zone]) ||
                 (zoneFormats.fullscreen && zoneFormats.fullscreen[zone]) ||
                 (zoneFormats.inline && zoneFormats.inline[zone]) || '';
         }
-        if (expandedMode) {
+        if (viewerMode) {
             return (zoneFormats.fullscreen && zoneFormats.fullscreen[zone]) ||
                 (zoneFormats.inline && zoneFormats.inline[zone]) || '';
         }
@@ -4857,7 +4857,7 @@
 
 		$container.on('click', function(e) {
 				if (!shouldIgnoreClick(e.target) && isFullscreen()) {
-					// Single-click mode uses click to exit the expanded view, not navigate.
+					// Single-click mode uses click to exit the viewer, not navigate.
 					if (activeExpandGesture === 'click') {
 						return;
 					}
@@ -5949,7 +5949,7 @@
             var fullscreenMosaicThumbSize = 1;
             var fullscreenMosaicPageStart = 0;
             var fullscreenMosaicVertical = false;
-            var expandedMosaicEnabled = false;
+            var viewerMosaicEnabled = false;
 
             if (!$fullscreenMosaic.find('.jzsa-mosaic-arrow-prev').length) {
                 $fullscreenMosaic.append(
@@ -6105,7 +6105,7 @@
             }
 
             function applyExpandedMosaicSettings(settings) {
-                expandedMosaicEnabled = settings.enabled;
+                viewerMosaicEnabled = settings.enabled;
                 fullscreenMosaicPosition = settings.position;
                 config.fullscreenMosaicCount = settings.count;
                 config.fullscreenMosaicGap = settings.gap;
@@ -6188,7 +6188,7 @@
 
             function updateFullscreenMosaicState() {
                 var isFs = isFullscreen($container[0]) || $container.hasClass('jzsa-is-fullscreen') || $container.hasClass('jzsa-pseudo-fullscreen');
-                var isVisible = isFs && expandedMosaicEnabled;
+                var isVisible = isFs && viewerMosaicEnabled;
                 $fullscreenMosaic.attr('aria-hidden', isVisible ? 'false' : 'true');
                 if (isVisible) {
                     scheduleVisibleFullscreenMosaicLayout();
@@ -9362,7 +9362,7 @@
             });
         }
 
-        // Attach corner-button click/keyboard handlers (unless the expanded view is disabled).
+        // Attach corner-button click/keyboard handlers (unless the viewer is disabled).
         if (!interactionLock && expandToggle !== 'disabled') {
             $container.on('click', '.jzsa-gallery-thumb-fs-btn', function(e) {
                 e.preventDefault();

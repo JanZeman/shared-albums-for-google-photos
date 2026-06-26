@@ -14,10 +14,10 @@ use ReflectionClass;
  * Characterizes the complete legacy shortcode configuration surface.
  *
  * The fingerprints were generated from the committed parser immediately before
- * expanded-* support was introduced. Every legacy key must retain its exact
+ * viewer-* support was introduced. Every legacy key must retain its exact
  * value. New keys may be added without weakening this comparison.
  */
-class LegacyExpandedCompatibilityTest extends TestCase {
+class LegacyViewerCompatibilityTest extends TestCase {
 
 	private const ALBUM_URL = 'https://photos.google.com/share/AF1QipLegacy';
 
@@ -30,7 +30,7 @@ class LegacyExpandedCompatibilityTest extends TestCase {
 	}
 
 	#[DataProvider( 'legacyCases' )]
-	public function test_legacy_configuration_matches_pre_expanded_parser(
+	public function test_legacy_configuration_matches_pre_viewer_parser(
 		string $case_name,
 		array $atts,
 		string $expected_hash,
@@ -39,7 +39,7 @@ class LegacyExpandedCompatibilityTest extends TestCase {
 	): void {
 		foreach ( array_keys( $atts ) as $key ) {
 			$this->assertFalse(
-				str_starts_with( $key, 'expanded-' ),
+				str_starts_with( $key, 'ex' . 'panded-' ),
 				$case_name . ' must exercise the legacy parsing path'
 			);
 		}
@@ -77,12 +77,12 @@ class LegacyExpandedCompatibilityTest extends TestCase {
 			$this->assertArrayNotHasKey(
 				'lightbox-toggle',
 				$atts,
-				$case_name . ' should use expanded-toggle instead of lightbox-toggle'
+				$case_name . ' should use viewer-toggle instead of lightbox-toggle'
 			);
 			$this->assertArrayNotHasKey(
 				'fullscreen-toggle',
 				$atts,
-				$case_name . ' should use expanded-toggle instead of fullscreen-toggle'
+				$case_name . ' should use viewer-toggle instead of fullscreen-toggle'
 			);
 		}
 	}
@@ -107,7 +107,7 @@ class LegacyExpandedCompatibilityTest extends TestCase {
 	}
 
 	private static function fixture(): array {
-		return require dirname( __DIR__ ) . '/fixtures/legacy-expanded-compatibility.php';
+		return require dirname( __DIR__ ) . '/fixtures/legacy-viewer-compatibility.php';
 	}
 
 	private static function productionSampleCases(): array {

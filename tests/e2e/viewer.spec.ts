@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-const PAGE_URL = '/?pagename=expanded-fixture';
+const PAGE_URL = '/?pagename=viewer-fixture';
 
-test.describe('Expanded view shared settings', () => {
+test.describe('Viewer shared settings', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto(PAGE_URL);
         await expect(page.locator('.jzsa-album')).toHaveCount(2);

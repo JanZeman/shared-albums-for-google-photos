@@ -162,41 +162,41 @@ test.describe('Shortcode validation - parameter values', () => {
         await expect(area).not.toBeVisible();
     });
 
-    test('a valid expanded toggle combination produces no message', async ({ page }) => {
+    test('a valid viewer toggle combination produces no message', async ({ page }) => {
         await setShortcode(
             page,
-            `[jzsa-album link="${VALID_LINK}" expanded-toggle="lightbox-button, fullscreen-click" ` +
-                'expanded-max-width="900" expanded-slideshow="auto"]',
+            `[jzsa-album link="${VALID_LINK}" viewer-toggle="lightbox-button, fullscreen-click" ` +
+                'viewer-max-width="900" viewer-slideshow="auto"]',
         );
         await expect(page.locator(VALIDATION)).not.toBeVisible();
     });
 
-    test('competing expanded click gestures report an error', async ({ page }) => {
+    test('competing viewer click gestures report an error', async ({ page }) => {
         await setShortcode(
             page,
             `[jzsa-album link="${VALID_LINK}" ` +
-                'expanded-toggle="lightbox-click, fullscreen-double-click"]',
+                'viewer-toggle="lightbox-click, fullscreen-double-click"]',
         );
         const area = page.locator(VALIDATION);
         await expect(area).toHaveClass(/jzsa-code-validation--error/);
         await expect(area).toContainText('cannot give both lightbox and fullscreen a click gesture');
     });
 
-    test('duplicate expanded mode tokens report an error', async ({ page }) => {
+    test('duplicate viewer mode tokens report an error', async ({ page }) => {
         await setShortcode(
             page,
             `[jzsa-album link="${VALID_LINK}" ` +
-                'expanded-toggle="lightbox-click, lightbox-button"]',
+                'viewer-toggle="lightbox-click, lightbox-button"]',
         );
         const area = page.locator(VALIDATION);
         await expect(area).toHaveClass(/jzsa-code-validation--error/);
         await expect(area).toContainText('at most one lightbox token');
     });
 
-    test('a concrete override can safely replace an expanded trigger', async ({ page }) => {
+    test('a concrete override can safely replace a viewer trigger', async ({ page }) => {
         await setShortcode(
             page,
-            `[jzsa-album link="${VALID_LINK}" expanded-toggle="lightbox-click, fullscreen-button" ` +
+            `[jzsa-album link="${VALID_LINK}" viewer-toggle="lightbox-click, fullscreen-button" ` +
                 'lightbox-toggle="button-only" fullscreen-toggle="double-click"]',
         );
         await expect(page.locator(VALIDATION)).not.toBeVisible();

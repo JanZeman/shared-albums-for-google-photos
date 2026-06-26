@@ -427,20 +427,20 @@ function jzsaSetupLazyPreviews() {
 var JZSA_KNOWN_PARAMS = [
 	'album-cache-refresh', 'album-title-halo-effect', 'background-color',
 	'controls-color', 'corner-radius', 'download-size-warning',
-	'expanded-background-color', 'expanded-controls-color',
-	'expanded-corner-radius', 'expanded-image-fit', 'expanded-info-bottom',
-	'expanded-info-font-color', 'expanded-info-font-family',
-	'expanded-info-font-size', 'expanded-info-top',
-	'expanded-info-top-secondary', 'expanded-max-height', 'expanded-max-width',
-	'expanded-mosaic', 'expanded-mosaic-background',
-	'expanded-mosaic-corner-radius', 'expanded-mosaic-count',
-	'expanded-mosaic-gap', 'expanded-mosaic-layout',
-	'expanded-mosaic-opacity', 'expanded-mosaic-position',
-	'expanded-show-download-button', 'expanded-show-link-button',
-	'expanded-show-navigation', 'expanded-slideshow',
-	'expanded-slideshow-autoresume', 'expanded-slideshow-delay',
-	'expanded-source-height', 'expanded-source-width', 'expanded-toggle',
-	'expanded-video-controls-autohide', 'expanded-video-controls-color',
+	'viewer-background-color', 'viewer-controls-color',
+	'viewer-corner-radius', 'viewer-image-fit', 'viewer-info-bottom',
+	'viewer-info-font-color', 'viewer-info-font-family',
+	'viewer-info-font-size', 'viewer-info-top',
+	'viewer-info-top-secondary', 'viewer-max-height', 'viewer-max-width',
+	'viewer-mosaic', 'viewer-mosaic-background',
+	'viewer-mosaic-corner-radius', 'viewer-mosaic-count',
+	'viewer-mosaic-gap', 'viewer-mosaic-layout',
+	'viewer-mosaic-opacity', 'viewer-mosaic-position',
+	'viewer-show-download-button', 'viewer-show-link-button',
+	'viewer-show-navigation', 'viewer-slideshow',
+	'viewer-slideshow-autoresume', 'viewer-slideshow-delay',
+	'viewer-source-height', 'viewer-source-width', 'viewer-toggle',
+	'viewer-video-controls-autohide', 'viewer-video-controls-color',
 	'fullscreen-background-color', 'fullscreen-controls-color',
 	'fullscreen-corner-radius',
 	'fullscreen-display-max-height', 'fullscreen-display-max-width',
@@ -530,14 +530,14 @@ var JZSA_VALUE_RULES = ( function () {
 		'info-top-secondary-halo-effect', 'info-bottom-halo-effect',
 		'gallery-info-bottom-halo-effect', 'album-title-halo-effect', 'info-wrap',
 		'interaction-lock', 'mosaic', 'fullscreen-mosaic', 'gallery-scrollable',
-		'expanded-mosaic', 'expanded-show-navigation', 'expanded-show-link-button',
-		'expanded-show-download-button', 'expanded-video-controls-autohide',
+		'viewer-mosaic', 'viewer-show-navigation', 'viewer-show-link-button',
+		'viewer-show-download-button', 'viewer-video-controls-autohide',
 		'lightbox-mosaic',
 		'show-counter', 'show-title', 'fullscreen-show-counter', 'fullscreen-show-title'
 	], { type: 'bool' } );
 
 	add( [ 'mode' ], { type: 'enum', values: [ 'gallery', 'slider', 'carousel' ] } );
-	add( [ 'image-fit', 'fullscreen-image-fit', 'lightbox-image-fit', 'expanded-image-fit' ],
+	add( [ 'image-fit', 'fullscreen-image-fit', 'lightbox-image-fit', 'viewer-image-fit' ],
 		{ type: 'enum', values: [ 'cover', 'contain' ] } );
 	add( [ 'gallery-layout' ], { type: 'enum', values: [ 'grid', 'justified' ] } );
 	add( [ 'gallery-sizing' ], { type: 'enum', values: [ 'ratio', 'fill' ] } );
@@ -545,12 +545,12 @@ var JZSA_VALUE_RULES = ( function () {
 		{ type: 'enum', values: [ 'on-interaction', 'always' ] } );
 	add( [
 		'mosaic-position', 'fullscreen-mosaic-position', 'lightbox-mosaic-position',
-		'expanded-mosaic-position'
+		'viewer-mosaic-position'
 	],
 		{ type: 'enum', values: [ 'top', 'bottom', 'left', 'right' ] } );
-	add( [ 'fullscreen-mosaic-layout', 'lightbox-mosaic-layout', 'expanded-mosaic-layout' ],
+	add( [ 'fullscreen-mosaic-layout', 'lightbox-mosaic-layout', 'viewer-mosaic-layout' ],
 		{ type: 'enum', values: [ 'outer', 'overlay' ] } );
-	add( [ 'expanded-toggle' ], { type: 'expanded-toggle' } );
+	add( [ 'viewer-toggle' ], { type: 'viewer-toggle' } );
 	add( [ 'fullscreen-toggle' ],
 		{ type: 'enum', values: [ 'button-only', 'click', 'double-click', 'disabled' ] } );
 	add( [ 'lightbox-toggle' ], {
@@ -558,7 +558,7 @@ var JZSA_VALUE_RULES = ( function () {
 		values: [ 'disabled', 'button-only', 'click', 'double-click' ],
 		accept: [ 'true', 'on', 'yes', '1', 'false', 'off', 'no', '0' ]
 	} );
-	add( [ 'slideshow', 'fullscreen-slideshow', 'lightbox-slideshow', 'expanded-slideshow' ],
+	add( [ 'slideshow', 'fullscreen-slideshow', 'lightbox-slideshow', 'viewer-slideshow' ],
 		{ type: 'enum', values: [ 'auto', 'manual', 'disabled' ], accept: [ 'true', 'enabled' ] } );
 	add( [
 		'info-text-align', 'info-top-text-align', 'info-top-secondary-text-align',
@@ -572,9 +572,9 @@ var JZSA_VALUE_RULES = ( function () {
 		'lightbox-background-color', 'lightbox-controls-color',
 		'lightbox-video-controls-color', 'lightbox-info-font-color',
 		'lightbox-mosaic-background', 'mosaic-background', 'fullscreen-mosaic-background',
-		'expanded-background-color', 'expanded-controls-color',
-		'expanded-video-controls-color', 'expanded-info-font-color',
-		'expanded-mosaic-background'
+		'viewer-background-color', 'viewer-controls-color',
+		'viewer-video-controls-color', 'viewer-info-font-color',
+		'viewer-mosaic-background'
 	], { type: 'color' } );
 
 	add( [ 'limit' ], { type: 'int', min: 1 } );
@@ -582,7 +582,7 @@ var JZSA_VALUE_RULES = ( function () {
 	add( [
 		'corner-radius', 'mosaic-corner-radius', 'fullscreen-corner-radius',
 		'fullscreen-mosaic-corner-radius', 'lightbox-mosaic-corner-radius',
-		'expanded-corner-radius', 'expanded-mosaic-corner-radius'
+		'viewer-corner-radius', 'viewer-mosaic-corner-radius'
 	],
 		{ type: 'int', min: 0 } );
 	add( [ 'download-size-warning' ], { type: 'int', min: 0 } );
@@ -592,40 +592,40 @@ var JZSA_VALUE_RULES = ( function () {
 		'fullscreen-source-height', 'lightbox-source-width', 'lightbox-source-height',
 		'fullscreen-display-max-width', 'fullscreen-display-max-height',
 		'lightbox-max-width', 'lightbox-max-height',
-		'expanded-source-width', 'expanded-source-height',
-		'expanded-max-width', 'expanded-max-height'
+		'viewer-source-width', 'viewer-source-height',
+		'viewer-max-width', 'viewer-max-height'
 	], { type: 'int', min: 1 } );
 	add( [ 'gallery-columns', 'gallery-columns-tablet', 'gallery-columns-mobile' ],
 		{ type: 'int', min: 1, max: 12 } );
 	add( [ 'gallery-row-height' ], { type: 'int', min: 50, max: 800 } );
 	add( [
 		'gallery-gap', 'mosaic-gap', 'fullscreen-mosaic-gap',
-		'lightbox-mosaic-gap', 'expanded-mosaic-gap'
+		'lightbox-mosaic-gap', 'viewer-mosaic-gap'
 	],
 		{ type: 'int', min: 0, max: 100 } );
 	add( [
 		'info-font-size', 'fullscreen-info-font-size', 'lightbox-info-font-size',
-		'expanded-info-font-size'
+		'viewer-info-font-size'
 	],
 		{ type: 'int', min: 8, max: 48 } );
 	add( [ 'width', 'height' ], { type: 'int', min: 1, auto: true } );
 	add( [
 		'mosaic-count', 'fullscreen-mosaic-count', 'lightbox-mosaic-count',
-		'expanded-mosaic-count'
+		'viewer-mosaic-count'
 	], { type: 'int', min: 1, auto: true } );
 
 	add( [
 		'mosaic-opacity', 'fullscreen-mosaic-opacity', 'lightbox-mosaic-opacity',
-		'expanded-mosaic-opacity'
+		'viewer-mosaic-opacity'
 	], { type: 'opacity' } );
 	add( [
 		'slideshow-delay', 'fullscreen-slideshow-delay', 'lightbox-slideshow-delay',
-		'expanded-slideshow-delay'
+		'viewer-slideshow-delay'
 	],
 		{ type: 'delay' } );
 	add( [
 		'slideshow-autoresume', 'fullscreen-slideshow-autoresume',
-		'lightbox-slideshow-autoresume', 'expanded-slideshow-autoresume'
+		'lightbox-slideshow-autoresume', 'viewer-slideshow-autoresume'
 	], { type: 'autoresume' } );
 	add( [ 'start-at' ], { type: 'startat' } );
 	add( [ 'link' ], { type: 'url' } );
@@ -674,7 +674,7 @@ function jzsaValidateValue( name, rawValue ) {
 	}
 	var lower = value.toLowerCase();
 
-	if ( 'expanded-toggle' === rule.type ) {
+	if ( 'viewer-toggle' === rule.type ) {
 		var tokens = lower.split( ',' ).map( function ( token ) {
 			return token.trim();
 		} );
@@ -686,20 +686,20 @@ function jzsaValidateValue( name, rawValue ) {
 			return null;
 		}
 		if ( tokens.indexOf( 'disabled' ) !== -1 ) {
-			return 'Parameter "expanded-toggle" cannot combine "disabled" with another token.';
+			return 'Parameter "viewer-toggle" cannot combine "disabled" with another token.';
 		}
 		var seenModes = {};
 		var clickModes = 0;
 		for ( var tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++ ) {
 			var token = tokens[ tokenIndex ];
 			if ( allowedTokens.indexOf( token ) === -1 ) {
-				return 'Parameter "expanded-toggle" contains invalid token "' + token +
+				return 'Parameter "viewer-toggle" contains invalid token "' + token +
 					'". Use lightbox-button, lightbox-click, lightbox-double-click, ' +
 					'fullscreen-button, fullscreen-click, fullscreen-double-click, or disabled.';
 			}
 			var mode = token.indexOf( 'lightbox-' ) === 0 ? 'lightbox' : 'fullscreen';
 			if ( seenModes[ mode ] ) {
-				return 'Parameter "expanded-toggle" can contain at most one ' + mode + ' token.';
+				return 'Parameter "viewer-toggle" can contain at most one ' + mode + ' token.';
 			}
 			seenModes[ mode ] = true;
 			if ( token.indexOf( '-click' ) !== -1 ) {
@@ -707,7 +707,7 @@ function jzsaValidateValue( name, rawValue ) {
 			}
 		}
 		if ( clickModes > 1 ) {
-			return 'Parameter "expanded-toggle" cannot give both lightbox and fullscreen a click gesture. ' +
+			return 'Parameter "viewer-toggle" cannot give both lightbox and fullscreen a click gesture. ' +
 				'Use a button token for at least one mode.';
 		}
 		return null;
@@ -990,7 +990,7 @@ function jzsaValidateShortcode( raw ) {
 			// Known parameter: check that its value matches the expected type.
 			var valueIssue = jzsaValidateValue( name, rawValue );
 			if ( valueIssue ) {
-				if ( name === 'expanded-toggle' ) {
+				if ( name === 'viewer-toggle' ) {
 					errors.push( valueIssue );
 				} else {
 					warnings.push( valueIssue );
@@ -1052,9 +1052,9 @@ function jzsaValidateShortcode( raw ) {
 
 	var ltToggle = '';
 	var fsToggle = '';
-	var expandedToggle = ( attrValues[ 'expanded-toggle' ] || '' ).trim().toLowerCase();
-	if ( expandedToggle && expandedToggle !== 'disabled' ) {
-		expandedToggle.split( ',' ).forEach( function ( rawToken ) {
+	var viewerToggle = ( attrValues[ 'viewer-toggle' ] || '' ).trim().toLowerCase();
+	if ( viewerToggle && viewerToggle !== 'disabled' ) {
+		viewerToggle.split( ',' ).forEach( function ( rawToken ) {
 			var token = rawToken.trim();
 			var trigger = token.indexOf( 'double-click' ) !== -1
 				? 'double-click'
@@ -1078,7 +1078,7 @@ function jzsaValidateShortcode( raw ) {
 		var conflictMessage =
 			'Lightbox and fullscreen cannot both use a click gesture because they compete for the same tap. ' +
 			'Use a button trigger for at least one mode.';
-		if ( expandedToggle ) {
+		if ( viewerToggle ) {
 			errors.push( conflictMessage );
 		} else {
 			warnings.push(
@@ -1277,7 +1277,7 @@ function jzsaInitAdminSettings() {
 				}
 			} );
 			sampleGroupToggle.textContent = allOpen ? collapseLabel : expandLabel;
-			sampleGroupToggle.setAttribute( 'aria-expanded', allOpen ? 'true' : 'false' );
+			sampleGroupToggle.setAttribute( 'data-jzsa-sample-group-open', allOpen ? 'true' : 'false' );
 		};
 		sampleGroupToggle.addEventListener( 'click', function () {
 			var allOpen = true;

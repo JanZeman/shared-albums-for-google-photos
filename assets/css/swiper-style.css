@@ -58,11 +58,11 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     --jzsa-info-horizontal-inset: 12px;
     --jzsa-info-min-gap: 8px;
     --jzsa-info-center-max-width-default: 33%;
-    --jzsa-info-center-max-width-expanded: 66%;
+    --jzsa-info-center-max-width-viewer: 66%;
     --jzsa-info-center-max-width: var(--jzsa-info-center-max-width-default);
     --jzsa-info-corner-max-width: calc((100% - var(--jzsa-info-center-max-width-default)) / 2 - var(--jzsa-info-horizontal-inset) - var(--jzsa-info-min-gap));
     --jzsa-info-center-max-width-fs: calc(var(--jzsa-info-center-max-width-default) / var(--jzsa-controls-fs-scale));
-    --jzsa-info-center-max-width-expanded-fs: calc(var(--jzsa-info-center-max-width-expanded) / var(--jzsa-controls-fs-scale));
+    --jzsa-info-center-max-width-viewer-fs: calc(var(--jzsa-info-center-max-width-viewer) / var(--jzsa-controls-fs-scale));
     --jzsa-info-corner-max-width-fs: calc(var(--jzsa-info-corner-max-width) / var(--jzsa-controls-fs-scale));
     /* info-top is constrained by corner action buttons. Default reserves 1 slot each side
        (fullscreen right + mirror left for symmetry). Expands to 4 slots when link/download
@@ -1312,7 +1312,7 @@ html.jzsa-lightbox-open body {
     user-select: none;
 }
 
-/* Fullscreen uses square corners unless an expanded/fullscreen override is set. */
+/* Fullscreen uses square corners unless a viewer/fullscreen override is set. */
 .jzsa-album:fullscreen,
 .jzsa-album:-webkit-full-screen,
 .jzsa-album.jzsa-pseudo-fullscreen {
@@ -1609,7 +1609,7 @@ html.jzsa-lightbox-open body {
 }
 
 /* Box positions -  lives inside the flex stack; no absolute position needed here. */
-.jzsa-info-bottom { bottom: 9px; left: 50%; transform: translateX(-50%); max-width: var(--jzsa-info-center-max-width-expanded); }
+.jzsa-info-bottom { bottom: 9px; left: 50%; transform: translateX(-50%); max-width: var(--jzsa-info-center-max-width-viewer); }
 .jzsa-info-top { top: 9px; left: 50%; transform: translateX(-50%); bottom: auto; max-width: var(--jzsa-info-center-max-width-default); }
 .jzsa-info-top-secondary { top: 9px; left: 50%; transform: translateX(-50%); bottom: auto; max-width: var(--jzsa-info-center-max-width-default); }
 
