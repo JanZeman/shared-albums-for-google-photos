@@ -205,6 +205,7 @@ $pages = array(
 				'[jzsa-album link="' . $album_link . '" mode="gallery" gallery-scrollable="true" fullscreen-toggle="button-only"]',
 				'[jzsa-album link="' . $album_link . '" mode="gallery" gallery-rows="2" fullscreen-toggle="button-only"]',
 				'[jzsa-album link="' . $album_link . '" mode="gallery" lightbox-toggle="click" fullscreen-toggle="disabled"]',
+				'[jzsa-album link="' . $album_link . '" mode="gallery" viewer-toggle="lightbox-click, fullscreen-button"]',
 			)
 		),
 	),
@@ -244,6 +245,7 @@ $pages = array(
 				// at the default contain, and that the result is the same regardless of entry path
 				// (direct fullscreen button vs lightbox-then-fullscreen-button).
 				'[jzsa-album link="' . $album_link . '" mode="slider" viewer-toggle="lightbox-button, fullscreen-button" fullscreen-image-fit="cover"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" viewer-toggle="lightbox-button, fullscreen-button" viewer-mosaic="true"]',
 			)
 		),
 	),

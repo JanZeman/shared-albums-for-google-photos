@@ -1,12 +1,13 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
 import { gotoFixture } from './support/navigation';
 
-// gallery-fixture contains 5 albums in this order:
+// gallery-fixture contains 6 albums in this order:
 //   #0  mode="gallery"  gallery-columns="3"  (grid, default layout)      fullscreen-toggle="button-only"
 //   #1  mode="gallery"  gallery-layout="justified"                        fullscreen-toggle="button-only"
 //   #2  mode="gallery"  gallery-scrollable="true"                         fullscreen-toggle="button-only"
 //   #3  mode="gallery"  gallery-rows="2"                                  fullscreen-toggle="button-only"
 //   #4  mode="gallery"  lightbox-toggle="click"  fullscreen-toggle="disabled"  (gallery player tests)
+//   #5  mode="gallery"  viewer-toggle="lightbox-click, fullscreen-button"  (mixed viewer routing)
 const FIXTURE_URL = '/?pagename=gallery-fixture';
 const TINY_PNG = Buffer.from(
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lQz9WQAAAABJRU5ErkJggg==',
@@ -213,6 +214,34 @@ test.describe('Gallery - slideshow player opens on click', () => {
     test('album 4 has data-fullscreen-toggle="disabled"', async ({ page }) => {
         const album = await waitForAlbum(page, 4);
         await expect(album).toHaveAttribute('data-fullscreen-toggle', 'disabled');
+    });
+
+    test('plain gallery click opens lightbox when fullscreen button is also enabled', async ({ page }) => {
+        const album = await waitForAlbum(page, 5);
+        await expect(album).toHaveAttribute('data-lightbox-toggle', 'click');
+        await expect(album).toHaveAttribute('data-fullscreen-toggle', 'button-only');
+
+        const item = album.locator('.jzsa-gallery-item').first();
+        await item.waitFor({ state: 'visible', timeout: 10_000 });
+        await item.locator('.jzsa-gallery-thumb').click();
+
+        await expect(backdrop(page)).toBeVisible({ timeout: 5_000 });
+        const isNativeFullscreen = await page.evaluate(() => !!document.fullscreenElement);
+        expect(isNativeFullscreen).toBe(false);
+    });
+
+    test('gallery fullscreen button opens fullscreen when plain click uses lightbox', async ({ page }) => {
+        const album = await waitForAlbum(page, 5);
+        const item = album.locator('.jzsa-gallery-item').first();
+        await item.waitFor({ state: 'visible', timeout: 10_000 });
+        await item.hover();
+        await item.locator('.jzsa-gallery-thumb-fs-btn.swiper-button-fullscreen').click({ force: true });
+
+        await expect(backdrop(page)).not.toBeVisible();
+        await expect.poll(() => page.evaluate(() => !!document.fullscreenElement), { timeout: 10_000 }).toBe(true);
+
+        await page.evaluate(() => document.fullscreenElement && document.exitFullscreen());
+        await expect.poll(() => page.evaluate(() => !!document.fullscreenElement), { timeout: 10_000 }).toBe(false);
     });
 });
 

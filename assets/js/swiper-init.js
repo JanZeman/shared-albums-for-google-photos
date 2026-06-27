@@ -6016,6 +6016,7 @@
             var fullscreenMosaicPageStart = 0;
             var fullscreenMosaicVertical = false;
             var viewerMosaicEnabled = false;
+            var FULLSCREEN_MOSAIC_ARROW_LANE = 42;
 
             if (!$fullscreenMosaic.find('.jzsa-mosaic-arrow-prev').length) {
                 $fullscreenMosaic.append(
@@ -6090,7 +6091,7 @@
             }
 
             function computeAutoFullscreenMosaicCount() {
-                var availableLength = getFullscreenMosaicRailGeometry().availableLength;
+                var availableLength = Math.max(1, getFullscreenMosaicRailGeometry().availableLength - (FULLSCREEN_MOSAIC_ARROW_LANE * 2));
                 var fitCount = Math.floor((availableLength + config.fullscreenMosaicGap) / (FULLSCREEN_MOSAIC_TARGET_THUMB_SIZE + config.fullscreenMosaicGap));
                 return Math.max(1, fitCount);
             }
@@ -6136,15 +6137,17 @@
                 var rail = getFullscreenMosaicRailGeometry();
                 var vertical = rail.vertical;
                 var count = getEffectiveFullscreenMosaicCount();
-                var availableLength = rail.availableLength;
+                var availableLength = Math.max(1, rail.availableLength - (FULLSCREEN_MOSAIC_ARROW_LANE * 2));
                 var thumbSize = (availableLength - (config.fullscreenMosaicGap * (count - 1))) / count;
                 thumbSize = Math.max(1, Math.floor(thumbSize));
                 var renderedLength = (thumbSize * count) + (config.fullscreenMosaicGap * (count - 1));
-                var centeredOffset = Math.max(0, Math.floor((availableLength - renderedLength) / 2));
+                var railLength = renderedLength + (FULLSCREEN_MOSAIC_ARROW_LANE * 2);
+                var centeredOffset = Math.max(0, Math.floor((rail.availableLength - railLength) / 2));
                 fullscreenMosaicVertical = vertical;
                 fullscreenMosaicEffectiveCount = count;
                 fullscreenMosaicThumbSize = thumbSize;
                 $fullscreenMosaic.toggleClass('jzsa-mosaic-vertical', vertical);
+                $fullscreenMosaic[0].style.setProperty('--jzsa-fullscreen-mosaic-arrow-lane', FULLSCREEN_MOSAIC_ARROW_LANE + 'px');
                 $fullscreenMosaic[0].style.setProperty('--jzsa-fullscreen-mosaic-thumb-size', thumbSize + 'px');
                 $container[0].style.setProperty('--jzsa-fullscreen-mosaic-strip-height', thumbSize + 'px');
                 applyFullscreenMosaicSlideSize(thumbSize, vertical);
@@ -6155,7 +6158,7 @@
                         top: (rail.startOffset + centeredOffset) + 'px',
                         bottom: 'auto',
                         width: thumbSize + 'px',
-                        height: renderedLength + 'px'
+                        height: railLength + 'px'
                     });
                 } else {
                     $fullscreenMosaic.css({
@@ -6163,7 +6166,7 @@
                         right: 'auto',
                         top: '',
                         bottom: '',
-                        width: renderedLength + 'px',
+                        width: railLength + 'px',
                         height: thumbSize + 'px'
                     });
                 }
@@ -9372,7 +9375,7 @@
             var forcedMode;
             if ($btn.hasClass('swiper-button-lightbox')) {
                 forcedMode = 'lightbox';
-            } else if ($container.hasClass('jzsa-has-dual-expand')) {
+            } else if ($btn.hasClass('swiper-button-fullscreen')) {
                 forcedMode = 'fullscreen';
             }
             openGalleryPlayerAtIndex(index, forcedMode);

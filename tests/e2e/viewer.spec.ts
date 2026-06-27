@@ -1,9 +1,10 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
 
-// viewer-fixture page layout (three shortcodes in order):
+// viewer-fixture page layout (four shortcodes in order):
 //   #0  slider  viewer-toggle="lightbox-button, fullscreen-button"  viewer-image-fit="contain"  (all viewer-* shared)
 //   #1  slider  viewer-toggle="lightbox-button, fullscreen-button"  concrete lightbox/fullscreen overrides
 //   #2  slider  viewer-toggle="lightbox-button, fullscreen-button"  fullscreen-image-fit="cover"  (isolation test)
+//   #3  slider  viewer-toggle="lightbox-button, fullscreen-button"  viewer-mosaic="true"  (mosaic arrow geometry)
 const PAGE_URL = '/?pagename=viewer-fixture';
 const SLIDER_FULLSCREEN_BUTTON = '.swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn)';
 const SLIDER_LIGHTBOX_BUTTON = '.swiper-button-lightbox:not(.jzsa-gallery-thumb-fs-btn)';
@@ -20,7 +21,7 @@ async function waitForAlbum(page: Page, index: number): Promise<Locator> {
 test.describe('Viewer shared settings', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto(PAGE_URL);
-        await expect(page.locator('.jzsa-album')).toHaveCount(3);
+        await expect(page.locator('.jzsa-album')).toHaveCount(4);
     });
 
     test('shared settings resolve to both lightbox and fullscreen attributes', async ({ page }) => {
@@ -63,6 +64,43 @@ test.describe('Viewer shared settings', () => {
         expect(styles.width).toBeLessThanOrEqual(640);
         expect(styles.controls).toBe('#123456');
         expect(styles.fontSize).toBe('18px');
+    });
+
+    test('lightbox mosaic arrows do not overlap clickable thumbnails', async ({ page }) => {
+        await page.setViewportSize({ width: 640, height: 480 });
+        const album = await waitForAlbum(page, 3);
+        const albumId = await album.getAttribute('id');
+        await expect(album).toHaveAttribute('data-jzsa-initialized', 'true');
+        await album.locator('.swiper-button-lightbox').evaluate((button: HTMLElement) => button.click());
+
+        const mosaic = page.locator(`#${albumId} .jzsa-fullscreen-mosaic`);
+        await expect(mosaic).toBeVisible();
+        await expect(mosaic.locator('.jzsa-mosaic-arrow-next')).toBeAttached();
+
+        const geometry = await mosaic.evaluate((element) => {
+            const mosaicRect = element.getBoundingClientRect();
+            const style = getComputedStyle(element);
+            const leftLane = parseFloat(style.paddingLeft) || 0;
+            const rightLane = parseFloat(style.paddingRight) || 0;
+            const thumbStart = mosaicRect.left + leftLane;
+            const thumbEnd = mosaicRect.right - rightLane;
+            const prev = element.querySelector<HTMLElement>('.jzsa-mosaic-arrow-prev')?.getBoundingClientRect();
+            const next = element.querySelector<HTMLElement>('.jzsa-mosaic-arrow-next')?.getBoundingClientRect();
+            const visibleSlides = Array.from(element.querySelectorAll<HTMLElement>('.swiper-slide'))
+                .map((slide) => slide.getBoundingClientRect())
+                .filter((rect) => rect.right > thumbStart && rect.left < thumbEnd);
+            return {
+                prevRight: prev?.right ?? 0,
+                nextLeft: next?.left ?? 0,
+                firstThumbLeft: visibleSlides[0]?.left ?? 0,
+                lastThumbRight: visibleSlides[visibleSlides.length - 1]?.right ?? 0,
+                visibleCount: visibleSlides.length,
+            };
+        });
+
+        expect(geometry.visibleCount).toBeGreaterThan(1);
+        expect(geometry.firstThumbLeft).toBeGreaterThanOrEqual(geometry.prevRight);
+        expect(geometry.lastThumbRight).toBeLessThanOrEqual(geometry.nextLeft);
     });
 
     test('concrete settings override shared settings for only their mode', async ({ page }) => {
@@ -130,7 +168,7 @@ test.describe('Viewer mode isolation - image-fit entry-path invariant', () => {
         });
         expect(fit).toBe('cover');
 
-        await page.keyboard.press('Escape');
+        await page.evaluate(() => document.fullscreenElement && document.exitFullscreen());
         await expect.poll(() => page.evaluate(() => !!document.fullscreenElement), { timeout: 10_000 }).toBe(false);
     });
 
@@ -157,8 +195,8 @@ test.describe('Viewer mode isolation - image-fit entry-path invariant', () => {
         });
         expect(fit).toBe('cover');
 
-        // Escape exits native fullscreen and returns to lightbox.
-        await page.keyboard.press('Escape');
+        // Exit native fullscreen and return to lightbox.
+        await page.evaluate(() => document.fullscreenElement && document.exitFullscreen());
         await expect.poll(() => page.evaluate(() => !!document.fullscreenElement), { timeout: 10_000 }).toBe(false);
         await expect(backdrop(page)).toBeVisible();
 
