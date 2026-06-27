@@ -907,7 +907,7 @@ body.jzsa-no-scroll {
     justify-content: center;
     box-sizing: border-box;
     padding: clamp(8px, 4vh, 48px);
-    background: rgba(0, 0, 0, 0.92);
+    background: rgba(0, 0, 0, 0.85);
     opacity: 0;
     transition: opacity 0.2s ease;
     overscroll-behavior: contain;
