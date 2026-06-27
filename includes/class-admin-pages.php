@@ -1236,7 +1236,8 @@ class JZSA_Admin_Pages {
 						</details>
 
 						<details class="jzsa-sample-group jzsa-collapsible-section" open>
-							<summary class="jzsa-collapsible-summary"><?php esc_html_e( 'Viewer Styling (Samples 30-34)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
+							<summary class="jzsa-collapsible-summary"><?php esc_html_e( 'Viewer Shared Settings and Overrides (Samples 30-34)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
+							<p class="jzsa-sample-group__description"><?php esc_html_e( 'These samples show the three-tier viewer model: viewer-* sets the shared baseline, while lightbox-* and fullscreen-* override one mode only.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
 						<div class="jzsa-sample-card">
 							<div class="jzsa-sample-card-header">
@@ -1264,7 +1265,7 @@ class JZSA_Admin_Pages {
 								<h3><?php echo 'Sample 31: ' . esc_html__( 'Viewer Size - Fullscreen Override', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 								<span class="jzsa-sample-card-hint"><?php esc_html_e( 'Lightbox stays small, Fullscreen gets a larger limit', 'janzeman-shared-albums-for-google-photos' ); ?></span>
 							</div>
-							<p><?php esc_html_e( 'Mode-specific parameters override shared Viewer parameters. Lightbox uses the smaller shared size, while fullscreen-max-width and fullscreen-max-height let Fullscreen use a larger limit. Open both Lightbox and Fullscreen views and notice that Fullscreen offers the photos in double size compared to Lightbox.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'The shared viewer-max-width and viewer-max-height values set the baseline. The fullscreen-max-width and fullscreen-max-height values override that baseline for Fullscreen only, so Lightbox keeps the smaller shared size.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
 							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-max-width="600" viewer-max-height="400" fullscreen-max-width="1200" fullscreen-max-height="800"]';
 						?>
@@ -1306,7 +1307,7 @@ class JZSA_Admin_Pages {
 								<h3><?php echo 'Sample 33: ' . esc_html__( 'Viewer Fit - Fullscreen Override', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 								<span class="jzsa-sample-card-hint"><?php esc_html_e( 'Lightbox contains, Fullscreen covers', 'janzeman-shared-albums-for-google-photos' ); ?></span>
 							</div>
-							<p><?php esc_html_e( 'Fullscreen override is the point of this sample. The parameter `fullscreen-image-fit` overrides the shared fit for Fullscreen only. Lightbox stays at contain because that is the `viewer-image-fit` default: when `viewer-image-fit` is not set it is already contain, so omitting it here is enough to keep Lightbox contained.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'The shared/default fit stays contain for Lightbox. The parameter fullscreen-image-fit changes Fullscreen only, so Fullscreen uses cover while Lightbox remains contained.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
 							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" fullscreen-image-fit="cover"]';
 						?>
@@ -1327,7 +1328,7 @@ class JZSA_Admin_Pages {
 								<h3><?php echo 'Sample 34: ' . esc_html__( 'Viewer Colors - Background and Backdrop', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 								<span class="jzsa-sample-card-hint"><?php esc_html_e( 'Compare viewer background with Lightbox backdrop', 'janzeman-shared-albums-for-google-photos' ); ?></span>
 							</div>
-							<p><?php esc_html_e( 'Viewer colors split into two surfaces. The shared viewer-background-color setting controls the box behind the photo in both Lightbox and Fullscreen. The lightbox-backdrop-color setting controls only the dimmed page overlay behind the Lightbox box.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'Viewer colors split into two surfaces. The shared viewer-background-color setting controls the box behind the photo in both Lightbox and Fullscreen. Open both modes to compare it, then open Lightbox to see the separate lightbox-backdrop-color behind the box.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
 							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="600" corner-radius="16" image-fit="contain" background-color="rgba(128,0,64,0.7)" viewer-toggle="lightbox-button, fullscreen-button" lightbox-corner-radius="16" viewer-max-width="600" viewer-max-height="400" viewer-background-color="rgba(128,0,64,0.7)" lightbox-backdrop-color="rgba(0,128,64,0.7)"]';
 						?>
@@ -1350,7 +1351,7 @@ class JZSA_Admin_Pages {
 
 						<div class="jzsa-sample-card">
 							<h3><?php echo 'Sample 35: ' . esc_html__( 'Fullscreen Slideshow Only', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php esc_html_e( 'Fullscreen can run as a slideshow while the inline view stays static.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'The inline slider stays static. When Fullscreen opens, the Fullscreen slideshow starts automatically.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
 							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="600" corner-radius="16" viewer-toggle="fullscreen-button" fullscreen-slideshow="auto"]';
 						?>
