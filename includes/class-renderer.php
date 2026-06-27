@@ -345,7 +345,7 @@ class JZSA_Renderer {
 		}
 
 		// Display settings that JS applies when the lightbox opens.
-		// These are pre-resolved with bidirectional fallback from fullscreen-* by PHP.
+		// These are resolved by PHP from the three-tier viewer-* / lightbox-* / fullscreen-* hierarchy.
 		if ( ! empty( $config['lightbox-controls-color'] ) ) {
 			$attrs[] = sprintf( 'data-lightbox-controls-color="%s"', esc_attr( $config['lightbox-controls-color'] ) );
 		}

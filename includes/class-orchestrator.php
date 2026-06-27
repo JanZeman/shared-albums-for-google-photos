@@ -72,12 +72,15 @@ class JZSA_Shared_Albums {
 	const DEFAULT_SOURCE_HEIGHT = 600;
 
 	/**
-	 * Default source dimensions for fullscreen mode (fetched from Google Photos)
+	 * Default source dimensions for expanded viewer modes (fullscreen and lightbox).
+	 * Both modes render photos at high resolution, so they share this baseline.
 	 *
 	 * @var int
 	 */
 	const DEFAULT_FULLSCREEN_SOURCE_WIDTH = 1920;
 	const DEFAULT_FULLSCREEN_SOURCE_HEIGHT = 1440;
+	const DEFAULT_VIEWER_SOURCE_WIDTH = 1920;
+	const DEFAULT_VIEWER_SOURCE_HEIGHT = 1440;
 
 	/**
 	 * Default thumbnail dimensions for mosaic (retina optimized)
@@ -761,7 +764,7 @@ class JZSA_Shared_Albums {
 
 		// Slideshow params fall back to 'disabled', not the inline slideshow value.
 		$lightbox_slideshow_mode  = $this->has_non_empty_attribute( $atts, 'lightbox-slideshow' ) ? $this->parse_slideshow_mode_val( $atts['lightbox-slideshow'] ) : 'disabled';
-		$lightbox_slideshow_delay = $this->parse_delay_range( $this->has_non_empty_attribute( $atts, 'lightbox-slideshow-delay' ) ? $atts['lightbox-slideshow-delay'] : self::DEFAULT_FULLSCREEN_SLIDESHOW_DELAY );
+		$lightbox_slideshow_delay = $this->parse_delay_range( $this->has_non_empty_attribute( $atts, 'lightbox-slideshow-delay' ) ? $atts['lightbox-slideshow-delay'] : self::DEFAULT_SLIDESHOW_DELAY_RANGE );
 
 		$lightbox_mode = $this->parse_lightbox_toggle_mode( $atts );
 
@@ -779,8 +782,8 @@ class JZSA_Shared_Albums {
 			'source-height'             => $this->parse_source_dim( $atts, 'source-height', self::DEFAULT_SOURCE_HEIGHT ),
 			'fullscreen-source-width'   => $this->parse_source_dim( $atts, 'fullscreen-source-width', self::DEFAULT_FULLSCREEN_SOURCE_WIDTH ),
 			'fullscreen-source-height'  => $this->parse_source_dim( $atts, 'fullscreen-source-height', self::DEFAULT_FULLSCREEN_SOURCE_HEIGHT ),
-			'lightbox-source-width'     => $this->parse_source_dim( $atts, 'lightbox-source-width', self::DEFAULT_FULLSCREEN_SOURCE_WIDTH ),
-			'lightbox-source-height'    => $this->parse_source_dim( $atts, 'lightbox-source-height', self::DEFAULT_FULLSCREEN_SOURCE_HEIGHT ),
+			'lightbox-source-width'     => $this->parse_source_dim( $atts, 'lightbox-source-width', self::DEFAULT_VIEWER_SOURCE_WIDTH ),
+			'lightbox-source-height'    => $this->parse_source_dim( $atts, 'lightbox-source-height', self::DEFAULT_VIEWER_SOURCE_HEIGHT ),
 			'fullscreen-display-max-width'  => $this->parse_optional_positive_int( $atts, 'fullscreen-display-max-width' ),
 			'fullscreen-display-max-height' => $this->parse_optional_positive_int( $atts, 'fullscreen-display-max-height' ),
 			// Slideshow (normal mode)
@@ -826,8 +829,8 @@ class JZSA_Shared_Albums {
 				// taking over the screen, the album opens in a dimmed overlay on top of
 				// the page, in a size-capped box. The lightbox-* params below let authors
 				// tune the lightbox experience independently from the fullscreen experience.
-				// Each lightbox-* param is bidirectionally linked to its fullscreen-* counterpart:
-				// if only one is set the other inherits it; if both are set each uses its own value.
+				// viewer-* values serve as the shared baseline; lightbox-* and fullscreen-*
+				// each override only their own mode. There is no sideways inheritance.
 				'lightbox-toggle'           => $lightbox_mode,
 				'lightbox-image-fit'        => $this->parse_lightbox_image_fit( $atts ),
 				'lightbox-max-width'        => $this->parse_optional_positive_int( $atts, 'lightbox-max-width' ),
@@ -878,35 +881,19 @@ class JZSA_Shared_Albums {
 			'fullscreen-mosaic-gap'      => $this->parse_mosaic_gap( $atts, 'fullscreen-mosaic-gap' ),
 			'fullscreen-mosaic-opacity'  => $this->parse_mosaic_opacity( $atts, 'fullscreen-mosaic-opacity' ),
 			'fullscreen-mosaic-background' => $this->parse_color( $atts, 'fullscreen-mosaic-background', '' ),
-			'lightbox-mosaic'          => isset( $atts['lightbox-mosaic'] )
-				? $this->parse_bool( $atts, 'lightbox-mosaic', false )
-				: $this->parse_fullscreen_mosaic_enabled( $atts ),
-			'lightbox-mosaic-position' => isset( $atts['lightbox-mosaic-position'] )
-				? $this->parse_mosaic_position( $atts, 'lightbox-mosaic-position' )
-				: $this->parse_mosaic_position( $atts, 'fullscreen-mosaic-position' ),
-			'lightbox-mosaic-layout'   => isset( $atts['lightbox-mosaic-layout'] )
-				? $this->parse_fullscreen_mosaic_layout( $atts, 'lightbox-mosaic-layout' )
-				: $this->parse_fullscreen_mosaic_layout( $atts ),
-			'lightbox-mosaic-count'    => isset( $atts['lightbox-mosaic-count'] )
-				? $this->parse_mosaic_count( $atts, 'lightbox-mosaic-count' )
-				: $this->parse_mosaic_count( $atts, 'fullscreen-mosaic-count' ),
-			'lightbox-mosaic-gap'      => isset( $atts['lightbox-mosaic-gap'] )
-				? $this->parse_mosaic_gap( $atts, 'lightbox-mosaic-gap' )
-				: $this->parse_mosaic_gap( $atts, 'fullscreen-mosaic-gap' ),
-			'lightbox-mosaic-opacity'  => isset( $atts['lightbox-mosaic-opacity'] )
-				? $this->parse_mosaic_opacity( $atts, 'lightbox-mosaic-opacity' )
-				: $this->parse_mosaic_opacity( $atts, 'fullscreen-mosaic-opacity' ),
-			'lightbox-mosaic-background' => isset( $atts['lightbox-mosaic-background'] )
-				? $this->parse_color( $atts, 'lightbox-mosaic-background', '' )
-				: $this->parse_color( $atts, 'fullscreen-mosaic-background', '' ),
+			'lightbox-mosaic'            => $this->parse_bool( $atts, 'lightbox-mosaic', false ),
+			'lightbox-mosaic-position'   => $this->parse_mosaic_position( $atts, 'lightbox-mosaic-position' ),
+			'lightbox-mosaic-layout'     => $this->parse_fullscreen_mosaic_layout( $atts, 'lightbox-mosaic-layout' ),
+			'lightbox-mosaic-count'      => $this->parse_mosaic_count( $atts, 'lightbox-mosaic-count' ),
+			'lightbox-mosaic-gap'        => $this->parse_mosaic_gap( $atts, 'lightbox-mosaic-gap' ),
+			'lightbox-mosaic-opacity'    => $this->parse_mosaic_opacity( $atts, 'lightbox-mosaic-opacity' ),
+			'lightbox-mosaic-background' => $this->parse_color( $atts, 'lightbox-mosaic-background', '' ),
 
 			// Visual style
 			'corner-radius'        => $this->parse_corner_radius( $atts ),
 			'mosaic-corner-radius' => $this->parse_mosaic_corner_radius( $atts ),
 			'fullscreen-mosaic-corner-radius' => $this->parse_mosaic_corner_radius( $atts, 'fullscreen-mosaic-corner-radius' ),
-			'lightbox-mosaic-corner-radius' => isset( $atts['lightbox-mosaic-corner-radius'] )
-				? $this->parse_mosaic_corner_radius( $atts, 'lightbox-mosaic-corner-radius' )
-				: $this->parse_mosaic_corner_radius( $atts, 'fullscreen-mosaic-corner-radius' ),
+			'lightbox-mosaic-corner-radius' => $this->parse_mosaic_corner_radius( $atts, 'lightbox-mosaic-corner-radius' ),
 				'info-font-size'       => $info_font_size,
 				'fullscreen-info-font-size' => $fullscreen_info_font_size,
 				'lightbox-info-font-size' => $lightbox_info_font_size,
@@ -994,13 +981,13 @@ class JZSA_Shared_Albums {
 		return array(
 			'info-bottom'                     => $b1,
 			'fullscreen-info-bottom'          => $fullscreen_info_bottom,
-			'lightbox-info-bottom'            => $this->parse_info_box( $atts, 'lightbox-info-bottom', $fullscreen_info_bottom ),
+			'lightbox-info-bottom'            => $this->parse_info_box( $atts, 'lightbox-info-bottom', $b1 ),
 			'info-top'                        => $t1,
 			'fullscreen-info-top'             => $fullscreen_info_top,
-			'lightbox-info-top'               => $this->parse_info_box( $atts, 'lightbox-info-top', $fullscreen_info_top ),
+			'lightbox-info-top'               => $this->parse_info_box( $atts, 'lightbox-info-top', $t1 ),
 			'info-top-secondary'              => $t2,
 			'fullscreen-info-top-secondary'  => $fullscreen_info_top_secondary,
-			'lightbox-info-top-secondary'    => $this->parse_info_box( $atts, 'lightbox-info-top-secondary', $fullscreen_info_top_secondary ),
+			'lightbox-info-top-secondary'    => $this->parse_info_box( $atts, 'lightbox-info-top-secondary', $t2 ),
 			'gallery-info-bottom'             => $gpb,
 		);
 	}
@@ -1715,18 +1702,6 @@ class JZSA_Shared_Albums {
 		return max( 0, $value );
 	}
 
-	/**
-	 * Return the first of two attribute keys that is set and non-empty.
-	 *
-	 * Used for bidirectional lightbox-* / fullscreen-* fallback: whichever of
-	 * the two is explicitly set is used for both; if both are set each uses its
-	 * own value (primary wins).
-	 *
-	 * @param array  $atts     Shortcode attributes.
-	 * @param string $primary  Primary key (the caller's own param).
-	 * @param string $fallback Fallback key (the paired param).
-	 * @return string|null The key to read, or null when neither is set.
-	 */
 	/**
 	 * Parse a slideshow mode value string.
 	 *
