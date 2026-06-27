@@ -836,6 +836,7 @@ class JZSA_Shared_Albums {
 				'lightbox-max-width'        => $this->parse_optional_positive_int( $atts, 'lightbox-max-width' ),
 				'lightbox-max-height'       => $this->parse_optional_positive_int( $atts, 'lightbox-max-height' ),
 				'lightbox-background-color' => $this->parse_color( $atts, 'lightbox-background-color', '' ),
+				'lightbox-backdrop-color'   => $this->parse_color( $atts, 'lightbox-backdrop-color', '' ),
 				'lightbox-corner-radius'    => isset( $atts['lightbox-corner-radius'] ) ? max( 0, intval( $atts['lightbox-corner-radius'] ) ) : 0,
 				'lightbox-controls-color'           => $lightbox_controls_color,
 				'lightbox-video-controls-color'     => $lightbox_video_controls_color,

@@ -325,6 +325,9 @@ class JZSA_Renderer {
 		if ( ! empty( $config['lightbox-background-color'] ) ) {
 			$attrs[] = sprintf( 'data-lightbox-background-color="%s"', esc_attr( $config['lightbox-background-color'] ) );
 		}
+		if ( ! empty( $config['lightbox-backdrop-color'] ) ) {
+			$attrs[] = sprintf( 'data-lightbox-backdrop-color="%s"', esc_attr( $config['lightbox-backdrop-color'] ) );
+		}
 		if ( ! empty( $config['lightbox-corner-radius'] ) ) {
 			$attrs[] = sprintf( 'data-lightbox-corner-radius="%d"', intval( $config['lightbox-corner-radius'] ) );
 		}

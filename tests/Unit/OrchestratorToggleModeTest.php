@@ -136,42 +136,6 @@ class OrchestratorToggleModeTest extends TestCase {
         $this->assertSame( 'disabled', $config );
     }
 
-    // -------------------------------------------------------------------------
-    // paired_key (bidirectional fallback helper)
-    // -------------------------------------------------------------------------
-
-    public function test_paired_key_returns_primary_when_set(): void {
-        $atts = [ 'fullscreen-controls-color' => '#ff0000' ];
-        $key  = $this->invoke( 'paired_key', $atts, 'fullscreen-controls-color', 'lightbox-controls-color' );
-        $this->assertSame( 'fullscreen-controls-color', $key );
-    }
-
-    public function test_paired_key_falls_back_to_secondary_when_primary_absent(): void {
-        $atts = [ 'lightbox-controls-color' => '#0000ff' ];
-        $key  = $this->invoke( 'paired_key', $atts, 'fullscreen-controls-color', 'lightbox-controls-color' );
-        $this->assertSame( 'lightbox-controls-color', $key );
-    }
-
-    public function test_paired_key_returns_null_when_neither_set(): void {
-        $key = $this->invoke( 'paired_key', [], 'fullscreen-controls-color', 'lightbox-controls-color' );
-        $this->assertNull( $key );
-    }
-
-    public function test_paired_key_treats_empty_string_as_absent(): void {
-        $atts = [ 'fullscreen-controls-color' => '' ];
-        $key  = $this->invoke( 'paired_key', $atts, 'fullscreen-controls-color', 'lightbox-controls-color' );
-        $this->assertNull( $key );
-    }
-
-    public function test_paired_key_prefers_primary_when_both_set(): void {
-        $atts = [
-            'fullscreen-controls-color' => '#ff0000',
-            'lightbox-controls-color'   => '#0000ff',
-        ];
-        $key = $this->invoke( 'paired_key', $atts, 'fullscreen-controls-color', 'lightbox-controls-color' );
-        $this->assertSame( 'fullscreen-controls-color', $key );
-    }
-
     public function test_viewer_toggle_accepts_each_supported_token(): void {
         $cases = [
             'disabled'                => [ 'disabled', 'disabled', true ],

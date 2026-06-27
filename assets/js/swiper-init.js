@@ -337,7 +337,7 @@
         var $backdrop = $(backdrop);
 
         // Backdrop colour: empty string lets the CSS default (dim black) apply.
-        var bgRaw = $el.attr('data-lightbox-background-color') || '';
+        var bgRaw = $el.attr('data-lightbox-backdrop-color') || '';
         backdrop.style.background = bgRaw;
 
         // Remember where to restore the element to (a comment node keeps the spot).
@@ -351,8 +351,8 @@
         $el.data('jzsa-scroll-y', window.scrollY || window.pageYOffset);
         $el.data('jzsa-sample-anchor-id', getSampleCardAnchorId(element));
         $el.data('jzsaLightboxOriginalBg', element.style.getPropertyValue('--gallery-bg-color'));
-        var fsBgRaw = $el.attr('data-fullscreen-background-color') || $el.attr('data-background-color') || '';
-        var boxBg = (fsBgRaw && fsBgRaw !== 'transparent') ? fsBgRaw : '#000';
+        var lbBoxBgRaw = $el.attr('data-lightbox-background-color') || $el.attr('data-background-color') || '';
+        var boxBg = (lbBoxBgRaw && lbBoxBgRaw !== 'transparent') ? lbBoxBgRaw : '#000';
         element.style.setProperty('--gallery-bg-color', boxBg);
 
         // Bounded-box caps + corner radius.
@@ -427,8 +427,6 @@
             var lbShowNav       = lbShowNavAttr !== undefined ? (lbShowNavAttr === 'true') : fsParams.showNavigation;
             var lbVcaAttr       = $el.attr('data-lightbox-video-controls-autohide');
             var lbVca           = lbVcaAttr !== undefined ? (lbVcaAttr === 'true') : fsParams.videoControlsAutohide;
-            var lbShowLink      = $el.attr('data-lightbox-show-link-button') || 'false';
-            var lbShowDl        = $el.attr('data-lightbox-show-download-button') || 'false';
             var lbInfoFontSize  = getInfoFontSizePx($el, 'data-lightbox-info-font-size', fsParams.infoFontSize);
             var lbInfoFontFamily = getInfoFontFamily($el, 'data-lightbox-info-font-family', fsParams.infoFontFamily);
             var lbInfoFontColor = getInfoFontColor($el, 'data-lightbox-info-font-color', fsParams.infoFontColor);
@@ -461,16 +459,20 @@
             };
             applyFullscreenDisplayOverrides(element, swiper, lbDisplayParams, true);
             swiper._jzsaLightboxDisplayParams = lbDisplayParams;
-
-            // Swap fullscreen-show-link/download-button to lightbox values so the existing
-            // CSS rules (.jzsa-is-fullscreen[data-fullscreen-show-*="true"]) render correctly.
-            $el.data('jzsa-orig-fs-show-link', $el.attr('data-fullscreen-show-link-button') || 'false');
-            $el.data('jzsa-orig-fs-show-dl',   $el.attr('data-fullscreen-show-download-button') || 'false');
-            $el.attr('data-fullscreen-show-link-button',     lbShowLink);
-            $el.attr('data-fullscreen-show-download-button', lbShowDl);
         }
         if (swiper && swiper._jzsaExpandedMosaicController) {
             swiper._jzsaExpandedMosaicController.useLightbox();
+        }
+
+        // Start lightbox slideshow if configured.
+        if (swiper && fsParams && fsParams.lightboxSlideshow !== 'disabled') {
+            if (swiper.autoplay && swiper.autoplay.running) { swiper.autoplay.stop(); }
+            var lbOpenDelay = fsParams.lightboxSlideshowDelay * MILLISECONDS_PER_SECOND;
+            swiper.params.autoplay.delay = lbOpenDelay;
+            if (swiper.autoplay) { swiper.autoplay.delay = lbOpenDelay; }
+            if (!fsParams.slideshowPausedByInteraction && fsParams.lightboxSlideshow === 'auto') {
+                swiper.autoplay.start();
+            }
         }
 
         $el.trigger('jzsa:fullscreen-state', [true]);
@@ -610,12 +612,16 @@
             swiper._jzsaExpandedMosaicController.useFullscreen();
         }
 
-        // Restore fullscreen-show-link/download-button to their pre-lightbox values.
-        var origFsLink = $el.data('jzsa-orig-fs-show-link');
-        var origFsDl   = $el.data('jzsa-orig-fs-show-dl');
-        if (origFsLink !== undefined) { $el.attr('data-fullscreen-show-link-button', origFsLink); }
-        if (origFsDl   !== undefined) { $el.attr('data-fullscreen-show-download-button', origFsDl); }
-        $el.removeData('jzsa-orig-fs-show-link jzsa-orig-fs-show-dl');
+        // Stop lightbox slideshow and restore inline slideshow if it was running.
+        if (swiper && fsParams) {
+            if (swiper.autoplay && swiper.autoplay.running) { swiper.autoplay.stop(); }
+            if (fsParams.slideshow === 'auto' && !fsParams.slideshowPausedByInteraction) {
+                var lbCloseNormalDelay = fsParams.slideshowDelay * MILLISECONDS_PER_SECOND;
+                swiper.params.autoplay.delay = lbCloseNormalDelay;
+                if (swiper.autoplay) { swiper.autoplay.delay = lbCloseNormalDelay; }
+                swiper.autoplay.start();
+            }
+        }
 
         $el.trigger('jzsa:fullscreen-state', [false]);
         notifyGalleryOnFullscreenExit(element, swiper);
@@ -3867,17 +3873,17 @@
                 if (swiper && swiper._jzsaExpandedMosaicController) {
                     swiper._jzsaExpandedMosaicController.useLightbox();
                 }
-                // Restore fullscreen-mode slideshow; lightbox always uses fs settings.
+                // Restore lightbox slideshow after returning from native fullscreen.
                 if (swiper.autoplay && swiper.autoplay.running) {
                     swiper.autoplay.stop();
                 }
-                if (params.fullscreenSlideshow !== 'disabled') {
-                    var lbDelay = params.fullscreenSlideshowDelay * MILLISECONDS_PER_SECOND;
+                if (params.lightboxSlideshow !== 'disabled') {
+                    var lbDelay = params.lightboxSlideshowDelay * MILLISECONDS_PER_SECOND;
                     swiper.params.autoplay.delay = lbDelay;
                     if (swiper.autoplay) {
                         swiper.autoplay.delay = lbDelay;
                     }
-                    if (params.fullscreenSlideshow === 'auto') {
+                    if (params.lightboxSlideshow === 'auto') {
                         swiper.autoplay.start();
                     }
                 }
@@ -5409,8 +5415,8 @@
             // Default: no zoom unless enabled per mode.
             zoom: false,
 
-            // Autoplay - enable module if either normal or fullscreen mode is not disabled
-            autoplay: (params.slideshow !== 'disabled' || params.fullscreenSlideshow !== 'disabled') ? {
+            // Autoplay - enable module if any viewer mode slideshow is not disabled
+            autoplay: (params.slideshow !== 'disabled' || params.fullscreenSlideshow !== 'disabled' || params.lightboxSlideshow !== 'disabled') ? {
                 delay: params.slideshowDelay * MILLISECONDS_PER_SECOND,
                 disableOnInteraction: false,
             } : false,
@@ -5618,7 +5624,9 @@
             slideshow: $container.attr('data-slideshow') || 'disabled',
             slideshowDelay: parseInt($container.attr('data-slideshow-delay')) || DEFAULT_SLIDESHOW_DELAY_FALLBACK,
             fullscreenSlideshow: $container.attr('data-fullscreen-slideshow') || 'disabled',
-            fullscreenSlideshowDelay: parseInt($container.attr('data-fullscreen-slideshow-delay')) || 5,
+            fullscreenSlideshowDelay: parseInt($container.attr('data-fullscreen-slideshow-delay')) || DEFAULT_SLIDESHOW_DELAY_FALLBACK,
+            lightboxSlideshow: $container.attr('data-lightbox-slideshow') || 'disabled',
+            lightboxSlideshowDelay: parseInt($container.attr('data-lightbox-slideshow-delay')) || DEFAULT_SLIDESHOW_DELAY_FALLBACK,
             slideshowAutoresume: inlineSlideshowAutoresumeSetting,
             fullscreenSlideshowAutoresume: fullscreenSlideshowAutoresumeSetting,
 
@@ -6588,6 +6596,8 @@
                 mode: mode,
                 fullscreenSlideshow: fullscreenSlideshow,
                 fullscreenSlideshowDelay: fullscreenSlideshowDelay,
+                lightboxSlideshow: config.lightboxSlideshow,
+                lightboxSlideshowDelay: config.lightboxSlideshowDelay,
                 slideshow: slideshow,
                 slideshowDelay: slideshowDelay,
                 slideshowPausedByInteraction: slideshowPausedByInteraction,
@@ -7126,6 +7136,7 @@
             'data-lightbox-max-width',
             'data-lightbox-max-height',
             'data-lightbox-background-color',
+            'data-lightbox-backdrop-color',
             'data-lightbox-corner-radius',
             'data-lightbox-controls-color',
             'data-lightbox-video-controls-color',

@@ -402,8 +402,8 @@
 
 					<h3><?php esc_html_e( 'Lightbox Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 					<p><?php echo wp_kses_post( __( 'The lightbox is an alternative to native fullscreen. Instead of the browser taking over the whole screen, clicking a photo opens it in a dimmed overlay <strong>on top of the page</strong>, in a size-capped box. Lightbox is now the default viewer unless you explicitly set fullscreen. You can still show both side by side with <code>viewer-toggle="lightbox-button, fullscreen-button"</code>; visitors then choose which experience they prefer. <code>interaction-lock="true"</code> disables both.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
-					<p><?php echo wp_kses_post( __( 'Some lightbox display settings are paired with their <code>fullscreen-*</code> counterparts. Set only one of the pair and the other inherits it automatically; set both when the two viewer modes should behave differently. The rows below name the paired parameter where this applies.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
-					<p><?php echo wp_kses_post( __( 'For a concrete example, see Guide sample 35: Lightbox + Fullscreen - Both Buttons Side by Side. It sets <code>fullscreen-controls-color="#E63946"</code> but no <code>lightbox-controls-color</code>, so both viewer modes use red controls. Add <code>lightbox-controls-color="green"</code> and the lightbox controls become green while fullscreen stays red.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+					<p><?php echo wp_kses_post( __( 'Lightbox and fullscreen are independent modes. Each has its own <code>lightbox-*</code> or <code>fullscreen-*</code> parameter. The shared <code>viewer-*</code> tier sets a baseline for both modes: if you set <code>viewer-controls-color</code> and no concrete mode overrides, both lightbox and fullscreen use that color. A <code>lightbox-*</code> parameter overrides the baseline for lightbox only; a <code>fullscreen-*</code> parameter overrides it for fullscreen only. There is no sideways inheritance between the two modes.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+					<p><?php echo wp_kses_post( __( 'For a concrete example, see Guide sample 35. Set <code>viewer-controls-color="#E63946"</code> and both modes use red controls. Add <code>lightbox-controls-color="green"</code> and the lightbox controls turn green while fullscreen stays red.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 					<table class="jzsa-settings-table jzsa-settings-table--params">
 						<thead>
 							<tr>
@@ -430,13 +430,18 @@
 							</tr>
 							<tr>
 								<td><code>lightbox-image-fit</code></td>
-								<td><?php esc_html_e( 'How photos fit the box in the lightbox: "contain" (default, show the whole image, no cropping) or "cover" (fill the box and crop the edges). Paired with fullscreen-image-fit.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'How photos fit the box in the lightbox: "contain" (default, show the whole image, no cropping) or "cover" (fill the box and crop the edges). Overrides viewer-image-fit for lightbox only; the fullscreen mode is not affected.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>contain</td>
 							</tr>
 							<tr>
 								<td><code>lightbox-background-color</code></td>
-								<td><?php echo wp_kses_post( __( 'Colour of the dimmed backdrop behind the lightbox box. Accepts a hex code, <code>transparent</code>, or an <code>rgba()</code>/<code>hsla()</code> value (semi-transparent is typical so the page shows through). Unique to lightbox; no fullscreen counterpart.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
-								<td>rgba(0,0,0,0.92)</td>
+								<td><?php echo wp_kses_post( __( 'Background colour of the lightbox box itself (the area behind the photos). Accepts a hex code, <code>transparent</code>, or an <code>rgba()</code>/<code>hsla()</code> value. Also covered by <code>viewer-background-color</code> as a shared baseline.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+								<td>#000</td>
+							</tr>
+							<tr>
+								<td><code>lightbox-backdrop-color</code></td>
+								<td><?php echo wp_kses_post( __( 'Colour of the dimmed overlay behind the lightbox box. Accepts a hex code, <code>transparent</code>, or an <code>rgba()</code>/<code>hsla()</code> value (semi-transparent is typical so the page shows through). Unique to lightbox; no fullscreen counterpart.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+								<td>rgba(0,0,0,0.85)</td>
 							</tr>
 							<tr>
 								<td><code>lightbox-corner-radius</code></td>
@@ -445,73 +450,73 @@
 							</tr>
 							<tr>
 								<td><code>lightbox-controls-color</code></td>
-								<td><?php echo wp_kses_post( __( 'Color of navigation arrows, buttons, and icons while the lightbox is open. Paired with <code>fullscreen-controls-color</code>: set either one and the other inherits it automatically.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+								<td><?php echo wp_kses_post( __( 'Color of navigation arrows, buttons, and icons while the lightbox is open. Overrides <code>viewer-controls-color</code> for lightbox only; the fullscreen mode is not affected.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 								<td><em>inherits controls-color</em></td>
 							</tr>
 							<tr>
 								<td><code>lightbox-video-controls-color</code></td>
-								<td><?php echo wp_kses_post( __( 'Color of the video player controls while the lightbox is open. Paired with <code>fullscreen-video-controls-color</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+								<td><?php echo wp_kses_post( __( 'Color of the video player controls while the lightbox is open. Overrides <code>viewer-video-controls-color</code> for lightbox only.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 								<td><em>inherits video-controls-color</em></td>
 							</tr>
 							<tr>
 								<td><code>lightbox-video-controls-autohide</code></td>
-								<td><?php echo wp_kses_post( __( 'Whether video controls auto-hide while the lightbox is open: "true" or "false". Paired with <code>fullscreen-video-controls-autohide</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+								<td><?php echo wp_kses_post( __( 'Whether video controls auto-hide while the lightbox is open: "true" or "false". Overrides <code>viewer-video-controls-autohide</code> for lightbox only.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 								<td><em>inherits video-controls-autohide</em></td>
 							</tr>
 							<tr>
 								<td><code>lightbox-show-navigation</code></td>
-								<td><?php echo wp_kses_post( __( 'Whether the previous/next arrows appear while the lightbox is open: "true" or "false". Paired with <code>fullscreen-show-navigation</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+								<td><?php echo wp_kses_post( __( 'Whether the previous/next arrows appear while the lightbox is open: "true" or "false". Overrides <code>viewer-show-navigation</code> for lightbox only.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 								<td><em>inherits show-navigation</em></td>
 							</tr>
 							<tr>
 								<td><code>lightbox-show-download-button</code></td>
-								<td><?php echo wp_kses_post( __( 'Whether the download button appears while the lightbox is open: "true" or "false". Paired with <code>fullscreen-show-download-button</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+								<td><?php echo wp_kses_post( __( 'Whether the download button appears while the lightbox is open: "true" or "false". Overrides <code>viewer-show-download-button</code> for lightbox only.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 								<td><em>inherits show-download-button</em></td>
 							</tr>
 							<tr>
 								<td><code>lightbox-show-link-button</code></td>
-								<td><?php echo wp_kses_post( __( 'Whether the open-in-Google-Photos link button appears while the lightbox is open: "true" or "false". Paired with <code>fullscreen-show-link-button</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+								<td><?php echo wp_kses_post( __( 'Whether the open-in-Google-Photos link button appears while the lightbox is open: "true" or "false". Overrides <code>viewer-show-link-button</code> for lightbox only.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 								<td><em>inherits show-link-button</em></td>
 							</tr>
 							<tr>
 								<td><code>lightbox-slideshow</code></td>
-								<td><?php echo wp_kses_post( __( 'Slideshow behavior while the lightbox is open: "disabled" (default), "auto" (start automatically), or "manual". Paired with <code>fullscreen-slideshow</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+								<td><?php echo wp_kses_post( __( 'Slideshow behavior while the lightbox is open: "disabled" (default), "auto" (start automatically), or "manual". Overrides <code>viewer-slideshow</code> for lightbox only; the fullscreen slideshow is not affected.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 								<td>disabled</td>
 							</tr>
 							<tr>
 								<td><code>lightbox-slideshow-delay</code></td>
-								<td><?php echo wp_kses_post( __( 'Seconds between auto-slides while the lightbox is open. Accepts a single value or a "min-max" range. Paired with <code>fullscreen-slideshow-delay</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+								<td><?php echo wp_kses_post( __( 'Seconds between auto-slides while the lightbox is open. Accepts a single value or a "min-max" range. Overrides <code>viewer-slideshow-delay</code> for lightbox only.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 								<td>5</td>
 							</tr>
 							<tr>
 								<td><code>lightbox-slideshow-autoresume</code></td>
-								<td><?php echo wp_kses_post( __( 'Seconds of inactivity before the slideshow auto-resumes after a user interaction inside the lightbox, or "disabled". Paired with <code>fullscreen-slideshow-autoresume</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+								<td><?php echo wp_kses_post( __( 'Seconds of inactivity before the slideshow auto-resumes after a user interaction inside the lightbox, or "disabled". Overrides <code>viewer-slideshow-autoresume</code> for lightbox only.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 								<td><em>inherits slideshow-autoresume</em></td>
 							</tr>
 							<tr>
 								<td><code>lightbox-source-width</code></td>
-								<td><?php echo wp_kses_post( __( 'Width in pixels of photos fetched from Google for display in the lightbox. Directly affects photo quality: higher values load sharper images. Paired with <code>fullscreen-source-width</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+								<td><?php echo wp_kses_post( __( 'Width in pixels of photos fetched from Google for display in the lightbox. Directly affects photo quality: higher values load sharper images. Overrides <code>viewer-source-width</code> for lightbox only.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 								<td>1920</td>
 							</tr>
 							<tr>
 								<td><code>lightbox-source-height</code></td>
-								<td><?php echo wp_kses_post( __( 'Height in pixels of photos fetched from Google for display in the lightbox. Directly affects photo quality: higher values load sharper images. Paired with <code>fullscreen-source-height</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+								<td><?php echo wp_kses_post( __( 'Height in pixels of photos fetched from Google for display in the lightbox. Directly affects photo quality: higher values load sharper images. Overrides <code>viewer-source-height</code> for lightbox only.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 								<td>1440</td>
 							</tr>
-							<tr><td><code>lightbox-info-bottom</code></td><td><?php esc_html_e( 'Lightbox-only override for viewer-info-bottom. When omitted, existing fullscreen info behavior is preserved.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-info-bottom', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
-							<tr><td><code>lightbox-info-top</code></td><td><?php esc_html_e( 'Lightbox-only override for viewer-info-top.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-info-top', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
-							<tr><td><code>lightbox-info-top-secondary</code></td><td><?php esc_html_e( 'Lightbox-only override for viewer-info-top-secondary.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-info-top-secondary', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-info-bottom</code></td><td><?php esc_html_e( 'Lightbox-only override for viewer-info-bottom. When omitted, the viewer-info-bottom baseline applies.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits viewer-info-bottom baseline', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-info-top</code></td><td><?php esc_html_e( 'Lightbox-only override for viewer-info-top.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits viewer-info-top baseline', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-info-top-secondary</code></td><td><?php esc_html_e( 'Lightbox-only override for viewer-info-top-secondary.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits viewer-info-top-secondary baseline', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 							<tr><td><code>lightbox-info-font-size</code></td><td><?php esc_html_e( 'Lightbox-only override for viewer-info-font-size.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits info-font-size', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 							<tr><td><code>lightbox-info-font-family</code></td><td><?php esc_html_e( 'Lightbox-only override for viewer-info-font-family.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits info-font-family', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 							<tr><td><code>lightbox-info-font-color</code></td><td><?php esc_html_e( 'Lightbox-only override for viewer-info-font-color.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits info-font-color', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
-							<tr><td><code>lightbox-mosaic</code></td><td><?php esc_html_e( 'Lightbox-only override for viewer-mosaic.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-mosaic for legacy compatibility', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
-							<tr><td><code>lightbox-mosaic-position</code></td><td><?php esc_html_e( 'Lightbox-only mosaic position override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-mosaic-position', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
-							<tr><td><code>lightbox-mosaic-layout</code></td><td><?php esc_html_e( 'Lightbox-only mosaic layout override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-mosaic-layout', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
-							<tr><td><code>lightbox-mosaic-count</code></td><td><?php esc_html_e( 'Lightbox-only mosaic thumbnail count override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-mosaic-count', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
-							<tr><td><code>lightbox-mosaic-gap</code></td><td><?php esc_html_e( 'Lightbox-only mosaic gap override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-mosaic-gap', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
-							<tr><td><code>lightbox-mosaic-opacity</code></td><td><?php esc_html_e( 'Lightbox-only mosaic opacity override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-mosaic-opacity', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
-							<tr><td><code>lightbox-mosaic-background</code></td><td><?php esc_html_e( 'Lightbox-only mosaic background override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-mosaic-background', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
-							<tr><td><code>lightbox-mosaic-corner-radius</code></td><td><?php esc_html_e( 'Lightbox-only mosaic corner radius override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits fullscreen-mosaic-corner-radius', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-mosaic</code></td><td><?php esc_html_e( 'Lightbox-only override for viewer-mosaic.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits viewer-mosaic baseline', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-mosaic-position</code></td><td><?php esc_html_e( 'Lightbox-only mosaic position override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits viewer-mosaic-position baseline', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-mosaic-layout</code></td><td><?php esc_html_e( 'Lightbox-only mosaic layout override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits viewer-mosaic-layout baseline', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-mosaic-count</code></td><td><?php esc_html_e( 'Lightbox-only mosaic thumbnail count override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits viewer-mosaic-count baseline', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-mosaic-gap</code></td><td><?php esc_html_e( 'Lightbox-only mosaic gap override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits viewer-mosaic-gap baseline', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-mosaic-opacity</code></td><td><?php esc_html_e( 'Lightbox-only mosaic opacity override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits viewer-mosaic-opacity baseline', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-mosaic-background</code></td><td><?php esc_html_e( 'Lightbox-only mosaic background override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits viewer-mosaic-background baseline', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>lightbox-mosaic-corner-radius</code></td><td><?php esc_html_e( 'Lightbox-only mosaic corner radius override.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits viewer-mosaic-corner-radius baseline', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 						</tbody>
 					</table>
 
