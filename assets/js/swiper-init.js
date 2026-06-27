@@ -3618,7 +3618,8 @@
 
         // Start fullscreen autoplay after a short delay to ensure fullscreen is active
         setTimeout(function() {
-				if (!params.slideshowPausedByInteraction && params.fullscreenSlideshow === 'auto' && swiper.autoplay) {
+				if (params.fullscreenSlideshow === 'auto' && swiper.autoplay) {
+					params.slideshowPausedByInteraction = false;
 					swiper.autoplay.start();
 					jzsaDebug('▶️  Fullscreen autoplay started immediately (delay: ' + params.fullscreenSlideshowDelay + 's)');
 				}
@@ -3643,7 +3644,8 @@
                     swiper.autoplay.delay = newDelay;
                 }
 
-					if (!params.slideshowPausedByInteraction && params.fullscreenSlideshow === 'auto') {
+					if (params.fullscreenSlideshow === 'auto') {
+						params.slideshowPausedByInteraction = false;
 						swiper.autoplay.start();
 						jzsaDebug('▶️  Fullscreen autoplay started via fallback (delay: ' + params.fullscreenSlideshowDelay + 's)');
 					}
@@ -3735,8 +3737,11 @@
 					jzsaDebug('🔍 swiper.autoplay.delay is now:', swiper.autoplay ? swiper.autoplay.delay : 'N/A');
 				}
 
-	                // Start fullscreen autoplay only in 'auto' mode
-					if (!params.slideshowPausedByInteraction && params.fullscreenSlideshow === 'auto') {
+	                // Start fullscreen autoplay in 'auto' mode on entry, even if a
+	                // previous inline/lightbox interaction left a stale pause flag.
+					if (params.fullscreenSlideshow === 'auto') {
+						params.slideshowPausedByInteraction = false;
+						clearCountdownRing($(containerElement));
 						swiper.autoplay.start();
 						jzsaDebug('▶️  Fullscreen autoplay started (delay: ' + params.fullscreenSlideshowDelay + 's' + logPrefix + ')');
 					}

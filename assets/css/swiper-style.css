@@ -233,6 +233,19 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     max-height: 100%;
     margin: auto;
 }
+
+/* In viewer modes, the album box owns the background. Keep inner Swiper
+   layers transparent so rgba backgrounds do not stack on top of themselves. */
+.jzsa-album.jzsa-is-fullscreen .swiper,
+.jzsa-album.jzsa-is-fullscreen .swiper-wrapper,
+.jzsa-album.jzsa-is-fullscreen .swiper-slide,
+.jzsa-album.jzsa-is-fullscreen .swiper-zoom-container,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-wrapper,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-slide,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-zoom-container {
+    background-color: transparent;
+}
 .jzsa-album:-webkit-full-screen[data-has-fullscreen-display-limits="true"] .swiper-zoom-container {
     width: min(100%, var(--jzsa-fullscreen-display-max-width, 100%));
     height: min(100%, var(--jzsa-fullscreen-display-max-height, 100%));

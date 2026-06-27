@@ -1324,12 +1324,12 @@ class JZSA_Admin_Pages {
 
 						<div class="jzsa-sample-card">
 							<div class="jzsa-sample-card-header">
-								<h3><?php echo 'Sample 34: ' . esc_html__( 'Lightbox Style - Rounded Box and Backdrop', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-								<span class="jzsa-sample-card-hint"><?php esc_html_e( 'Use the button to open Lightbox', 'janzeman-shared-albums-for-google-photos' ); ?></span>
+								<h3><?php echo 'Sample 34: ' . esc_html__( 'Viewer Colors - Background and Backdrop', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+								<span class="jzsa-sample-card-hint"><?php esc_html_e( 'Compare viewer background with Lightbox backdrop', 'janzeman-shared-albums-for-google-photos' ); ?></span>
 							</div>
-							<p><?php esc_html_e( 'Once the entry behaviour is clear, Lightbox can be styled separately with its own corner radius, size, and backdrop color.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'Viewer colors split into two surfaces. The shared viewer-background-color setting controls the box behind the photo in both Lightbox and Fullscreen. The lightbox-backdrop-color setting controls only the dimmed page overlay behind the Lightbox box.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button" lightbox-corner-radius="16" lightbox-max-width="1100" lightbox-max-height="750" lightbox-backdrop-color="rgba(0,128,0,0.7)"]';
+							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" width="600" corner-radius="16" image-fit="contain" background-color="rgba(128,0,64,0.7)" viewer-toggle="lightbox-button, fullscreen-button" lightbox-corner-radius="16" viewer-max-width="600" viewer-max-height="400" viewer-background-color="rgba(128,0,64,0.7)" lightbox-backdrop-color="rgba(0,128,64,0.7)"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
