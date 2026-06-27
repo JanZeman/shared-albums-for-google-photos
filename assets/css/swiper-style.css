@@ -964,6 +964,34 @@ html.jzsa-lightbox-open body {
     object-fit: cover;
 }
 
+/* When native fullscreen is entered from within the lightbox the element carries
+   both .jzsa-lightbox-active and :fullscreen simultaneously. The lightbox-image-fit
+   rules above and the fullscreen-image-fit rules at the top of this section share
+   specificity 0-4-1, so source order decides: the lightbox rules win because they
+   appear later. These combined-state rules add one extra class (0-5-1) so
+   fullscreen-image-fit always wins regardless of entry path.
+   Each vendor prefix must be in its own rule. */
+.jzsa-album.jzsa-lightbox-active:fullscreen[data-fullscreen-image-fit="contain"] .swiper-slide img,
+.jzsa-album.jzsa-lightbox-active:fullscreen[data-fullscreen-image-fit="contain"] .swiper-zoom-container img {
+    object-fit: contain;
+}
+.jzsa-album.jzsa-lightbox-active:-webkit-full-screen[data-fullscreen-image-fit="contain"] .swiper-slide img,
+.jzsa-album.jzsa-lightbox-active:-webkit-full-screen[data-fullscreen-image-fit="contain"] .swiper-zoom-container img {
+    object-fit: contain;
+}
+.jzsa-album.jzsa-lightbox-active:fullscreen[data-fullscreen-image-fit="cover"] .swiper-slide img,
+.jzsa-album.jzsa-lightbox-active:fullscreen[data-fullscreen-image-fit="cover"] .swiper-zoom-container img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+.jzsa-album.jzsa-lightbox-active:-webkit-full-screen[data-fullscreen-image-fit="cover"] .swiper-slide img,
+.jzsa-album.jzsa-lightbox-active:-webkit-full-screen[data-fullscreen-image-fit="cover"] .swiper-zoom-container img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+
 
 /* Fullscreen button inside the lightbox: anchored to the top-right corner
    (right: 0), scaled and aligned to match the close button beside it. */

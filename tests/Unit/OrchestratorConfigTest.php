@@ -644,25 +644,52 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertSame( '60', $valid );
     }
 
-    public function test_parse_fullscreen_image_fit_and_lightbox_image_fit_bidirectional_fallback(): void {
-        $cover    = $this->invoke( 'parse_fullscreen_image_fit', array( 'fullscreen-image-fit' => 'cover' ) );
-        $fallback = $this->invoke( 'parse_fullscreen_image_fit', array( 'lightbox-image-fit' => 'cover' ) );
-        $invalid  = $this->invoke( 'parse_fullscreen_image_fit', array( 'fullscreen-image-fit' => 'stretch' ) );
-        $absent   = $this->invoke( 'parse_fullscreen_image_fit', array() );
+    public function test_image_fit_parsers_only_read_their_own_key(): void {
+        // Each parser reads only its own key. No sideways inheritance between modes.
+        $fs_cover   = $this->invoke( 'parse_fullscreen_image_fit', array( 'fullscreen-image-fit' => 'cover' ) );
+        $fs_no_side = $this->invoke( 'parse_fullscreen_image_fit', array( 'lightbox-image-fit' => 'cover' ) );
+        $fs_invalid = $this->invoke( 'parse_fullscreen_image_fit', array( 'fullscreen-image-fit' => 'stretch' ) );
+        $fs_absent  = $this->invoke( 'parse_fullscreen_image_fit', array() );
 
-        $lbox_cover    = $this->invoke( 'parse_lightbox_image_fit', array( 'lightbox-image-fit' => 'cover' ) );
-        $lbox_fallback = $this->invoke( 'parse_lightbox_image_fit', array( 'fullscreen-image-fit' => 'cover' ) );
-        $lbox_invalid  = $this->invoke( 'parse_lightbox_image_fit', array( 'lightbox-image-fit' => 'stretch' ) );
-        $lbox_absent   = $this->invoke( 'parse_lightbox_image_fit', array() );
+        $lb_cover   = $this->invoke( 'parse_lightbox_image_fit', array( 'lightbox-image-fit' => 'cover' ) );
+        $lb_no_side = $this->invoke( 'parse_lightbox_image_fit', array( 'fullscreen-image-fit' => 'cover' ) );
+        $lb_invalid = $this->invoke( 'parse_lightbox_image_fit', array( 'lightbox-image-fit' => 'stretch' ) );
+        $lb_absent  = $this->invoke( 'parse_lightbox_image_fit', array() );
 
-        $this->assertSame( 'cover', $cover );
-        $this->assertSame( 'cover', $fallback );
-        $this->assertSame( 'contain', $invalid );
-        $this->assertSame( 'contain', $absent );
-        $this->assertSame( 'cover', $lbox_cover );
-        $this->assertSame( 'cover', $lbox_fallback );
-        $this->assertSame( 'contain', $lbox_invalid );
-        $this->assertSame( 'contain', $lbox_absent );
+        $this->assertSame( 'cover', $fs_cover );
+        $this->assertSame( 'contain', $fs_no_side, 'lightbox-image-fit must not bleed into fullscreen' );
+        $this->assertSame( 'contain', $fs_invalid );
+        $this->assertSame( 'contain', $fs_absent );
+
+        $this->assertSame( 'cover', $lb_cover );
+        $this->assertSame( 'contain', $lb_no_side, 'fullscreen-image-fit must not bleed into lightbox' );
+        $this->assertSame( 'contain', $lb_invalid );
+        $this->assertSame( 'contain', $lb_absent );
+    }
+
+    public function test_fullscreen_image_fit_cover_does_not_affect_lightbox(): void {
+        $config = $this->config( array( 'fullscreen-image-fit' => 'cover' ) );
+
+        $this->assertSame( 'cover', $config['fullscreen-image-fit'] );
+        $this->assertSame( 'contain', $config['lightbox-image-fit'], 'lightbox must not inherit fullscreen-image-fit' );
+    }
+
+    public function test_lightbox_image_fit_cover_does_not_affect_fullscreen(): void {
+        $config = $this->config( array( 'lightbox-image-fit' => 'cover' ) );
+
+        $this->assertSame( 'cover', $config['lightbox-image-fit'] );
+        $this->assertSame( 'contain', $config['fullscreen-image-fit'], 'fullscreen must not inherit lightbox-image-fit' );
+    }
+
+    public function test_viewer_image_fit_propagates_and_mode_override_stays_isolated(): void {
+        // viewer-image-fit sets the shared baseline; a concrete mode key overrides only that mode.
+        $config = $this->config( array(
+            'viewer-image-fit'    => 'cover',
+            'fullscreen-image-fit' => 'contain',
+        ) );
+
+        $this->assertSame( 'contain', $config['fullscreen-image-fit'], 'fullscreen-image-fit overrides viewer baseline' );
+        $this->assertSame( 'cover', $config['lightbox-image-fit'], 'lightbox must not see the fullscreen override' );
     }
 
     public function test_parse_optional_bool_returns_null_when_absent_and_correct_bool_when_present(): void {

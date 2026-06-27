@@ -1,11 +1,26 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page, type Locator } from '@playwright/test';
 
+// viewer-fixture page layout (three shortcodes in order):
+//   #0  slider  viewer-toggle="lightbox-button, fullscreen-button"  viewer-image-fit="contain"  (all viewer-* shared)
+//   #1  slider  viewer-toggle="lightbox-button, fullscreen-button"  concrete lightbox/fullscreen overrides
+//   #2  slider  viewer-toggle="lightbox-button, fullscreen-button"  fullscreen-image-fit="cover"  (isolation test)
 const PAGE_URL = '/?pagename=viewer-fixture';
+const SLIDER_FULLSCREEN_BUTTON = '.swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn)';
+const SLIDER_LIGHTBOX_BUTTON = '.swiper-button-lightbox:not(.jzsa-gallery-thumb-fs-btn)';
+
+const backdrop = (page: Page) => page.locator('.jzsa-lightbox-backdrop');
+
+async function waitForAlbum(page: Page, index: number): Promise<Locator> {
+    const album = page.locator('.jzsa-album').nth(index);
+    await album.scrollIntoViewIfNeeded();
+    await expect(album).not.toHaveClass(/jzsa-loader-pending/, { timeout: 20_000 });
+    return album;
+}
 
 test.describe('Viewer shared settings', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto(PAGE_URL);
-        await expect(page.locator('.jzsa-album')).toHaveCount(2);
+        await expect(page.locator('.jzsa-album')).toHaveCount(3);
     });
 
     test('shared settings resolve to both lightbox and fullscreen attributes', async ({ page }) => {
@@ -59,5 +74,96 @@ test.describe('Viewer shared settings', () => {
         await expect(album).toHaveAttribute('data-fullscreen-info-top', 'Fullscreen only');
         await expect(album).toHaveAttribute('data-lightbox-mosaic', 'false');
         await expect(album).toHaveAttribute('data-fullscreen-mosaic', 'true');
+    });
+});
+
+// Invariant: fullscreen-image-fit controls the fullscreen display regardless of how
+// fullscreen is entered. Lightbox-image-fit must never bleed into fullscreen and
+// fullscreen-image-fit must never bleed into lightbox.
+test.describe('Viewer mode isolation - image-fit entry-path invariant', () => {
+    test.beforeEach(async ({ page }) => {
+        await page.goto(PAGE_URL);
+    });
+
+    test('album index 2 has fullscreen-image-fit cover and lightbox-image-fit contain', async ({ page }) => {
+        const album = await waitForAlbum(page, 2);
+        await expect(album).toHaveAttribute('data-fullscreen-image-fit', 'cover');
+        await expect(album).toHaveAttribute('data-lightbox-image-fit', 'contain');
+    });
+
+    // Verify the CSS specificity fix is present. The combined .jzsa-lightbox-active:fullscreen
+    // selector must exist in the stylesheet so fullscreen-image-fit wins over lightbox-image-fit
+    // when both states are active simultaneously. @cross-browser so it runs in Firefox and WebKit.
+    test('CSS contains higher-specificity rules for the lightbox-active+fullscreen combined state @cross-browser', async ({ page }) => {
+        const hasCombinedRule = await page.evaluate(() => {
+            return Array.from(document.styleSheets).some((sheet) => {
+                let rules: CSSRuleList;
+                try {
+                    rules = sheet.cssRules;
+                } catch {
+                    return false;
+                }
+                return Array.from(rules).some((rule) => {
+                    if (!(rule instanceof CSSStyleRule)) return false;
+                    const sel = rule.selectorText;
+                    return (
+                        sel.includes('jzsa-lightbox-active') &&
+                        (sel.includes(':fullscreen') || sel.includes(':-webkit-full-screen')) &&
+                        sel.includes('data-fullscreen-image-fit')
+                    );
+                });
+            });
+        });
+        expect(hasCombinedRule).toBe(true);
+    });
+
+    test('fullscreen entered directly shows fullscreen-image-fit cover', async ({ page }) => {
+        const album = await waitForAlbum(page, 2);
+        await album.locator(SLIDER_FULLSCREEN_BUTTON).click({ force: true });
+        await expect.poll(() => page.evaluate(() => !!document.fullscreenElement), { timeout: 10_000 }).toBe(true);
+
+        const fit = await page.evaluate(() => {
+            const fs = document.fullscreenElement;
+            if (!fs) return null;
+            const img = fs.querySelector<HTMLImageElement>('.swiper-slide-active img');
+            return img ? getComputedStyle(img).objectFit : null;
+        });
+        expect(fit).toBe('cover');
+
+        await page.keyboard.press('Escape');
+        await expect.poll(() => page.evaluate(() => !!document.fullscreenElement), { timeout: 10_000 }).toBe(false);
+    });
+
+    // This is the regression test for Sample 33: fullscreen entered via the lightbox must
+    // apply fullscreen-image-fit, not lightbox-image-fit.
+    test('fullscreen entered via lightbox shows fullscreen-image-fit cover, not lightbox-image-fit contain', async ({ page }) => {
+        const album = await waitForAlbum(page, 2);
+
+        // Open lightbox first.
+        await album.locator(SLIDER_LIGHTBOX_BUTTON).click({ force: true });
+        await expect(backdrop(page)).toBeVisible();
+
+        // Click the fullscreen button inside the lightbox. The album element moves
+        // into the backdrop when lightbox opens, so look for the button there.
+        await backdrop(page).locator(SLIDER_FULLSCREEN_BUTTON).click({ force: true });
+        await expect.poll(() => page.evaluate(() => !!document.fullscreenElement), { timeout: 10_000 }).toBe(true);
+
+        // object-fit must be cover (fullscreen-image-fit) not contain (lightbox-image-fit).
+        const fit = await page.evaluate(() => {
+            const fs = document.fullscreenElement;
+            if (!fs) return null;
+            const img = fs.querySelector<HTMLImageElement>('.swiper-slide-active img');
+            return img ? getComputedStyle(img).objectFit : null;
+        });
+        expect(fit).toBe('cover');
+
+        // Escape exits native fullscreen and returns to lightbox.
+        await page.keyboard.press('Escape');
+        await expect.poll(() => page.evaluate(() => !!document.fullscreenElement), { timeout: 10_000 }).toBe(false);
+        await expect(backdrop(page)).toBeVisible();
+
+        // Second Escape closes the lightbox.
+        await page.keyboard.press('Escape');
+        await expect(backdrop(page)).not.toBeVisible();
     });
 });
