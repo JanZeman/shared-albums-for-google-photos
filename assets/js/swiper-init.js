@@ -5829,9 +5829,22 @@
         if (mosaic) {
             var $mosaicContainer = $('#' + galleryId + '-mosaic');
             if ($mosaicContainer.length) {
+                var $mosaicViewport = $mosaicContainer.children('.jzsa-mosaic-viewport');
+                if (!$mosaicViewport.length) {
+                    var $existingMosaicWrapper = $mosaicContainer.children('.swiper-wrapper').first();
+                    $mosaicViewport = $('<div class="jzsa-mosaic-viewport swiper"></div>');
+                    if ($existingMosaicWrapper.length) {
+                        $existingMosaicWrapper.wrap($mosaicViewport);
+                        $mosaicViewport = $mosaicContainer.children('.jzsa-mosaic-viewport').first();
+                    } else {
+                        $mosaicViewport.append('<div class="swiper-wrapper"></div>');
+                        $mosaicContainer.append($mosaicViewport);
+                    }
+                }
                 var isVerticalMosaic = (mosaicPosition === 'left' || mosaicPosition === 'right');
                 if (isVerticalMosaic) {
                     $mosaicContainer.addClass('jzsa-mosaic-vertical');
+                    $mosaicViewport.addClass('jzsa-mosaic-vertical');
                 }
                 // Build thumb slides
                 var thumbSlidesHtml = '';
@@ -5842,7 +5855,7 @@
                         '<img src="' + thumbUrl + '" alt="Thumb" loading="lazy" referrerpolicy="no-referrer" />' +
                         '</span></div>';
                 });
-                $mosaicContainer.find('.swiper-wrapper').html(thumbSlidesHtml);
+                $mosaicViewport.find('.swiper-wrapper').html(thumbSlidesHtml);
 
                 var mosaicGap = config.mosaicGap;
                 var mosaicThumbCount = allPhotos.length;
@@ -5851,9 +5864,10 @@
                     $mosaicContainer[0].style.setProperty('--jzsa-mosaic-background', config.mosaicBackground);
                 }
                 var MOSAIC_TARGET_THUMB_SIZE = 100; // px – ideal thumb size for auto-count
+                var MOSAIC_ARROW_LANE = 36;
+                var mosaicHasArrows = false;
 
-                // Calculate how many thumbs fit in the available space.
-                function computeAutoMosaicCount() {
+                function getMosaicAvailableLength(includeArrowLanes) {
                     var $wrapper = $mosaicContainer.parent();
                     var mobile = window.innerWidth <= 480;
                     var availableLength;
@@ -5866,13 +5880,27 @@
                     } else {
                         availableLength = $wrapper.width() || 400;
                     }
+                    if (includeArrowLanes && !mobile) {
+                        availableLength = Math.max(1, availableLength - (MOSAIC_ARROW_LANE * 2));
+                    }
+                    return availableLength;
+                }
+
+                // Calculate how many thumbs fit in the available space.
+                function computeAutoMosaicCount(includeArrowLanes) {
+                    var availableLength = getMosaicAvailableLength(includeArrowLanes);
                     // How many thumbs of MOSAIC_TARGET_THUMB_SIZE fit?
                     var fitCount = Math.floor((availableLength + mosaicGap) / (MOSAIC_TARGET_THUMB_SIZE + mosaicGap));
                     return Math.max(1, fitCount);
                 }
 
                 function getEffectiveMosaicCount() {
-                    var rawCount = mosaicCount > 0 ? mosaicCount : computeAutoMosaicCount();
+                    var mobile = window.innerWidth <= 480;
+                    var explicitCount = mosaicCount > 0;
+                    var rawFullCount = explicitCount ? mosaicCount : computeAutoMosaicCount(false);
+                    var fullCount = clampMosaicVisibleCount(rawFullCount, mosaicThumbCount);
+                    mosaicHasArrows = !mobile && mosaicThumbCount > fullCount;
+                    var rawCount = explicitCount ? mosaicCount : computeAutoMosaicCount(mosaicHasArrows);
                     return clampMosaicVisibleCount(rawCount, mosaicThumbCount);
                 }
 
@@ -5905,20 +5933,17 @@
                     var mobile = window.innerWidth <= 480;
                     if (mobile) {
                         $mosaicContainer.css({ width: '', height: '' });
+                        $mosaicContainer.removeClass('jzsa-mosaic-has-arrows');
+                        $mosaicViewport.removeClass('jzsa-mosaic-has-arrows');
                         return;
                     }
-                    var $wrapper = $mosaicContainer.parent();
                     var count = getEffectiveMosaicCount();
-                    var availableLength;
-                    if (mosaicPosition === 'left' || mosaicPosition === 'right') {
-                        var wrapperH = $wrapper.height();
-                        var albumH = $container.height();
-                        availableLength = (wrapperH > 0 ? wrapperH : albumH) || 300;
-                    } else {
-                        availableLength = $wrapper.width() || 400;
-                    }
+                    var availableLength = getMosaicAvailableLength(mosaicHasArrows);
                     var thumbSize = (availableLength - (mosaicGap * (count - 1))) / count;
                     thumbSize = Math.max(1, Math.floor(thumbSize));
+                    $mosaicContainer.toggleClass('jzsa-mosaic-has-arrows', mosaicHasArrows);
+                    $mosaicViewport.toggleClass('jzsa-mosaic-has-arrows', mosaicHasArrows);
+                    $mosaicContainer[0].style.setProperty('--jzsa-mosaic-arrow-lane', MOSAIC_ARROW_LANE + 'px');
                     if (mosaicPosition === 'left' || mosaicPosition === 'right') {
                         $mosaicContainer.css({ width: thumbSize + 'px', height: '' });
                     } else {
@@ -5932,7 +5957,7 @@
                     }
                 }
 
-                mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', buildMosaicConfig(initialSlide));
+                mosaicSwiper = new Swiper($mosaicViewport[0], buildMosaicConfig(initialSlide));
                 resizeMosaic();
                 mosaicPageSize = getEffectiveMosaicCount();
 
@@ -5973,7 +5998,7 @@
                     if (mosaicSwiper.params.direction !== newCfg.direction) {
                         var currentSlide = mosaicSwiper.activeIndex;
                         mosaicSwiper.destroy(true, true);
-                        mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', buildMosaicConfig(currentSlide));
+                        mosaicSwiper = new Swiper($mosaicViewport[0], buildMosaicConfig(currentSlide));
                     }
                 });
             }

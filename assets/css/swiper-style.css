@@ -3105,6 +3105,24 @@ html.jzsa-lightbox-open body {
     background: var(--jzsa-mosaic-background, transparent);
 }
 
+.jzsa-mosaic .jzsa-mosaic-viewport {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.jzsa-gallery-wrapper.jzsa-mosaic-top .jzsa-mosaic.jzsa-mosaic-has-arrows .jzsa-mosaic-viewport,
+.jzsa-gallery-wrapper.jzsa-mosaic-bottom .jzsa-mosaic.jzsa-mosaic-has-arrows .jzsa-mosaic-viewport {
+    left: var(--jzsa-mosaic-arrow-lane, 36px);
+    right: var(--jzsa-mosaic-arrow-lane, 36px);
+}
+
+.jzsa-gallery-wrapper.jzsa-mosaic-left .jzsa-mosaic.jzsa-mosaic-has-arrows .jzsa-mosaic-viewport,
+.jzsa-gallery-wrapper.jzsa-mosaic-right .jzsa-mosaic.jzsa-mosaic-has-arrows .jzsa-mosaic-viewport {
+    top: var(--jzsa-mosaic-arrow-lane, 36px);
+    bottom: var(--jzsa-mosaic-arrow-lane, 36px);
+}
+
 /* Thumbnail slides */
 .jzsa-mosaic .swiper-slide {
     cursor: pointer;
@@ -3455,6 +3473,10 @@ html.jzsa-lightbox-open body {
     --swiper-navigation-size: 16px;
 }
 
+.jzsa-mosaic:not(.jzsa-mosaic-has-arrows) .jzsa-mosaic-arrow {
+    display: none !important;
+}
+
 .jzsa-mosaic:hover .jzsa-mosaic-arrow {
     opacity: 1;
 }
@@ -3479,7 +3501,7 @@ html.jzsa-lightbox-open body {
 .jzsa-gallery-wrapper.jzsa-mosaic-top .jzsa-mosaic-arrow-prev,
 .jzsa-gallery-wrapper.jzsa-mosaic-bottom .jzsa-mosaic-arrow-prev {
     top: 0 !important; bottom: 0 !important; height: 100% !important;
-    left: -6px !important; right: auto !important; width: 36px !important;
+    left: 0 !important; right: auto !important; width: var(--jzsa-mosaic-arrow-lane, 36px) !important;
     margin: 0 !important;
     background: transparent !important;
     transform: none !important;
@@ -3491,7 +3513,7 @@ html.jzsa-lightbox-open body {
 .jzsa-gallery-wrapper.jzsa-mosaic-top .jzsa-mosaic-arrow-next,
 .jzsa-gallery-wrapper.jzsa-mosaic-bottom .jzsa-mosaic-arrow-next {
     top: 0 !important; bottom: 0 !important; height: 100% !important;
-    right: -6px !important; left: auto !important; width: 36px !important;
+    right: 0 !important; left: auto !important; width: var(--jzsa-mosaic-arrow-lane, 36px) !important;
     margin: 0 !important;
     background: transparent !important;
     transform: none !important;
@@ -3504,7 +3526,7 @@ html.jzsa-lightbox-open body {
 .jzsa-gallery-wrapper.jzsa-mosaic-left .jzsa-mosaic-arrow-prev,
 .jzsa-gallery-wrapper.jzsa-mosaic-right .jzsa-mosaic-arrow-prev {
     left: 0 !important; right: 0 !important; width: 100% !important;
-    top: 0 !important; bottom: auto !important; height: 36px !important;
+    top: 0 !important; bottom: auto !important; height: var(--jzsa-mosaic-arrow-lane, 36px) !important;
     margin: 0 !important;
     background: transparent !important;
     transform: none !important;
@@ -3516,13 +3538,17 @@ html.jzsa-lightbox-open body {
 .jzsa-gallery-wrapper.jzsa-mosaic-left .jzsa-mosaic-arrow-next,
 .jzsa-gallery-wrapper.jzsa-mosaic-right .jzsa-mosaic-arrow-next {
     left: 0 !important; right: 0 !important; width: 100% !important;
-    bottom: 0 !important; top: auto !important; height: 36px !important;
+    bottom: 0 !important; top: auto !important; height: var(--jzsa-mosaic-arrow-lane, 36px) !important;
     margin: 0 !important;
     background: transparent !important;
     transform: none !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+}
+
+.jzsa-gallery-wrapper .jzsa-mosaic:not(.jzsa-mosaic-has-arrows) .jzsa-mosaic-arrow {
+    display: none !important;
 }
 
 /* Rotate SVG icon for vertical rails */
