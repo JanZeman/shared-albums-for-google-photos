@@ -1040,14 +1040,14 @@ html.jzsa-lightbox-open body {
 /* The fullscreen button inside the lightbox follows the standard hide-until-hover
    behaviour: the lightbox album carries .jzsa-is-fullscreen, so the desktop
    reveal rules for .jzsa-is-fullscreen .swiper-button-fullscreen apply. */
-/* Hide the lightbox close button in native fullscreen — Esc (or the fullscreen
+/* Hide the lightbox close button in native fullscreen. Esc (or the fullscreen
    button) exits back to the lightbox; no need for a separate close affordance. */
 .jzsa-album.jzsa-lightbox-active:fullscreen > .jzsa-lightbox-close,
 .jzsa-album.jzsa-lightbox-active:-webkit-full-screen > .jzsa-lightbox-close {
     display: none;
 }
 
-/* Close button: mirrors the fullscreen button in fullscreen mode — top-right
+/* Close button: mirrors the fullscreen button in fullscreen mode. Top-right
    corner, transparent background, same size and hover behaviour. Hidden
    unless the album is in the lightbox. */
 .jzsa-album .jzsa-lightbox-close {
@@ -1363,7 +1363,7 @@ html.jzsa-lightbox-open body {
     pointer-events: none !important;
 }
 
-/* Slides are never text content — prevent selection in all modes to avoid
+/* Slides are never text content. Prevent selection in all modes to avoid
    the macOS blue-gray selection-highlight overlay on click/drag. */
 .jzsa-album .swiper-slide {
     -webkit-touch-callout: none;
@@ -1658,7 +1658,7 @@ html.jzsa-lightbox-open body {
     text-align: right;
 }
 
-/* Per-box overrides — come after global rules so same specificity wins by order */
+/* Per-box overrides. They come after global rules so same specificity wins by order. */
 .jzsa-album[data-info-top-text-align="left"] .jzsa-info-top { text-align: left; }
 .jzsa-album[data-info-top-text-align="center"] .jzsa-info-top { text-align: center; }
 .jzsa-album[data-info-top-text-align="right"] .jzsa-info-top { text-align: right; }
@@ -1733,7 +1733,7 @@ html.jzsa-lightbox-open body {
     max-width: var(--jzsa-info-top-max-width);
 }
 /* info-top-secondary: always clears the nav arrows (1 slot each side), but does not shrink
-   further when link/download buttons are active — those buttons are above it in the corners. */
+   further when link/download buttons are active because those buttons are above it in the corners. */
 .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .jzsa-info-stack-top .jzsa-info-top-secondary {
     max-width: calc(100% - 2 * var(--jzsa-controls-circle-size));
 }
@@ -3473,7 +3473,7 @@ html.jzsa-lightbox-open body {
     --swiper-navigation-size: 16px;
 }
 
-.jzsa-mosaic:not(.jzsa-mosaic-has-arrows) .jzsa-mosaic-arrow {
+.jzsa-gallery-wrapper .jzsa-mosaic:not(.jzsa-mosaic-has-arrows) .jzsa-mosaic-arrow {
     display: none !important;
 }
 

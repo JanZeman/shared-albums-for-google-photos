@@ -309,7 +309,10 @@
         if (!$btn.length) {
             $btn = $('<button class="jzsa-lightbox-close" type="button"></button>');
             var label = jzsaI18n('closeLightbox') || 'Close';
-            $btn.attr('aria-label', label);
+            $btn.attr({
+                'aria-label': label,
+                'title': label
+            });
             $btn.on('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();

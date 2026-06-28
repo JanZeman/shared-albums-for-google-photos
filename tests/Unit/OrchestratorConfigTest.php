@@ -219,7 +219,7 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertSame( 'Shared', $specific_hidden['fullscreen-info-top'] );
     }
 
-    public function test_paired_fullscreen_lightbox_display_options_inherit_both_directions(): void {
+    public function test_lightbox_and_fullscreen_display_options_do_not_inherit_sideways(): void {
         $from_fullscreen = $this->config(
             array(
                 'fullscreen-show-link-button'     => 'true',
@@ -230,11 +230,16 @@ class OrchestratorConfigTest extends TestCase {
             )
         );
 
-        $this->assertTrue( $from_fullscreen['lightbox-show-link-button'] );
-        $this->assertTrue( $from_fullscreen['lightbox-show-download-button'] );
-        $this->assertSame( '#112233', $from_fullscreen['lightbox-controls-color'] );
-        $this->assertSame( '#445566', $from_fullscreen['lightbox-video-controls-color'] );
-        $this->assertTrue( $from_fullscreen['lightbox-video-controls-autohide'] );
+        $this->assertTrue( $from_fullscreen['fullscreen-show-link-button'] );
+        $this->assertTrue( $from_fullscreen['fullscreen-show-download-button'] );
+        $this->assertSame( '#112233', $from_fullscreen['fullscreen-controls-color'] );
+        $this->assertSame( '#445566', $from_fullscreen['fullscreen-video-controls-color'] );
+        $this->assertTrue( $from_fullscreen['fullscreen-video-controls-autohide'] );
+        $this->assertFalse( $from_fullscreen['lightbox-show-link-button'] );
+        $this->assertFalse( $from_fullscreen['lightbox-show-download-button'] );
+        $this->assertSame( '#ffffff', $from_fullscreen['lightbox-controls-color'] );
+        $this->assertSame( '#00b2ff', $from_fullscreen['lightbox-video-controls-color'] );
+        $this->assertFalse( $from_fullscreen['lightbox-video-controls-autohide'] );
 
         $from_lightbox = $this->config(
             array(
@@ -243,8 +248,10 @@ class OrchestratorConfigTest extends TestCase {
             )
         );
 
-        $this->assertFalse( $from_lightbox['fullscreen-show-navigation'] );
-        $this->assertSame( '#abcdef', $from_lightbox['fullscreen-controls-color'] );
+        $this->assertFalse( $from_lightbox['lightbox-show-navigation'] );
+        $this->assertSame( '#abcdef', $from_lightbox['lightbox-controls-color'] );
+        $this->assertTrue( $from_lightbox['fullscreen-show-navigation'] );
+        $this->assertSame( '#ffffff', $from_lightbox['fullscreen-controls-color'] );
     }
 
     public function test_paired_values_keep_primary_when_both_are_set(): void {
@@ -259,7 +266,7 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertSame( '#222222', $config['lightbox-controls-color'] );
     }
 
-    public function test_lightbox_fullscreen_slideshow_pairing_uses_dedicated_defaults(): void {
+    public function test_lightbox_and_fullscreen_slideshow_use_dedicated_defaults(): void {
         $config = $this->config(
             array(
                 'slideshow'          => 'auto',
@@ -269,7 +276,7 @@ class OrchestratorConfigTest extends TestCase {
 
         $this->assertSame( 'auto', $config['slideshow'] );
         $this->assertSame( 'manual', $config['lightbox-slideshow'] );
-        $this->assertSame( 'manual', $config['fullscreen-slideshow'] );
+        $this->assertSame( 'disabled', $config['fullscreen-slideshow'] );
     }
 
     public function test_source_dimensions_reject_invalid_values(): void {

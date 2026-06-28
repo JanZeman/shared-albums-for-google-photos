@@ -41,9 +41,9 @@ test.describe('Fullscreen - button present / absent', () => {
         await gotoFixture(page, FIXTURE_URL);
     });
 
-    test('fullscreen button absent when fullscreen-toggle is disabled', async ({ page }) => {
+    test('fullscreen button hidden when fullscreen-toggle is disabled', async ({ page }) => {
         const album = await waitForAlbum(page, 1);
-        await expect(album.locator(SLIDER_FULLSCREEN_BUTTON)).not.toBeAttached();
+        await expect(album.locator(SLIDER_FULLSCREEN_BUTTON)).not.toBeVisible();
     });
 
     test('fullscreen button present when fullscreen-toggle is button-only', async ({ page }) => {

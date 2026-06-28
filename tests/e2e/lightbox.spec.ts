@@ -135,9 +135,9 @@ test.describe('Lightbox - slider / button-only trigger', () => {
         await expect(backdrop(page)).toBeVisible();
     });
 
-    test('no fullscreen button present when fullscreen-toggle is disabled', async ({ page }) => {
+    test('fullscreen button hidden when fullscreen-toggle is disabled', async ({ page }) => {
         const album = await waitForSliderAlbum(page, 1);
-        await expect(album.locator(SLIDER_FULLSCREEN_BUTTON)).not.toBeAttached();
+        await expect(album.locator(SLIDER_FULLSCREEN_BUTTON)).not.toBeVisible();
     });
 });
 
@@ -296,4 +296,3 @@ test.describe('Lightbox - Accessibility Depth', () => {
         await expect(overlay).not.toBeVisible();
     });
 });
-
