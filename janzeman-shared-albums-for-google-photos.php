@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/JanZeman/shared-albums-for-google-photos
  * Author URI: https://github.com/JanZeman
  * Description: Display publicly shared Google Photos albums with a modern Swiper-based gallery viewer. Not affiliated with or endorsed by Google LLC.
- * Version: 2.3.7
+ * Version: 2.4.0
  * Requires at least: 5.0
  * Requires PHP: 7.0
  * Author: Jan Zeman
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'JZSA_VERSION', '2.3.7' );
+define( 'JZSA_VERSION', '2.4.0' );
 
 // Community API URL. Local development can override this constant before the plugin loads:
 // define( 'JZSA_COMMUNITY_API_URL', 'http://localhost:3000' );
@@ -42,6 +42,8 @@ define( 'JZSA_PLUGIN_FILE', __FILE__ );
 define( 'JZSA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'JZSA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'JZSA_VERSION_OPTION', 'jzsa_plugin_version' );
+define( 'JZSA_VIEWER_MIGRATION_NOTICE_OPTION', 'jzsa_viewer_migration_notice' );
+define( 'JZSA_VIEWER_MIGRATION_CUTOFF_VERSION', '2.4.0' );
 
 /**
  * Get the capability required to access plugin admin pages and admin AJAX actions.
@@ -235,6 +237,10 @@ function jzsa_maybe_run_version_migration() {
 	if ( '' === $stored_version ) {
 		add_option( JZSA_VERSION_OPTION, JZSA_VERSION, '', false );
 		return;
+	}
+
+	if ( version_compare( $stored_version, JZSA_VIEWER_MIGRATION_CUTOFF_VERSION, '<' ) ) {
+		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1', false );
 	}
 
 	update_option( JZSA_VERSION_OPTION, JZSA_VERSION, false );

@@ -21,6 +21,9 @@ class AdminPagesTest extends TestCase {
 		$GLOBALS['jzsa_test_enqueued_scripts']      = array();
 		$GLOBALS['jzsa_test_localized_scripts']     = array();
 		$GLOBALS['jzsa_test_admin_page_title']      = 'Shared Albums';
+		$GLOBALS['jzsa_test_current_screen_id']     = null;
+		$GLOBALS['jzsa_test_options']               = array();
+		$GLOBALS['jzsa_test_user_meta']             = array();
 	}
 
 	protected function tearDown(): void {
@@ -142,5 +145,78 @@ class AdminPagesTest extends TestCase {
 			'already-rendered',
 			$this->admin_pages->maybe_render_lazy_sample_placeholder( 'already-rendered', 'jzsa-album', array(), array( '' ) )
 		);
+	}
+
+	public function test_dashboard_announcement_is_hidden_without_viewer_migration_flag(): void {
+		$GLOBALS['jzsa_test_current_screen_id'] = 'dashboard';
+
+		ob_start();
+		$this->admin_pages->render_dashboard_announcement();
+		$output = ob_get_clean();
+
+		$this->assertSame( '', $output );
+	}
+
+	public function test_dashboard_announcement_explains_viewer_breaking_change_and_fullscreen_fix(): void {
+		$GLOBALS['jzsa_test_current_screen_id'] = 'dashboard';
+		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1' );
+
+		ob_start();
+		$this->admin_pages->render_dashboard_announcement();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'Sorry for the disruption.', $output );
+		$this->assertStringContainsString( 'Open Migration Guide', $output );
+		$this->assertStringNotContainsString( 'Shared Albums now has a Community', $output );
+		$this->assertStringNotContainsString( 'Keep Fullscreen as default', $output );
+	}
+
+	public function test_guide_migration_tutorial_explains_fullscreen_fix(): void {
+		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1' );
+		$method = $this->reflection->getMethod( 'render_guide_migration_tutorial' );
+
+		ob_start();
+		$method->invoke( $this->admin_pages );
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'Migration Guide: Lightbox Is Now the Default Viewer', $output );
+		$this->assertStringContainsString( '<strong>Viewer</strong> means either Lightbox or Fullscreen.', $output );
+		$this->assertStringContainsString( 'go through the Viewer samples', $output );
+		$this->assertStringContainsString( 'viewer-toggle="fullscreen-button"', $output );
+		$this->assertStringContainsString( 'viewer-toggle="lightbox-button, fullscreen-button"', $output );
+		$this->assertStringContainsString( 'roughly a 75:25 ratio', $output );
+		$this->assertStringContainsString( 'Do You Prefer Fullscreen?', $output );
+		$this->assertStringContainsString( '[jzsa-album link=&quot;...&quot;] -&gt; [jzsa-album link=&quot;...&quot; viewer-toggle=&quot;fullscreen-button&quot;]', $output );
+		$this->assertStringContainsString( 'Do You Prefer Lightbox?', $output );
+		$this->assertStringContainsString( '[jzsa-album link=&quot;...&quot;] -&gt; [jzsa-album link=&quot;...&quot;]', $output );
+		$this->assertStringContainsString( 'Do You Want Both for Your Visitors?', $output );
+		$this->assertStringContainsString( 'Are you sure you do not need this migration guide anymore?', $output );
+		$this->assertStringContainsString( 'Really dismiss it?', $output );
+	}
+
+	public function test_guide_migration_dismissal_is_independent_from_dashboard_dismissal(): void {
+		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1' );
+		update_user_meta( 1, JZSA_Admin_Pages::DASHBOARD_ANNOUNCEMENT_META, JZSA_Admin_Pages::ANNOUNCEMENT_VERSION );
+		$method = $this->reflection->getMethod( 'render_guide_migration_tutorial' );
+
+		ob_start();
+		$method->invoke( $this->admin_pages );
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'Migration Guide: Lightbox Is Now the Default Viewer', $output );
+	}
+
+	public function test_guide_migration_tutorial_stays_visible_but_collapsed_after_guide_dismissal(): void {
+		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1' );
+		update_user_meta( 1, JZSA_Admin_Pages::GUIDE_ANNOUNCEMENT_META, JZSA_Admin_Pages::ANNOUNCEMENT_VERSION );
+		$method = $this->reflection->getMethod( 'render_guide_migration_tutorial' );
+
+		ob_start();
+		$method->invoke( $this->admin_pages );
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'Migration Guide: Lightbox Is Now the Default Viewer', $output );
+		$this->assertStringNotContainsString( '<details id="jzsa-guide-migration" class="jzsa-section jzsa-viewer-migration-guide" open>', $output );
+		$this->assertStringNotContainsString( 'Collapse this migration guide', $output );
 	}
 }

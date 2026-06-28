@@ -8,6 +8,10 @@
     max-width: 1200px;
 }
 
+#wpfooter {
+    position: static;
+}
+
 .jzsa-settings-wrap h1 {
     display: flex;
     align-items: center;
@@ -191,6 +195,30 @@
     border-bottom: 2px solid #2271b1;
     color: #1d2327;
     font-size: 20px;
+}
+
+.jzsa-viewer-migration-guide h3 {
+    font-size: 14px;
+    margin: 18px 0 8px 0;
+}
+
+.jzsa-migration-example {
+    margin: 0 0 12px 0;
+    padding: 0;
+    font-family: Consolas, Monaco, monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #1d2327;
+}
+
+.jzsa-viewer-migration-guide ul {
+    margin: 0 0 0 22px;
+    padding: 0;
+    list-style: disc;
+}
+
+.jzsa-viewer-migration-guide li {
+    margin: 0 0 8px 0;
 }
 
 .jzsa-intro {

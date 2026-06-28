@@ -1765,9 +1765,6 @@ class JZSA_Shared_Albums {
 	 */
 	private function parse_fullscreen_toggle_mode( $atts ) {
 		if ( ! isset( $atts['fullscreen-toggle'] ) ) {
-			// Lightbox is the site default. When neither viewer mode is explicit,
-			// fullscreen stays off so lightbox becomes the single default view.
-			// Authors who want fullscreen must set fullscreen-toggle explicitly.
 			if ( isset( $atts['lightbox-toggle'] ) ) {
 				if ( 'disabled' !== $this->parse_lightbox_toggle_mode( $atts ) ) {
 					return 'disabled';
@@ -1813,7 +1810,6 @@ class JZSA_Shared_Albums {
 	 */
 	private function parse_lightbox_toggle_mode( $atts ) {
 		if ( ! isset( $atts['lightbox-toggle'] ) ) {
-			// Lightbox is the default viewer unless fullscreen is explicitly requested.
 			if ( isset( $atts['fullscreen-toggle'] ) ) {
 				return 'disabled';
 			}
