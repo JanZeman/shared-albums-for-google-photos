@@ -165,7 +165,7 @@ class AdminPagesTest extends TestCase {
 		$this->admin_pages->render_dashboard_announcement();
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( 'Sorry for the disruption.', $output );
+		$this->assertStringContainsString( 'Sorry for the disruption but this is a breaking change.', $output );
 		$this->assertStringContainsString( 'Open Migration Guide', $output );
 		$this->assertStringNotContainsString( 'Shared Albums now has a Community', $output );
 		$this->assertStringNotContainsString( 'Keep Fullscreen as default', $output );
@@ -179,16 +179,15 @@ class AdminPagesTest extends TestCase {
 		$method->invoke( $this->admin_pages );
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( 'Migration Guide: Lightbox Is Now the Default Viewer', $output );
-		$this->assertStringContainsString( '<strong>Viewer</strong> means either Lightbox or Fullscreen.', $output );
-		$this->assertStringContainsString( 'go through the Viewer samples', $output );
+		$this->assertStringContainsString( 'Breaking Change: Manual Action Required if You Prefer Fullscreen Over Lightbox', $output );
+		$this->assertStringContainsString( 'Review the new samples 21-37.', $output );
 		$this->assertStringContainsString( 'viewer-toggle="fullscreen-button"', $output );
 		$this->assertStringContainsString( 'viewer-toggle="lightbox-button, fullscreen-button"', $output );
 		$this->assertStringContainsString( 'roughly a 75:25 ratio', $output );
 		$this->assertStringContainsString( 'Do You Prefer Fullscreen?', $output );
-		$this->assertStringContainsString( '[jzsa-album link=&quot;...&quot;] -&gt; [jzsa-album link=&quot;...&quot; viewer-toggle=&quot;fullscreen-button&quot;]', $output );
+		$this->assertStringContainsString( '[jzsa-album] -&gt; [jzsa-album viewer-toggle=&quot;fullscreen-button&quot;]', $output );
 		$this->assertStringContainsString( 'Do You Prefer Lightbox?', $output );
-		$this->assertStringContainsString( '[jzsa-album link=&quot;...&quot;] -&gt; [jzsa-album link=&quot;...&quot;]', $output );
+		$this->assertStringContainsString( '[jzsa-album] -&gt; [jzsa-album]', $output );
 		$this->assertStringContainsString( 'Do You Want Both for Your Visitors?', $output );
 		$this->assertStringContainsString( 'Are you sure you do not need this migration guide anymore?', $output );
 		$this->assertStringContainsString( 'Really dismiss it?', $output );
@@ -203,7 +202,7 @@ class AdminPagesTest extends TestCase {
 		$method->invoke( $this->admin_pages );
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( 'Migration Guide: Lightbox Is Now the Default Viewer', $output );
+		$this->assertStringContainsString( 'Breaking Change: Manual Action Required if You Prefer Fullscreen Over Lightbox', $output );
 	}
 
 	public function test_guide_migration_tutorial_stays_visible_but_collapsed_after_guide_dismissal(): void {
@@ -215,8 +214,8 @@ class AdminPagesTest extends TestCase {
 		$method->invoke( $this->admin_pages );
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( 'Migration Guide: Lightbox Is Now the Default Viewer', $output );
+		$this->assertStringContainsString( 'Breaking Change: Manual Action Required if You Prefer Fullscreen Over Lightbox', $output );
 		$this->assertStringNotContainsString( '<details id="jzsa-guide-migration" class="jzsa-section jzsa-viewer-migration-guide" open>', $output );
-		$this->assertStringNotContainsString( 'Collapse this migration guide', $output );
+		$this->assertStringNotContainsString( 'Collapse this section', $output );
 	}
 }
