@@ -1,10 +1,16 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
 
-// viewer-fixture page layout (four shortcodes in order):
+// viewer-fixture page layout (ten shortcodes in order):
 //   #0  slider  viewer-toggle="lightbox-button, fullscreen-button"  viewer-image-fit="contain"  (all viewer-* shared)
 //   #1  slider  viewer-toggle="lightbox-button, fullscreen-button"  concrete lightbox/fullscreen overrides
 //   #2  slider  viewer-toggle="lightbox-button, fullscreen-button"  fullscreen-image-fit="cover"  (isolation test)
 //   #3  slider  viewer-toggle="lightbox-button, fullscreen-button"  viewer-mosaic="true"  (mosaic arrow geometry)
+//   #4  slider  viewer-toggle="lightbox-double-click"
+//   #5  slider  viewer-toggle="fullscreen-double-click"
+//   #6  slider  viewer-toggle="lightbox-button, fullscreen-button"  mixed size and fit overrides
+//   #7  slider  viewer-toggle="lightbox-button, fullscreen-button"  mixed background and control colors
+//   #8  slider  viewer-toggle="lightbox-button, fullscreen-button"  viewer-slideshow="auto" with mode-specific delays
+//   #9  slider  viewer-toggle="lightbox-button"
 const PAGE_URL = '/?pagename=viewer-fixture';
 const SLIDER_FULLSCREEN_BUTTON = '.swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn)';
 const SLIDER_LIGHTBOX_BUTTON = '.swiper-button-lightbox:not(.jzsa-gallery-thumb-fs-btn)';
@@ -21,7 +27,7 @@ async function waitForAlbum(page: Page, index: number): Promise<Locator> {
 test.describe('Viewer shared settings', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto(PAGE_URL);
-        await expect(page.locator('.jzsa-album')).toHaveCount(4);
+        await expect(page.locator('.jzsa-album')).toHaveCount(10);
     });
 
     test('shared settings resolve to both lightbox and fullscreen attributes', async ({ page }) => {
@@ -112,6 +118,30 @@ test.describe('Viewer shared settings', () => {
         await expect(album).toHaveAttribute('data-fullscreen-info-top', 'Fullscreen only');
         await expect(album).toHaveAttribute('data-lightbox-mosaic', 'false');
         await expect(album).toHaveAttribute('data-fullscreen-mosaic', 'true');
+    });
+
+    test('double-click viewer modes ignore a single click and react to the double-click path', async ({ page }) => {
+        const lightboxAlbum = await waitForAlbum(page, 4);
+        const fullscreenAlbum = await waitForAlbum(page, 5);
+
+        await lightboxAlbum.locator('.swiper-slide-active').click();
+        await page.waitForTimeout(250);
+        await expect(backdrop(page)).not.toBeVisible();
+
+        await lightboxAlbum.locator('.swiper-slide-active').dblclick();
+        await expect(backdrop(page)).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(backdrop(page)).not.toBeVisible();
+
+        await fullscreenAlbum.locator('.swiper-slide-active').click();
+        await page.waitForTimeout(250);
+        await expect(backdrop(page)).not.toBeVisible();
+        await expect.poll(() => page.evaluate(() => !!document.fullscreenElement), { timeout: 2_000 }).toBe(false);
+
+        await fullscreenAlbum.locator('.swiper-slide-active').dblclick();
+        await expect.poll(() => page.evaluate(() => !!document.fullscreenElement), { timeout: 10_000 }).toBe(true);
+        await page.evaluate(() => document.fullscreenElement && document.exitFullscreen());
+        await expect.poll(() => page.evaluate(() => !!document.fullscreenElement), { timeout: 10_000 }).toBe(false);
     });
 });
 
