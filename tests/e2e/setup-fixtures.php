@@ -238,20 +238,32 @@ $pages = array(
 		'content' => implode(
 			"\n\n",
 			array(
-				'[jzsa-album link="' . $album_link . '" mode="slider" viewer-toggle="lightbox-button, fullscreen-button" viewer-max-width="640" viewer-max-height="480" viewer-source-width="1200" viewer-source-height="900" viewer-image-fit="contain" viewer-background-color="rgba(0,0,0,0.85)" viewer-corner-radius="12" viewer-controls-color="#123456" viewer-show-navigation="false" viewer-slideshow="manual" viewer-info-top="Shared {item}" viewer-info-bottom="{item} of {items}" viewer-info-font-size="18" viewer-mosaic="true" viewer-mosaic-position="bottom" viewer-mosaic-layout="overlay" viewer-mosaic-count="3" viewer-mosaic-gap="6" viewer-mosaic-opacity="0.4" viewer-mosaic-background="#111111" viewer-mosaic-corner-radius="8"]',
-				'[jzsa-album link="' . $album_link . '" mode="slider" viewer-toggle="lightbox-button, fullscreen-button" viewer-max-width="900" lightbox-max-width="700" fullscreen-max-width="1100" viewer-info-top="Shared" lightbox-info-top="Lightbox only" fullscreen-info-top="Fullscreen only" viewer-mosaic="true" lightbox-mosaic="false" fullscreen-mosaic="true"]',
-				// Index 2: fullscreen-image-fit="cover" with no lightbox or viewer fit override.
-				// Used to verify that fullscreen-image-fit is cover and lightbox-image-fit stays
-				// at the default contain, and that the result is the same regardless of entry path
-				// (direct fullscreen button vs lightbox-then-fullscreen-button).
-				'[jzsa-album link="' . $album_link . '" mode="slider" viewer-toggle="lightbox-button, fullscreen-button" fullscreen-image-fit="cover"]',
-				'[jzsa-album link="' . $album_link . '" mode="slider" viewer-toggle="lightbox-button, fullscreen-button" viewer-mosaic="true"]',
-				'[jzsa-album link="' . $album_link . '" mode="slider" viewer-toggle="lightbox-double-click"]',
-				'[jzsa-album link="' . $album_link . '" mode="slider" viewer-toggle="fullscreen-double-click"]',
-				'[jzsa-album link="' . $album_link . '" mode="slider" viewer-toggle="lightbox-button, fullscreen-button" viewer-max-width="600" viewer-max-height="400" lightbox-max-width="700" fullscreen-max-width="1100" lightbox-image-fit="contain" fullscreen-image-fit="cover"]',
-				'[jzsa-album link="' . $album_link . '" mode="slider" viewer-toggle="lightbox-button, fullscreen-button" viewer-background-color="rgba(128,0,64,0.7)" viewer-controls-color="#E63946" lightbox-controls-color="#00A878" fullscreen-controls-color="#2A9D8F" lightbox-backdrop-color="rgba(0,128,64,0.7)"]',
-				'[jzsa-album link="' . $album_link . '" mode="slider" viewer-toggle="lightbox-button, fullscreen-button" viewer-slideshow="auto" lightbox-slideshow-delay="1" fullscreen-slideshow-delay="7-9"]',
-				'[jzsa-album link="' . $album_link . '" mode="slider" viewer-toggle="lightbox-button"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-max-width="600" viewer-max-height="400"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-max-width="600" viewer-max-height="400" fullscreen-max-width="1200" fullscreen-max-height="800"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-image-fit="cover"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" fullscreen-image-fit="cover"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" image-fit="contain" background-color="rgba(128,0,64,0.7)" viewer-toggle="lightbox-button, fullscreen-button" lightbox-corner-radius="16" viewer-max-width="600" viewer-max-height="400" viewer-background-color="rgba(128,0,64,0.7)" lightbox-backdrop-color="rgba(0,128,64,0.7)"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-controls-color="#E63946" lightbox-controls-color="#00A878"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer-toggle="fullscreen-button" fullscreen-slideshow="auto"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-slideshow="auto" lightbox-slideshow-delay="1" fullscreen-slideshow-delay="7-9"]',
+			)
+		),
+	),
+	'random-fixture'    => array(
+		'title'   => 'Random Fixture',
+		'content' => implode(
+			"\n\n",
+			array(
+				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-double-click"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer-toggle="fullscreen-button"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer-toggle="fullscreen-double-click"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-double-click, fullscreen-button"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-mosaic="true" viewer-mosaic-count="4" viewer-mosaic-position="left" viewer-mosaic-layout="overlay" viewer-mosaic-gap="4"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-max-width="700" viewer-max-height="420" lightbox-max-width="500" fullscreen-max-width="1100" viewer-image-fit="cover" fullscreen-image-fit="contain" lightbox-controls-color="#00A878" fullscreen-controls-color="#2A9D8F"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-background-color="rgba(128,0,64,0.7)" lightbox-backdrop-color="rgba(0,128,64,0.7)" viewer-controls-color="#E63946" lightbox-controls-color="#00A878" fullscreen-controls-color="#2A9D8F"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-slideshow="auto" lightbox-slideshow-delay="2-4" fullscreen-slideshow-delay="9"]',
+				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-show-navigation="false" viewer-info-top="Wild {item}" viewer-info-bottom="{item} / {items}" viewer-corner-radius="24" lightbox-corner-radius="8" fullscreen-corner-radius="0"]',
 			)
 		),
 	),

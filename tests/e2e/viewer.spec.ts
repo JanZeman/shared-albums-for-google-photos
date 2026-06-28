@@ -1,19 +1,10 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
+import { gotoFixture } from './support/navigation';
 
-// viewer-fixture page layout (ten shortcodes in order):
-//   #0  slider  viewer-toggle="lightbox-button, fullscreen-button"  viewer-image-fit="contain"  (all viewer-* shared)
-//   #1  slider  viewer-toggle="lightbox-button, fullscreen-button"  concrete lightbox/fullscreen overrides
-//   #2  slider  viewer-toggle="lightbox-button, fullscreen-button"  fullscreen-image-fit="cover"  (isolation test)
-//   #3  slider  viewer-toggle="lightbox-button, fullscreen-button"  viewer-mosaic="true"  (mosaic arrow geometry)
-//   #4  slider  viewer-toggle="lightbox-double-click"
-//   #5  slider  viewer-toggle="fullscreen-double-click"
-//   #6  slider  viewer-toggle="lightbox-button, fullscreen-button"  mixed size and fit overrides
-//   #7  slider  viewer-toggle="lightbox-button, fullscreen-button"  mixed background and control colors
-//   #8  slider  viewer-toggle="lightbox-button, fullscreen-button"  viewer-slideshow="auto" with mode-specific delays
-//   #9  slider  viewer-toggle="lightbox-button"
 const PAGE_URL = '/?pagename=viewer-fixture';
-const SLIDER_FULLSCREEN_BUTTON = '.swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn)';
-const SLIDER_LIGHTBOX_BUTTON = '.swiper-button-lightbox:not(.jzsa-gallery-thumb-fs-btn)';
+const LIGHTBOX_BUTTON = '.swiper-button-lightbox:not(.jzsa-gallery-thumb-fs-btn)';
+const FULLSCREEN_BUTTON = '.swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn)';
+const ACTIVE_SLIDE = '.swiper-slide.swiper-slide-active';
 
 const backdrop = (page: Page) => page.locator('.jzsa-lightbox-backdrop');
 
@@ -24,214 +15,221 @@ async function waitForAlbum(page: Page, index: number): Promise<Locator> {
     return album;
 }
 
-test.describe('Viewer shared settings', () => {
+async function waitForNativeFullscreen(page: Page, expected: boolean, timeout = 10_000): Promise<void> {
+    await expect.poll(() => page.evaluate(() => !!document.fullscreenElement), { timeout }).toBe(expected);
+}
+
+async function readAlbumMetrics(album: Locator) {
+    return album.evaluate((element) => {
+        const style = getComputedStyle(element);
+        const activeImage = element.querySelector<HTMLImageElement>('.swiper-slide-active img');
+        return {
+            width: element.getBoundingClientRect().width,
+            fit: activeImage ? getComputedStyle(activeImage).objectFit : '',
+            bg: style.getPropertyValue('--gallery-bg-color').trim(),
+            controls: style.getPropertyValue('--jzsa-controls-color').trim(),
+            cornerRadius: style.getPropertyValue('--jzsa-corner-radius').trim(),
+        };
+    });
+}
+
+test.describe('Guide Samples Shortcode Tests', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto(PAGE_URL);
-        await expect(page.locator('.jzsa-album')).toHaveCount(10);
+        await gotoFixture(page, PAGE_URL);
+        await expect(page.locator('.jzsa-album')).toHaveCount(8);
     });
 
-    test('shared settings resolve to both lightbox and fullscreen attributes', async ({ page }) => {
-        const album = page.locator('.jzsa-album').nth(0);
+    test('Sample 30 keeps the shared viewer size identical in both modes', async ({ page }) => {
+        const album = await waitForAlbum(page, 0);
 
-        await expect(album).toHaveAttribute('data-lightbox-toggle', 'button-only');
-        await expect(album).toHaveAttribute('data-fullscreen-toggle', 'button-only');
-        await expect(album).toHaveAttribute('data-lightbox-max-width', '640');
-        await expect(album).toHaveAttribute('data-fullscreen-display-max-width', '640');
-        await expect(album).toHaveAttribute('data-lightbox-max-height', '480');
-        await expect(album).toHaveAttribute('data-fullscreen-display-max-height', '480');
-        await expect(album).toHaveAttribute('data-lightbox-image-fit', 'contain');
-        await expect(album).toHaveAttribute('data-fullscreen-image-fit', 'contain');
-        await expect(album).toHaveAttribute('data-lightbox-info-top', 'Shared {item}');
-        await expect(album).toHaveAttribute('data-fullscreen-info-top', 'Shared {item}');
-        await expect(album).toHaveAttribute('data-lightbox-mosaic', 'true');
-        await expect(album).toHaveAttribute('data-fullscreen-mosaic', 'true');
-    });
+        await expect(album).toHaveAttribute('data-lightbox-max-width', '600');
+        await expect(album).toHaveAttribute('data-fullscreen-display-max-width', '600');
+        await expect(album).toHaveAttribute('data-lightbox-max-height', '400');
+        await expect(album).toHaveAttribute('data-fullscreen-display-max-height', '400');
 
-    test('lightbox applies shared info, size, color, and mosaic settings', async ({ page }) => {
-        const album = page.locator('.jzsa-album').nth(0);
-        const albumId = await album.getAttribute('id');
-        await expect(album).toHaveAttribute('data-jzsa-initialized', 'true');
-        await album.locator('.swiper-button-lightbox').evaluate((button: HTMLElement) => button.click());
-        const openedAlbum = page.locator(`#${albumId}`);
-
-        await expect(openedAlbum).toHaveClass(/jzsa-lightbox-active/);
-        await expect(openedAlbum.locator('.jzsa-info-top')).toContainText('Shared 1');
-        await expect(openedAlbum.locator('.jzsa-fullscreen-mosaic')).toBeVisible();
-
-        const styles = await openedAlbum.evaluate((element) => {
-            const style = getComputedStyle(element);
-            return {
-                width: element.getBoundingClientRect().width,
-                controls: style.getPropertyValue('--jzsa-controls-color').trim(),
-                fontSize: style.getPropertyValue('--jzsa-info-font-size').trim(),
-            };
-        });
-
-        expect(styles.width).toBeLessThanOrEqual(640);
-        expect(styles.controls).toBe('#123456');
-        expect(styles.fontSize).toBe('18px');
-    });
-
-    test('lightbox mosaic arrows do not overlap clickable thumbnails', async ({ page }) => {
-        await page.setViewportSize({ width: 640, height: 480 });
-        const album = await waitForAlbum(page, 3);
-        const albumId = await album.getAttribute('id');
-        await expect(album).toHaveAttribute('data-jzsa-initialized', 'true');
-        await album.locator('.swiper-button-lightbox').evaluate((button: HTMLElement) => button.click());
-
-        const mosaic = page.locator(`#${albumId} .jzsa-fullscreen-mosaic`);
-        await expect(mosaic).toBeVisible();
-        await expect(mosaic.locator('.jzsa-mosaic-arrow-next')).toBeAttached();
-
-        const geometry = await mosaic.evaluate((element) => {
-            const mosaicRect = element.getBoundingClientRect();
-            const style = getComputedStyle(element);
-            const leftLane = parseFloat(style.paddingLeft) || 0;
-            const rightLane = parseFloat(style.paddingRight) || 0;
-            const thumbStart = mosaicRect.left + leftLane;
-            const thumbEnd = mosaicRect.right - rightLane;
-            const prev = element.querySelector<HTMLElement>('.jzsa-mosaic-arrow-prev')?.getBoundingClientRect();
-            const next = element.querySelector<HTMLElement>('.jzsa-mosaic-arrow-next')?.getBoundingClientRect();
-            const visibleSlides = Array.from(element.querySelectorAll<HTMLElement>('.swiper-slide'))
-                .map((slide) => slide.getBoundingClientRect())
-                .filter((rect) => rect.right > thumbStart && rect.left < thumbEnd);
-            return {
-                prevRight: prev?.right ?? 0,
-                nextLeft: next?.left ?? 0,
-                firstThumbLeft: visibleSlides[0]?.left ?? 0,
-                lastThumbRight: visibleSlides[visibleSlides.length - 1]?.right ?? 0,
-                visibleCount: visibleSlides.length,
-            };
-        });
-
-        expect(geometry.visibleCount).toBeGreaterThan(1);
-        expect(geometry.firstThumbLeft).toBeGreaterThanOrEqual(geometry.prevRight);
-        expect(geometry.lastThumbRight).toBeLessThanOrEqual(geometry.nextLeft);
-    });
-
-    test('concrete settings override shared settings for only their mode', async ({ page }) => {
-        const album = page.locator('.jzsa-album').nth(1);
-
-        await expect(album).toHaveAttribute('data-lightbox-max-width', '700');
-        await expect(album).toHaveAttribute('data-fullscreen-display-max-width', '1100');
-        await expect(album).toHaveAttribute('data-lightbox-info-top', 'Lightbox only');
-        await expect(album).toHaveAttribute('data-fullscreen-info-top', 'Fullscreen only');
-        await expect(album).toHaveAttribute('data-lightbox-mosaic', 'false');
-        await expect(album).toHaveAttribute('data-fullscreen-mosaic', 'true');
-    });
-
-    test('double-click viewer modes ignore a single click and react to the double-click path', async ({ page }) => {
-        const lightboxAlbum = await waitForAlbum(page, 4);
-        const fullscreenAlbum = await waitForAlbum(page, 5);
-
-        await lightboxAlbum.locator('.swiper-slide-active').click();
-        await page.waitForTimeout(250);
-        await expect(backdrop(page)).not.toBeVisible();
-
-        await lightboxAlbum.locator('.swiper-slide-active').dblclick();
+        await album.locator(LIGHTBOX_BUTTON).evaluate((button: HTMLElement) => button.click());
         await expect(backdrop(page)).toBeVisible();
         await page.keyboard.press('Escape');
         await expect(backdrop(page)).not.toBeVisible();
 
-        await fullscreenAlbum.locator('.swiper-slide-active').click();
-        await page.waitForTimeout(250);
-        await expect(backdrop(page)).not.toBeVisible();
-        await expect.poll(() => page.evaluate(() => !!document.fullscreenElement), { timeout: 2_000 }).toBe(false);
-
-        await fullscreenAlbum.locator('.swiper-slide-active').dblclick();
-        await expect.poll(() => page.evaluate(() => !!document.fullscreenElement), { timeout: 10_000 }).toBe(true);
+        await album.locator(FULLSCREEN_BUTTON).click({ force: true });
+        await waitForNativeFullscreen(page, true);
         await page.evaluate(() => document.fullscreenElement && document.exitFullscreen());
-        await expect.poll(() => page.evaluate(() => !!document.fullscreenElement), { timeout: 10_000 }).toBe(false);
-    });
-});
-
-// Invariant: fullscreen-image-fit controls the fullscreen display regardless of how
-// fullscreen is entered. Lightbox-image-fit must never bleed into fullscreen and
-// fullscreen-image-fit must never bleed into lightbox.
-test.describe('Viewer mode isolation - image-fit entry-path invariant', () => {
-    test.beforeEach(async ({ page }) => {
-        await page.goto(PAGE_URL);
+        await waitForNativeFullscreen(page, false);
     });
 
-    test('album index 2 has fullscreen-image-fit cover and lightbox-image-fit contain', async ({ page }) => {
+    test('Sample 31 keeps the shared baseline small and the fullscreen override larger', async ({ page }) => {
+        const album = await waitForAlbum(page, 1);
+
+        await expect(album).toHaveAttribute('data-lightbox-max-width', '600');
+        await expect(album).toHaveAttribute('data-fullscreen-display-max-width', '1200');
+        await expect(album).toHaveAttribute('data-lightbox-max-height', '400');
+        await expect(album).toHaveAttribute('data-fullscreen-display-max-height', '800');
+
+        await album.locator(LIGHTBOX_BUTTON).evaluate((button: HTMLElement) => button.click());
+        await expect(backdrop(page)).toBeVisible();
+        const lightboxAlbum = page.locator('.jzsa-lightbox-backdrop .jzsa-album');
+        const lightboxWidth = (await readAlbumMetrics(lightboxAlbum)).width;
+        await page.keyboard.press('Escape');
+        await expect(backdrop(page)).not.toBeVisible();
+
+        await album.locator(FULLSCREEN_BUTTON).click({ force: true });
+        await waitForNativeFullscreen(page, true);
+        const fullscreenWidth = await readAlbumMetrics(album).then((metrics) => metrics.width);
+        await page.evaluate(() => document.fullscreenElement && document.exitFullscreen());
+        await waitForNativeFullscreen(page, false);
+
+        expect(fullscreenWidth).toBeGreaterThanOrEqual(lightboxWidth);
+    });
+
+    test('Sample 32 applies the shared cover fit in both modes', async ({ page }) => {
         const album = await waitForAlbum(page, 2);
+
+        await expect(album).toHaveAttribute('data-lightbox-image-fit', 'cover');
         await expect(album).toHaveAttribute('data-fullscreen-image-fit', 'cover');
-        await expect(album).toHaveAttribute('data-lightbox-image-fit', 'contain');
-    });
 
-    // Verify the CSS specificity fix is present. The combined .jzsa-lightbox-active:fullscreen
-    // selector must exist in the stylesheet so fullscreen-image-fit wins over lightbox-image-fit
-    // when both states are active simultaneously. @cross-browser so it runs in Firefox and WebKit.
-    test('CSS contains higher-specificity rules for the lightbox-active+fullscreen combined state @cross-browser', async ({ page }) => {
-        const hasCombinedRule = await page.evaluate(() => {
-            return Array.from(document.styleSheets).some((sheet) => {
-                let rules: CSSRuleList;
-                try {
-                    rules = sheet.cssRules;
-                } catch {
-                    return false;
-                }
-                return Array.from(rules).some((rule) => {
-                    if (!(rule instanceof CSSStyleRule)) return false;
-                    const sel = rule.selectorText;
-                    return (
-                        sel.includes('jzsa-lightbox-active') &&
-                        (sel.includes(':fullscreen') || sel.includes(':-webkit-full-screen')) &&
-                        sel.includes('data-fullscreen-image-fit')
-                    );
-                });
-            });
-        });
-        expect(hasCombinedRule).toBe(true);
-    });
-
-    test('fullscreen entered directly shows fullscreen-image-fit cover', async ({ page }) => {
-        const album = await waitForAlbum(page, 2);
-        await album.locator(SLIDER_FULLSCREEN_BUTTON).click({ force: true });
-        await expect.poll(() => page.evaluate(() => !!document.fullscreenElement), { timeout: 10_000 }).toBe(true);
-
-        const fit = await page.evaluate(() => {
-            const fs = document.fullscreenElement;
-            if (!fs) return null;
-            const img = fs.querySelector<HTMLImageElement>('.swiper-slide-active img');
-            return img ? getComputedStyle(img).objectFit : null;
-        });
-        expect(fit).toBe('cover');
-
-        await page.evaluate(() => document.fullscreenElement && document.exitFullscreen());
-        await expect.poll(() => page.evaluate(() => !!document.fullscreenElement), { timeout: 10_000 }).toBe(false);
-    });
-
-    // This is the regression test for Sample 33: fullscreen entered via the lightbox must
-    // apply fullscreen-image-fit, not lightbox-image-fit.
-    test('fullscreen entered via lightbox shows fullscreen-image-fit cover, not lightbox-image-fit contain', async ({ page }) => {
-        const album = await waitForAlbum(page, 2);
-
-        // Open lightbox first.
-        await album.locator(SLIDER_LIGHTBOX_BUTTON).click({ force: true });
+        await album.locator(LIGHTBOX_BUTTON).evaluate((button: HTMLElement) => button.click());
         await expect(backdrop(page)).toBeVisible();
-
-        // Click the fullscreen button inside the lightbox. The album element moves
-        // into the backdrop when lightbox opens, so look for the button there.
-        await backdrop(page).locator(SLIDER_FULLSCREEN_BUTTON).click({ force: true });
-        await expect.poll(() => page.evaluate(() => !!document.fullscreenElement), { timeout: 10_000 }).toBe(true);
-
-        // object-fit must be cover (fullscreen-image-fit) not contain (lightbox-image-fit).
-        const fit = await page.evaluate(() => {
-            const fs = document.fullscreenElement;
-            if (!fs) return null;
-            const img = fs.querySelector<HTMLImageElement>('.swiper-slide-active img');
-            return img ? getComputedStyle(img).objectFit : null;
-        });
-        expect(fit).toBe('cover');
-
-        // Exit native fullscreen and return to lightbox.
-        await page.evaluate(() => document.fullscreenElement && document.exitFullscreen());
-        await expect.poll(() => page.evaluate(() => !!document.fullscreenElement), { timeout: 10_000 }).toBe(false);
-        await expect(backdrop(page)).toBeVisible();
-
-        // Second Escape closes the lightbox.
+        const lightboxAlbum = page.locator('.jzsa-lightbox-backdrop .jzsa-album');
+        expect(await readAlbumMetrics(lightboxAlbum)).toMatchObject({ fit: 'cover' });
         await page.keyboard.press('Escape');
         await expect(backdrop(page)).not.toBeVisible();
+
+        await album.locator(FULLSCREEN_BUTTON).click({ force: true });
+        await waitForNativeFullscreen(page, true);
+        expect(await readAlbumMetrics(album)).toMatchObject({ fit: 'cover' });
+        await page.evaluate(() => document.fullscreenElement && document.exitFullscreen());
+        await waitForNativeFullscreen(page, false);
+    });
+
+    test('Sample 33 keeps fullscreen-image-fit isolated from lightbox-image-fit', async ({ page }) => {
+        const album = await waitForAlbum(page, 3);
+
+        await expect(album).toHaveAttribute('data-lightbox-image-fit', 'contain');
+        await expect(album).toHaveAttribute('data-fullscreen-image-fit', 'cover');
+
+        await album.locator(FULLSCREEN_BUTTON).click({ force: true });
+        await waitForNativeFullscreen(page, true);
+        const fullscreenFit = await page.evaluate(() => {
+            const fs = document.fullscreenElement;
+            const img = fs?.querySelector<HTMLImageElement>('.swiper-slide-active img');
+            return img ? getComputedStyle(img).objectFit : '';
+        });
+        expect(fullscreenFit).toBe('cover');
+        await page.evaluate(() => document.fullscreenElement && document.exitFullscreen());
+        await waitForNativeFullscreen(page, false);
+
+        await album.locator(LIGHTBOX_BUTTON).evaluate((button: HTMLElement) => button.click());
+        await expect(backdrop(page)).toBeVisible();
+        const lightboxAlbum = page.locator('.jzsa-lightbox-backdrop .jzsa-album');
+        expect(await readAlbumMetrics(lightboxAlbum)).toMatchObject({ fit: 'contain' });
+        await backdrop(page).locator(FULLSCREEN_BUTTON).evaluate((button: HTMLElement) => button.click());
+        await waitForNativeFullscreen(page, true);
+        const fullscreenFitViaLightbox = await page.evaluate(() => {
+            const fs = document.fullscreenElement;
+            const img = fs?.querySelector<HTMLImageElement>('.swiper-slide-active img');
+            return img ? getComputedStyle(img).objectFit : '';
+        });
+        expect(fullscreenFitViaLightbox).toBe('cover');
+        await page.evaluate(() => document.fullscreenElement && document.exitFullscreen());
+        await waitForNativeFullscreen(page, false);
+        await page.keyboard.press('Escape');
+        await expect(backdrop(page)).not.toBeVisible();
+    });
+
+    test('Sample 34 splits the viewer background from the lightbox backdrop', async ({ page }) => {
+        const album = await waitForAlbum(page, 4);
+
+        await expect(album).toHaveAttribute('data-lightbox-backdrop-color', 'rgba(0,128,64,0.7)');
+        await expect(album).toHaveAttribute('data-lightbox-corner-radius', '16');
+        await expect(album).toHaveAttribute('data-background-color', 'rgba(128,0,64,0.7)');
+
+        await album.locator(FULLSCREEN_BUTTON).click({ force: true });
+        await waitForNativeFullscreen(page, true);
+        const fullscreenBg = await page.evaluate(() => {
+            const fs = document.fullscreenElement;
+            return fs ? getComputedStyle(fs).getPropertyValue('--gallery-bg-color').trim() : '';
+        });
+        expect(fullscreenBg).toBe('rgba(128,0,64,0.7)');
+        await page.evaluate(() => document.fullscreenElement && document.exitFullscreen());
+        await waitForNativeFullscreen(page, false);
+
+        await album.locator(LIGHTBOX_BUTTON).evaluate((button: HTMLElement) => button.click());
+        await expect(backdrop(page)).toBeVisible();
+        const lightboxAlbum = page.locator('.jzsa-lightbox-backdrop .jzsa-album');
+        expect(await readAlbumMetrics(lightboxAlbum)).toMatchObject({
+            bg: 'rgba(128,0,64,0.7)',
+        });
+        const backdropColor = await backdrop(page).evaluate((element) => (element as HTMLElement).style.background);
+        expect(backdropColor.replace(/\s+/g, '')).toBe('rgba(0,128,64,0.7)');
+
+        await page.keyboard.press('Escape');
+        await expect(backdrop(page)).not.toBeVisible();
+    });
+
+    test('Sample 35 keeps the lightbox controls override local', async ({ page }) => {
+        const album = await waitForAlbum(page, 5);
+
+        await expect(album).toHaveAttribute('data-lightbox-controls-color', '#00A878');
+
+        await album.locator(FULLSCREEN_BUTTON).click({ force: true });
+        await waitForNativeFullscreen(page, true);
+        const fullscreenControls = await page.evaluate(() => {
+            const fs = document.fullscreenElement;
+            return fs ? getComputedStyle(fs).getPropertyValue('--jzsa-controls-color').trim() : '';
+        });
+        expect(fullscreenControls).toBe('#E63946');
+        await page.evaluate(() => document.fullscreenElement && document.exitFullscreen());
+        await waitForNativeFullscreen(page, false);
+
+        await album.locator(LIGHTBOX_BUTTON).evaluate((button: HTMLElement) => button.click());
+        await expect(backdrop(page)).toBeVisible();
+        const lightboxAlbum = page.locator('.jzsa-lightbox-backdrop .jzsa-album');
+        expect(await readAlbumMetrics(lightboxAlbum)).toMatchObject({ controls: '#00A878' });
+        await page.keyboard.press('Escape');
+        await expect(backdrop(page)).not.toBeVisible();
+    });
+
+    test('Sample 36 starts the slideshow only after fullscreen opens', async ({ page }) => {
+        const album = await waitForAlbum(page, 6);
+
+        await expect(album.locator(LIGHTBOX_BUTTON)).toHaveCount(0);
+        await expect(album.locator('.swiper-button-play-pause')).toBeAttached();
+
+        await album.locator(FULLSCREEN_BUTTON).click({ force: true });
+        await waitForNativeFullscreen(page, true);
+        await expect(album.locator('.swiper-button-play-pause')).toHaveClass(/playing/, { timeout: 3_000 });
+
+        await page.evaluate(() => document.fullscreenElement && document.exitFullscreen());
+        await waitForNativeFullscreen(page, false);
+    });
+
+    test('Sample 37 keeps the two slideshow delays separate by mode', async ({ page }) => {
+        const album = await waitForAlbum(page, 7);
+
+        const lightboxButton = album.locator(LIGHTBOX_BUTTON);
+        const fullscreenButton = album.locator(FULLSCREEN_BUTTON);
+
+        await lightboxButton.click({ force: true });
+        await expect(backdrop(page)).toBeVisible();
+        const lightboxActiveBefore = await backdrop(page).locator(ACTIVE_SLIDE).getAttribute('data-swiper-slide-index');
+        await expect(async () => {
+            const current = await backdrop(page).locator(ACTIVE_SLIDE).getAttribute('data-swiper-slide-index');
+            expect(current).not.toBe(lightboxActiveBefore);
+        }).toPass({ timeout: 2_500 });
+
+        await page.keyboard.press('Escape');
+        await expect(backdrop(page)).not.toBeVisible();
+
+        await fullscreenButton.click({ force: true });
+        await waitForNativeFullscreen(page, true);
+        const fullscreenActiveBefore = await album.locator(ACTIVE_SLIDE).getAttribute('data-swiper-slide-index');
+        await expect(async () => {
+            const current = await album.locator(ACTIVE_SLIDE).getAttribute('data-swiper-slide-index');
+            expect(current).not.toBe(fullscreenActiveBefore);
+        }).toPass({ timeout: 10_000 });
+
+        await page.evaluate(() => document.fullscreenElement && document.exitFullscreen());
+        await waitForNativeFullscreen(page, false);
     });
 });

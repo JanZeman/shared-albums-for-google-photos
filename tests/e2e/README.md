@@ -41,7 +41,7 @@ docker compose exec wordpress php \
   /var/www/html/wp-content/plugins/janzeman-shared-albums-for-google-photos/tests/e2e/setup-fixtures.php
 ```
 
-The setup script upserts all seven published fixture pages, ensures the default
+The setup script upserts all nine published fixture pages, ensures the default
 admin and disconnected users exist, and removes community connection metadata
 from the disconnected user. It preserves the connected user's existing community
 JWT by default. To seed a connected JWT explicitly:
@@ -166,23 +166,54 @@ shortcode parser currently defaults that value to `bottom`.
 
 ### `viewer-fixture`
 
-Ten sliders that cover the three-tier `viewer-*` / `lightbox-*` / `fullscreen-*`
-parameter hierarchy, the mode-isolation invariant, gesture entry paths, mixed
-viewer overrides, and slideshow switching behavior.
+Eight sliders that mirror Guide samples 30 through 37 in `viewer.md`. Keep this
+page and the guide-sample tests in the same order so the sample numbers stay
+stable over time.
 
 ```text
-[jzsa-album link="YOUR_LINK" mode="slider" viewer-toggle="lightbox-button, fullscreen-button" viewer-max-width="640" viewer-max-height="480" viewer-source-width="1200" viewer-source-height="900" viewer-image-fit="contain" viewer-background-color="rgba(0,0,0,0.85)" viewer-corner-radius="12" viewer-controls-color="#123456" viewer-show-navigation="false" viewer-slideshow="manual" viewer-info-top="Shared {item}" viewer-info-bottom="{item} of {items}" viewer-info-font-size="18" viewer-mosaic="true" viewer-mosaic-position="bottom" viewer-mosaic-layout="overlay" viewer-mosaic-count="3" viewer-mosaic-gap="6" viewer-mosaic-opacity="0.4" viewer-mosaic-background="#111111" viewer-mosaic-corner-radius="8"]
+[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-max-width="600" viewer-max-height="400"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" viewer-toggle="lightbox-button, fullscreen-button" viewer-max-width="900" lightbox-max-width="700" fullscreen-max-width="1100" viewer-info-top="Shared" lightbox-info-top="Lightbox only" fullscreen-info-top="Fullscreen only" viewer-mosaic="true" lightbox-mosaic="false" fullscreen-mosaic="true"]
+[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-max-width="600" viewer-max-height="400" fullscreen-max-width="1200" fullscreen-max-height="800"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" viewer-toggle="lightbox-button, fullscreen-button" fullscreen-image-fit="cover"]
+[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-image-fit="cover"]
+
+[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" fullscreen-image-fit="cover"]
+
+[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" image-fit="contain" background-color="rgba(128,0,64,0.7)" viewer-toggle="lightbox-button, fullscreen-button" lightbox-corner-radius="16" viewer-max-width="600" viewer-max-height="400" viewer-background-color="rgba(128,0,64,0.7)" lightbox-backdrop-color="rgba(0,128,64,0.7)"]
+
+[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-controls-color="#E63946" lightbox-controls-color="#00A878"]
+
+[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer-toggle="fullscreen-button" fullscreen-slideshow="auto"]
+
+[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-slideshow="auto" lightbox-slideshow-delay="1" fullscreen-slideshow-delay="7-9"]
 ```
 
-Index 2 (the third shortcode) is the mode-isolation regression fixture: it has
-`fullscreen-image-fit="cover"` and no lightbox or viewer image-fit override, so
-`data-fullscreen-image-fit` must be `cover` and `data-lightbox-image-fit` must
-be `contain`. The entry-path tests in `viewer.spec.ts` verify that fullscreen
-shows `cover` whether entered directly or via the lightbox.
+### `random-fixture`
+
+Ten more varied sliders for stress testing. These are intentionally not tied to
+the guide sample order.
+
+```text
+[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button"]
+
+[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-double-click"]
+
+[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer-toggle="fullscreen-button"]
+
+[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer-toggle="fullscreen-double-click"]
+
+[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-double-click, fullscreen-button"]
+
+[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-mosaic="true" viewer-mosaic-count="4" viewer-mosaic-position="left" viewer-mosaic-layout="overlay" viewer-mosaic-gap="4"]
+
+[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-max-width="700" viewer-max-height="420" lightbox-max-width="500" fullscreen-max-width="1100" viewer-image-fit="cover" fullscreen-image-fit="contain" lightbox-controls-color="#00A878" fullscreen-controls-color="#2A9D8F"]
+
+[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-background-color="rgba(128,0,64,0.7)" lightbox-backdrop-color="rgba(0,128,64,0.7)" viewer-controls-color="#E63946" lightbox-controls-color="#00A878" fullscreen-controls-color="#2A9D8F"]
+
+[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-slideshow="auto" lightbox-slideshow-delay="2-4" fullscreen-slideshow-delay="9"]
+
+[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer-toggle="lightbox-button, fullscreen-button" viewer-show-navigation="false" viewer-info-top="Wild {item}" viewer-info-bottom="{item} / {items}" viewer-corner-radius="24" lightbox-corner-radius="8" fullscreen-corner-radius="0"]
+```
 
 ### `feature-fixture`
 
@@ -198,7 +229,8 @@ shows `cover` whether entered directly or via the lightbox.
 
 ## Notes
 
-- Tests address shortcodes by index, so order matters.
+- Guide-sample tests address `viewer-fixture` shortcodes by index, so order matters.
+- `random-fixture` is freeform and may change when the stress coverage grows.
 - Gallery albums initialize lazily when scrolled into view.
 - A cold local run can fetch album data from Google Photos before WordPress cache
   is warm. Subsequent runs should be faster.

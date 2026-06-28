@@ -76,6 +76,18 @@ const FIXTURES: FixtureSpec[] = [
         description: '4 albums (navigation/feature tests)',
     },
     {
+        slug: 'viewer-fixture',
+        selector: 'class="jzsa-album',
+        expectedMin: 8,
+        description: '8 albums (guide sample tests)',
+    },
+    {
+        slug: 'random-fixture',
+        selector: 'class="jzsa-album',
+        expectedMin: 10,
+        description: '10 albums (random shortcode tests)',
+    },
+    {
         slug: 'video-fixture',
         selector: 'data-album-title="JZSA E2E Video Album"',
         expectedMin: 2,
