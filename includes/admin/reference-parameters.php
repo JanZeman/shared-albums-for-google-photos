@@ -132,7 +132,7 @@
 							</tr>
 							<tr>
 								<td><code>controls-color</code></td>
-									<td>Color for custom album controls (previous/next, fullscreen, link, download, play/pause) in inline mode. Any valid 6-digit hex color. As explained above, use <code>viewer-controls-color</code> first and only switch to a mode-specific override when one viewer mode needs a different color.</td>
+									<td>Color for custom album controls (previous/next, fullscreen, link, download, play/pause) in inline mode. Any valid 6-digit hex color. Use <code>viewer-controls-color</code> first.</td>
 								<td>#ffffff</td>
 							</tr>
 							<tr>
@@ -180,7 +180,7 @@
 							</tr>
 							<tr>
 								<td><code>slideshow-autoresume</code></td>
-									<td>When a user swipes or clicks to navigate forward or backward manually, the slideshow is interrupted. This is the number of seconds of inactivity after which the interrupted slideshow resumes and advances automatically. Set to "disabled" to turn off autoresume - the slideshow stays interrupted until the user presses play. Does not apply when the user pauses the slideshow via the pause button - that stays paused until manually resumed. As explained above, use the shared viewer value first and only switch to a mode-specific override when one viewer mode needs different timing.</td>
+									<td>When a user swipes or clicks to navigate forward or backward manually, the slideshow is interrupted. This is the number of seconds of inactivity after which the interrupted slideshow resumes and advances automatically. Set to "disabled" to turn off autoresume - the slideshow stays interrupted until the user presses play. Does not apply when the user pauses the slideshow via the pause button - that stays paused until manually resumed. Use <code>viewer-slideshow-autoresume</code> first.</td>
 								<td>30</td>
 							</tr>
 							<tr>
@@ -252,8 +252,7 @@
 					</table>
 
 						<h3><?php esc_html_e( 'Viewer Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php echo wp_kses_post( __( '<strong>Viewer</strong> means either Lightbox or Fullscreen. It is the shared name for the two ways a visitor can open a larger photo view from the inline album.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
-						<p><?php echo wp_kses_post( __( 'Viewer parameters use three levels: <code>viewer-*</code> sets the shared baseline for both Lightbox and Fullscreen, <code>lightbox-*</code> changes Lightbox only, and <code>fullscreen-*</code> changes Fullscreen only. There is no sideways inheritance: a <code>fullscreen-*</code> value never changes Lightbox, and a <code>lightbox-*</code> value never changes Fullscreen. If a mode-specific value is missing, that mode uses the <code>viewer-*</code> value. If that is also missing, it uses its own default. The default viewer is Lightbox: omitting <code>viewer-toggle</code> is equivalent to <code>viewer-toggle="lightbox-button"</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+							<p><?php echo wp_kses_post( __( '<strong>Viewer</strong> means either Lightbox or Fullscreen, the two ways a visitor can open a larger photo view from the inline album. Viewer parameters use three levels: <code>viewer-*</code> sets the shared baseline for both modes, <code>lightbox-*</code> changes Lightbox only, and <code>fullscreen-*</code> changes Fullscreen only. There is no sideways inheritance: a <code>fullscreen-*</code> value never changes Lightbox, and a <code>lightbox-*</code> value never changes Fullscreen. If a mode-specific value is missing, that mode uses the <code>viewer-*</code> value. If that is also missing, it uses its own default. The default viewer is Lightbox: omitting <code>viewer-toggle</code> is equivalent to <code>viewer-toggle="lightbox-button"</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 					<table class="jzsa-settings-table jzsa-settings-table--params">
 						<thead>
 							<tr>
@@ -298,7 +297,7 @@
 						</table>
 
 						<h3><?php esc_html_e( 'Mode-Specific Overrides', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php echo wp_kses_post( __( 'Use the shared <code>viewer-*</code> parameters first. As explained above, switch to <code>lightbox-*</code> or <code>fullscreen-*</code> only when one viewer mode needs a different value. This override rule applies to size, source size, image fit, colors, controls, slideshow, info boxes, and mosaic settings.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+						<p><?php echo wp_kses_post( __( 'As explained above, use the shared <code>viewer-*</code> parameters first and switch to <code>lightbox-*</code> or <code>fullscreen-*</code> only when one viewer mode needs a different value.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 							<table class="jzsa-settings-table jzsa-settings-table--params">
 								<thead>
 									<tr>
