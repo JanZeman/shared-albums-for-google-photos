@@ -104,11 +104,11 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertSame( 'disabled', $config['fullscreen-toggle'] );
     }
 
-    public function test_lightbox_false_alias_keeps_default_fullscreen(): void {
+    public function test_lightbox_false_alias_does_not_affect_fullscreen(): void {
         $config = $this->config( array( 'lightbox-toggle' => 'no' ) );
 
         $this->assertSame( 'disabled', $config['lightbox-toggle'] );
-        $this->assertSame( 'button-only', $config['fullscreen-toggle'] );
+        $this->assertSame( 'disabled', $config['fullscreen-toggle'] );
     }
 
     public function test_viewer_settings_configure_both_modes(): void {

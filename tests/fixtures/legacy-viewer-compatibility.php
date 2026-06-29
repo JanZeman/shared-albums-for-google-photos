@@ -115,7 +115,7 @@ return array(
 	),
 	'hashes' => array(
 		'default' => '9f4c2c5b0447eb5a058c2344c5c5912e325ce9816f06332f1a5f6105a69c84d2',
-		'naveen-original' => 'a81e53f086d1180f6346f036907907b294b925604d640dc5d9d9b87775620107',
+		'naveen-original' => '243199722c3f8f52a3216d5bf857c1dd5bd562256a816e8e5fa3004a3ea3271c',
 		'legacy-lightbox-only' => '593c9e5dedd98482fdbab384be0f8c434a2ad8be8f7633c50a0c0a36412d2f2d',
 		'legacy-fullscreen-only' => '97988f1b3cc57c9368fe5dfb178f7bd8d1a5200893c2eb53a70f0578191deb67',
 		'legacy-combined' => 'b6beaef8ec830d4de4bd33ef4f0d6ccf220678316a56505268293752b339fcc4',
@@ -124,7 +124,7 @@ return array(
 	),
 	'render-hashes' => array(
 		'default' => 'eac170dbca6a6cd77160bc773af03d91212f9fe1b7823635bd66552a3b030f12',
-		'naveen-original' => 'a1fce1e2ce1b2dc84ff88dfd7b2eddae9aea70a86c57109f2a847a38c1b976b5',
+		'naveen-original' => 'e536f00d17032fbc63937670c282e5d2f6552a82037d68e7ab2dc2670d36d6da',
 		'legacy-lightbox-only' => 'dc69c4e43f2ad772682d04ca2594629ee1fdbf90092a63f79bbc15815fc76c29',
 		'legacy-fullscreen-only' => '501be6ee48e84628bf52d6023d88071e6cbc8bb10ca80589afb45cc26eb1b795',
 		'legacy-combined' => 'c2d6c05c76d8143e807c166422baa2bc6cf29f76744cb0e9252c9680a95c55a3',

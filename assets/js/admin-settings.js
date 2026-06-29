@@ -552,7 +552,7 @@ var JZSA_KNOWN_PARAMS = [
 	'info-top-secondary-halo-effect', 'info-top-secondary-text-align',
 	'info-top-text-align', 'info-wrap', 'interaction-lock',
 	'lightbox-backdrop-color', 'lightbox-background-color', 'lightbox-controls-color',
-	'lightbox-corner-radius', 'lightbox-image-fit', 'lightbox-max-height',
+	'lightbox-corner-radius', 'lightbox-fullscreen', 'lightbox-image-fit', 'lightbox-max-height',
 	'lightbox-info-bottom', 'lightbox-info-font-color',
 	'lightbox-info-font-family', 'lightbox-info-font-size',
 	'lightbox-info-top', 'lightbox-info-top-secondary',

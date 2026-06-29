@@ -835,6 +835,7 @@ class JZSA_Shared_Albums {
 				'lightbox-image-fit'        => $this->parse_lightbox_image_fit( $atts ),
 				'lightbox-max-width'        => $this->parse_optional_positive_int( $atts, 'lightbox-max-width' ),
 				'lightbox-max-height'       => $this->parse_optional_positive_int( $atts, 'lightbox-max-height' ),
+				'lightbox-fullscreen'       => isset( $atts['lightbox-fullscreen'] ) && 'disabled' === strtolower( trim( (string) $atts['lightbox-fullscreen'] ) ) ? 'disabled' : 'button',
 				'lightbox-background-color' => $this->parse_color( $atts, 'lightbox-background-color', '' ),
 				'lightbox-backdrop-color'   => $this->parse_color( $atts, 'lightbox-backdrop-color', '' ),
 				'lightbox-corner-radius'    => isset( $atts['lightbox-corner-radius'] ) ? max( 0, intval( $atts['lightbox-corner-radius'] ) ) : 0,
@@ -1765,32 +1766,15 @@ class JZSA_Shared_Albums {
 	 */
 	private function parse_fullscreen_toggle_mode( $atts ) {
 		if ( ! isset( $atts['fullscreen-toggle'] ) ) {
-			if ( isset( $atts['lightbox-toggle'] ) ) {
-				if ( 'disabled' !== $this->parse_lightbox_toggle_mode( $atts ) ) {
-					return 'disabled';
-				}
-				return 'button-only';
-			}
 			return 'disabled';
 		}
 
 		$mode = strtolower( trim( (string) $atts['fullscreen-toggle'] ) );
 
-		// Valid modes: 'button-only' (default), 'click', 'double-click', 'disabled'
 		$valid_modes = array( 'button-only', 'click', 'double-click', 'disabled' );
 
 		if ( ! in_array( $mode, $valid_modes, true ) ) {
 			return 'button-only';
-		}
-
-		// Both triggers set to click/double-click compete for the same tap.
-		// Auto-resolve by demoting fullscreen to button-only so lightbox keeps the click.
-		$click_modes = array( 'click', 'double-click' );
-		if ( in_array( $mode, $click_modes, true ) ) {
-			$lt_mode = $this->parse_lightbox_toggle_mode( $atts );
-			if ( in_array( $lt_mode, $click_modes, true ) ) {
-				return 'button-only';
-			}
 		}
 
 		return $mode;
@@ -1801,19 +1785,14 @@ class JZSA_Shared_Albums {
 	 *
 	 * The lightbox is an alternative to native fullscreen: instead of the browser
 	 * taking over the screen, the album opens in a dimmed overlay on top of the
-	 * page at a bounded size. When enabled (any value other than 'disabled') it
-	 * replaces native fullscreen for the album. Defaults to 'disabled' so the
-	 * feature is opt-in and the existing fullscreen behavior is unchanged.
+	 * page at a bounded size. Defaults to 'button-only'. The fullscreen-toggle
+	 * attribute has no influence on this value.
 	 *
 	 * @param array $atts Attributes
 	 * @return string Lightbox trigger mode: 'disabled', 'button-only', 'click', or 'double-click'
 	 */
 	private function parse_lightbox_toggle_mode( $atts ) {
 		if ( ! isset( $atts['lightbox-toggle'] ) ) {
-			if ( isset( $atts['fullscreen-toggle'] ) ) {
-				return 'disabled';
-			}
-
 			return 'button-only';
 		}
 

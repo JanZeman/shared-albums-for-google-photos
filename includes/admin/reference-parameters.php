@@ -308,6 +308,11 @@
 								</thead>
 								<tbody>
 									<tr>
+										<td><code>lightbox-fullscreen</code></td>
+											<td><?php echo wp_kses_post( __( 'Controls whether the Fullscreen button is shown inside the Lightbox view. Set to <code>disabled</code> to remove the Lightbox-to-Fullscreen path entirely. Unique to Lightbox; no Fullscreen counterpart.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+										<td>button</td>
+									</tr>
+									<tr>
 										<td><code>lightbox-backdrop-color</code></td>
 											<td><?php echo wp_kses_post( __( 'Color of the dimmed overlay behind the lightbox box. Accepts a hex code, <code>transparent</code>, or an <code>rgba()</code>/<code>hsla()</code> value. Semi-transparent values are typical because the page can show through. Unique to Lightbox; no Fullscreen counterpart.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 										<td>rgba(0,0,0,0.85)</td>

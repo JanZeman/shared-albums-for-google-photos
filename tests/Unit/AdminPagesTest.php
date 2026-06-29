@@ -187,8 +187,9 @@ class AdminPagesTest extends TestCase {
 		$this->assertStringContainsString( 'Do You Prefer Fullscreen?', $output );
 		$this->assertStringContainsString( '[jzsa-album] -&gt; [jzsa-album viewer-toggle=&quot;fullscreen-button&quot;]', $output );
 		$this->assertStringContainsString( 'Do You Prefer Lightbox?', $output );
-		$this->assertStringContainsString( 'If you want the same Lightbox behavior in the clean new way, use <code>viewer-toggle="lightbox-button"</code>.', $output );
-		$this->assertStringContainsString( '[jzsa-album] -&gt; [jzsa-album]', $output );
+		$this->assertStringContainsString( 'Replace <code>lightbox-toggle</code> with the equivalent <code>viewer-toggle</code>', $output );
+		$this->assertStringContainsString( 'lightbox-toggle=&quot;button-only&quot; -&gt; viewer-toggle=&quot;lightbox-button&quot;', $output );
+		$this->assertStringContainsString( 'fullscreen-toggle="disabled"</code> alongside it, drop that too', $output );
 		$this->assertStringContainsString( 'Do You Want Both for Your Visitors?', $output );
 		$this->assertStringContainsString( 'The section will be collapsed. You can expand it anytime or check the Parameters page for the details.', $output );
 	}
