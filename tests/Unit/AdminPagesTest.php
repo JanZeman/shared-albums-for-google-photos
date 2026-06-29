@@ -179,18 +179,21 @@ class AdminPagesTest extends TestCase {
 		$method->invoke( $this->admin_pages );
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( 'Breaking Change: Manual Action Required if You Prefer Fullscreen Over Lightbox', $output );
-		$this->assertStringContainsString( 'Review the Viewer Samples (21-37).', $output );
-		$this->assertStringContainsString( 'viewer-toggle="fullscreen-button"', $output );
+		$this->assertStringContainsString( 'Breaking Change: Lightbox is Now the Default Viewer', $output );
+		$this->assertStringContainsString( 'Sorry for the disruption.', $output );
+		$this->assertStringContainsString( '<strong>Viewer Samples (21-38)</strong>', $output );
 		$this->assertStringContainsString( 'viewer-toggle="lightbox-button, fullscreen-button"', $output );
 		$this->assertStringContainsString( 'roughly a 75:25 ratio', $output );
-		$this->assertStringContainsString( 'Do You Prefer Fullscreen?', $output );
-		$this->assertStringContainsString( '[jzsa-album] -&gt; [jzsa-album viewer-toggle=&quot;fullscreen-button&quot;]', $output );
-		$this->assertStringContainsString( 'Do You Prefer Lightbox?', $output );
+		$this->assertStringContainsString( 'Had Fullscreen -&gt; Keep Fullscreen', $output );
+		$this->assertStringContainsString( 'fullscreen-toggle=&quot;button-only&quot;  -&gt; viewer-toggle=&quot;fullscreen-button&quot;', $output );
+		$this->assertStringContainsString( 'Had Fullscreen -&gt; Want Lightbox', $output );
+		$this->assertStringContainsString( 'fullscreen-toggle=&quot;double-click&quot; -&gt; viewer-toggle=&quot;lightbox-double-click&quot;', $output );
+		$this->assertStringContainsString( 'Had Lightbox -&gt; Keep Lightbox', $output );
 		$this->assertStringContainsString( 'Replace <code>lightbox-toggle</code> with the equivalent <code>viewer-toggle</code>', $output );
-		$this->assertStringContainsString( 'lightbox-toggle=&quot;button-only&quot; -&gt; viewer-toggle=&quot;lightbox-button&quot;', $output );
-		$this->assertStringContainsString( 'fullscreen-toggle="disabled"</code> alongside it, drop that too', $output );
-		$this->assertStringContainsString( 'Do You Want Both for Your Visitors?', $output );
+		$this->assertStringContainsString( 'lightbox-toggle=&quot;button-only&quot;   -&gt; viewer-toggle=&quot;lightbox-button&quot;', $output );
+		$this->assertStringContainsString( 'Had Lightbox -&gt; Want Fullscreen', $output );
+		$this->assertStringContainsString( 'lightbox-toggle=&quot;button-only&quot;   -&gt; viewer-toggle=&quot;fullscreen-button&quot;', $output );
+		$this->assertStringContainsString( 'Both modes side-by-side', $output );
 		$this->assertStringContainsString( 'The section will be collapsed. You can expand it anytime or check the Parameters page for the details.', $output );
 	}
 
@@ -203,7 +206,7 @@ class AdminPagesTest extends TestCase {
 		$method->invoke( $this->admin_pages );
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( 'Breaking Change: Manual Action Required if You Prefer Fullscreen Over Lightbox', $output );
+		$this->assertStringContainsString( 'Breaking Change: Lightbox is Now the Default Viewer', $output );
 	}
 
 	public function test_guide_migration_tutorial_stays_visible_but_collapsed_after_guide_dismissal(): void {
@@ -215,8 +218,8 @@ class AdminPagesTest extends TestCase {
 		$method->invoke( $this->admin_pages );
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( 'Breaking Change: Manual Action Required if You Prefer Fullscreen Over Lightbox', $output );
+		$this->assertStringContainsString( 'Breaking Change: Lightbox is Now the Default Viewer', $output );
 		$this->assertStringNotContainsString( '<details id="jzsa-guide-migration" class="jzsa-section jzsa-viewer-migration-guide" open>', $output );
-		$this->assertStringNotContainsString( 'Collapse this section', $output );
+		$this->assertStringNotContainsString( 'Collapse this migration guide', $output );
 	}
 }

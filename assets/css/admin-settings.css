@@ -197,9 +197,71 @@
     font-size: 20px;
 }
 
+.jzsa-viewer-migration-guide > details > summary {
+    font-size: 20px;
+    cursor: pointer;
+}
+
 .jzsa-viewer-migration-guide h3 {
     font-size: 14px;
     margin: 18px 0 8px 0;
+}
+
+.jzsa-migration-tabs {
+    margin: 16px 0 0;
+}
+
+.jzsa-migration-tab-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    background: #f0f0f1;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px 4px 0 0;
+    padding: 10px 10px 0;
+    border-bottom: none;
+}
+
+.jzsa-migration-tab {
+    background: #dcdcde;
+    border: none;
+    border-radius: 4px 4px 0 0;
+    color: #3c434a;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+    padding: 7px 14px;
+    transition: background 0.12s, color 0.12s;
+}
+
+.jzsa-migration-tab:hover {
+    background: #c3c4c7;
+    color: #1d2327;
+}
+
+.jzsa-migration-tab--active {
+    background: #2271b1;
+    color: #fff;
+    font-weight: 600;
+}
+
+.jzsa-migration-tab--active:hover {
+    background: #135e96;
+    color: #fff;
+}
+
+.jzsa-viewer-migration-guide .jzsa-migration-panel {
+    display: none;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-top: 3px solid #2271b1;
+    border-radius: 0 0 4px 4px;
+    padding: 16px 18px 6px;
+}
+
+.jzsa-viewer-migration-guide .jzsa-migration-panel--active {
+    display: block;
 }
 
 .jzsa-migration-example {
