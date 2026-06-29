@@ -180,17 +180,17 @@ class AdminPagesTest extends TestCase {
 		$output = ob_get_clean();
 
 		$this->assertStringContainsString( 'Breaking Change: Manual Action Required if You Prefer Fullscreen Over Lightbox', $output );
-		$this->assertStringContainsString( 'Review the new samples 21-37.', $output );
+		$this->assertStringContainsString( 'Review the Viewer Samples (21-37).', $output );
 		$this->assertStringContainsString( 'viewer-toggle="fullscreen-button"', $output );
 		$this->assertStringContainsString( 'viewer-toggle="lightbox-button, fullscreen-button"', $output );
 		$this->assertStringContainsString( 'roughly a 75:25 ratio', $output );
 		$this->assertStringContainsString( 'Do You Prefer Fullscreen?', $output );
 		$this->assertStringContainsString( '[jzsa-album] -&gt; [jzsa-album viewer-toggle=&quot;fullscreen-button&quot;]', $output );
 		$this->assertStringContainsString( 'Do You Prefer Lightbox?', $output );
+		$this->assertStringContainsString( 'If you want the same Lightbox behavior in the clean new way, use <code>viewer-toggle="lightbox-button"</code>.', $output );
 		$this->assertStringContainsString( '[jzsa-album] -&gt; [jzsa-album]', $output );
 		$this->assertStringContainsString( 'Do You Want Both for Your Visitors?', $output );
-		$this->assertStringContainsString( 'Are you sure you do not need this migration guide anymore?', $output );
-		$this->assertStringContainsString( 'Really dismiss it?', $output );
+		$this->assertStringContainsString( 'The section will be collapsed. You can expand it anytime or check the Parameters page for the details.', $output );
 	}
 
 	public function test_guide_migration_dismissal_is_independent_from_dashboard_dismissal(): void {

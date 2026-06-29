@@ -95,7 +95,7 @@ class JZSA_Admin_Pages {
 		<p><?php echo wp_kses_post( __( 'Lightbox is easier to exit and stays inside the page. Fullscreen uses the browser fullscreen experience and can feel more immersive. A quick search on the internet suggests Lightbox is preferred over Fullscreen by roughly a 75:25 ratio.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 		<h3><?php esc_html_e( 'What to Do?', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 		<ul>
-			<li><?php esc_html_e( 'Review the new samples 21-37. They give you a quick understanding.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
+				<li><?php esc_html_e( 'Review the Viewer Samples (21-37). They give you a quick understanding.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 			<li><?php esc_html_e( 'Decide which final viewer experience you want: Lightbox, Fullscreen, or both.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 			<li><?php echo wp_kses_post( __( 'Make the shortcode changes if needed.', 'janzeman-shared-albums-for-google-photos' ) ); ?></li>
 			<li><?php esc_html_e( 'Check your photos, regardless of whether you made any changes.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
@@ -116,9 +116,12 @@ class JZSA_Admin_Pages {
 						<p><?php echo wp_kses_post( __( 'Use <code>viewer-toggle="fullscreen-button"</code> to keep the same functional result through the new recommended setting.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 					<p class="jzsa-migration-example"><?php echo esc_html( '[jzsa-album] -> [jzsa-album viewer-toggle="fullscreen-button"]' ); ?></p>
 
-					<h3 class="jzsa-migration-subheading"><?php esc_html_e( 'Do You Prefer Lightbox?', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Change nothing. Lightbox is now the recommended default when no viewer setting is present.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<p class="jzsa-migration-example"><?php echo esc_html( '[jzsa-album] -> [jzsa-album]' ); ?></p>
+						<h3 class="jzsa-migration-subheading"><?php esc_html_e( 'Do You Prefer Lightbox?', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php echo wp_kses_post( __( 'Replace <code>lightbox-toggle</code> with the equivalent <code>viewer-toggle</code>, or drop it entirely since Lightbox is now the default:', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+						<p class="jzsa-migration-example"><?php echo esc_html( 'lightbox-toggle="button-only" -> viewer-toggle="lightbox-button"  (or just remove it)' ); ?></p>
+						<p class="jzsa-migration-example"><?php echo esc_html( 'lightbox-toggle="click"       -> viewer-toggle="lightbox-click"' ); ?></p>
+						<p class="jzsa-migration-example"><?php echo esc_html( 'lightbox-toggle="double-click" -> viewer-toggle="lightbox-double-click"' ); ?></p>
+							<p><?php echo wp_kses_post( __( 'If you also had <code>fullscreen-toggle="disabled"</code> alongside it, drop that too - it is no longer needed. Leaving the old params in place still works, but they are now redundant.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 
 					<h3 class="jzsa-migration-subheading"><?php esc_html_e( 'Do You Want Both for Your Visitors?', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php echo wp_kses_post( __( 'Use <code>viewer-toggle="lightbox-button, fullscreen-button"</code> if you want visitors to choose between the two viewer modes.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
@@ -133,9 +136,8 @@ class JZSA_Admin_Pages {
 			var btn = document.getElementById( 'jzsa-dismiss-guide-migration' );
 			var details = document.getElementById( 'jzsa-guide-migration-details' );
 			if ( ! btn || ! details ) { return; }
-			btn.addEventListener( 'click', function() {
-				if ( ! window.confirm( '<?php echo esc_js( __( 'Are you sure you do not need this migration guide anymore?', 'janzeman-shared-albums-for-google-photos' ) ); ?>' ) ) { return; }
-				if ( ! window.confirm( '<?php echo esc_js( __( 'Really dismiss it? You can still use the Parameters page later, but this guide will not appear here again for your user.', 'janzeman-shared-albums-for-google-photos' ) ); ?>' ) ) { return; }
+				btn.addEventListener( 'click', function() {
+					if ( ! window.confirm( '<?php echo esc_js( __( 'The section will be collapsed. You can expand it anytime or check the Parameters page for the details.', 'janzeman-shared-albums-for-google-photos' ) ); ?>' ) ) { return; }
 				var data = new FormData();
 				data.append( 'action', 'jzsa_dismiss_guide_migration' );
 				data.append( 'nonce', '<?php echo esc_js( $dismiss_nonce ); ?>' );
@@ -726,7 +728,7 @@ class JZSA_Admin_Pages {
 					</script>
 
 						<details class="jzsa-sample-group jzsa-collapsible-section" open>
-							<summary class="jzsa-collapsible-summary"><?php esc_html_e( 'Gallery basics (Samples 1-6)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
+							<summary class="jzsa-collapsible-summary"><?php esc_html_e( 'Gallery Samples (1-6)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
 							<p class="jzsa-sample-group__description"><?php esc_html_e( 'Start here for the core gallery layouts, pagination, and the first slider examples.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
 						<div class="jzsa-sample-card">
@@ -1127,11 +1129,11 @@ class JZSA_Admin_Pages {
 						</details>
 
 						<details class="jzsa-sample-group jzsa-collapsible-section" open>
-							<summary class="jzsa-collapsible-summary"><?php esc_html_e( 'Viewer (Samples 21-37)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
+							<summary class="jzsa-collapsible-summary"><?php esc_html_e( 'Viewer Samples (21-37)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
 							<p class="jzsa-sample-group__description"><?php esc_html_e( 'These samples are grouped by Viewer navigation, Viewer styling, and Viewer slideshow behavior.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
 						<details class="jzsa-sample-group jzsa-collapsible-section" open>
-							<summary class="jzsa-collapsible-summary"><?php esc_html_e( 'Viewer Navigation (Samples 21-29)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
+							<summary class="jzsa-collapsible-summary"><?php esc_html_e( 'Viewer Navigation Samples (21-29)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
 
 						<div class="jzsa-sample-card">
 							<div class="jzsa-sample-card-header">
@@ -1312,7 +1314,7 @@ class JZSA_Admin_Pages {
 						</details>
 
 						<details class="jzsa-sample-group jzsa-collapsible-section" open>
-							<summary class="jzsa-collapsible-summary"><?php esc_html_e( 'Viewer Shared Settings and Overrides (Samples 30-35)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
+							<summary class="jzsa-collapsible-summary"><?php esc_html_e( 'Viewer Shared Settings and Overrides Samples (30-35)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
 							<p class="jzsa-sample-group__description"><?php esc_html_e( 'These samples show the three-tier viewer model: viewer-* sets the shared baseline, while lightbox-* and fullscreen-* override one mode only.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
 						<div class="jzsa-sample-card">
@@ -1444,7 +1446,7 @@ class JZSA_Admin_Pages {
 						</details>
 
 						<details class="jzsa-sample-group jzsa-collapsible-section" open>
-							<summary class="jzsa-collapsible-summary"><?php esc_html_e( 'Viewer Slideshow and Start Behavior (Samples 36-37)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
+							<summary class="jzsa-collapsible-summary"><?php esc_html_e( 'Viewer Slideshow and Start Behavior Samples (36-37)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
 
 						<div class="jzsa-sample-card">
 							<h3><?php echo 'Sample 36: ' . esc_html__( 'Fullscreen Slideshow Only', 'janzeman-shared-albums-for-google-photos' ); ?></h3>

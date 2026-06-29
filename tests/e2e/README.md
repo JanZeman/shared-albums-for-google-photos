@@ -229,7 +229,7 @@ the guide sample order.
 
 ## Notes
 
-- Guide-sample tests address `viewer-fixture` shortcodes by index, so order matters.
+- Viewer Samples tests address `viewer-fixture` shortcodes by index, so order matters.
 - `random-fixture` is freeform and may change when the stress coverage grows.
 - Gallery albums initialize lazily when scrolled into view.
 - A cold local run can fetch album data from Google Photos before WordPress cache
