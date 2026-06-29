@@ -186,42 +186,30 @@ test.describe('Shortcode validation - parameter values', () => {
         await expect(area).not.toBeVisible();
     });
 
-    test('a valid viewer toggle combination produces no message', async ({ page }) => {
+    test('a valid viewer and viewer-toggle combination produces no message', async ({ page }) => {
         await setShortcode(
             page,
-            `[jzsa-album link="${VALID_LINK}" viewer-toggle="lightbox-button, fullscreen-click" ` +
+            `[jzsa-album link="${VALID_LINK}" viewer="fullscreen" viewer-toggle="click" ` +
                 'viewer-max-width="900" viewer-slideshow="auto"]',
         );
         await expect(page.locator(VALIDATION)).not.toBeVisible();
     });
 
-    test('competing viewer click gestures report an error', async ({ page }) => {
+    test('viewer-toggle warns when viewer is lightbox, fullscreen', async ({ page }) => {
         await setShortcode(
             page,
-            `[jzsa-album link="${VALID_LINK}" ` +
-                'viewer-toggle="lightbox-click, fullscreen-double-click"]',
+            `[jzsa-album link="${VALID_LINK}" viewer="lightbox, fullscreen" viewer-toggle="click"]`,
         );
         const area = page.locator(VALIDATION);
-        await expect(area).toHaveClass(/jzsa-code-validation--error/);
-        await expect(area).toContainText('cannot give both lightbox and fullscreen a click gesture');
+        await expect(area).toHaveClass(/jzsa-code-validation--warning/);
+        await expect(area).toContainText('"viewer-toggle" is ignored when viewer="lightbox, fullscreen"');
+        await expect(area).not.toHaveClass(/jzsa-code-validation--error/);
     });
 
-    test('duplicate viewer mode tokens report an error', async ({ page }) => {
+    test('deprecated lightbox-toggle and fullscreen-toggle both warn with migration hints', async ({ page }) => {
         await setShortcode(
             page,
-            `[jzsa-album link="${VALID_LINK}" ` +
-                'viewer-toggle="lightbox-click, lightbox-button"]',
-        );
-        const area = page.locator(VALIDATION);
-        await expect(area).toHaveClass(/jzsa-code-validation--error/);
-        await expect(area).toContainText('at most one lightbox token');
-    });
-
-    test('a concrete override can safely replace a viewer trigger', async ({ page }) => {
-        await setShortcode(
-            page,
-            `[jzsa-album link="${VALID_LINK}" viewer-toggle="lightbox-click, fullscreen-button" ` +
-                'lightbox-toggle="button-only" fullscreen-toggle="double-click"]',
+            `[jzsa-album link="${VALID_LINK}" lightbox-toggle="button-only" fullscreen-toggle="double-click"]`,
         );
         const area = page.locator(VALIDATION);
         await expect(area).toHaveClass(/jzsa-code-validation--warning/);

@@ -135,57 +135,46 @@ class OrchestratorToggleModeTest extends TestCase {
         $this->assertSame( 'disabled', $config );
     }
 
-    public function test_viewer_toggle_accepts_each_supported_token(): void {
-        $cases = [
-            'disabled'                => [ 'disabled', 'disabled', true ],
-            'lightbox-button'         => [ 'button-only', 'disabled', true ],
-            'lightbox-click'          => [ 'click', 'disabled', true ],
-            'lightbox-double-click'   => [ 'double-click', 'disabled', true ],
-            'fullscreen-button'       => [ 'disabled', 'button-only', true ],
-            'fullscreen-click'        => [ 'disabled', 'click', true ],
-            'fullscreen-double-click' => [ 'disabled', 'double-click', true ],
-        ];
-
-        foreach ( $cases as $raw => [ $lightbox, $fullscreen, $valid ] ) {
-            $parsed = $this->invoke( 'parse_viewer_toggle', $raw );
-            $this->assertSame( $lightbox, $parsed['lightbox'], $raw );
-            $this->assertSame( $fullscreen, $parsed['fullscreen'], $raw );
-            $this->assertSame( $valid, $parsed['valid'], $raw );
-        }
+    public function test_viewer_mode_lightbox_sets_lightbox_active(): void {
+        $normalized = $this->invoke( 'apply_viewer_attribute_defaults', [ 'viewer' => 'lightbox' ] );
+        $this->assertSame( 'button-only', $normalized['lightbox-toggle'] );
+        $this->assertSame( 'disabled', $normalized['fullscreen-toggle'] );
     }
 
-    public function test_viewer_toggle_accepts_safe_combination_in_any_order(): void {
-        $first = $this->invoke( 'parse_viewer_toggle', 'lightbox-button, fullscreen-click' );
-        $second = $this->invoke( 'parse_viewer_toggle', ' fullscreen-click , lightbox-button ' );
-
-        $this->assertSame( $first, $second );
-        $this->assertSame( 'button-only', $first['lightbox'] );
-        $this->assertSame( 'click', $first['fullscreen'] );
-        $this->assertTrue( $first['valid'] );
+    public function test_viewer_mode_fullscreen_sets_fullscreen_active(): void {
+        $normalized = $this->invoke( 'apply_viewer_attribute_defaults', [ 'viewer' => 'fullscreen' ] );
+        $this->assertSame( 'disabled', $normalized['lightbox-toggle'] );
+        $this->assertSame( 'button-only', $normalized['fullscreen-toggle'] );
     }
 
-    public function test_viewer_toggle_converts_competing_gestures_to_buttons(): void {
-        $parsed = $this->invoke( 'parse_viewer_toggle', 'lightbox-click, fullscreen-double-click' );
-
-        $this->assertSame( 'button-only', $parsed['lightbox'] );
-        $this->assertSame( 'button-only', $parsed['fullscreen'] );
-        $this->assertFalse( $parsed['valid'] );
+    public function test_viewer_mode_both_enables_both_with_buttons(): void {
+        $normalized = $this->invoke( 'apply_viewer_attribute_defaults', [ 'viewer' => 'lightbox, fullscreen' ] );
+        $this->assertSame( 'button-only', $normalized['lightbox-toggle'] );
+        $this->assertSame( 'button-only', $normalized['fullscreen-toggle'] );
     }
 
-    public function test_viewer_toggle_disables_both_for_other_invalid_values(): void {
-        $values = [
-            '',
-            'lightbox-click, lightbox-button',
-            'disabled, fullscreen-button',
-            'lightbox-hover',
-        ];
+    public function test_viewer_mode_disabled_disables_both(): void {
+        $normalized = $this->invoke( 'apply_viewer_attribute_defaults', [ 'viewer' => 'disabled' ] );
+        $this->assertSame( 'disabled', $normalized['lightbox-toggle'] );
+        $this->assertSame( 'disabled', $normalized['fullscreen-toggle'] );
+    }
 
-        foreach ( $values as $raw ) {
-            $parsed = $this->invoke( 'parse_viewer_toggle', $raw );
-            $this->assertSame( 'disabled', $parsed['lightbox'], $raw );
-            $this->assertSame( 'disabled', $parsed['fullscreen'], $raw );
-            $this->assertFalse( $parsed['valid'], $raw );
-        }
+    public function test_viewer_toggle_click_applies_to_default_lightbox_mode(): void {
+        $normalized = $this->invoke( 'apply_viewer_attribute_defaults', [ 'viewer-toggle' => 'click' ] );
+        $this->assertSame( 'click', $normalized['lightbox-toggle'] );
+        $this->assertSame( 'disabled', $normalized['fullscreen-toggle'] );
+    }
+
+    public function test_viewer_toggle_click_applies_to_fullscreen_when_viewer_fullscreen(): void {
+        $normalized = $this->invoke( 'apply_viewer_attribute_defaults', [ 'viewer' => 'fullscreen', 'viewer-toggle' => 'click' ] );
+        $this->assertSame( 'disabled', $normalized['lightbox-toggle'] );
+        $this->assertSame( 'click', $normalized['fullscreen-toggle'] );
+    }
+
+    public function test_viewer_toggle_ignored_when_both_modes_active(): void {
+        $normalized = $this->invoke( 'apply_viewer_attribute_defaults', [ 'viewer' => 'lightbox, fullscreen', 'viewer-toggle' => 'click' ] );
+        $this->assertSame( 'button-only', $normalized['lightbox-toggle'] );
+        $this->assertSame( 'button-only', $normalized['fullscreen-toggle'] );
     }
 
     public function test_viewer_defaults_leave_legacy_attributes_unchanged(): void {
@@ -200,16 +189,17 @@ class OrchestratorToggleModeTest extends TestCase {
 
     public function test_viewer_defaults_fill_both_modes_and_keep_specific_overrides(): void {
         $atts = [
-            'viewer-toggle'          => 'lightbox-button, fullscreen-click',
-            'viewer-max-width'       => '900',
-            'viewer-controls-color'  => '#112233',
-            'lightbox-max-width'       => '700',
+            'viewer'                    => 'fullscreen',
+            'viewer-toggle'             => 'click',
+            'viewer-max-width'          => '900',
+            'viewer-controls-color'     => '#112233',
+            'lightbox-max-width'        => '700',
             'fullscreen-controls-color' => '#445566',
         ];
 
         $normalized = $this->invoke( 'apply_viewer_attribute_defaults', $atts );
 
-        $this->assertSame( 'button-only', $normalized['lightbox-toggle'] );
+        $this->assertSame( 'disabled', $normalized['lightbox-toggle'] );
         $this->assertSame( 'click', $normalized['fullscreen-toggle'] );
         $this->assertSame( '700', $normalized['lightbox-max-width'] );
         $this->assertSame( '900', $normalized['fullscreen-display-max-width'] );

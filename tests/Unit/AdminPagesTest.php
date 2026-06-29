@@ -182,18 +182,26 @@ class AdminPagesTest extends TestCase {
 		$this->assertStringContainsString( 'Breaking Change: Lightbox is Now the Default Viewer', $output );
 		$this->assertStringContainsString( 'Sorry for the disruption.', $output );
 		$this->assertStringContainsString( '<strong>Viewer Samples (21-38)</strong>', $output );
-		$this->assertStringContainsString( 'viewer-toggle="lightbox-button, fullscreen-button"', $output );
 		$this->assertStringContainsString( 'roughly a 75:25 ratio', $output );
 		$this->assertStringContainsString( 'Had Fullscreen -&gt; Keep Fullscreen', $output );
-		$this->assertStringContainsString( 'fullscreen-toggle=&quot;button-only&quot;  -&gt; viewer-toggle=&quot;fullscreen-button&quot;', $output );
+		$this->assertStringContainsString( 'fullscreen-toggle=&quot;button-only&quot;  -&gt; viewer=&quot;fullscreen&quot;', $output );
+		$this->assertStringContainsString( 'fullscreen-toggle=&quot;click&quot;        -&gt; viewer=&quot;fullscreen&quot; viewer-toggle=&quot;click&quot;', $output );
 		$this->assertStringContainsString( 'Had Fullscreen -&gt; Want Lightbox', $output );
-		$this->assertStringContainsString( 'fullscreen-toggle=&quot;double-click&quot; -&gt; viewer-toggle=&quot;lightbox-double-click&quot;', $output );
+		$this->assertStringContainsString( 'fullscreen-toggle=&quot;double-click&quot; -&gt; ', $output );
+		$this->assertStringContainsString( 'jzsa-migration-optional', $output );
+		$this->assertStringContainsString( 'viewer=&quot;lightbox&quot; ', $output );
+		$this->assertStringContainsString( 'viewer-toggle=&quot;double-click&quot;', $output );
 		$this->assertStringContainsString( 'Had Lightbox -&gt; Keep Lightbox', $output );
-		$this->assertStringContainsString( 'Replace <code>lightbox-toggle</code> with the equivalent <code>viewer-toggle</code>', $output );
-		$this->assertStringContainsString( 'lightbox-toggle=&quot;button-only&quot;   -&gt; viewer-toggle=&quot;lightbox-button&quot;', $output );
+		$this->assertStringContainsString( 'lightbox-toggle=&quot;button-only&quot;   -&gt; ', $output );
+		$this->assertStringContainsString( 'viewer=&quot;lightbox&quot;', $output );
+		$this->assertStringContainsString( '(or remove it)', $output );
+		$this->assertStringContainsString( 'lightbox-toggle=&quot;click&quot;         -&gt; ', $output );
+		$this->assertStringContainsString( 'viewer-toggle=&quot;click&quot;', $output );
 		$this->assertStringContainsString( 'Had Lightbox -&gt; Want Fullscreen', $output );
-		$this->assertStringContainsString( 'lightbox-toggle=&quot;button-only&quot;   -&gt; viewer-toggle=&quot;fullscreen-button&quot;', $output );
+		$this->assertStringContainsString( 'Replace <code>lightbox-toggle</code> with <code>viewer="fullscreen"</code>', $output );
+		$this->assertStringContainsString( 'lightbox-toggle=&quot;button-only&quot;   -&gt; viewer=&quot;fullscreen&quot;', $output );
 		$this->assertStringContainsString( 'Both modes side-by-side', $output );
+		$this->assertStringContainsString( 'no viewer params at all          -&gt; add viewer=&quot;lightbox, fullscreen&quot;', $output );
 		$this->assertStringContainsString( 'The section will be collapsed. You can expand it anytime or check the Parameters page for the details.', $output );
 	}
 

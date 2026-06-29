@@ -525,7 +525,7 @@ var JZSA_KNOWN_PARAMS = [
 	'viewer-show-download-button', 'viewer-show-link-button',
 	'viewer-show-navigation', 'viewer-slideshow',
 	'viewer-slideshow-autoresume', 'viewer-slideshow-delay',
-	'viewer-source-height', 'viewer-source-width', 'viewer-toggle',
+	'viewer', 'viewer-source-height', 'viewer-source-width', 'viewer-toggle',
 	'viewer-video-controls-autohide', 'viewer-video-controls-color',
 	'fullscreen-background-color', 'fullscreen-controls-color',
 	'fullscreen-corner-radius',
@@ -681,7 +681,8 @@ var JZSA_VALUE_RULES = ( function () {
 		{ type: 'enum', values: [ 'top', 'bottom', 'left', 'right' ] } );
 	add( [ 'fullscreen-mosaic-layout', 'lightbox-mosaic-layout', 'viewer-mosaic-layout' ],
 		{ type: 'enum', values: [ 'outer', 'overlay' ] } );
-	add( [ 'viewer-toggle' ], { type: 'viewer-toggle' } );
+	add( [ 'viewer' ], { type: 'viewer-mode' } );
+	add( [ 'viewer-toggle' ], { type: 'enum', values: [ 'button', 'click', 'double-click' ] } );
 	add( [ 'fullscreen-toggle' ],
 		{ type: 'enum', values: [ 'button-only', 'click', 'double-click', 'disabled' ] } );
 	add( [ 'lightbox-toggle' ], {
@@ -806,41 +807,11 @@ function jzsaValidateValue( name, rawValue ) {
 	}
 	var lower = value.toLowerCase();
 
-	if ( 'viewer-toggle' === rule.type ) {
-		var tokens = lower.split( ',' ).map( function ( token ) {
-			return token.trim();
-		} );
-		var allowedTokens = [
-			'lightbox-button', 'lightbox-click', 'lightbox-double-click',
-			'fullscreen-button', 'fullscreen-click', 'fullscreen-double-click'
-		];
-		if ( tokens.length === 1 && tokens[ 0 ] === 'disabled' ) {
-			return null;
-		}
-		if ( tokens.indexOf( 'disabled' ) !== -1 ) {
-			return 'Parameter "viewer-toggle" cannot combine "disabled" with another token.';
-		}
-		var seenModes = {};
-		var clickModes = 0;
-		for ( var tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++ ) {
-			var token = tokens[ tokenIndex ];
-			if ( allowedTokens.indexOf( token ) === -1 ) {
-				return 'Parameter "viewer-toggle" contains invalid token "' + token +
-					'". Use lightbox-button, lightbox-click, lightbox-double-click, ' +
-					'fullscreen-button, fullscreen-click, fullscreen-double-click, or disabled.';
-			}
-			var mode = token.indexOf( 'lightbox-' ) === 0 ? 'lightbox' : 'fullscreen';
-			if ( seenModes[ mode ] ) {
-				return 'Parameter "viewer-toggle" can contain at most one ' + mode + ' token.';
-			}
-			seenModes[ mode ] = true;
-			if ( token.indexOf( '-click' ) !== -1 ) {
-				clickModes++;
-			}
-		}
-		if ( clickModes > 1 ) {
-			return 'Parameter "viewer-toggle" cannot give both lightbox and fullscreen a click gesture. ' +
-				'Use a button token for at least one mode.';
+	if ( 'viewer-mode' === rule.type ) {
+		var allowedViewerValues = [ 'lightbox', 'fullscreen', 'lightbox, fullscreen', 'disabled' ];
+		var normalised = lower.replace( /\s*,\s*/g, ', ' );
+		if ( allowedViewerValues.indexOf( normalised ) === -1 ) {
+			return 'Parameter "viewer" expects lightbox, fullscreen, "lightbox, fullscreen", or disabled. Got "' + value + '".';
 		}
 		return null;
 	}
@@ -1129,11 +1100,7 @@ function jzsaValidateShortcode( raw ) {
 			// Known parameter: check that its value matches the expected type.
 			var valueIssue = jzsaValidateValue( name, rawValue );
 			if ( valueIssue ) {
-				if ( name === 'viewer-toggle' ) {
-					errors.push( valueIssue );
-				} else {
-					warnings.push( valueIssue );
-				}
+				warnings.push( valueIssue );
 			}
 			continue;
 		}
@@ -1189,30 +1156,6 @@ function jzsaValidateShortcode( raw ) {
 		}
 	}
 
-	var ltToggle = '';
-	var fsToggle = '';
-	var viewerToggle = ( attrValues[ 'viewer-toggle' ] || '' ).trim().toLowerCase();
-	if ( viewerToggle && viewerToggle !== 'disabled' ) {
-		viewerToggle.split( ',' ).forEach( function ( rawToken ) {
-			var token = rawToken.trim();
-			var trigger = token.indexOf( 'double-click' ) !== -1
-				? 'double-click'
-				: ( token.indexOf( '-click' ) !== -1 ? 'click' : 'button-only' );
-			if ( token.indexOf( 'lightbox-' ) === 0 ) {
-				ltToggle = trigger;
-			}
-			if ( token.indexOf( 'fullscreen-' ) === 0 ) {
-				fsToggle = trigger;
-			}
-		} );
-	}
-	if ( seen[ 'lightbox-toggle' ] ) {
-		ltToggle = ( attrValues[ 'lightbox-toggle' ] || '' ).trim().toLowerCase();
-	}
-	if ( seen[ 'fullscreen-toggle' ] ) {
-		fsToggle = ( attrValues[ 'fullscreen-toggle' ] || '' ).trim().toLowerCase();
-	}
-
 	if ( seen[ 'lightbox-toggle' ] ) {
 		var ltRaw  = ( attrValues[ 'lightbox-toggle' ] || '' ).trim().toLowerCase();
 		var ltAlias = {
@@ -1220,41 +1163,52 @@ function jzsaValidateShortcode( raw ) {
 			'false': 'disabled',   'off': 'disabled',   'no': 'disabled',     '0': 'disabled'
 		};
 		var ltNorm = ltAlias[ ltRaw ] || ltRaw;
-		var ltViewerMap = { 'click': 'lightbox-click', 'double-click': 'lightbox-double-click' };
 		if ( ltNorm === 'button-only' ) {
-			warnings.push( 'Parameter "lightbox-toggle" is deprecated. Replace with viewer-toggle="lightbox-button", or remove it - Lightbox is now the default viewer.' );
-		} else if ( ltViewerMap[ ltNorm ] ) {
-			warnings.push( 'Parameter "lightbox-toggle" is deprecated. Replace with viewer-toggle="' + ltViewerMap[ ltNorm ] + '".' );
+			warnings.push( 'Parameter "lightbox-toggle" is deprecated. Lightbox is now the default viewer - simply remove this parameter.' );
+		} else if ( ltNorm === 'click' ) {
+			warnings.push( 'Parameter "lightbox-toggle" is deprecated. Replace with viewer-toggle="click".' );
+		} else if ( ltNorm === 'double-click' ) {
+			warnings.push( 'Parameter "lightbox-toggle" is deprecated. Replace with viewer-toggle="double-click".' );
 		} else if ( ltNorm === 'disabled' ) {
-			warnings.push( 'Parameter "lightbox-toggle" is deprecated. To disable Lightbox, use viewer-toggle with only a Fullscreen token, or viewer-toggle="disabled". See the migration guide at the top of the Guide page.' );
+			warnings.push( 'Parameter "lightbox-toggle" is deprecated. To disable Lightbox, use viewer="disabled" or viewer="fullscreen". See the migration guide at the top of the Guide page.' );
 		} else {
-			warnings.push( 'Parameter "lightbox-toggle" is deprecated. Use viewer-toggle instead.' );
+			warnings.push( 'Parameter "lightbox-toggle" is deprecated. Use viewer and viewer-toggle instead.' );
 		}
 	}
 	if ( seen[ 'fullscreen-toggle' ] ) {
 		var fsRaw = ( attrValues[ 'fullscreen-toggle' ] || '' ).trim().toLowerCase();
-		var fsViewerMap = { 'button-only': 'fullscreen-button', 'click': 'fullscreen-click', 'double-click': 'fullscreen-double-click' };
-		if ( fsViewerMap[ fsRaw ] ) {
-			warnings.push( 'Parameter "fullscreen-toggle" is deprecated. Replace with viewer-toggle="' + fsViewerMap[ fsRaw ] + '".' );
+		if ( fsRaw === 'button-only' ) {
+			warnings.push( 'Parameter "fullscreen-toggle" is deprecated. Replace with viewer="fullscreen".' );
+		} else if ( fsRaw === 'click' ) {
+			warnings.push( 'Parameter "fullscreen-toggle" is deprecated. Replace with viewer="fullscreen" viewer-toggle="click".' );
+		} else if ( fsRaw === 'double-click' ) {
+			warnings.push( 'Parameter "fullscreen-toggle" is deprecated. Replace with viewer="fullscreen" viewer-toggle="double-click".' );
 		} else if ( fsRaw === 'disabled' ) {
 			warnings.push( 'Parameter "fullscreen-toggle" is deprecated. Fullscreen is disabled by default, so you can remove this parameter.' );
 		} else {
-			warnings.push( 'Parameter "fullscreen-toggle" is deprecated. Use viewer-toggle instead.' );
+			warnings.push( 'Parameter "fullscreen-toggle" is deprecated. Use viewer and viewer-toggle instead.' );
 		}
 	}
 
-	var clickValues = [ 'click', 'double-click' ];
-	if ( clickValues.indexOf( ltToggle ) !== -1 && clickValues.indexOf( fsToggle ) !== -1 ) {
-		var conflictMessage =
-			'Lightbox and fullscreen cannot both use a click gesture because they compete for the same tap. ' +
-			'Use a button trigger for at least one mode.';
-		if ( viewerToggle ) {
-			errors.push( conflictMessage );
-		} else {
+	if ( seen[ 'lightbox-toggle' ] && seen[ 'fullscreen-toggle' ] ) {
+		var ltForConflict = ( attrValues[ 'lightbox-toggle' ] || '' ).trim().toLowerCase();
+		var fsForConflict = ( attrValues[ 'fullscreen-toggle' ] || '' ).trim().toLowerCase();
+		var clickGestures = [ 'click', 'double-click' ];
+		if ( clickGestures.indexOf( ltForConflict ) !== -1 && clickGestures.indexOf( fsForConflict ) !== -1 ) {
 			warnings.push(
-				'Both lightbox-toggle and fullscreen-toggle are set to a click gesture ("' + ltToggle + '" and "' + fsToggle + '"). ' +
-				'They compete for the same tap. Migrate to viewer-toggle - it controls both modes in one parameter and enforces this rule.'
+				'Both lightbox-toggle and fullscreen-toggle are set to a click gesture. ' +
+				'They compete for the same tap. Migrate to viewer and viewer-toggle instead.'
 			);
+		}
+	}
+
+	if ( seen[ 'viewer' ] && seen[ 'viewer-toggle' ] ) {
+		var viewerVal = ( attrValues[ 'viewer' ] || '' ).trim().toLowerCase().replace( /\s*,\s*/g, ', ' );
+		if ( viewerVal === 'lightbox, fullscreen' ) {
+			warnings.push( '"viewer-toggle" is ignored when viewer="lightbox, fullscreen" - both modes always use buttons.' );
+		}
+		if ( viewerVal === 'disabled' ) {
+			warnings.push( '"viewer-toggle" has no effect when viewer="disabled".' );
 		}
 	}
 

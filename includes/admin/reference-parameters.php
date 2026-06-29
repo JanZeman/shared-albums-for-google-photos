@@ -252,7 +252,7 @@
 					</table>
 
 						<h3><?php esc_html_e( 'Viewer Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php echo wp_kses_post( __( '<strong>Viewer</strong> means either Lightbox or Fullscreen, the two ways a visitor can open a larger photo view from the inline album. Viewer parameters use three levels: <code>viewer-*</code> sets the shared baseline for both modes, <code>lightbox-*</code> changes Lightbox only, and <code>fullscreen-*</code> changes Fullscreen only. There is no sideways inheritance: a <code>fullscreen-*</code> value never changes Lightbox, and a <code>lightbox-*</code> value never changes Fullscreen. If a mode-specific value is missing, that mode uses the <code>viewer-*</code> value. If that is also missing, it uses its own default. The default viewer is Lightbox: omitting <code>viewer-toggle</code> is equivalent to <code>viewer-toggle="lightbox-button"</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+							<p><?php echo wp_kses_post( __( '<strong>Viewer</strong> means either Lightbox or Fullscreen, the two ways a visitor can open a larger photo view from the inline album. Use <code>viewer</code> to choose the active mode and <code>viewer-toggle</code> to choose how it opens. Shared settings use <code>viewer-*</code> parameters; mode-specific overrides use <code>lightbox-*</code> or <code>fullscreen-*</code>. There is no sideways inheritance between modes. The default viewer is Lightbox with a button - no parameters needed for that combination.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 					<table class="jzsa-settings-table jzsa-settings-table--params">
 						<thead>
 							<tr>
@@ -262,7 +262,8 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr><td><code>viewer-toggle</code></td><td><?php echo wp_kses_post( __( 'Selects each enabled viewer mode and its entry method. Accepted tokens are <code>lightbox-button</code>, <code>lightbox-click</code>, <code>lightbox-double-click</code>, <code>fullscreen-button</code>, <code>fullscreen-click</code>, <code>fullscreen-double-click</code>, and <code>disabled</code>. Combine one lightbox token and one fullscreen token with a comma. Both modes cannot use click gestures at the same time.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><em><?php esc_html_e( 'lightbox-button', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>viewer</code></td><td><?php echo wp_kses_post( __( 'Selects which viewer mode is active. Accepted values: <code>lightbox</code>, <code>fullscreen</code>, <code>lightbox, fullscreen</code>, and <code>disabled</code>. When both modes are active, each shows a button and <code>viewer-toggle</code> is ignored.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><em>lightbox</em></td></tr>
+							<tr><td><code>viewer-toggle</code></td><td><?php echo wp_kses_post( __( 'How the active viewer opens. Accepted values: <code>button</code> (dedicated button only), <code>click</code> (button and single click), <code>double-click</code> (button and double-click). Ignored when <code>viewer="lightbox, fullscreen"</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><em>button</em></td></tr>
 							<tr><td><code>viewer-max-width</code></td><td><?php esc_html_e( 'Maximum displayed width for either viewer mode, in pixels.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'not applied', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 							<tr><td><code>viewer-max-height</code></td><td><?php esc_html_e( 'Maximum displayed height for either viewer mode, in pixels.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'not applied', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 							<tr><td><code>viewer-source-width</code></td><td><?php esc_html_e( 'Photo width fetched from Google for either viewer mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>1920</td></tr>
@@ -309,7 +310,7 @@
 								<tbody>
 									<tr>
 										<td><code>lightbox-fullscreen</code></td>
-											<td><?php echo wp_kses_post( __( 'Controls whether the Fullscreen button appears inside the Lightbox view, enabling the three-step path Inline &rarr; Lightbox &rarr; Fullscreen. Accepted values: <code>button</code> and <code>disabled</code>. Default is <code>disabled</code> - except when both Lightbox and Fullscreen are active from inline (e.g. <code>viewer-toggle="lightbox-button, fullscreen-button"</code>), in which case the default becomes <code>button</code> automatically: enabling both viewer modes is a strong signal the full chain is intended. Set an explicit value to override this in either direction. Unique to Lightbox; no Fullscreen counterpart.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+											<td><?php echo wp_kses_post( __( 'Controls whether the Fullscreen button appears inside the Lightbox view, enabling the three-step path Inline &rarr; Lightbox &rarr; Fullscreen. Accepted values: <code>button</code> and <code>disabled</code>. Default is <code>disabled</code> - except when both modes are active (e.g. <code>viewer="lightbox, fullscreen"</code>), in which case the default becomes <code>button</code> automatically. Set an explicit value to override this in either direction. Unique to Lightbox; no Fullscreen counterpart.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 										<td>disabled *</td>
 									</tr>
 									<tr>

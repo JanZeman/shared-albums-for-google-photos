@@ -114,7 +114,7 @@ class OrchestratorConfigTest extends TestCase {
     public function test_viewer_settings_configure_both_modes(): void {
         $config = $this->config(
             [
-                'viewer-toggle'                  => 'lightbox-button, fullscreen-click',
+                'viewer'                         => 'lightbox, fullscreen',
                 'viewer-max-width'               => '900',
                 'viewer-max-height'              => '700',
                 'viewer-source-width'            => '1600',
@@ -139,7 +139,7 @@ class OrchestratorConfigTest extends TestCase {
         );
 
         $this->assertSame( 'button-only', $config['lightbox-toggle'] );
-        $this->assertSame( 'click', $config['fullscreen-toggle'] );
+        $this->assertSame( 'button-only', $config['fullscreen-toggle'] );
         $this->assertSame( 900, $config['lightbox-max-width'] );
         $this->assertSame( 900, $config['fullscreen-display-max-width'] );
         $this->assertSame( 700, $config['lightbox-max-height'] );
@@ -181,7 +181,7 @@ class OrchestratorConfigTest extends TestCase {
     public function test_specific_settings_override_viewer_settings_per_mode(): void {
         $config = $this->config(
             [
-                'viewer-toggle'            => 'lightbox-button, fullscreen-button',
+                'viewer'                   => 'lightbox, fullscreen',
                 'viewer-max-width'         => '900',
                 'viewer-info-top'          => 'Shared',
                 'viewer-mosaic-position'   => 'bottom',

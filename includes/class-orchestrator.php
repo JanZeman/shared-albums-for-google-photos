@@ -486,13 +486,41 @@ class JZSA_Shared_Albums {
 			$atts['fullscreen-display-max-height'] = $atts['fullscreen-max-height'];
 		}
 
-		if ( array_key_exists( 'viewer-toggle', $atts ) ) {
-			$toggle = $this->parse_viewer_toggle( $atts['viewer-toggle'] );
+		if ( array_key_exists( 'viewer', $atts ) || array_key_exists( 'viewer-toggle', $atts ) ) {
+			$viewer_raw = strtolower( trim( (string) ( isset( $atts['viewer'] ) ? $atts['viewer'] : 'lightbox' ) ) );
+			$toggle_raw = strtolower( trim( (string) ( isset( $atts['viewer-toggle'] ) ? $atts['viewer-toggle'] : 'button' ) ) );
+
+			$toggle_map = array(
+				'button'       => 'button-only',
+				'click'        => 'click',
+				'double-click' => 'double-click',
+			);
+			$concrete_toggle = isset( $toggle_map[ $toggle_raw ] ) ? $toggle_map[ $toggle_raw ] : 'button-only';
+
+			$viewer_tokens = array_map( 'trim', explode( ',', $viewer_raw ) );
+			$has_lightbox  = in_array( 'lightbox', $viewer_tokens, true );
+			$has_fullscreen = in_array( 'fullscreen', $viewer_tokens, true );
+			$is_disabled   = in_array( 'disabled', $viewer_tokens, true );
+
+			if ( $is_disabled ) {
+				$lb_mode = 'disabled';
+				$fs_mode = 'disabled';
+			} elseif ( $has_lightbox && $has_fullscreen ) {
+				$lb_mode = 'button-only';
+				$fs_mode = 'button-only';
+			} elseif ( $has_fullscreen ) {
+				$lb_mode = 'disabled';
+				$fs_mode = $concrete_toggle;
+			} else {
+				$lb_mode = $concrete_toggle;
+				$fs_mode = 'disabled';
+			}
+
 			if ( ! $this->has_non_empty_attribute( $atts, 'lightbox-toggle' ) ) {
-				$atts['lightbox-toggle'] = $toggle['lightbox'];
+				$atts['lightbox-toggle'] = $lb_mode;
 			}
 			if ( ! $this->has_non_empty_attribute( $atts, 'fullscreen-toggle' ) ) {
-				$atts['fullscreen-toggle'] = $toggle['fullscreen'];
+				$atts['fullscreen-toggle'] = $fs_mode;
 			}
 		}
 
@@ -554,64 +582,6 @@ class JZSA_Shared_Albums {
 		return $atts;
 	}
 
-	/**
-	 * Parse viewer-toggle into deterministic concrete toggle modes.
-	 *
-	 * Invalid values disable both modes. The one recoverable conflict is two
-	 * click-driven modes, which safely fall back to separate buttons.
-	 *
-	 * @param mixed $raw Raw viewer-toggle value.
-	 * @return array{lightbox:string,fullscreen:string,valid:bool}
-	 */
-	private function parse_viewer_toggle( $raw ) {
-		$value = strtolower( trim( (string) $raw ) );
-		if ( '' === $value ) {
-			return array( 'lightbox' => 'disabled', 'fullscreen' => 'disabled', 'valid' => false );
-		}
-
-		$tokens = array_map( 'trim', explode( ',', $value ) );
-		if ( 1 === count( $tokens ) && 'disabled' === $tokens[0] ) {
-			return array( 'lightbox' => 'disabled', 'fullscreen' => 'disabled', 'valid' => true );
-		}
-		if ( in_array( 'disabled', $tokens, true ) ) {
-			return array( 'lightbox' => 'disabled', 'fullscreen' => 'disabled', 'valid' => false );
-		}
-
-		$result = array( 'lightbox' => 'disabled', 'fullscreen' => 'disabled', 'valid' => true );
-		$seen   = array();
-		$allowed = array(
-			'lightbox-button'          => array( 'lightbox', 'button-only' ),
-			'lightbox-click'           => array( 'lightbox', 'click' ),
-			'lightbox-double-click'    => array( 'lightbox', 'double-click' ),
-			'fullscreen-button'        => array( 'fullscreen', 'button-only' ),
-			'fullscreen-click'         => array( 'fullscreen', 'click' ),
-			'fullscreen-double-click'  => array( 'fullscreen', 'double-click' ),
-		);
-
-		foreach ( $tokens as $token ) {
-			if ( '' === $token || ! isset( $allowed[ $token ] ) ) {
-				return array( 'lightbox' => 'disabled', 'fullscreen' => 'disabled', 'valid' => false );
-			}
-			list( $mode, $trigger ) = $allowed[ $token ];
-			if ( isset( $seen[ $mode ] ) ) {
-				return array( 'lightbox' => 'disabled', 'fullscreen' => 'disabled', 'valid' => false );
-			}
-			$seen[ $mode ]  = true;
-			$result[ $mode ] = $trigger;
-		}
-
-		$click_modes = array( 'click', 'double-click' );
-		if (
-			in_array( $result['lightbox'], $click_modes, true ) &&
-			in_array( $result['fullscreen'], $click_modes, true )
-		) {
-			$result['lightbox']   = 'button-only';
-			$result['fullscreen'] = 'button-only';
-			$result['valid']      = false;
-		}
-
-		return $result;
-	}
 
 	/**
 	 * Whether an attribute exists and contains a non-empty value.
