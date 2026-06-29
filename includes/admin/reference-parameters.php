@@ -309,8 +309,8 @@
 								<tbody>
 									<tr>
 										<td><code>lightbox-fullscreen</code></td>
-											<td><?php echo wp_kses_post( __( 'Controls whether the Fullscreen button is shown inside the Lightbox view. Set to <code>button</code> to add a Fullscreen button inside the Lightbox, enabling the three-step path Inline &rarr; Lightbox &rarr; Fullscreen. Unique to Lightbox; no Fullscreen counterpart.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
-										<td>disabled</td>
+											<td><?php echo wp_kses_post( __( 'Controls whether the Fullscreen button appears inside the Lightbox view, enabling the three-step path Inline &rarr; Lightbox &rarr; Fullscreen. Accepted values: <code>button</code> and <code>disabled</code>. Default is <code>disabled</code> - except when both Lightbox and Fullscreen are active from inline (e.g. <code>viewer-toggle="lightbox-button, fullscreen-button"</code>), in which case the default becomes <code>button</code> automatically: enabling both viewer modes is a strong signal the full chain is intended. Set an explicit value to override this in either direction. Unique to Lightbox; no Fullscreen counterpart.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+										<td>disabled *</td>
 									</tr>
 									<tr>
 										<td><code>lightbox-backdrop-color</code></td>

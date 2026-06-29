@@ -766,7 +766,8 @@ class JZSA_Shared_Albums {
 		$lightbox_slideshow_mode  = $this->has_non_empty_attribute( $atts, 'lightbox-slideshow' ) ? $this->parse_slideshow_mode_val( $atts['lightbox-slideshow'] ) : 'disabled';
 		$lightbox_slideshow_delay = $this->parse_delay_range( $this->has_non_empty_attribute( $atts, 'lightbox-slideshow-delay' ) ? $atts['lightbox-slideshow-delay'] : self::DEFAULT_SLIDESHOW_DELAY_RANGE );
 
-		$lightbox_mode = $this->parse_lightbox_toggle_mode( $atts );
+		$lightbox_mode  = $this->parse_lightbox_toggle_mode( $atts );
+		$fullscreen_mode = $this->parse_fullscreen_toggle_mode( $atts );
 
 		$config = array(
 			// URL
@@ -815,7 +816,7 @@ class JZSA_Shared_Albums {
 				'image-fit'            => $this->parse_image_fit( $atts ),
 				'fullscreen-image-fit' => $this->parse_fullscreen_image_fit( $atts ),
 				'fullscreen-corner-radius' => $this->parse_optional_non_negative_int( $atts, 'fullscreen-corner-radius' ),
-				'fullscreen-toggle'          => $this->parse_fullscreen_toggle_mode( $atts ),
+				'fullscreen-toggle'          => $fullscreen_mode,
 				'interaction-lock'     => $this->parse_bool( $atts, 'interaction-lock', false ),
 				'show-navigation'      => $show_navigation,
 				'fullscreen-show-navigation' => $fullscreen_show_navigation,
@@ -835,7 +836,9 @@ class JZSA_Shared_Albums {
 				'lightbox-image-fit'        => $this->parse_lightbox_image_fit( $atts ),
 				'lightbox-max-width'        => $this->parse_optional_positive_int( $atts, 'lightbox-max-width' ),
 				'lightbox-max-height'       => $this->parse_optional_positive_int( $atts, 'lightbox-max-height' ),
-				'lightbox-fullscreen'       => isset( $atts['lightbox-fullscreen'] ) && 'button' === strtolower( trim( (string) $atts['lightbox-fullscreen'] ) ) ? 'button' : 'disabled',
+				'lightbox-fullscreen'       => isset( $atts['lightbox-fullscreen'] )
+					? ( 'button' === strtolower( trim( (string) $atts['lightbox-fullscreen'] ) ) ? 'button' : 'disabled' )
+					: ( ( 'disabled' !== $lightbox_mode && 'disabled' !== $fullscreen_mode ) ? 'button' : 'disabled' ),
 				'lightbox-background-color' => $this->parse_color( $atts, 'lightbox-background-color', '' ),
 				'lightbox-backdrop-color'   => $this->parse_color( $atts, 'lightbox-backdrop-color', '' ),
 				'lightbox-corner-radius'    => isset( $atts['lightbox-corner-radius'] ) ? max( 0, intval( $atts['lightbox-corner-radius'] ) ) : 0,

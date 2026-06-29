@@ -124,10 +124,10 @@ return array(
 	),
 	'render-hashes' => array(
 		'default' => 'eac170dbca6a6cd77160bc773af03d91212f9fe1b7823635bd66552a3b030f12',
-		'naveen-original' => 'e536f00d17032fbc63937670c282e5d2f6552a82037d68e7ab2dc2670d36d6da',
+		'naveen-original' => 'aeed70ee193aaca7db616e90edd86869c728cee3572ea8de3c1a5323262c44b6',
 		'legacy-lightbox-only' => 'dc69c4e43f2ad772682d04ca2594629ee1fdbf90092a63f79bbc15815fc76c29',
 		'legacy-fullscreen-only' => '501be6ee48e84628bf52d6023d88071e6cbc8bb10ca80589afb45cc26eb1b795',
-		'legacy-combined' => 'c2d6c05c76d8143e807c166422baa2bc6cf29f76744cb0e9252c9680a95c55a3',
+		'legacy-combined' => '45ad5ea8e29c31d1504556e9824743c7e0f6ca89f8682d0a4436565afe7bef70',
 		'legacy-info-aliases' => 'bbe4cede80af05b6d791ab874219c7ced6bf976d949cf000d6753c521edf60c6',
 		'legacy-mosaic' => 'f53f248715b488b91b06b3e64b1d316108dd2cf03e4b95a3971bce83c60daf2c',
 	),

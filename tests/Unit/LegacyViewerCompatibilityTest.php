@@ -71,7 +71,7 @@ class LegacyViewerCompatibilityTest extends TestCase {
 	public function test_every_production_sample_avoids_legacy_toggle_attributes(): void {
 		$sample_cases = self::productionSampleCases();
 
-		$this->assertCount( 57, $sample_cases );
+		$this->assertCount( 58, $sample_cases );
 
 		foreach ( $sample_cases as $case_name => $atts ) {
 			$this->assertArrayNotHasKey(
