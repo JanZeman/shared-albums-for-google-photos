@@ -1040,8 +1040,11 @@ html.jzsa-lightbox-open body {
 /* The fullscreen button inside the lightbox follows the standard hide-until-hover
    behaviour: the lightbox album carries .jzsa-is-fullscreen, so the desktop
    reveal rules for .jzsa-is-fullscreen .swiper-button-fullscreen apply. */
-.jzsa-album.swiper.jzsa-lightbox-active[data-lightbox-fullscreen="disabled"] > .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn) {
+.jzsa-album.swiper.jzsa-lightbox-active:not([data-lightbox-fullscreen="button"]) > .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn) {
     display: none;
+}
+.jzsa-album.jzsa-lightbox-active:not([data-lightbox-fullscreen="button"]) > .jzsa-lightbox-close {
+    right: 0;
 }
 /* Hide the lightbox close button in native fullscreen. Esc (or the fullscreen
    button) exits back to the lightbox; no need for a separate close affordance. */

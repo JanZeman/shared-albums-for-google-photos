@@ -322,8 +322,8 @@ class JZSA_Renderer {
 		if ( isset( $config['lightbox-max-height'] ) && null !== $config['lightbox-max-height'] ) {
 			$attrs[] = sprintf( 'data-lightbox-max-height="%d"', intval( $config['lightbox-max-height'] ) );
 		}
-		if ( isset( $config['lightbox-fullscreen'] ) && 'disabled' === $config['lightbox-fullscreen'] ) {
-			$attrs[] = 'data-lightbox-fullscreen="disabled"';
+		if ( isset( $config['lightbox-fullscreen'] ) && 'button' === $config['lightbox-fullscreen'] ) {
+			$attrs[] = 'data-lightbox-fullscreen="button"';
 		}
 		if ( ! empty( $config['lightbox-background-color'] ) ) {
 			$attrs[] = sprintf( 'data-lightbox-background-color="%s"', esc_attr( $config['lightbox-background-color'] ) );

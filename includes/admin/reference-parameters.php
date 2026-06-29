@@ -309,8 +309,8 @@
 								<tbody>
 									<tr>
 										<td><code>lightbox-fullscreen</code></td>
-											<td><?php echo wp_kses_post( __( 'Controls whether the Fullscreen button is shown inside the Lightbox view. Set to <code>disabled</code> to remove the Lightbox-to-Fullscreen path entirely. Unique to Lightbox; no Fullscreen counterpart.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
-										<td>button</td>
+											<td><?php echo wp_kses_post( __( 'Controls whether the Fullscreen button is shown inside the Lightbox view. Set to <code>button</code> to add a Fullscreen button inside the Lightbox, enabling the three-step path Inline &rarr; Lightbox &rarr; Fullscreen. Unique to Lightbox; no Fullscreen counterpart.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+										<td>disabled</td>
 									</tr>
 									<tr>
 										<td><code>lightbox-backdrop-color</code></td>

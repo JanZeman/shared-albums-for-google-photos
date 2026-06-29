@@ -835,7 +835,7 @@ class JZSA_Shared_Albums {
 				'lightbox-image-fit'        => $this->parse_lightbox_image_fit( $atts ),
 				'lightbox-max-width'        => $this->parse_optional_positive_int( $atts, 'lightbox-max-width' ),
 				'lightbox-max-height'       => $this->parse_optional_positive_int( $atts, 'lightbox-max-height' ),
-				'lightbox-fullscreen'       => isset( $atts['lightbox-fullscreen'] ) && 'disabled' === strtolower( trim( (string) $atts['lightbox-fullscreen'] ) ) ? 'disabled' : 'button',
+				'lightbox-fullscreen'       => isset( $atts['lightbox-fullscreen'] ) && 'button' === strtolower( trim( (string) $atts['lightbox-fullscreen'] ) ) ? 'button' : 'disabled',
 				'lightbox-background-color' => $this->parse_color( $atts, 'lightbox-background-color', '' ),
 				'lightbox-backdrop-color'   => $this->parse_color( $atts, 'lightbox-backdrop-color', '' ),
 				'lightbox-corner-radius'    => isset( $atts['lightbox-corner-radius'] ) ? max( 0, intval( $atts['lightbox-corner-radius'] ) ) : 0,
