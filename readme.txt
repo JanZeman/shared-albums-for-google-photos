@@ -108,10 +108,8 @@ No. This plugin is not affiliated with or endorsed by Google LLC. Google Photosâ
 == Changelog ==
 
 = 2.4.0 =
-* Breaking change: albums without an explicit viewer setting now open in Lightbox by default instead of native Fullscreen.
-* To keep old Fullscreen behavior, add viewer-toggle="fullscreen-button" to affected shortcodes.
-* New viewer-* parameters set shared Lightbox and Fullscreen behavior, while lightbox-* and fullscreen-* override one mode only.
-* Added a Guide migration section for existing sites.
+* Breaking change: Lightbox is now the preferred and default viewer. Sites that relied on native Fullscreen as the default may need a shortcode update.
+* A migration guide is available at the top of the Guide page inside the plugin.
 
 = 2.3.7 =
 * Improved plugin intro

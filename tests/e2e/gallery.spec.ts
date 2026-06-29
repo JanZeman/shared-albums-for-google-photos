@@ -155,7 +155,7 @@ test.describe('Gallery - hover button', () => {
         const item = album.locator('.jzsa-gallery-item').first();
         await item.waitFor({ state: 'visible', timeout: 10_000 });
         await item.hover();
-        const btn = item.locator('.jzsa-gallery-thumb-fs-btn');
+        const btn = item.locator('.jzsa-gallery-thumb-fs-btn.swiper-button-fullscreen');
         await expect(btn).toBeAttached();
         // After hover the button opacity transitions from 0 to 1.
         await expect(btn).not.toHaveCSS('opacity', '0');
@@ -174,7 +174,7 @@ test.describe('Gallery - hover button', () => {
         await second.hover();
 
         // First item button must be hidden after focus moves away.
-        await expect(first.locator('.jzsa-gallery-thumb-fs-btn')).toHaveCSS('opacity', '0');
+        await expect(first.locator('.jzsa-gallery-thumb-fs-btn.swiper-button-fullscreen')).toHaveCSS('opacity', '0');
     });
 });
 

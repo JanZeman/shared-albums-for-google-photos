@@ -793,9 +793,6 @@
         if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
             return true;
         }
-        if ('ontouchstart' in window) {
-            return true;
-        }
         return (window.navigator.maxTouchPoints || 0) > 0;
     }
 
@@ -7168,6 +7165,7 @@
             'data-has-active-bottom-center',
             // Lightbox (alternative to native fullscreen).
             'data-lightbox-toggle',
+            'data-lightbox-fullscreen',
             'data-lightbox-image-fit',
             'data-lightbox-max-width',
             'data-lightbox-max-height',

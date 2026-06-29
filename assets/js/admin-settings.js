@@ -1212,6 +1212,37 @@ function jzsaValidateShortcode( raw ) {
 	if ( seen[ 'fullscreen-toggle' ] ) {
 		fsToggle = ( attrValues[ 'fullscreen-toggle' ] || '' ).trim().toLowerCase();
 	}
+
+	if ( seen[ 'lightbox-toggle' ] ) {
+		var ltRaw  = ( attrValues[ 'lightbox-toggle' ] || '' ).trim().toLowerCase();
+		var ltAlias = {
+			'true': 'button-only', 'on': 'button-only', 'yes': 'button-only', '1': 'button-only',
+			'false': 'disabled',   'off': 'disabled',   'no': 'disabled',     '0': 'disabled'
+		};
+		var ltNorm = ltAlias[ ltRaw ] || ltRaw;
+		var ltViewerMap = { 'click': 'lightbox-click', 'double-click': 'lightbox-double-click' };
+		if ( ltNorm === 'button-only' ) {
+			warnings.push( 'Parameter "lightbox-toggle" is deprecated. Replace with viewer-toggle="lightbox-button", or remove it - Lightbox is now the default viewer.' );
+		} else if ( ltViewerMap[ ltNorm ] ) {
+			warnings.push( 'Parameter "lightbox-toggle" is deprecated. Replace with viewer-toggle="' + ltViewerMap[ ltNorm ] + '".' );
+		} else if ( ltNorm === 'disabled' ) {
+			warnings.push( 'Parameter "lightbox-toggle" is deprecated. To disable Lightbox, use viewer-toggle with only a Fullscreen token, or viewer-toggle="disabled". See the migration guide at the top of the Guide page.' );
+		} else {
+			warnings.push( 'Parameter "lightbox-toggle" is deprecated. Use viewer-toggle instead.' );
+		}
+	}
+	if ( seen[ 'fullscreen-toggle' ] ) {
+		var fsRaw = ( attrValues[ 'fullscreen-toggle' ] || '' ).trim().toLowerCase();
+		var fsViewerMap = { 'button-only': 'fullscreen-button', 'click': 'fullscreen-click', 'double-click': 'fullscreen-double-click' };
+		if ( fsViewerMap[ fsRaw ] ) {
+			warnings.push( 'Parameter "fullscreen-toggle" is deprecated. Replace with viewer-toggle="' + fsViewerMap[ fsRaw ] + '".' );
+		} else if ( fsRaw === 'disabled' ) {
+			warnings.push( 'Parameter "fullscreen-toggle" is deprecated. Fullscreen is disabled by default, so you can remove this parameter.' );
+		} else {
+			warnings.push( 'Parameter "fullscreen-toggle" is deprecated. Use viewer-toggle instead.' );
+		}
+	}
+
 	var clickValues = [ 'click', 'double-click' ];
 	if ( clickValues.indexOf( ltToggle ) !== -1 && clickValues.indexOf( fsToggle ) !== -1 ) {
 		var conflictMessage =
@@ -1221,10 +1252,8 @@ function jzsaValidateShortcode( raw ) {
 			errors.push( conflictMessage );
 		} else {
 			warnings.push(
-				'Both lightbox-toggle and fullscreen-toggle are set to a click action ("' + ltToggle + '" and "' + fsToggle + '"). ' +
-				'They would compete for the same tap, so the plugin automatically treats fullscreen-toggle as "button-only": ' +
-				'lightbox keeps the click trigger and fullscreen gets its own button in the corner. ' +
-				'To silence this warning, set fullscreen-toggle="button-only" explicitly.'
+				'Both lightbox-toggle and fullscreen-toggle are set to a click gesture ("' + ltToggle + '" and "' + fsToggle + '"). ' +
+				'They compete for the same tap. Migrate to viewer-toggle - it controls both modes in one parameter and enforces this rule.'
 			);
 		}
 	}

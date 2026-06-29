@@ -223,6 +223,10 @@ test.describe('Shortcode validation - parameter values', () => {
             `[jzsa-album link="${VALID_LINK}" viewer-toggle="lightbox-click, fullscreen-button" ` +
                 'lightbox-toggle="button-only" fullscreen-toggle="double-click"]',
         );
-        await expect(page.locator(VALIDATION)).not.toBeVisible();
+        const area = page.locator(VALIDATION);
+        await expect(area).toHaveClass(/jzsa-code-validation--warning/);
+        await expect(area).toContainText('"lightbox-toggle" is deprecated');
+        await expect(area).toContainText('"fullscreen-toggle" is deprecated');
+        await expect(area).not.toHaveClass(/jzsa-code-validation--error/);
     });
 });
