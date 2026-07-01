@@ -646,7 +646,7 @@ class JZSA_Community {
 		<div class="notice notice-error is-dismissible jzsa-community-notice">
 			<p>
 				<strong><?php esc_html_e( 'Community server error.', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-				<?php esc_html_e( 'Something is wrong with the community server. Please try again later. If the problem persists, please report it.', 'janzeman-shared-albums-for-google-photos' ); ?>
+				<?php esc_html_e( 'Something is wrong with the community server. Please try again later. If the problem persists, report it.', 'janzeman-shared-albums-for-google-photos' ); ?>
 			</p>
 		</div>
 		<?php endif; ?>
