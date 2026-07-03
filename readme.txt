@@ -266,7 +266,7 @@ This plugin does not collect or store any user data for its core gallery functio
 
 = Community Directory (optional, opt-in) =
 
-The Community Directory is optional. Browsing samples loads public examples from jzsa.janzeman.com.
+The Community Directory is optional. Browsing samples loads public examples from sa.janzeman.com.
 Sign-in, ratings, and publishing are used only when you choose to connect to the community.
 
 If you publish an entry, the community service stores the information you submit,
