@@ -569,6 +569,32 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertSame( 1200, $config['fullscreen-display-max-width'] );
     }
 
+    public function test_viewer_display_max_alias_propagates_to_both_modes(): void {
+        $config = $this->config(
+            array(
+                'viewer-display-max-width' => '800',
+                'viewer-display-max-height' => '600',
+            )
+        );
+
+        $this->assertSame( 800, $config['lightbox-max-width'] );
+        $this->assertSame( 600, $config['lightbox-max-height'] );
+        $this->assertSame( 800, $config['fullscreen-display-max-width'] );
+        $this->assertSame( 600, $config['fullscreen-display-max-height'] );
+    }
+
+    public function test_viewer_max_width_alias_overrides_legacy_viewer_display_max_width(): void {
+        $config = $this->config(
+            array(
+                'viewer-max-width' => '1200',
+                'viewer-display-max-width' => '900',
+            )
+        );
+
+        $this->assertSame( 1200, $config['lightbox-max-width'] );
+        $this->assertSame( 1200, $config['fullscreen-display-max-width'] );
+    }
+
     public function test_parse_dimension_accepts_auto_keyword(): void {
         $auto   = $this->invoke( 'parse_dimension', array( 'width' => 'auto' ), 'width', 400 );
         $upper  = $this->invoke( 'parse_dimension', array( 'width' => 'AUTO' ), 'width', 400 );

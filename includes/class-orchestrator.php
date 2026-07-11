@@ -486,6 +486,15 @@ class JZSA_Shared_Albums {
 			$atts['fullscreen-display-max-height'] = $atts['fullscreen-max-height'];
 		}
 
+		// Obsolete alias: 'viewer-display-max-width'/'-height' predate the shorter
+		// 'viewer-max-width'/'-height' names. The current name always wins when both are set.
+		if ( ! $this->has_non_empty_attribute( $atts, 'viewer-max-width' ) && $this->has_non_empty_attribute( $atts, 'viewer-display-max-width' ) ) {
+			$atts['viewer-max-width'] = $atts['viewer-display-max-width'];
+		}
+		if ( ! $this->has_non_empty_attribute( $atts, 'viewer-max-height' ) && $this->has_non_empty_attribute( $atts, 'viewer-display-max-height' ) ) {
+			$atts['viewer-max-height'] = $atts['viewer-display-max-height'];
+		}
+
 		if ( array_key_exists( 'viewer', $atts ) || array_key_exists( 'viewer-toggle', $atts ) ) {
 			$viewer_raw = strtolower( trim( (string) ( isset( $atts['viewer'] ) ? $atts['viewer'] : 'lightbox' ) ) );
 			$toggle_raw = strtolower( trim( (string) ( isset( $atts['viewer-toggle'] ) ? $atts['viewer-toggle'] : 'button' ) ) );

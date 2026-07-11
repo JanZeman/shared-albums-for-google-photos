@@ -603,7 +603,9 @@ var JZSA_OBSOLETE_PARAM_REPLACEMENTS = ( function () {
 		'fullscreen-info-top-1': 'fullscreen-info-top',
 		'fullscreen-info-top-2': 'fullscreen-info-top-secondary',
 		'fullscreen-display-max-width': 'fullscreen-max-width',
-		'fullscreen-display-max-height': 'fullscreen-max-height'
+		'fullscreen-display-max-height': 'fullscreen-max-height',
+		'viewer-display-max-width': 'viewer-max-width',
+		'viewer-display-max-height': 'viewer-max-height'
 	};
 	var suffixes = [
 		'toggle', 'max-width', 'max-height', 'source-width', 'source-height',
@@ -726,7 +728,8 @@ var JZSA_VALUE_RULES = ( function () {
 		'fullscreen-max-width', 'fullscreen-max-height',
 		'lightbox-max-width', 'lightbox-max-height',
 		'viewer-source-width', 'viewer-source-height',
-		'viewer-max-width', 'viewer-max-height'
+		'viewer-max-width', 'viewer-max-height',
+		'viewer-display-max-width', 'viewer-display-max-height'
 	], { type: 'int', min: 1 } );
 	add( [ 'gallery-columns', 'gallery-columns-tablet', 'gallery-columns-mobile' ],
 		{ type: 'int', min: 1, max: 12 } );
