@@ -42,6 +42,7 @@ define( 'JZSA_PLUGIN_FILE', __FILE__ );
 define( 'JZSA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'JZSA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'JZSA_VERSION_OPTION', 'jzsa_plugin_version' );
+define( 'JZSA_DEFAULT_VIEWER_OPTION', 'jzsa_default_viewer' );
 define( 'JZSA_VIEWER_MIGRATION_NOTICE_OPTION', 'jzsa_viewer_migration_notice' );
 define( 'JZSA_VIEWER_MIGRATION_CUTOFF_VERSION', '2.4.0' );
 
@@ -55,6 +56,17 @@ define( 'JZSA_VIEWER_MIGRATION_CUTOFF_VERSION', '2.4.0' );
  */
 function jzsa_get_admin_capability() {
 	return apply_filters( 'jzsa_admin_capability', 'edit_pages' );
+}
+
+/**
+ * Return the site default used only by shortcodes without explicit viewer selection.
+ *
+ * @return string
+ */
+function jzsa_get_default_viewer() {
+	$value = get_option( JZSA_DEFAULT_VIEWER_OPTION, 'lightbox' );
+
+	return in_array( $value, array( 'lightbox', 'fullscreen' ), true ) ? $value : 'lightbox';
 }
 
 /**
@@ -89,6 +101,7 @@ function jzsa_get_frontend_i18n_strings() {
  */
 require_once JZSA_PLUGIN_DIR . 'includes/class-data-provider.php';
 require_once JZSA_PLUGIN_DIR . 'includes/class-renderer.php';
+require_once JZSA_PLUGIN_DIR . 'includes/class-shortcode-tools.php';
 require_once JZSA_PLUGIN_DIR . 'includes/class-orchestrator.php';
 require_once JZSA_PLUGIN_DIR . 'includes/class-admin-pages.php';
 require_once JZSA_PLUGIN_DIR . 'includes/class-community.php';
@@ -227,6 +240,16 @@ add_action( 'init', 'jzsa_init_plugin' );
  */
 function jzsa_maybe_run_version_migration() {
 	$stored_version = get_option( JZSA_VERSION_OPTION, '' );
+	$default_viewer = get_option( JZSA_DEFAULT_VIEWER_OPTION, '' );
+
+	if ( ! in_array( $default_viewer, array( 'lightbox', 'fullscreen' ), true ) ) {
+		$initial_default = JZSA_Shortcode_Tools::resolve_initial_default_viewer(
+			$stored_version,
+			$default_viewer,
+			JZSA_VIEWER_MIGRATION_CUTOFF_VERSION
+		);
+		update_option( JZSA_DEFAULT_VIEWER_OPTION, $initial_default, false );
+	}
 
 	if ( JZSA_VERSION === $stored_version ) {
 		return;
@@ -253,6 +276,20 @@ add_action( 'plugins_loaded', 'jzsa_maybe_run_version_migration' );
 function jzsa_activate() {
 	// Clear all plugin caches on activation.
 	jzsa_clear_all_plugin_caches();
+	$stored_version = get_option( JZSA_VERSION_OPTION, '' );
+	$default_viewer = get_option( JZSA_DEFAULT_VIEWER_OPTION, '' );
+	$is_upgrade     = '' !== $stored_version && version_compare( $stored_version, JZSA_VIEWER_MIGRATION_CUTOFF_VERSION, '<' );
+
+	if ( ! in_array( $default_viewer, array( 'lightbox', 'fullscreen' ), true ) ) {
+		update_option(
+			JZSA_DEFAULT_VIEWER_OPTION,
+			JZSA_Shortcode_Tools::resolve_initial_default_viewer( $stored_version, $default_viewer, JZSA_VIEWER_MIGRATION_CUTOFF_VERSION ),
+			false
+		);
+	}
+	if ( $is_upgrade ) {
+		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1', false );
+	}
 	update_option( JZSA_VERSION_OPTION, JZSA_VERSION, false );
 
 	// Generate the per-install secret used to bind community JWTs to this WP

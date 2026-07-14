@@ -186,24 +186,23 @@ test.describe('Shortcode validation - parameter values', () => {
         await expect(area).not.toBeVisible();
     });
 
-    test('a valid viewer and viewer-toggle combination produces no message', async ({ page }) => {
+    test('a valid viewer and viewer-trigger combination produces no message', async ({ page }) => {
         await setShortcode(
             page,
-            `[jzsa-album link="${VALID_LINK}" viewer="fullscreen" viewer-toggle="click" ` +
+            `[jzsa-album link="${VALID_LINK}" viewer="fullscreen" viewer-trigger="click" ` +
                 'viewer-max-width="900" viewer-slideshow="auto"]',
         );
         await expect(page.locator(VALIDATION)).not.toBeVisible();
     });
 
-    test('viewer-toggle warns when viewer is lightbox, fullscreen', async ({ page }) => {
+    test('viewer-trigger is an error when viewer is both', async ({ page }) => {
         await setShortcode(
             page,
-            `[jzsa-album link="${VALID_LINK}" viewer="lightbox, fullscreen" viewer-toggle="click"]`,
+            `[jzsa-album link="${VALID_LINK}" viewer="both" viewer-trigger="click"]`,
         );
         const area = page.locator(VALIDATION);
-        await expect(area).toHaveClass(/jzsa-code-validation--warning/);
-        await expect(area).toContainText('"viewer-toggle" is ignored when viewer="lightbox, fullscreen"');
-        await expect(area).not.toHaveClass(/jzsa-code-validation--error/);
+		await expect(area).toHaveClass(/jzsa-code-validation--error/);
+		await expect(area).toContainText('shared viewer trigger cannot be used with viewer="both"');
     });
 
     test('deprecated lightbox-toggle and fullscreen-toggle both warn with migration hints', async ({ page }) => {
@@ -216,5 +215,60 @@ test.describe('Shortcode validation - parameter values', () => {
         await expect(area).toContainText('"lightbox-toggle" is deprecated');
         await expect(area).toContainText('"fullscreen-toggle" is deprecated');
         await expect(area).not.toHaveClass(/jzsa-code-validation--error/);
+    });
+});
+
+test.describe('Shortcode Migration Tool', () => {
+    test.beforeEach(async ({ page }) => {
+        await loginAsAdmin(page);
+        await page.goto(GUIDE_URL);
+        await page.locator('#jzsa-guide-migration-details').evaluate((details: HTMLDetailsElement) => {
+            details.open = true;
+        });
+        await expect(page.locator('#jzsa-migrate-shortcode')).toBeVisible();
+    });
+
+    test('preserves legacy behavior and loads the modern shortcode in Playground', async ({ page }) => {
+        await page.locator('#jzsa-migration-shortcode').fill(
+            '[jzsa-album link="https://photos.google.com/share/test" ' +
+                'fullscreen-toggle="click" fullscreen-source-width="800"]',
+        );
+        await page.locator('#jzsa-migrate-shortcode').click();
+
+        const output = page.locator('#jzsa-migrated-shortcode');
+        await expect(output).toBeVisible();
+        await expect(output).toHaveValue(/viewer="fullscreen"/);
+        await expect(output).toHaveValue(/viewer-trigger="click"/);
+        await expect(output).toHaveValue(/fullscreen-source-width="800"/);
+        await expect(output).toHaveValue(/lightbox-source-width="800"/);
+        await expect(page.locator('#jzsa-migration-result')).toContainText('Behavior preserved.');
+        await expect(page.locator('#jzsa-migration-result')).toContainText('Validation: valid');
+
+        await page.locator('#jzsa-load-migrated').click();
+        await expect(page.locator('#jzsa-playground-shortcode')).toContainText('viewer="fullscreen"');
+    });
+
+    test('rejects competing legacy gestures instead of guessing an owner', async ({ page }) => {
+        await page.locator('#jzsa-migration-shortcode').fill(
+            '[jzsa-album link="https://photos.google.com/share/test" ' +
+                'lightbox-toggle="click" fullscreen-toggle="double-click"]',
+        );
+        await page.locator('#jzsa-migrate-shortcode').click();
+
+        await expect(page.locator('#jzsa-migration-result')).toContainText(
+            'legacy Lightbox and Fullscreen gestures compete',
+        );
+        await expect(page.locator('#jzsa-migrated-shortcode')).toHaveCount(0);
+    });
+
+    test('preserves and highlights an unknown parameter', async ({ page }) => {
+        await page.locator('#jzsa-migration-shortcode').fill(
+            '[jzsa-album link="https://photos.google.com/share/test" sparkle="true"]',
+        );
+        await page.locator('#jzsa-migrate-shortcode').click();
+
+        await expect(page.locator('#jzsa-migrated-shortcode')).toHaveValue(/sparkle="true"/);
+        await expect(page.locator('#jzsa-migration-result')).toContainText('Validation: warning');
+        await expect(page.locator('#jzsa-migration-result')).toContainText('Unknown parameter "sparkle"');
     });
 });

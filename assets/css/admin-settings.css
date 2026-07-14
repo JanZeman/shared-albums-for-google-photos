@@ -315,6 +315,36 @@
     line-height: 1.6;
 }
 
+.jzsa-shortcode-migrator,
+.jzsa-default-viewer-setting {
+    margin: 20px 0 0;
+    padding: 18px 20px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    background: #fff;
+}
+
+.jzsa-shortcode-migrator textarea {
+    width: 100%;
+    font-family: Consolas, Monaco, monospace;
+}
+
+.jzsa-migration-goals {
+    display: grid;
+    gap: 8px;
+    margin: 14px 0;
+}
+
+.jzsa-migration-goals legend {
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.jzsa-default-viewer-setting > label {
+    display: inline-block;
+    margin: 4px 18px 4px 0;
+}
+
 .jzsa-viewer-migration-guide ul {
     margin: 0 0 0 22px;
     padding: 0;

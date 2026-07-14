@@ -478,7 +478,18 @@ class JZSA_Shared_Albums {
 	 * @param array $atts Shortcode attributes.
 	 * @return array Normalized shortcode attributes.
 	 */
-	private function apply_viewer_attribute_defaults( $atts ) {
+	private function apply_viewer_attribute_defaults( $atts, $viewer_model = 'modern' ) {
+		if ( 'modern' === $viewer_model ) {
+			$trigger_map = array( 'button' => 'button-only', 'click' => 'click', 'double-click' => 'double-click' );
+			if ( isset( $atts['lightbox-trigger'] ) && ! isset( $atts['lightbox-toggle'] ) ) {
+				$trigger = strtolower( trim( (string) $atts['lightbox-trigger'] ) );
+				$atts['lightbox-toggle'] = isset( $trigger_map[ $trigger ] ) ? $trigger_map[ $trigger ] : 'button-only';
+			}
+			if ( isset( $atts['fullscreen-trigger'] ) && ! isset( $atts['fullscreen-toggle'] ) ) {
+				$trigger = strtolower( trim( (string) $atts['fullscreen-trigger'] ) );
+				$atts['fullscreen-toggle'] = isset( $trigger_map[ $trigger ] ) ? $trigger_map[ $trigger ] : 'button-only';
+			}
+		}
 		if ( $this->has_non_empty_attribute( $atts, 'fullscreen-max-width' ) ) {
 			$atts['fullscreen-display-max-width'] = $atts['fullscreen-max-width'];
 		}
@@ -495,9 +506,12 @@ class JZSA_Shared_Albums {
 			$atts['viewer-max-height'] = $atts['viewer-display-max-height'];
 		}
 
-		if ( array_key_exists( 'viewer', $atts ) || array_key_exists( 'viewer-toggle', $atts ) ) {
-			$viewer_raw = strtolower( trim( (string) ( isset( $atts['viewer'] ) ? $atts['viewer'] : 'lightbox' ) ) );
-			$toggle_raw = strtolower( trim( (string) ( isset( $atts['viewer-toggle'] ) ? $atts['viewer-toggle'] : 'button' ) ) );
+		if ( 'modern' === $viewer_model && ( array_key_exists( 'viewer', $atts ) || array_key_exists( 'viewer-trigger', $atts ) || array_key_exists( 'viewer-toggle', $atts ) ) ) {
+			$viewer_raw = strtolower( trim( (string) ( isset( $atts['viewer'] ) ? $atts['viewer'] : jzsa_get_default_viewer() ) ) );
+			$toggle_raw = strtolower( trim( (string) ( isset( $atts['viewer-trigger'] ) ? $atts['viewer-trigger'] : ( isset( $atts['viewer-toggle'] ) ? $atts['viewer-toggle'] : 'button' ) ) ) );
+			if ( 'both' === $viewer_raw ) {
+				$viewer_raw = 'lightbox, fullscreen';
+			}
 
 			$toggle_map = array(
 				'button'       => 'button-only',
@@ -517,6 +531,24 @@ class JZSA_Shared_Albums {
 			} elseif ( $has_lightbox && $has_fullscreen ) {
 				$lb_mode = 'button-only';
 				$fs_mode = 'button-only';
+				$lb_trigger = isset( $atts['lightbox-trigger'] ) ? strtolower( trim( (string) $atts['lightbox-trigger'] ) ) : 'button';
+				$fs_trigger = isset( $atts['fullscreen-trigger'] ) ? strtolower( trim( (string) $atts['fullscreen-trigger'] ) ) : 'button';
+				$gestures   = array( 'click', 'double-click' );
+				if ( ! isset( $atts['viewer-trigger'] ) && ! isset( $atts['viewer-toggle'] ) ) {
+					if ( in_array( $lb_trigger, $gestures, true ) && ! in_array( $fs_trigger, $gestures, true ) ) {
+						$lb_mode = $lb_trigger;
+					} elseif ( in_array( $fs_trigger, $gestures, true ) && ! in_array( $lb_trigger, $gestures, true ) ) {
+						$fs_mode = $fs_trigger;
+					}
+				}
+				$existing_lb = isset( $atts['lightbox-toggle'] ) ? strtolower( trim( (string) $atts['lightbox-toggle'] ) ) : $lb_mode;
+				$existing_fs = isset( $atts['fullscreen-toggle'] ) ? strtolower( trim( (string) $atts['fullscreen-toggle'] ) ) : $fs_mode;
+				if ( ! isset( $atts['viewer-trigger'] ) && ! isset( $atts['viewer-toggle'] ) && ! ( in_array( $existing_lb, $gestures, true ) && in_array( $existing_fs, $gestures, true ) ) ) {
+					$lb_mode = in_array( $existing_lb, $gestures, true ) ? $existing_lb : 'button-only';
+					$fs_mode = in_array( $existing_fs, $gestures, true ) ? $existing_fs : 'button-only';
+				}
+				$atts['lightbox-toggle']   = $lb_mode;
+				$atts['fullscreen-toggle'] = $fs_mode;
 			} elseif ( $has_fullscreen ) {
 				$lb_mode = 'disabled';
 				$fs_mode = $concrete_toggle;
@@ -585,6 +617,94 @@ class JZSA_Shared_Albums {
 				if ( ! $concrete_is_set ) {
 					$atts[ $concrete_key ] = $atts[ $viewer_key ];
 				}
+			}
+		}
+
+		return $atts;
+	}
+
+	/**
+	 * Classify raw shortcode attributes before aliases can obscure their origin.
+	 *
+	 * @param array $atts Raw shortcode attributes.
+	 * @return string
+	 */
+	private function classify_viewer_attributes( $atts ) {
+		foreach ( array_keys( $atts ) as $key ) {
+			$key = strtolower( (string) $key );
+			if ( 'viewer' === $key || 0 === strpos( $key, 'viewer-' ) ) {
+				return 'modern';
+			}
+		}
+
+		foreach ( array_keys( $atts ) as $key ) {
+			$key = strtolower( (string) $key );
+			if ( 0 === strpos( $key, 'lightbox-' ) || 0 === strpos( $key, 'fullscreen-' ) || 0 === strpos( $key, 'expanded-' ) ) {
+				return 'legacy';
+			}
+		}
+
+		return 'implicit';
+	}
+
+	/**
+	 * Materialize the site default for a shortcode with no viewer selection.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return array
+	 */
+	private function apply_implicit_viewer_defaults( $atts ) {
+		if ( 'fullscreen' === jzsa_get_default_viewer() ) {
+			$atts['lightbox-toggle']   = 'disabled';
+			$atts['fullscreen-toggle'] = 'button-only';
+		} else {
+			$atts['lightbox-toggle']   = 'button-only';
+			$atts['fullscreen-toggle'] = 'disabled';
+		}
+
+		return $atts;
+	}
+
+	/**
+	 * Preserve the effective 2.3.7 viewer behavior for raw legacy shortcodes.
+	 *
+	 * TODO(viewer-legacy-removal): Re-evaluate for a future major release only
+	 * after the migration criteria in safe_upgrade.md are met.
+	 *
+	 * @param array $atts Normalized legacy attributes.
+	 * @return array
+	 */
+	private function resolve_legacy_viewer_attributes( $atts ) {
+		if ( ! isset( $atts['lightbox-toggle'] ) ) {
+			$atts['lightbox-toggle'] = 'disabled';
+		}
+		if ( ! isset( $atts['fullscreen-toggle'] ) ) {
+			$atts['fullscreen-toggle'] = 'disabled' === $this->parse_lightbox_toggle_mode( $atts ) ? 'button-only' : 'disabled';
+		}
+
+		// TODO(viewer-legacy-removal): Remove this fixed 2.3.7 pairing table with the resolver.
+		$pairs = array(
+			array( 'fullscreen-source-width', 'lightbox-source-width' ),
+			array( 'fullscreen-source-height', 'lightbox-source-height' ),
+			array( 'fullscreen-image-fit', 'lightbox-image-fit' ),
+			array( 'fullscreen-controls-color', 'lightbox-controls-color' ),
+			array( 'fullscreen-video-controls-color', 'lightbox-video-controls-color' ),
+			array( 'fullscreen-video-controls-autohide', 'lightbox-video-controls-autohide' ),
+			array( 'fullscreen-show-navigation', 'lightbox-show-navigation' ),
+			array( 'fullscreen-show-link-button', 'lightbox-show-link-button' ),
+			array( 'fullscreen-show-download-button', 'lightbox-show-download-button' ),
+			array( 'fullscreen-slideshow', 'lightbox-slideshow' ),
+			array( 'fullscreen-slideshow-delay', 'lightbox-slideshow-delay' ),
+			array( 'fullscreen-slideshow-autoresume', 'lightbox-slideshow-autoresume' ),
+		);
+
+		foreach ( $pairs as $pair ) {
+			$first_set  = $this->has_non_empty_attribute( $atts, $pair[0] );
+			$second_set = $this->has_non_empty_attribute( $atts, $pair[1] );
+			if ( $first_set && ! $second_set ) {
+				$atts[ $pair[1] ] = $atts[ $pair[0] ];
+			} elseif ( $second_set && ! $first_set ) {
+				$atts[ $pair[0] ] = $atts[ $pair[1] ];
 			}
 		}
 
@@ -664,8 +784,15 @@ class JZSA_Shared_Albums {
 	 * @return array Configuration
 	 */
 	private function parse_shortcode_config( $atts, $url ) {
+		$viewer_model = $this->classify_viewer_attributes( $atts );
 		$atts = $this->normalize_legacy_viewer_attributes( $atts );
-		$atts = $this->apply_viewer_attribute_defaults( $atts );
+		if ( 'implicit' === $viewer_model ) {
+			$atts = $this->apply_implicit_viewer_defaults( $atts );
+		} elseif ( 'legacy' === $viewer_model ) {
+			// TODO(viewer-legacy-removal): Keep this as the only legacy sideways-inheritance call site.
+			$atts = $this->resolve_legacy_viewer_attributes( $atts );
+		}
+		$atts = $this->apply_viewer_attribute_defaults( $atts, $viewer_model );
 
 		$mode                 = $this->parse_mode( $atts );
 		$show_navigation      = $this->parse_bool( $atts, 'show-navigation', true );
@@ -2520,15 +2647,21 @@ class JZSA_Shared_Albums {
 			wp_send_json_error( __( 'Invalid nonce', 'janzeman-shared-albums-for-google-photos' ) );
 		}
 
-		$shortcode = isset( $_POST['shortcode'] ) ? wp_kses_post( wp_unslash( $_POST['shortcode'] ) ) : '';
+		$shortcode = isset( $_POST['shortcode'] ) ? sanitize_textarea_field( wp_unslash( $_POST['shortcode'] ) ) : '';
 
 		if ( empty( $shortcode ) ) {
 			wp_send_json_error( __( 'Empty shortcode', 'janzeman-shared-albums-for-google-photos' ) );
 		}
 
-		// Only allow our own shortcode in this preview endpoint.
-		if ( false === strpos( $shortcode, '[jzsa-album' ) ) {
-			wp_send_json_error( __( 'Only the [jzsa-album] shortcode is supported in this preview.', 'janzeman-shared-albums-for-google-photos' ) );
+		$parsed = JZSA_Shortcode_Tools::parse( $shortcode );
+		if ( ! empty( $parsed['errors'] ) ) {
+			wp_send_json_error( $parsed['errors'][0]['message'] );
+		}
+		$semantic_issues = JZSA_Shortcode_Tools::validate_semantics( $parsed['attributes'], 'playground' );
+		foreach ( $semantic_issues as $issue ) {
+			if ( 'error' === $issue['severity'] ) {
+				wp_send_json_error( $issue['message'] );
+			}
 		}
 
 		$html = do_shortcode( $shortcode );

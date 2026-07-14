@@ -108,8 +108,10 @@ No. This plugin is not affiliated with or endorsed by Google LLC. Google Photosâ
 == Changelog ==
 
 = 2.4.0 =
-* Sorry for the disruption. Breaking change: Lightbox is now the preferred and default viewer. Sites that relied on native Fullscreen as the default may need a shortcode update.
-* A migration guide is available at the top of the Guide page inside the plugin.
+* Lightbox is the recommended viewer and the default for new installations.
+* Existing installations keep their current Fullscreen default. Updating the plugin does not require a shortcode change.
+* The Guide now includes a validator-backed Migration Tool, viewer comparison samples, and a reversible site default.
+* New viewer parameters make Lightbox and Fullscreen selection, triggers, and mode-specific overrides explicit.
 
 = 2.3.7 =
 * Improved plugin intro

@@ -518,6 +518,7 @@ var JZSA_KNOWN_PARAMS = [
 	'viewer-info-font-color', 'viewer-info-font-family',
 	'viewer-info-font-size', 'viewer-info-top',
 	'viewer-info-top-secondary', 'viewer-max-height', 'viewer-max-width',
+	'viewer-trigger', 'lightbox-trigger', 'fullscreen-trigger',
 	'viewer-mosaic', 'viewer-mosaic-background',
 	'viewer-mosaic-corner-radius', 'viewer-mosaic-count',
 	'viewer-mosaic-gap', 'viewer-mosaic-layout',
@@ -592,6 +593,7 @@ var JZSA_LEGACY_PARAMS = [
  */
 var JZSA_OBSOLETE_PARAM_REPLACEMENTS = ( function () {
 	var replacements = {
+		'viewer-toggle': 'viewer-trigger',
 		'cache-refresh': 'album-cache-refresh',
 		'gallery-page-bottom': 'gallery-info-bottom',
 		'show-title': 'info-bottom',
@@ -684,7 +686,8 @@ var JZSA_VALUE_RULES = ( function () {
 	add( [ 'fullscreen-mosaic-layout', 'lightbox-mosaic-layout', 'viewer-mosaic-layout' ],
 		{ type: 'enum', values: [ 'outer', 'overlay' ] } );
 	add( [ 'viewer' ], { type: 'viewer-mode' } );
-	add( [ 'viewer-toggle' ], { type: 'enum', values: [ 'button', 'click', 'double-click' ] } );
+	add( [ 'viewer-trigger', 'viewer-toggle', 'lightbox-trigger', 'fullscreen-trigger' ],
+		{ type: 'enum', values: [ 'button', 'click', 'double-click' ] } );
 	add( [ 'fullscreen-toggle' ],
 		{ type: 'enum', values: [ 'button-only', 'click', 'double-click', 'disabled' ] } );
 	add( [ 'lightbox-toggle' ], {
@@ -811,10 +814,10 @@ function jzsaValidateValue( name, rawValue ) {
 	var lower = value.toLowerCase();
 
 	if ( 'viewer-mode' === rule.type ) {
-		var allowedViewerValues = [ 'lightbox', 'fullscreen', 'lightbox, fullscreen', 'disabled' ];
+		var allowedViewerValues = [ 'lightbox', 'fullscreen', 'both', 'lightbox, fullscreen', 'disabled' ];
 		var normalised = lower.replace( /\s*,\s*/g, ', ' );
 		if ( allowedViewerValues.indexOf( normalised ) === -1 ) {
-			return 'Parameter "viewer" expects lightbox, fullscreen, "lightbox, fullscreen", or disabled. Got "' + value + '".';
+			return 'Parameter "viewer" expects lightbox, fullscreen, both, or disabled. Got "' + value + '".';
 		}
 		return null;
 	}
@@ -1167,15 +1170,15 @@ function jzsaValidateShortcode( raw ) {
 		};
 		var ltNorm = ltAlias[ ltRaw ] || ltRaw;
 		if ( ltNorm === 'button-only' ) {
-			warnings.push( 'Parameter "lightbox-toggle" is deprecated. Lightbox is now the default viewer - simply remove this parameter.' );
+			warnings.push( 'Parameter "lightbox-toggle" is deprecated. Replace it with viewer="lightbox".' );
 		} else if ( ltNorm === 'click' ) {
-			warnings.push( 'Parameter "lightbox-toggle" is deprecated. Replace with viewer-toggle="click".' );
+			warnings.push( 'Parameter "lightbox-toggle" is deprecated. Replace with viewer-trigger="click".' );
 		} else if ( ltNorm === 'double-click' ) {
-			warnings.push( 'Parameter "lightbox-toggle" is deprecated. Replace with viewer-toggle="double-click".' );
+			warnings.push( 'Parameter "lightbox-toggle" is deprecated. Replace with viewer-trigger="double-click".' );
 		} else if ( ltNorm === 'disabled' ) {
 			warnings.push( 'Parameter "lightbox-toggle" is deprecated. To disable Lightbox, use viewer="disabled" or viewer="fullscreen". See the migration guide at the top of the Guide page.' );
 		} else {
-			warnings.push( 'Parameter "lightbox-toggle" is deprecated. Use viewer and viewer-toggle instead.' );
+			warnings.push( 'Parameter "lightbox-toggle" is deprecated. Use viewer and viewer-trigger instead.' );
 		}
 	}
 	if ( seen[ 'fullscreen-toggle' ] ) {
@@ -1183,13 +1186,13 @@ function jzsaValidateShortcode( raw ) {
 		if ( fsRaw === 'button-only' ) {
 			warnings.push( 'Parameter "fullscreen-toggle" is deprecated. Replace with viewer="fullscreen".' );
 		} else if ( fsRaw === 'click' ) {
-			warnings.push( 'Parameter "fullscreen-toggle" is deprecated. Replace with viewer="fullscreen" viewer-toggle="click".' );
+			warnings.push( 'Parameter "fullscreen-toggle" is deprecated. Replace with viewer="fullscreen" viewer-trigger="click".' );
 		} else if ( fsRaw === 'double-click' ) {
-			warnings.push( 'Parameter "fullscreen-toggle" is deprecated. Replace with viewer="fullscreen" viewer-toggle="double-click".' );
+			warnings.push( 'Parameter "fullscreen-toggle" is deprecated. Replace with viewer="fullscreen" viewer-trigger="double-click".' );
 		} else if ( fsRaw === 'disabled' ) {
-			warnings.push( 'Parameter "fullscreen-toggle" is deprecated. Fullscreen is disabled by default, so you can remove this parameter.' );
+			warnings.push( 'Parameter "fullscreen-toggle" is deprecated. Select the active mode with viewer instead.' );
 		} else {
-			warnings.push( 'Parameter "fullscreen-toggle" is deprecated. Use viewer and viewer-toggle instead.' );
+			warnings.push( 'Parameter "fullscreen-toggle" is deprecated. Use viewer and viewer-trigger instead.' );
 		}
 	}
 
@@ -1200,15 +1203,15 @@ function jzsaValidateShortcode( raw ) {
 		if ( clickGestures.indexOf( ltForConflict ) !== -1 && clickGestures.indexOf( fsForConflict ) !== -1 ) {
 			warnings.push(
 				'Both lightbox-toggle and fullscreen-toggle are set to a click gesture. ' +
-				'They compete for the same tap. Migrate to viewer and viewer-toggle instead.'
+				'They compete for the same action. Use viewer="both" and assign the gesture to only one mode-specific trigger.'
 			);
 		}
 	}
 
 	if ( seen[ 'viewer' ] && seen[ 'viewer-toggle' ] ) {
 		var viewerVal = ( attrValues[ 'viewer' ] || '' ).trim().toLowerCase().replace( /\s*,\s*/g, ', ' );
-		if ( viewerVal === 'lightbox, fullscreen' ) {
-			warnings.push( '"viewer-toggle" is ignored when viewer="lightbox, fullscreen" - both modes always use buttons.' );
+		if ( viewerVal === 'lightbox, fullscreen' || viewerVal === 'both' ) {
+			warnings.push( 'The obsolete "viewer-toggle" parameter is ambiguous with viewer="both". Use one mode-specific trigger.' );
 		}
 		if ( viewerVal === 'disabled' ) {
 			warnings.push( '"viewer-toggle" has no effect when viewer="disabled".' );
@@ -1296,6 +1299,7 @@ function jzsaSetupCodeBlock( block ) {
 		copyBtn = document.createElement( 'button' );
 		copyBtn.type = 'button';
 		copyBtn.className = 'jzsa-action-btn';
+		copyBtn.setAttribute( 'data-jzsa-action', 'copy' );
 		copyBtn.textContent = 'Copy';
 		if ( ! btnCol.contains( copyBtn ) ) {
 			btnCol.appendChild( copyBtn );
@@ -1310,6 +1314,7 @@ function jzsaSetupCodeBlock( block ) {
 			applyBtn = document.createElement( 'button' );
 			applyBtn.type = 'button';
 			applyBtn.className = 'jzsa-action-btn';
+			applyBtn.setAttribute( 'data-jzsa-action', 'apply' );
 			applyBtn.textContent = 'Apply';
 			btnCol.appendChild( applyBtn );
 		}
@@ -1318,6 +1323,7 @@ function jzsaSetupCodeBlock( block ) {
 			revertBtn = document.createElement( 'button' );
 			revertBtn.type = 'button';
 			revertBtn.className = 'jzsa-action-btn';
+			revertBtn.setAttribute( 'data-jzsa-action', 'revert' );
 			revertBtn.textContent = 'Revert';
 			btnCol.appendChild( revertBtn );
 		}
@@ -1344,8 +1350,40 @@ function jzsaSetupCodeBlock( block ) {
 		validationEl.setAttribute( 'aria-live', 'polite' );
 		block.insertAdjacentElement( 'afterend', validationEl );
 	}
+	var semanticTimer = null;
+	var semanticSequence = 0;
 	runValidation = function () {
-		jzsaRenderValidation( validationEl, jzsaValidateShortcode( codeEl.textContent || '' ) );
+		semanticSequence++;
+		var shortcode = codeEl.textContent || '';
+		var localResult = jzsaValidateShortcode( shortcode );
+		jzsaRenderValidation( validationEl, localResult );
+		if ( semanticTimer ) {
+			clearTimeout( semanticTimer );
+		}
+		if ( 'error' === localResult.state || 'empty' === localResult.state || ! window.jzsaAdminAjax ) {
+			return;
+		}
+		var sequence = semanticSequence;
+		semanticTimer = setTimeout( function () {
+			jzsaAdminPost( 'jzsa_validate_shortcode', jzsaAdminAjax.validateNonce, { shortcode: shortcode } )
+				.then( function ( response ) {
+					if ( sequence !== semanticSequence || ! response.success ) { return; }
+					var merged = {
+						state: localResult.state,
+						errors: localResult.errors.slice(),
+						warnings: localResult.warnings.slice()
+					};
+					( response.data.issues || [] ).forEach( function ( issue ) {
+						if ( 'error' === issue.severity ) {
+							merged.errors.push( issue.message );
+						} else {
+							merged.warnings.push( issue.message );
+						}
+					} );
+					merged.state = merged.errors.length ? 'error' : ( merged.warnings.length ? 'warning' : 'ok' );
+					jzsaRenderValidation( validationEl, merged );
+				} );
+		}, 350 );
 	};
 
 	// Keep placeholder highlighting and validation live while editing.
@@ -1369,8 +1407,24 @@ function jzsaSetupCodeBlock( block ) {
 
 	// Apply: AJAX preview.
 	applyBtn.addEventListener( 'click', function () {
-		runValidation();
-		jzsaApplyPreview( codeEl, applyBtn, previewContainer );
+		var shortcode = codeEl.textContent || '';
+		var localResult = jzsaValidateShortcode( shortcode );
+		jzsaRenderValidation( validationEl, localResult );
+		if ( 'error' === localResult.state ) { return; }
+		jzsaAdminPost( 'jzsa_validate_shortcode', jzsaAdminAjax.validateNonce, { shortcode: shortcode } )
+			.then( function ( response ) {
+				var issues = response.success ? ( response.data.issues || [] ) : [];
+				var semanticErrors = issues.filter( function ( issue ) { return 'error' === issue.severity; } );
+				if ( semanticErrors.length ) {
+					jzsaRenderValidation( validationEl, {
+						state: 'error',
+						errors: localResult.errors.concat( semanticErrors.map( function ( issue ) { return issue.message; } ) ),
+						warnings: localResult.warnings
+					} );
+					return;
+				}
+				jzsaApplyPreview( codeEl, applyBtn, previewContainer );
+			} );
 	} );
 }
 
@@ -1482,6 +1536,134 @@ function jzsaInitAdminSettings() {
 	}
 
 	jzsaSetupLazyPreviews();
+	jzsaSetupMigrationTool();
+}
+
+function jzsaAdminPost( action, nonce, values ) {
+	var data = new FormData();
+	data.append( 'action', action );
+	data.append( 'nonce', nonce );
+	Object.keys( values ).forEach( function ( key ) {
+		data.append( key, values[ key ] );
+	} );
+	return fetch( jzsaAdminAjax.ajaxUrl, { method: 'POST', body: data } ).then( function ( response ) {
+		return response.json();
+	} );
+}
+
+function jzsaSetupMigrationTool() {
+	var migrateBtn = document.getElementById( 'jzsa-migrate-shortcode' );
+	var input = document.getElementById( 'jzsa-migration-shortcode' );
+	var result = document.getElementById( 'jzsa-migration-result' );
+	if ( migrateBtn && input && result ) {
+		migrateBtn.addEventListener( 'click', function () {
+			var selected = document.querySelector( 'input[name="jzsa-migration-goal"]:checked' );
+			migrateBtn.disabled = true;
+			result.textContent = 'Analyzing shortcode...';
+			jzsaAdminPost( 'jzsa_migrate_shortcode', jzsaAdminAjax.migrateNonce, {
+				shortcode: input.value,
+				goal: selected ? selected.value : 'preserve'
+			} ).then( function ( response ) {
+				var payload = response && response.data ? response.data : {};
+				var issues = payload.issues || [];
+				var generatedValidation = payload.shortcode ? jzsaValidateShortcode( payload.shortcode ) : null;
+				var validationStatus = generatedValidation && 'ok' !== generatedValidation.state
+					? generatedValidation.state
+					: ( payload.validationStatus || 'unknown' );
+				var html = '';
+				if ( payload.shortcode ) {
+					html += '<p><strong>' + ( payload.behaviorPreserved ? 'Behavior preserved.' : 'Viewer behavior intentionally changed.' ) + '</strong></p>';
+					html += '<p>Detected model: <strong>' + jzsaEscapeHtml( payload.sourceModel || 'unknown' ) +
+						'</strong>. Viewer: <strong>' + jzsaEscapeHtml( payload.currentViewer || 'unknown' ) +
+						'</strong> to <strong>' + jzsaEscapeHtml( payload.targetViewer || 'unknown' ) +
+						'</strong>. Validation: <strong>' + jzsaEscapeHtml( validationStatus ) + '</strong>.</p>';
+					html += '<textarea id="jzsa-migrated-shortcode" rows="5" readonly>' + jzsaEscapeHtml( payload.shortcode ) + '</textarea>';
+					html += '<p><button type="button" class="button" id="jzsa-copy-migrated">Copy Migrated Shortcode</button> ' +
+						'<button type="button" class="button" id="jzsa-preview-migrated">Preview Migrated Shortcode</button> ' +
+						'<button type="button" class="button" id="jzsa-load-migrated">Load in Playground</button> ' +
+						'<button type="button" class="button" id="jzsa-reset-migration">Start Over</button></p>';
+				}
+				if ( issues.length ) {
+					html += '<ul class="jzsa-code-validation__list">';
+					issues.forEach( function ( issue ) {
+						html += '<li>' + jzsaEscapeHtml( issue.message || String( issue ) ) + '</li>';
+					} );
+					html += '</ul>';
+				}
+				if ( generatedValidation && ( generatedValidation.errors.length || generatedValidation.warnings.length ) ) {
+					html += '<ul class="jzsa-code-validation__list">';
+					generatedValidation.errors.concat( generatedValidation.warnings ).forEach( function ( message ) {
+						html += '<li>' + jzsaEscapeHtml( message ) + '</li>';
+					} );
+					html += '</ul>';
+				}
+				if ( ! payload.shortcode && ! issues.length ) {
+					html = '<p>Migration could not be completed.</p>';
+				}
+				result.innerHTML = html;
+				var output = document.getElementById( 'jzsa-migrated-shortcode' );
+				var copy = document.getElementById( 'jzsa-copy-migrated' );
+				var preview = document.getElementById( 'jzsa-preview-migrated' );
+				var load = document.getElementById( 'jzsa-load-migrated' );
+				var reset = document.getElementById( 'jzsa-reset-migration' );
+				if ( copy && output ) {
+					copy.addEventListener( 'click', function () {
+						navigator.clipboard.writeText( output.value );
+						copy.textContent = 'Copied!';
+					} );
+				}
+				if ( load && output ) {
+					var loadInPlayground = function () {
+						var playground = document.getElementById( 'jzsa-playground-shortcode' );
+						if ( playground ) {
+							playground.textContent = output.value;
+							playground.dispatchEvent( new Event( 'input', { bubbles: true } ) );
+							playground.scrollIntoView( { behavior: 'smooth', block: 'center' } );
+						}
+					};
+					load.addEventListener( 'click', loadInPlayground );
+					if ( preview ) {
+						preview.addEventListener( 'click', function () {
+							loadInPlayground();
+							var playground = document.getElementById( 'jzsa-playground-shortcode' );
+							var block = playground ? playground.closest( '.jzsa-code-block' ) : null;
+							var apply = block ? block.querySelector( '[data-jzsa-action="apply"]' ) : null;
+							if ( apply ) { apply.click(); }
+						} );
+					}
+				}
+				if ( reset ) {
+					reset.addEventListener( 'click', function () {
+						input.value = '';
+						result.textContent = '';
+						input.focus();
+					} );
+				}
+			} ).catch( function () {
+				result.textContent = 'Migration request failed.';
+			} ).finally( function () {
+				migrateBtn.disabled = false;
+			} );
+		} );
+	}
+
+	var saveDefault = document.getElementById( 'jzsa-save-default-viewer' );
+	var defaultStatus = document.getElementById( 'jzsa-default-viewer-status' );
+	if ( saveDefault && defaultStatus ) {
+		saveDefault.addEventListener( 'click', function () {
+			var selected = document.querySelector( 'input[name="jzsa-default-viewer"]:checked' );
+			if ( ! selected ) { return; }
+			saveDefault.disabled = true;
+			jzsaAdminPost( 'jzsa_set_default_viewer', jzsaAdminAjax.defaultViewerNonce, { viewer: selected.value } )
+				.then( function ( response ) {
+					defaultStatus.textContent = response.success ? 'Saved.' : 'Could not save the setting.';
+				} ).catch( function () {
+					defaultStatus.textContent = 'Could not save the setting.';
+				} ).finally( function () {
+					saveDefault.disabled = false;
+				} );
+		} );
+	}
 }
 
 // Run on DOMContentLoaded, or immediately if the document already finished

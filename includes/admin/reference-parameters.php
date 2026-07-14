@@ -252,7 +252,7 @@
 					</table>
 
 						<h3><?php esc_html_e( 'Viewer Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php echo wp_kses_post( __( '<strong>Viewer</strong> means either Lightbox or Fullscreen, the two ways a visitor can open a larger photo view from the inline album. Use <code>viewer</code> to choose the active mode and <code>viewer-toggle</code> to choose how it opens. Shared settings use <code>viewer-*</code> parameters; mode-specific overrides use <code>lightbox-*</code> or <code>fullscreen-*</code>. There is no sideways inheritance between modes. The default viewer is Lightbox with a button - no parameters needed for that combination.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+							<p><?php echo wp_kses_post( __( '<strong>Viewer</strong> means either Lightbox or Fullscreen, the two ways a visitor can open a larger photo view from the inline album. Use <code>viewer</code> to choose the active mode and <code>viewer-trigger</code> to choose how one active mode opens. Shared settings use <code>viewer-*</code> parameters; mode-specific overrides use <code>lightbox-*</code> or <code>fullscreen-*</code>. There is no sideways inheritance between modes. New installations use Lightbox by default. Sites upgraded from 2.3.7 keep Fullscreen unless the administrator changes the reversible site default.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 					<table class="jzsa-settings-table jzsa-settings-table--params">
 						<thead>
 							<tr>
@@ -262,8 +262,10 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr><td><code>viewer</code></td><td><?php echo wp_kses_post( __( 'Selects which viewer mode is active. Accepted values: <code>lightbox</code>, <code>fullscreen</code>, <code>lightbox, fullscreen</code>, and <code>disabled</code>. When both modes are active, each shows a button and <code>viewer-toggle</code> is ignored.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><em>lightbox</em></td></tr>
-							<tr><td><code>viewer-toggle</code></td><td><?php echo wp_kses_post( __( 'How the active viewer opens. Accepted values: <code>button</code> (dedicated button only), <code>click</code> (button and single click), <code>double-click</code> (button and double-click). Ignored when <code>viewer="lightbox, fullscreen"</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><em>button</em></td></tr>
+							<tr><td><code>viewer</code></td><td><?php echo wp_kses_post( __( 'Selects which viewer mode is active. Accepted values: <code>lightbox</code>, <code>fullscreen</code>, <code>both</code>, and <code>disabled</code>. The older value <code>lightbox, fullscreen</code> remains accepted as an alias for <code>both</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><em><?php esc_html_e( 'site default', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>viewer-trigger</code></td><td><?php echo wp_kses_post( __( 'How one active viewer opens. Accepted values: <code>button</code> (dedicated button only), <code>click</code> (button and single click), and <code>double-click</code> (button and double-click). Do not use this shared trigger with <code>viewer="both"</code>.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><em>button</em></td></tr>
+							<tr><td><code>lightbox-trigger</code></td><td><?php echo wp_kses_post( __( 'Lightbox-specific trigger for <code>viewer="both"</code>: <code>button</code>, <code>click</code>, or <code>double-click</code>. A click or double-click gesture can belong to only one viewer mode.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><em>button</em></td></tr>
+							<tr><td><code>fullscreen-trigger</code></td><td><?php echo wp_kses_post( __( 'Fullscreen-specific trigger for <code>viewer="both"</code>: <code>button</code>, <code>click</code>, or <code>double-click</code>. A click or double-click gesture can belong to only one viewer mode.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><em>button</em></td></tr>
 							<tr><td><code>viewer-max-width</code></td><td><?php esc_html_e( 'Maximum displayed width for either viewer mode, in pixels.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'not applied', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 							<tr><td><code>viewer-max-height</code></td><td><?php esc_html_e( 'Maximum displayed height for either viewer mode, in pixels.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'not applied', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 							<tr><td><code>viewer-source-width</code></td><td><?php esc_html_e( 'Photo width fetched from Google for either viewer mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>1920</td></tr>
@@ -310,7 +312,7 @@
 								<tbody>
 									<tr>
 										<td><code>lightbox-fullscreen</code></td>
-											<td><?php echo wp_kses_post( __( 'Controls whether the Fullscreen button appears inside the Lightbox view, enabling the three-step path Inline &rarr; Lightbox &rarr; Fullscreen. Accepted values: <code>button</code> and <code>disabled</code>. Default is <code>disabled</code> - except when both modes are active (e.g. <code>viewer="lightbox, fullscreen"</code>), in which case the default becomes <code>button</code> automatically. Set an explicit value to override this in either direction. Unique to Lightbox; no Fullscreen counterpart.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
+											<td><?php echo wp_kses_post( __( 'Controls whether the Fullscreen button appears inside the Lightbox view, enabling the three-step path Inline &rarr; Lightbox &rarr; Fullscreen. Accepted values: <code>button</code> and <code>disabled</code>. The default is <code>disabled</code>, except when <code>viewer="both"</code>, where it becomes <code>button</code>. Set an explicit value to override this in either direction. Unique to Lightbox; no Fullscreen counterpart.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 										<td>disabled *</td>
 									</tr>
 									<tr>

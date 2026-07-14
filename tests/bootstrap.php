@@ -13,7 +13,13 @@ define( 'JZSA_PLUGIN_URL', 'https://site.example/wp-content/plugins/jzsa/' );
 define( 'JZSA_COMMUNITY_API_URL', 'https://community.test' );
 define( 'JZSA_COMMUNITY_PLUGIN_READ_KEY', 'test-read-key' );
 define( 'JZSA_VERSION_OPTION', 'jzsa_plugin_version' );
+define( 'JZSA_DEFAULT_VIEWER_OPTION', 'jzsa_default_viewer' );
 define( 'JZSA_VIEWER_MIGRATION_NOTICE_OPTION', 'jzsa_viewer_migration_notice' );
+
+function jzsa_get_default_viewer() {
+    $value = get_option( JZSA_DEFAULT_VIEWER_OPTION, 'lightbox' );
+    return in_array( $value, array( 'lightbox', 'fullscreen' ), true ) ? $value : 'lightbox';
+}
 
 // WordPress time constants.
 define( 'MINUTE_IN_SECONDS', 60 );
@@ -84,6 +90,13 @@ if ( ! function_exists( 'wp_unslash' ) ) {
 }
 if ( ! function_exists( 'esc_attr' ) ) {
     function esc_attr( $text ) { return htmlspecialchars( (string) $text, ENT_QUOTES, 'UTF-8' ); }
+}
+if ( ! function_exists( 'checked' ) ) {
+    function checked( $checked, $current = true, $display = true ) {
+        $result = (string) $checked === (string) $current ? ' checked="checked"' : '';
+        if ( $display ) { echo $result; }
+        return $result;
+    }
 }
 if ( ! function_exists( 'esc_url' ) ) {
     function esc_url( $url ) { return $url; }
@@ -535,6 +548,7 @@ if ( ! function_exists( 'get_bloginfo' ) ) {
 $includes = dirname( __DIR__ ) . '/includes/';
 require_once $includes . 'class-data-provider.php';
 require_once $includes . 'class-renderer.php';
+require_once $includes . 'class-shortcode-tools.php';
 require_once $includes . 'class-community.php';
 require_once $includes . 'class-admin-pages.php';
 require_once $includes . 'class-orchestrator.php';

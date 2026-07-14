@@ -108,7 +108,7 @@ class OrchestratorConfigTest extends TestCase {
         $config = $this->config( array( 'lightbox-toggle' => 'no' ) );
 
         $this->assertSame( 'disabled', $config['lightbox-toggle'] );
-        $this->assertSame( 'disabled', $config['fullscreen-toggle'] );
+		$this->assertSame( 'button-only', $config['fullscreen-toggle'] );
     }
 
     public function test_viewer_settings_configure_both_modes(): void {
@@ -222,6 +222,7 @@ class OrchestratorConfigTest extends TestCase {
     public function test_lightbox_and_fullscreen_display_options_do_not_inherit_sideways(): void {
         $from_fullscreen = $this->config(
             array(
+				'viewer'                         => 'both',
                 'fullscreen-show-link-button'     => 'true',
                 'fullscreen-show-download-button' => 'true',
                 'fullscreen-controls-color'       => '#112233',
@@ -243,6 +244,7 @@ class OrchestratorConfigTest extends TestCase {
 
         $from_lightbox = $this->config(
             array(
+				'viewer'                    => 'both',
                 'lightbox-show-navigation' => 'false',
                 'lightbox-controls-color'  => '#abcdef',
             )
@@ -257,6 +259,7 @@ class OrchestratorConfigTest extends TestCase {
     public function test_paired_values_keep_primary_when_both_are_set(): void {
         $config = $this->config(
             array(
+				'viewer'             => 'both',
                 'fullscreen-controls-color' => '#111111',
                 'lightbox-controls-color'   => '#222222',
             )
@@ -267,9 +270,10 @@ class OrchestratorConfigTest extends TestCase {
     }
 
     public function test_lightbox_and_fullscreen_slideshow_use_dedicated_defaults(): void {
-        $config = $this->config(
-            array(
-                'slideshow'          => 'auto',
+		$config = $this->config(
+			array(
+				'viewer'             => 'both',
+				'slideshow'          => 'auto',
                 'lightbox-slideshow' => 'manual',
             )
         );
@@ -701,14 +705,14 @@ class OrchestratorConfigTest extends TestCase {
     }
 
     public function test_fullscreen_image_fit_cover_does_not_affect_lightbox(): void {
-        $config = $this->config( array( 'fullscreen-image-fit' => 'cover' ) );
+		$config = $this->config( array( 'viewer' => 'both', 'fullscreen-image-fit' => 'cover' ) );
 
         $this->assertSame( 'cover', $config['fullscreen-image-fit'] );
         $this->assertSame( 'contain', $config['lightbox-image-fit'], 'lightbox must not inherit fullscreen-image-fit' );
     }
 
     public function test_lightbox_image_fit_cover_does_not_affect_fullscreen(): void {
-        $config = $this->config( array( 'lightbox-image-fit' => 'cover' ) );
+		$config = $this->config( array( 'viewer' => 'both', 'lightbox-image-fit' => 'cover' ) );
 
         $this->assertSame( 'cover', $config['lightbox-image-fit'] );
         $this->assertSame( 'contain', $config['fullscreen-image-fit'], 'fullscreen must not inherit lightbox-image-fit' );

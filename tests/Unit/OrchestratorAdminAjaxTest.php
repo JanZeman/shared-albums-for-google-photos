@@ -119,7 +119,7 @@ class OrchestratorAdminAjaxTest extends TestCase {
         $response = $this->callAjax( 'handle_shortcode_preview' );
 
         $this->assertFalse( $response->success );
-        $this->assertSame( 'Only the [jzsa-album] shortcode is supported in this preview.', $response->data );
+        $this->assertSame( 'Enter exactly one complete [jzsa-album] shortcode with no surrounding text.', $response->data );
         $this->assertSame( array(), $GLOBALS['jzsa_test_do_shortcode_calls'] );
     }
 

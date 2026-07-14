@@ -39,7 +39,7 @@ test.describe('Guide Samples Shortcode Tests', () => {
         await expect(page.locator('.jzsa-album')).toHaveCount(8);
     });
 
-    test('Sample 30 keeps the shared viewer size identical in both modes', async ({ page }) => {
+    test('Sample 31 keeps the shared viewer size identical in both modes', async ({ page }) => {
         const album = await waitForAlbum(page, 0);
 
         await expect(album).toHaveAttribute('data-lightbox-max-width', '600');
@@ -58,7 +58,7 @@ test.describe('Guide Samples Shortcode Tests', () => {
         await waitForNativeFullscreen(page, false);
     });
 
-    test('Sample 31 keeps the shared baseline small and the fullscreen override larger', async ({ page }) => {
+    test('Sample 32 keeps the shared baseline small and the fullscreen override larger', async ({ page }) => {
         const album = await waitForAlbum(page, 1);
 
         await expect(album).toHaveAttribute('data-lightbox-max-width', '600');
@@ -82,7 +82,7 @@ test.describe('Guide Samples Shortcode Tests', () => {
         expect(fullscreenWidth).toBeGreaterThanOrEqual(lightboxWidth);
     });
 
-    test('Sample 32 applies the shared cover fit in both modes', async ({ page }) => {
+    test('Sample 33 applies the shared cover fit in both modes', async ({ page }) => {
         const album = await waitForAlbum(page, 2);
 
         await expect(album).toHaveAttribute('data-lightbox-image-fit', 'cover');
@@ -102,7 +102,7 @@ test.describe('Guide Samples Shortcode Tests', () => {
         await waitForNativeFullscreen(page, false);
     });
 
-    test('Sample 33 keeps fullscreen-image-fit isolated from lightbox-image-fit', async ({ page }) => {
+    test('Sample 34 keeps fullscreen-image-fit isolated from lightbox-image-fit', async ({ page }) => {
         const album = await waitForAlbum(page, 3);
 
         await expect(album).toHaveAttribute('data-lightbox-image-fit', 'contain');
@@ -137,7 +137,7 @@ test.describe('Guide Samples Shortcode Tests', () => {
         await expect(backdrop(page)).not.toBeVisible();
     });
 
-    test('Sample 34 splits the viewer background from the lightbox backdrop', async ({ page }) => {
+    test('Sample 35 splits the viewer background from the lightbox backdrop', async ({ page }) => {
         const album = await waitForAlbum(page, 4);
 
         await expect(album).toHaveAttribute('data-lightbox-backdrop-color', 'rgba(0,128,64,0.7)');
@@ -167,7 +167,7 @@ test.describe('Guide Samples Shortcode Tests', () => {
         await expect(backdrop(page)).not.toBeVisible();
     });
 
-    test('Sample 35 keeps the lightbox controls override local', async ({ page }) => {
+    test('Sample 36 keeps the lightbox controls override local', async ({ page }) => {
         const album = await waitForAlbum(page, 5);
 
         await expect(album).toHaveAttribute('data-lightbox-controls-color', '#00A878');
@@ -190,7 +190,7 @@ test.describe('Guide Samples Shortcode Tests', () => {
         await expect(backdrop(page)).not.toBeVisible();
     });
 
-    test('Sample 36 starts the slideshow only after fullscreen opens', async ({ page }) => {
+    test('Sample 37 starts the slideshow only after fullscreen opens', async ({ page }) => {
         const album = await waitForAlbum(page, 6);
 
         await expect(album.locator(LIGHTBOX_BUTTON)).toHaveCount(0);
@@ -204,7 +204,7 @@ test.describe('Guide Samples Shortcode Tests', () => {
         await waitForNativeFullscreen(page, false);
     });
 
-    test('Sample 37 keeps the two slideshow delays separate by mode', async ({ page }) => {
+    test('Sample 38 keeps the two slideshow delays separate by mode', async ({ page }) => {
         const album = await waitForAlbum(page, 7);
 
         const lightboxButton = album.locator(LIGHTBOX_BUTTON);

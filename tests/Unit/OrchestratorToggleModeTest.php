@@ -21,10 +21,41 @@ class OrchestratorToggleModeTest extends TestCase {
     private ReflectionClass $reflection;
 
     protected function setUp(): void {
+		$GLOBALS['jzsa_test_options'] = [];
         // Pass a dummy plugin file path; the constructor only stores it.
         $this->orchestrator = new JZSA_Shared_Albums( JZSA_PLUGIN_FILE );
         $this->reflection   = new ReflectionClass( $this->orchestrator );
     }
+
+	public function test_upgraded_site_default_keeps_implicit_fullscreen(): void {
+		update_option( JZSA_DEFAULT_VIEWER_OPTION, 'fullscreen' );
+		$config = $this->invoke( 'parse_shortcode_config', array(), 'https://photos.google.com/share/test' );
+
+		$this->assertSame( 'disabled', $config['lightbox-toggle'] );
+		$this->assertSame( 'button-only', $config['fullscreen-toggle'] );
+	}
+
+	public function test_both_viewers_allow_only_one_targeted_gesture(): void {
+		$config = $this->invoke(
+			'parse_shortcode_config',
+			array( 'viewer' => 'both', 'lightbox-trigger' => 'click' ),
+			'https://photos.google.com/share/test'
+		);
+
+		$this->assertSame( 'click', $config['lightbox-toggle'] );
+		$this->assertSame( 'button-only', $config['fullscreen-toggle'] );
+	}
+
+	public function test_ambiguous_both_viewer_gestures_fall_back_to_buttons(): void {
+		$config = $this->invoke(
+			'parse_shortcode_config',
+			array( 'viewer' => 'both', 'lightbox-trigger' => 'click', 'fullscreen-trigger' => 'double-click' ),
+			'https://photos.google.com/share/test'
+		);
+
+		$this->assertSame( 'button-only', $config['lightbox-toggle'] );
+		$this->assertSame( 'button-only', $config['fullscreen-toggle'] );
+	}
 
     /**
      * Call a private method on the orchestrator via reflection.

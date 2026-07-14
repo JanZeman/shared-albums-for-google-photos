@@ -157,7 +157,7 @@ class AdminPagesTest extends TestCase {
 		$this->assertSame( '', $output );
 	}
 
-	public function test_dashboard_announcement_explains_viewer_breaking_change_and_fullscreen_fix(): void {
+	public function test_dashboard_announcement_recommends_lightbox_without_changing_existing_galleries(): void {
 		$GLOBALS['jzsa_test_current_screen_id'] = 'dashboard';
 		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1' );
 
@@ -165,13 +165,14 @@ class AdminPagesTest extends TestCase {
 		$this->admin_pages->render_dashboard_announcement();
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( 'Sorry for the disruption but this is a breaking change.', $output );
-		$this->assertStringContainsString( 'Open Migration Guide', $output );
+		$this->assertStringContainsString( 'Lightbox is now recommended for new galleries', $output );
+		$this->assertStringContainsString( 'No worries, your existing galleries keep their current viewer behavior.', $output );
+		$this->assertStringContainsString( 'Open Viewer Guide', $output );
 		$this->assertStringNotContainsString( 'Shared Albums now has a Community', $output );
 		$this->assertStringNotContainsString( 'Keep Fullscreen as default', $output );
 	}
 
-	public function test_guide_migration_tutorial_explains_fullscreen_fix(): void {
+	public function test_guide_migration_tutorial_explains_safe_viewer_update(): void {
 		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1' );
 		$method = $this->reflection->getMethod( 'render_guide_migration_tutorial' );
 
@@ -179,29 +180,17 @@ class AdminPagesTest extends TestCase {
 		$method->invoke( $this->admin_pages );
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( 'Breaking Change: Lightbox is Now the Default Viewer', $output );
-		$this->assertStringContainsString( 'Sorry for the disruption.', $output );
+		$this->assertStringContainsString( 'Recommended Update: Try Lightbox', $output );
+		$this->assertStringContainsString( 'Your existing galleries keep their current behavior.', $output );
 		$this->assertStringContainsString( '<strong>Viewer Samples (21-38)</strong>', $output );
-		$this->assertStringContainsString( 'roughly a 75:25 ratio', $output );
-		$this->assertStringContainsString( 'Had Fullscreen -&gt; Keep Fullscreen', $output );
-		$this->assertStringContainsString( 'fullscreen-toggle=&quot;button-only&quot;  -&gt; viewer=&quot;fullscreen&quot;', $output );
-		$this->assertStringContainsString( 'fullscreen-toggle=&quot;click&quot;        -&gt; viewer=&quot;fullscreen&quot; viewer-toggle=&quot;click&quot;', $output );
-		$this->assertStringContainsString( 'Had Fullscreen -&gt; Want Lightbox', $output );
-		$this->assertStringContainsString( 'fullscreen-toggle=&quot;double-click&quot; -&gt; ', $output );
-		$this->assertStringContainsString( 'jzsa-migration-optional', $output );
-		$this->assertStringContainsString( 'viewer=&quot;lightbox&quot; ', $output );
-		$this->assertStringContainsString( 'viewer-toggle=&quot;double-click&quot;', $output );
-		$this->assertStringContainsString( 'Had Lightbox -&gt; Keep Lightbox', $output );
-		$this->assertStringContainsString( 'lightbox-toggle=&quot;button-only&quot;   -&gt; ', $output );
-		$this->assertStringContainsString( 'viewer=&quot;lightbox&quot;', $output );
-		$this->assertStringContainsString( '(or remove it)', $output );
-		$this->assertStringContainsString( 'lightbox-toggle=&quot;click&quot;         -&gt; ', $output );
-		$this->assertStringContainsString( 'viewer-toggle=&quot;click&quot;', $output );
-		$this->assertStringContainsString( 'Had Lightbox -&gt; Want Fullscreen', $output );
-		$this->assertStringContainsString( 'Replace <code>lightbox-toggle</code> with <code>viewer="fullscreen"</code>', $output );
-		$this->assertStringContainsString( 'lightbox-toggle=&quot;button-only&quot;   -&gt; viewer=&quot;fullscreen&quot;', $output );
-		$this->assertStringContainsString( 'Both modes side-by-side', $output );
-		$this->assertStringContainsString( 'no viewer params at all          -&gt; add viewer=&quot;lightbox, fullscreen&quot;', $output );
+		$this->assertStringContainsString( 'Shortcode Migration Tool', $output );
+		$this->assertStringContainsString( 'Preserve its current behavior', $output );
+		$this->assertStringContainsString( 'Manual Migration Reference', $output );
+		$this->assertStringContainsString( 'viewer=&quot;both&quot; lightbox-trigger=&quot;double-click&quot; fullscreen-trigger=&quot;button&quot;', $output );
+		$this->assertStringContainsString( '<strong>Playground</strong>', $output );
+		$this->assertStringContainsString( '<strong>validation will help you catch unknown or obsolete parameters</strong>', $output );
+		$this->assertStringNotContainsString( '75:25', $output );
+		$this->assertStringNotContainsString( 'breaking change', strtolower( $output ) );
 		$this->assertStringContainsString( 'The section will be collapsed. You can expand it anytime or check the Parameters page for the details.', $output );
 	}
 
@@ -214,7 +203,7 @@ class AdminPagesTest extends TestCase {
 		$method->invoke( $this->admin_pages );
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( 'Breaking Change: Lightbox is Now the Default Viewer', $output );
+		$this->assertStringContainsString( 'Recommended Update: Try Lightbox', $output );
 	}
 
 	public function test_guide_migration_tutorial_stays_visible_but_collapsed_after_guide_dismissal(): void {
@@ -226,8 +215,8 @@ class AdminPagesTest extends TestCase {
 		$method->invoke( $this->admin_pages );
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( 'Breaking Change: Lightbox is Now the Default Viewer', $output );
-		$this->assertStringNotContainsString( '<details id="jzsa-guide-migration" class="jzsa-section jzsa-viewer-migration-guide" open>', $output );
+		$this->assertStringContainsString( 'Recommended Update: Try Lightbox', $output );
+		$this->assertStringNotContainsString( '<details id="jzsa-guide-migration-details" open>', $output );
 		$this->assertStringNotContainsString( 'Collapse this migration guide', $output );
 	}
 }

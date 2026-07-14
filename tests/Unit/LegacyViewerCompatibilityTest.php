@@ -13,9 +13,12 @@ use ReflectionClass;
 /**
  * Characterizes the complete legacy shortcode configuration surface.
  *
- * The fingerprints were generated from the committed parser immediately before
- * viewer-* support was introduced. Every legacy key must retain its exact
- * value. New keys may be added without weakening this comparison.
+ * The fingerprints characterize the parser released in tag 2.3.7. Every
+ * legacy key must retain its exact value. New keys may be added without
+ * weakening this comparison.
+ *
+ * TODO(viewer-legacy-removal): Remove these fixtures only with the isolated
+ * compatibility resolver in a future major release.
  */
 class LegacyViewerCompatibilityTest extends TestCase {
 
