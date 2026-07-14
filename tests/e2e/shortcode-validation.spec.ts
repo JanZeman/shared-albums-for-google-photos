@@ -169,7 +169,7 @@ test.describe('Shortcode validation - parameter values', () => {
     });
 
     test('the community masked album link produces no warning', async ({ page }) => {
-        await setShortcode(page, '[jzsa-album link="hidden-album-link" mode="gallery"]');
+        await setShortcode(page, '[jzsa-album link="hidden-album-link" viewer="lightbox" mode="gallery"]');
         const area = page.locator(VALIDATION);
         await expect(area).not.toBeVisible();
         await expect(area).not.toHaveClass(/jzsa-code-validation--(warning|error)/);
@@ -178,7 +178,7 @@ test.describe('Shortcode validation - parameter values', () => {
     test('valid values across types produce no message', async ({ page }) => {
         await setShortcode(
             page,
-            `[jzsa-album link="${VALID_LINK}" mode="slider" limit="12" ` +
+            `[jzsa-album link="${VALID_LINK}" viewer="fullscreen" mode="slider" limit="12" ` +
                 'gallery-columns="3" controls-color="#1A2B3C" show-navigation="true" ' +
                 'slideshow-delay="4-12" mosaic-opacity="0.4" fullscreen-max-width="900"]',
         );
@@ -215,6 +215,34 @@ test.describe('Shortcode validation - parameter values', () => {
         await expect(area).toContainText('"lightbox-toggle" is deprecated');
         await expect(area).toContainText('"fullscreen-toggle" is deprecated');
         await expect(area).not.toHaveClass(/jzsa-code-validation--error/);
+    });
+
+    test('legacy syntax can be updated while unrelated warnings remain visible', async ({ page }) => {
+        await setShortcode(
+            page,
+            `[jzsa-album link="${VALID_LINK}" fullscreen-toggle="double-click" sparkle="true"]`,
+        );
+        const area = page.locator(VALIDATION);
+        await expect(area).toContainText('This shortcode uses legacy viewer syntax');
+        await expect(area).toContainText('Unknown parameter "sparkle"');
+        await area.getByRole('button', { name: 'Update to Current Syntax' }).click();
+
+        await expect(page.locator('#jzsa-playground-shortcode')).toContainText(
+            `link="${VALID_LINK}" viewer="fullscreen" viewer-trigger="double-click" sparkle="true"`,
+        );
+        await expect(area).toContainText('Unknown parameter "sparkle"');
+        await expect(area.getByRole('button', { name: 'Update to Current Syntax' })).toHaveCount(0);
+    });
+
+    test('validation limits the number of visible issues', async ({ page }) => {
+        await setShortcode(
+            page,
+            `[jzsa-album link="${VALID_LINK}" first-x="1" second-x="2" third-x="3" ` +
+                'fourth-x="4" fifth-x="5" sixth-x="6"]',
+        );
+        const area = page.locator(VALIDATION);
+        await expect(area.locator('.jzsa-code-validation__list li')).toHaveCount(6);
+        await expect(area).toContainText('2 more issues not shown.');
     });
 });
 

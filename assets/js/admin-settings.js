@@ -1226,6 +1226,7 @@ function jzsaValidateShortcode( raw ) {
  * Render a validation result into its message area below a code block.
  */
 function jzsaRenderValidation( validationEl, result ) {
+	var maxVisibleIssues = 5;
 	validationEl.classList.remove(
 		'jzsa-code-validation--ok',
 		'jzsa-code-validation--warning',
@@ -1241,14 +1242,25 @@ function jzsaRenderValidation( validationEl, result ) {
 
 	validationEl.classList.add( 'jzsa-code-validation--' + result.state );
 
-	var items = '';
+	var issues = [];
 	result.errors.forEach( function ( msg ) {
-		items += '<li>\u2715 ' + jzsaEscapeHtml( msg ) + '</li>';
+		issues.push( { icon: '\u2715', message: msg } );
 	} );
 	result.warnings.forEach( function ( msg ) {
-		items += '<li>\u26A0 ' + jzsaEscapeHtml( msg ) + '</li>';
+		issues.push( { icon: '\u26A0', message: msg } );
 	} );
+
+	var items = '';
+	issues.slice( 0, maxVisibleIssues ).forEach( function ( issue ) {
+		items += '<li>' + issue.icon + ' ' + jzsaEscapeHtml( issue.message ) + '</li>';
+	} );
+	if ( issues.length > maxVisibleIssues ) {
+		items += '<li>' + jzsaEscapeHtml( String( issues.length - maxVisibleIssues ) + ' more issues not shown.' ) + '</li>';
+	}
 	validationEl.innerHTML = '<ul class="jzsa-code-validation__list">' + items + '</ul>';
+	if ( result.migration ) {
+		validationEl.innerHTML += '<p class="jzsa-code-validation__action"><button type="button" class="button button-small" data-jzsa-action="modernize-shortcode">Update to Current Syntax</button></p>';
+	}
 }
 
 /**
@@ -1368,10 +1380,12 @@ function jzsaSetupCodeBlock( block ) {
 			jzsaAdminPost( 'jzsa_validate_shortcode', jzsaAdminAjax.validateNonce, { shortcode: shortcode } )
 				.then( function ( response ) {
 					if ( sequence !== semanticSequence || ! response.success ) { return; }
+					var migration = response.data.migration || null;
 					var merged = {
 						state: localResult.state,
 						errors: localResult.errors.slice(),
-						warnings: localResult.warnings.slice()
+						warnings: localResult.warnings.slice(),
+						migration: migration
 					};
 					( response.data.issues || [] ).forEach( function ( issue ) {
 						if ( 'error' === issue.severity ) {
@@ -1380,8 +1394,26 @@ function jzsaSetupCodeBlock( block ) {
 							merged.warnings.push( issue.message );
 						}
 					} );
+					if ( migration ) {
+						merged.warnings.push(
+							'legacy' === migration.sourceModel
+								? 'This shortcode uses legacy viewer syntax. Updating to the current syntax is recommended.'
+								: 'This shortcode does not set the viewer explicitly. Updating to the current syntax is recommended.'
+						);
+					}
 					merged.state = merged.errors.length ? 'error' : ( merged.warnings.length ? 'warning' : 'ok' );
 					jzsaRenderValidation( validationEl, merged );
+					var modernizeBtn = validationEl.querySelector( '[data-jzsa-action="modernize-shortcode"]' );
+					if ( modernizeBtn && migration.shortcode ) {
+						modernizeBtn.addEventListener( 'click', function () {
+							codeEl.textContent = migration.shortcode;
+							jzsaHighlightPlaceholders( codeEl );
+							runValidation();
+							if ( hasPreview ) {
+								jzsaApplyPreview( codeEl, null, previewContainer );
+							}
+						} );
+					}
 				} );
 		}, 350 );
 	};

@@ -2519,10 +2519,23 @@ class JZSA_Admin_Pages {
 		$shortcode = isset( $_POST['shortcode'] ) ? sanitize_textarea_field( wp_unslash( $_POST['shortcode'] ) ) : '';
 		$parsed    = JZSA_Shortcode_Tools::parse( $shortcode );
 		$issues    = array_merge( $parsed['errors'], $parsed['warnings'] );
+		$migration = null;
 		if ( empty( $parsed['errors'] ) ) {
 			$issues = array_merge( $issues, JZSA_Shortcode_Tools::validate_semantics( $parsed['attributes'] ) );
+			$candidate = JZSA_Shortcode_Tools::migrate( $shortcode, 'preserve', jzsa_get_default_viewer() );
+			if ( ! empty( $candidate['ok'] ) && in_array( $candidate['sourceModel'], array( 'legacy', 'implicit' ), true ) ) {
+				$migration = array(
+					'shortcode'   => $candidate['shortcode'],
+					'sourceModel' => $candidate['sourceModel'],
+				);
+			}
 		}
-		wp_send_json_success( array( 'issues' => $issues ) );
+		wp_send_json_success(
+			array(
+				'issues'    => $issues,
+				'migration' => $migration,
+			)
+		);
 	}
 
 	public function handle_migrate_shortcode() {

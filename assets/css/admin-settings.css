@@ -675,6 +675,10 @@
     margin: 2px 0;
 }
 
+.jzsa-code-validation__action {
+    margin: 8px 0 0;
+}
+
 .jzsa-help-text {
     font-size: 13px;
     color: #646970;

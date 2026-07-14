@@ -15,6 +15,7 @@ class AdminPagesTest extends TestCase {
 		$this->reflection  = new ReflectionClass( $this->admin_pages );
 
 		$_GET = array();
+		$_POST = array();
 		$GLOBALS['jzsa_test_admin_menu_pages']      = array();
 		$GLOBALS['jzsa_test_admin_submenu_pages']   = array();
 		$GLOBALS['jzsa_test_enqueued_styles']       = array();
@@ -28,6 +29,7 @@ class AdminPagesTest extends TestCase {
 
 	protected function tearDown(): void {
 		$_GET = array();
+		$_POST = array();
 	}
 
 	private function setLazySamplePreviews( bool $enabled ): void {
@@ -157,6 +159,43 @@ class AdminPagesTest extends TestCase {
 		$this->assertStringContainsString( 'Viewer Examples', $output );
 		$this->assertStringContainsString( 'viewer=&quot;lightbox&quot; viewer-trigger=&quot;double-click&quot;', $output );
 		$this->assertStringContainsString( 'viewer=&quot;both&quot; lightbox-trigger=&quot;double-click&quot; fullscreen-trigger=&quot;button&quot;', $output );
+	}
+
+	public function test_shortcode_validation_offers_safe_legacy_migration(): void {
+		$GLOBALS['jzsa_test_current_user_can'] = true;
+		$_POST = array(
+			'nonce'     => wp_create_nonce( 'jzsa_validate_shortcode' ),
+			'shortcode' => '[jzsa-album link="https://photos.google.com/share/test" fullscreen-toggle="double-click"]',
+		);
+
+		try {
+			$this->admin_pages->handle_validate_shortcode();
+			$this->fail( 'Expected a JSON response.' );
+		} catch ( JZSA_Test_JSON_Response $response ) {
+			$this->assertTrue( $response->success );
+			$this->assertSame( 'legacy', $response->data['migration']['sourceModel'] );
+			$this->assertSame(
+				'[jzsa-album link="https://photos.google.com/share/test" viewer="fullscreen" viewer-trigger="double-click"]',
+				$response->data['migration']['shortcode']
+			);
+		}
+	}
+
+	public function test_shortcode_validation_does_not_offer_unsafe_legacy_migration(): void {
+		$GLOBALS['jzsa_test_current_user_can'] = true;
+		$_POST = array(
+			'nonce'     => wp_create_nonce( 'jzsa_validate_shortcode' ),
+			'shortcode' => '[jzsa-album link="https://photos.google.com/share/test" lightbox-toggle="click" fullscreen-toggle="double-click"]',
+		);
+
+		try {
+			$this->admin_pages->handle_validate_shortcode();
+			$this->fail( 'Expected a JSON response.' );
+		} catch ( JZSA_Test_JSON_Response $response ) {
+			$this->assertTrue( $response->success );
+			$this->assertNull( $response->data['migration'] );
+			$this->assertSame( 'legacy_gesture_conflict', $response->data['issues'][0]['code'] );
+		}
 	}
 
 	public function test_admin_assets_are_not_enqueued_for_unrelated_admin_page(): void {
