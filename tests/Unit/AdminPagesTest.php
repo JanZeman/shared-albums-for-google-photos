@@ -181,7 +181,12 @@ class AdminPagesTest extends TestCase {
 		$output = ob_get_clean();
 
 		$this->assertStringContainsString( 'Recommended Update: Try Lightbox', $output );
+		$this->assertStringContainsString( 'This is not a breaking change. It is only a recommendation.', $output );
 		$this->assertStringContainsString( 'Your existing galleries keep their current behavior.', $output );
+		$this->assertStringContainsString( 'Why Lightbox?', $output );
+		$this->assertStringContainsString( '<li>Lightbox is easier to exit and keeps visitors inside the page.</li>', $output );
+		$this->assertStringContainsString( '<li>Based on broad internet research, roughly 75% of online galleries use Lightbox as the default.</li>', $output );
+		$this->assertStringContainsString( '<li>That still leaves the final choice to you as the admin, and you can keep Fullscreen if it fits your site better.</li>', $output );
 		$this->assertStringContainsString( '<strong>Viewer Samples (21-38)</strong>', $output );
 		$this->assertStringContainsString( 'Shortcode Migration Tool', $output );
 		$this->assertStringContainsString( 'Preserve its current behavior', $output );
@@ -189,8 +194,6 @@ class AdminPagesTest extends TestCase {
 		$this->assertStringContainsString( 'viewer=&quot;both&quot; lightbox-trigger=&quot;double-click&quot; fullscreen-trigger=&quot;button&quot;', $output );
 		$this->assertStringContainsString( '<strong>Playground</strong>', $output );
 		$this->assertStringContainsString( '<strong>validation will help you catch unknown or obsolete parameters</strong>', $output );
-		$this->assertStringNotContainsString( '75:25', $output );
-		$this->assertStringNotContainsString( 'breaking change', strtolower( $output ) );
 		$this->assertStringContainsString( 'The section will be collapsed. You can expand it anytime or check the Parameters page for the details.', $output );
 	}
 

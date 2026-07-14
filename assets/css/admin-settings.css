@@ -288,10 +288,10 @@
     gap: 16px;
     margin: 20px 0 4px;
     padding: 18px 20px;
-    border: 2px solid #dba617;
+    border: 2px solid #00a32a;
     border-left-width: 6px;
     border-radius: 4px;
-    background: #fff8e5;
+    background: #f0fff4;
 }
 
 .jzsa-migration-recommendation .dashicons {
@@ -299,7 +299,7 @@
     height: 44px;
     font-size: 44px;
     line-height: 44px;
-    color: #996800;
+    color: #00a32a;
     flex-shrink: 0;
 }
 

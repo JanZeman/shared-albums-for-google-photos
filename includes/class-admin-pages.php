@@ -94,8 +94,12 @@ class JZSA_Admin_Pages {
 
 	private function render_fullscreen_migration_steps() {
 		?>
-		<h3><?php esc_html_e( 'Why Try Lightbox?', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-		<p><?php esc_html_e( 'Lightbox is easier to exit and keeps visitors inside the page. Fullscreen remains available when its more immersive browser experience is a better fit for your site.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<h3><?php esc_html_e( 'Why Lightbox?', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<ul>
+							<li><?php esc_html_e( 'Lightbox is easier to exit and keeps visitors inside the page.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
+							<li><?php esc_html_e( 'Based on broad internet research, roughly 75% of online galleries use Lightbox as the default.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
+							<li><?php esc_html_e( 'That still leaves the final choice to you as the admin, and you can keep Fullscreen if it fits your site better.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
+						</ul>
 		<h3><?php esc_html_e( 'A Safe Way to Decide', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 		<ul>
 			<li><?php echo wp_kses_post( __( 'Review the <strong>Viewer Samples (21-38)</strong> to compare the available experiences.', 'janzeman-shared-albums-for-google-photos' ) ); ?></li>
@@ -113,12 +117,12 @@ class JZSA_Admin_Pages {
 		?>
 		<div id="jzsa-guide-migration" class="jzsa-section jzsa-viewer-migration-guide">
 			<details id="jzsa-guide-migration-details"<?php echo $should_open ? ' open' : ''; ?>>
-				<summary><?php esc_html_e( 'Recommended Update: Try Lightbox', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
-					<p><?php esc_html_e( 'Your existing galleries keep their current behavior. Lightbox is now recommended because it is easier to exit and stays inside the page. Preview it safely, then decide whether to change anything.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+			<summary><?php esc_html_e( 'Recommended Update: Try Lightbox', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
+					<p><?php esc_html_e( 'This is not a breaking change. It is only a recommendation. Your existing galleries keep their current behavior.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<p><strong><?php esc_html_e( 'Current site default:', 'janzeman-shared-albums-for-google-photos' ); ?></strong> <?php echo esc_html( 'lightbox' === $default_viewer ? __( 'Lightbox', 'janzeman-shared-albums-for-google-photos' ) : __( 'Fullscreen', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 				<?php $this->render_fullscreen_migration_steps(); ?>
 					<div class="jzsa-migration-recommendation">
-						<span class="dashicons dashicons-megaphone" aria-hidden="true"></span>
+						<span class="dashicons dashicons-yes-alt" aria-hidden="true"></span>
 						<div>
 							<h3><?php esc_html_e( 'Recommendation!', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php echo wp_kses_post( __( 'Before changing a live post or page, paste your shortcode into the <strong>Playground</strong>. Its <strong>validation will help you catch unknown or obsolete parameters</strong> before they cause problems. The Playground is only a few scrolls below this guide.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
