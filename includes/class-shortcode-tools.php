@@ -18,16 +18,36 @@ class JZSA_Shortcode_Tools {
 	 *
 	 * @param string $stored_version Previously stored plugin version.
 	 * @param string $current_default Existing option value.
-	 * @param string $cutoff_version First version with the safe-upgrade policy.
+	 * @param string $cutoff_version   First version with the safe-upgrade policy.
+	 * @param bool   $fresh_activation Whether this is the activation hook for a fresh install.
 	 * @return string
 	 */
-	public static function resolve_initial_default_viewer( $stored_version, $current_default, $cutoff_version ) {
+	public static function resolve_initial_default_viewer( $stored_version, $current_default, $cutoff_version, $fresh_activation = false ) {
 		if ( in_array( $current_default, array( 'lightbox', 'fullscreen' ), true ) ) {
 			return $current_default;
 		}
-		return '' !== $stored_version && version_compare( $stored_version, $cutoff_version, '<' )
+		return self::is_legacy_upgrade( $stored_version, $cutoff_version, $fresh_activation )
 			? 'fullscreen'
 			: 'lightbox';
+	}
+
+	/**
+	 * Distinguish a legacy upgrade from the lifecycle point where no version means fresh.
+	 *
+	 * Versions before 2.1.0 did not store a plugin version. If an active plugin reaches
+	 * normal startup without that option, it must be handled as a legacy upgrade.
+	 *
+	 * @param string $stored_version   Previously stored plugin version.
+	 * @param string $cutoff_version   First version with the safe-upgrade policy.
+	 * @param bool   $fresh_activation Whether this is the activation hook for a fresh install.
+	 * @return bool
+	 */
+	public static function is_legacy_upgrade( $stored_version, $cutoff_version, $fresh_activation = false ) {
+		if ( '' === $stored_version ) {
+			return ! $fresh_activation;
+		}
+
+		return version_compare( $stored_version, $cutoff_version, '<' );
 	}
 
 	/**

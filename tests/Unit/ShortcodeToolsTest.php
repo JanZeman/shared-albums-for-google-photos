@@ -10,10 +10,18 @@ use PHPUnit\Framework\TestCase;
 class ShortcodeToolsTest extends TestCase {
 
 	public function test_default_viewer_resolution_distinguishes_fresh_and_upgraded_sites(): void {
-		$this->assertSame( 'lightbox', JZSA_Shortcode_Tools::resolve_initial_default_viewer( '', '', '2.4.0' ) );
+		$this->assertSame( 'lightbox', JZSA_Shortcode_Tools::resolve_initial_default_viewer( '', '', '2.4.0', true ) );
+		$this->assertSame( 'fullscreen', JZSA_Shortcode_Tools::resolve_initial_default_viewer( '', '', '2.4.0' ) );
 		$this->assertSame( 'fullscreen', JZSA_Shortcode_Tools::resolve_initial_default_viewer( '2.3.7', '', '2.4.0' ) );
 		$this->assertSame( 'lightbox', JZSA_Shortcode_Tools::resolve_initial_default_viewer( '2.3.7', 'lightbox', '2.4.0' ) );
 		$this->assertSame( 'fullscreen', JZSA_Shortcode_Tools::resolve_initial_default_viewer( '2.4.0', 'fullscreen', '2.4.0' ) );
+	}
+
+	public function test_missing_version_is_legacy_except_during_fresh_activation(): void {
+		$this->assertTrue( JZSA_Shortcode_Tools::is_legacy_upgrade( '', '2.4.0' ) );
+		$this->assertFalse( JZSA_Shortcode_Tools::is_legacy_upgrade( '', '2.4.0', true ) );
+		$this->assertTrue( JZSA_Shortcode_Tools::is_legacy_upgrade( '2.0.11', '2.4.0' ) );
+		$this->assertFalse( JZSA_Shortcode_Tools::is_legacy_upgrade( '2.4.0', '2.4.0' ) );
 	}
 
 	public function test_shared_trigger_is_invalid_with_both_viewers(): void {

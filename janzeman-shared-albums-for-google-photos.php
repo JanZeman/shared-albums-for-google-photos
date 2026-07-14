@@ -241,6 +241,7 @@ add_action( 'init', 'jzsa_init_plugin' );
 function jzsa_maybe_run_version_migration() {
 	$stored_version = get_option( JZSA_VERSION_OPTION, '' );
 	$default_viewer = get_option( JZSA_DEFAULT_VIEWER_OPTION, '' );
+	$is_upgrade     = JZSA_Shortcode_Tools::is_legacy_upgrade( $stored_version, JZSA_VIEWER_MIGRATION_CUTOFF_VERSION );
 
 	if ( ! in_array( $default_viewer, array( 'lightbox', 'fullscreen' ), true ) ) {
 		$initial_default = JZSA_Shortcode_Tools::resolve_initial_default_viewer(
@@ -257,13 +258,13 @@ function jzsa_maybe_run_version_migration() {
 
 	jzsa_clear_all_plugin_caches();
 
+	if ( $is_upgrade ) {
+		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1', false );
+	}
+
 	if ( '' === $stored_version ) {
 		add_option( JZSA_VERSION_OPTION, JZSA_VERSION, '', false );
 		return;
-	}
-
-	if ( version_compare( $stored_version, JZSA_VIEWER_MIGRATION_CUTOFF_VERSION, '<' ) ) {
-		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1', false );
 	}
 
 	update_option( JZSA_VERSION_OPTION, JZSA_VERSION, false );
@@ -278,12 +279,12 @@ function jzsa_activate() {
 	jzsa_clear_all_plugin_caches();
 	$stored_version = get_option( JZSA_VERSION_OPTION, '' );
 	$default_viewer = get_option( JZSA_DEFAULT_VIEWER_OPTION, '' );
-	$is_upgrade     = '' !== $stored_version && version_compare( $stored_version, JZSA_VIEWER_MIGRATION_CUTOFF_VERSION, '<' );
+	$is_upgrade     = JZSA_Shortcode_Tools::is_legacy_upgrade( $stored_version, JZSA_VIEWER_MIGRATION_CUTOFF_VERSION, true );
 
 	if ( ! in_array( $default_viewer, array( 'lightbox', 'fullscreen' ), true ) ) {
 		update_option(
 			JZSA_DEFAULT_VIEWER_OPTION,
-			JZSA_Shortcode_Tools::resolve_initial_default_viewer( $stored_version, $default_viewer, JZSA_VIEWER_MIGRATION_CUTOFF_VERSION ),
+			JZSA_Shortcode_Tools::resolve_initial_default_viewer( $stored_version, $default_viewer, JZSA_VIEWER_MIGRATION_CUTOFF_VERSION, true ),
 			false
 		);
 	}
