@@ -156,7 +156,7 @@ class JZSA_Admin_Pages {
 						<span class="dashicons dashicons-megaphone" aria-hidden="true"></span>
 						<div>
 							<h3><?php esc_html_e( 'Recommendation!', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php echo wp_kses_post( __( 'Before changing a live post or page, paste your shortcode into the <strong>Playground</strong> and use its validation message to catch unknown or obsolete parameters. The Playground is only a few scrolls below this guide.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+							<p><?php echo wp_kses_post( __( 'Before changing a live post or page, paste your shortcode into the <strong>Playground</strong>. Its <strong>validation will help you catch unknown or obsolete parameters</strong> before they cause problems. The Playground is only a few scrolls below this guide.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 						</div>
 					</div>
 				<?php if ( $should_open ) : ?>
