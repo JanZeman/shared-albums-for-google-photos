@@ -282,6 +282,39 @@
     color: #aaa;
 }
 
+.jzsa-migration-recommendation {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin: 20px 0 4px;
+    padding: 18px 20px;
+    border: 2px solid #dba617;
+    border-left-width: 6px;
+    border-radius: 4px;
+    background: #fff8e5;
+}
+
+.jzsa-migration-recommendation .dashicons {
+    width: 44px;
+    height: 44px;
+    font-size: 44px;
+    line-height: 44px;
+    color: #996800;
+    flex-shrink: 0;
+}
+
+.jzsa-viewer-migration-guide .jzsa-migration-recommendation h3 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    color: #1d2327;
+}
+
+.jzsa-migration-recommendation p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
 .jzsa-viewer-migration-guide ul {
     margin: 0 0 0 22px;
     padding: 0;

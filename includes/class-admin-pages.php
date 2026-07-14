@@ -152,6 +152,13 @@ class JZSA_Admin_Pages {
 						</div>
 						</div>
 					</div>
+					<div class="jzsa-migration-recommendation">
+						<span class="dashicons dashicons-megaphone" aria-hidden="true"></span>
+						<div>
+							<h3><?php esc_html_e( 'Recommendation!', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php echo wp_kses_post( __( 'Before changing a live post or page, paste your shortcode into the <strong>Playground</strong> and use its validation message to catch unknown or obsolete parameters. The Playground is only a few scrolls below this guide.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+						</div>
+					</div>
 				<?php if ( $should_open ) : ?>
 						<p><button type="button" class="button" id="jzsa-dismiss-guide-migration"><?php esc_html_e( 'Collapse this migration guide', 'janzeman-shared-albums-for-google-photos' ); ?></button></p>
 				<?php endif; ?>
