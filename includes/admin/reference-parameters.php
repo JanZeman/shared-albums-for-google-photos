@@ -253,6 +253,9 @@
 
 						<h3><?php esc_html_e( 'Viewer Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php echo wp_kses_post( __( '<strong>Viewer</strong> means either Lightbox or Fullscreen, the two ways a visitor can open a larger photo view from the inline album. Use <code>viewer</code> to choose the active mode and <code>viewer-trigger</code> to choose how one active mode opens. Shared settings use <code>viewer-*</code> parameters; mode-specific overrides use <code>lightbox-*</code> or <code>fullscreen-*</code>. There is no sideways inheritance between modes. If <code>viewer</code> is not set, the site default from <strong>Settings</strong> decides which viewer is used.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+						<h4><?php esc_html_e( 'Viewer Examples', 'janzeman-shared-albums-for-google-photos' ); ?></h4>
+						<p><code><?php echo esc_html( 'viewer="lightbox" viewer-trigger="double-click"' ); ?></code></p>
+						<p><code><?php echo esc_html( 'viewer="both" lightbox-trigger="double-click" fullscreen-trigger="button"' ); ?></code></p>
 					<table class="jzsa-settings-table jzsa-settings-table--params">
 						<thead>
 							<tr>

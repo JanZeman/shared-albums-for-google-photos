@@ -164,8 +164,24 @@ class ShortcodeToolsTest extends TestCase {
 
 		$this->assertTrue( $result['ok'] );
 		$this->assertSame( 'lightbox', $result['currentViewer'] );
-		$this->assertStringContainsString( 'viewer="lightbox"', $result['shortcode'] );
-		$this->assertStringContainsString( 'viewer-trigger="double-click"', $result['shortcode'] );
+		$this->assertSame(
+			'[jzsa-album link="https://photos.google.com/share/test" viewer="lightbox" viewer-trigger="double-click"]',
+			$result['shortcode']
+		);
+	}
+
+	public function test_migration_places_viewer_fields_after_link_and_preserves_other_parameter_order(): void {
+		$result = JZSA_Shortcode_Tools::migrate(
+			'[jzsa-album mode="slider" width="600" link="https://photos.google.com/share/test" viewer="fullscreen" viewer-trigger="double-click" corner-radius="16"]',
+			'preserve',
+			'lightbox'
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertSame(
+			'[jzsa-album link="https://photos.google.com/share/test" viewer="fullscreen" viewer-trigger="double-click" mode="slider" width="600" corner-radius="16"]',
+			$result['shortcode']
+		);
 	}
 
 	public function test_migration_is_idempotent_on_its_modern_output(): void {

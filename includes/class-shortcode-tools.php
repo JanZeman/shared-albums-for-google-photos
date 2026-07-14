@@ -342,8 +342,18 @@ class JZSA_Shortcode_Tools {
 	}
 
 	private static function serialize( $attributes ) {
-		$tokens = array();
+		$tokens   = array();
+		$priority = array( 'link', 'viewer', 'viewer-trigger', 'lightbox-trigger', 'fullscreen-trigger' );
+
+		foreach ( $priority as $name ) {
+			if ( array_key_exists( $name, $attributes ) ) {
+				$tokens[] = $name . '="' . str_replace( '"', '&quot;', (string) $attributes[ $name ] ) . '"';
+			}
+		}
 		foreach ( $attributes as $name => $value ) {
+			if ( in_array( $name, $priority, true ) ) {
+				continue;
+			}
 			$tokens[] = $name . '="' . str_replace( '"', '&quot;', (string) $value ) . '"';
 		}
 		return '[jzsa-album ' . implode( ' ', $tokens ) . ']';

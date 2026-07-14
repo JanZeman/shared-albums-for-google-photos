@@ -154,6 +154,9 @@ class AdminPagesTest extends TestCase {
 		$output = ob_get_clean();
 
 		$this->assertStringContainsString( 'If <code>viewer</code> is not set, the site default from <strong>Settings</strong> decides which viewer is used.', $output );
+		$this->assertStringContainsString( 'Viewer Examples', $output );
+		$this->assertStringContainsString( 'viewer=&quot;lightbox&quot; viewer-trigger=&quot;double-click&quot;', $output );
+		$this->assertStringContainsString( 'viewer=&quot;both&quot; lightbox-trigger=&quot;double-click&quot; fullscreen-trigger=&quot;button&quot;', $output );
 	}
 
 	public function test_admin_assets_are_not_enqueued_for_unrelated_admin_page(): void {
@@ -237,6 +240,7 @@ class AdminPagesTest extends TestCase {
 
 	public function test_guide_migration_tutorial_explains_safe_viewer_update(): void {
 		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1' );
+		update_option( JZSA_DEFAULT_VIEWER_OPTION, 'fullscreen' );
 		$method = $this->reflection->getMethod( 'render_guide_migration_tutorial' );
 
 		ob_start();
@@ -255,15 +259,18 @@ class AdminPagesTest extends TestCase {
 		$this->assertStringContainsString( 'If the <code>viewer</code> parameter is omitted, the site default is used: <strong>Fullscreen</strong>.', $output );
 		$this->assertStringContainsString( '>Change it in Settings</a>', $output );
 		$this->assertStringNotContainsString( 'Current site default:', $output );
-		$this->assertGreaterThan( strpos( $output, 'Manual Migration Reference' ), strpos( $output, 'Set the Viewer Explicitly' ) );
 		$this->assertStringNotContainsString( 'Default Viewer for Shortcodes Without an Explicit Viewer', $output );
 		$this->assertStringContainsString( '<strong>Viewer Samples (21-38)</strong>', $output );
 		$this->assertStringContainsString( 'Shortcode Migration Tool', $output );
-		$this->assertStringContainsString( 'Preserve its current behavior', $output );
-		$this->assertStringContainsString( 'Manual Migration Reference', $output );
-		$this->assertStringContainsString( 'viewer=&quot;both&quot; lightbox-trigger=&quot;double-click&quot; fullscreen-trigger=&quot;button&quot;', $output );
+		$this->assertStringContainsString( 'Preserve the current behavior and update the shortcode to the current syntax', $output );
+		$this->assertStringNotContainsString( 'Manual Migration Reference', $output );
+		$this->assertStringContainsString( 'Recommended Migration Path', $output );
+		$this->assertStringContainsString( '<strong>Shortcode Migration Tool</strong>', $output );
 		$this->assertStringContainsString( '<strong>Playground</strong>', $output );
-		$this->assertStringContainsString( '<strong>validation will help you catch unknown or obsolete parameters</strong>', $output );
+		$this->assertStringContainsString( 'It will guide you safely through the process.', $output );
+		$this->assertStringContainsString( 'We recommend migrating even if you want to keep the current behavior.', $output );
+		$this->assertStringContainsString( 'to modernize the shortcode without changing the viewer experience.', $output );
+		$this->assertStringContainsString( 'Never update a live page until you have verified its shortcode with this tool', $output );
 		$this->assertStringContainsString( 'The section will be collapsed. You can expand it anytime or check the Parameters page for the details.', $output );
 	}
 
