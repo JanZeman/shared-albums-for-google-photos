@@ -105,6 +105,7 @@ require_once JZSA_PLUGIN_DIR . 'includes/class-shortcode-tools.php';
 require_once JZSA_PLUGIN_DIR . 'includes/class-orchestrator.php';
 require_once JZSA_PLUGIN_DIR . 'includes/class-admin-pages.php';
 require_once JZSA_PLUGIN_DIR . 'includes/class-community.php';
+require_once JZSA_PLUGIN_DIR . 'includes/plugin-lifecycle.php';
 
 /**
  * Clear album-level plugin-managed caches.
@@ -230,79 +231,6 @@ function jzsa_init_plugin() {
 	}
 }
 add_action( 'init', 'jzsa_init_plugin' );
-
-/**
- * Clear plugin-managed caches once per plugin version bump.
- *
- * Plugin updates do not trigger the activation hook, so compare the stored
- * version against the current code version on load and invalidate stale
- * transients exactly once when they differ.
- */
-function jzsa_maybe_run_version_migration() {
-	$stored_version = get_option( JZSA_VERSION_OPTION, '' );
-	$default_viewer = get_option( JZSA_DEFAULT_VIEWER_OPTION, '' );
-	$is_upgrade     = JZSA_Shortcode_Tools::is_legacy_upgrade( $stored_version, JZSA_VIEWER_MIGRATION_CUTOFF_VERSION );
-
-	if ( ! in_array( $default_viewer, array( 'lightbox', 'fullscreen' ), true ) ) {
-		$initial_default = JZSA_Shortcode_Tools::resolve_initial_default_viewer(
-			$stored_version,
-			$default_viewer,
-			JZSA_VIEWER_MIGRATION_CUTOFF_VERSION
-		);
-		update_option( JZSA_DEFAULT_VIEWER_OPTION, $initial_default, false );
-	}
-
-	if ( JZSA_VERSION === $stored_version ) {
-		return;
-	}
-
-	jzsa_clear_all_plugin_caches();
-
-	if ( $is_upgrade ) {
-		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1', false );
-	}
-
-	if ( '' === $stored_version ) {
-		add_option( JZSA_VERSION_OPTION, JZSA_VERSION, '', false );
-		return;
-	}
-
-	update_option( JZSA_VERSION_OPTION, JZSA_VERSION, false );
-}
-add_action( 'plugins_loaded', 'jzsa_maybe_run_version_migration' );
-
-/**
- * Activation hook
- */
-function jzsa_activate() {
-	// Clear all plugin caches on activation.
-	jzsa_clear_all_plugin_caches();
-	$stored_version = get_option( JZSA_VERSION_OPTION, '' );
-	$default_viewer = get_option( JZSA_DEFAULT_VIEWER_OPTION, '' );
-	$is_upgrade     = JZSA_Shortcode_Tools::is_legacy_upgrade( $stored_version, JZSA_VIEWER_MIGRATION_CUTOFF_VERSION, true );
-
-	if ( ! in_array( $default_viewer, array( 'lightbox', 'fullscreen' ), true ) ) {
-		update_option(
-			JZSA_DEFAULT_VIEWER_OPTION,
-			JZSA_Shortcode_Tools::resolve_initial_default_viewer( $stored_version, $default_viewer, JZSA_VIEWER_MIGRATION_CUTOFF_VERSION, true ),
-			false
-		);
-	}
-	if ( $is_upgrade ) {
-		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1', false );
-	}
-	update_option( JZSA_VERSION_OPTION, JZSA_VERSION, false );
-
-	// Generate the per-install secret used to bind community JWTs to this WP
-	// install. Idempotent - does nothing if it's already there.
-	if ( class_exists( 'JZSA_Community' ) ) {
-		JZSA_Community::ensure_install_secret();
-	}
-
-	// Set a transient to redirect to the Guide page after activation.
-	set_transient( 'jzsa_activation_redirect', true, 30 );
-}
-register_activation_hook( __FILE__, 'jzsa_activate' );
 
 /**
  * Redirect to the Guide page after activation.

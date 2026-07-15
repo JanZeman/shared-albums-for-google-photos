@@ -1611,9 +1611,7 @@ function jzsaSetupMigrationTool() {
 						'</strong>. Validation: <strong>' + jzsaEscapeHtml( validationStatus ) + '</strong>.</p>';
 					html += '<textarea id="jzsa-migrated-shortcode" rows="5" readonly>' + jzsaEscapeHtml( payload.shortcode ) + '</textarea>';
 					html += '<p><button type="button" class="button" id="jzsa-copy-migrated">Copy Migrated Shortcode</button> ' +
-						'<button type="button" class="button" id="jzsa-preview-migrated">Preview Migrated Shortcode</button> ' +
-						'<button type="button" class="button" id="jzsa-load-migrated">Load in Playground</button> ' +
-						'<button type="button" class="button" id="jzsa-reset-migration">Start Over</button></p>';
+						'<button type="button" class="button" id="jzsa-preview-migrated">Preview in Playground</button></p>';
 				}
 				if ( issues.length ) {
 					html += '<ul class="jzsa-code-validation__list">';
@@ -1636,39 +1634,23 @@ function jzsaSetupMigrationTool() {
 				var output = document.getElementById( 'jzsa-migrated-shortcode' );
 				var copy = document.getElementById( 'jzsa-copy-migrated' );
 				var preview = document.getElementById( 'jzsa-preview-migrated' );
-				var load = document.getElementById( 'jzsa-load-migrated' );
-				var reset = document.getElementById( 'jzsa-reset-migration' );
 				if ( copy && output ) {
 					copy.addEventListener( 'click', function () {
 						navigator.clipboard.writeText( output.value );
 						copy.textContent = 'Copied!';
 					} );
 				}
-				if ( load && output ) {
-					var loadInPlayground = function () {
+				if ( preview && output ) {
+					preview.addEventListener( 'click', function () {
 						var playground = document.getElementById( 'jzsa-playground-shortcode' );
 						if ( playground ) {
 							playground.textContent = output.value;
 							playground.dispatchEvent( new Event( 'input', { bubbles: true } ) );
 							playground.scrollIntoView( { behavior: 'smooth', block: 'center' } );
-						}
-					};
-					load.addEventListener( 'click', loadInPlayground );
-					if ( preview ) {
-						preview.addEventListener( 'click', function () {
-							loadInPlayground();
-							var playground = document.getElementById( 'jzsa-playground-shortcode' );
-							var block = playground ? playground.closest( '.jzsa-code-block' ) : null;
+							var block = playground.closest( '.jzsa-code-block' );
 							var apply = block ? block.querySelector( '[data-jzsa-action="apply"]' ) : null;
 							if ( apply ) { apply.click(); }
-						} );
-					}
-				}
-				if ( reset ) {
-					reset.addEventListener( 'click', function () {
-						input.value = '';
-						result.textContent = '';
-						input.focus();
+						}
 					} );
 				}
 			} ).catch( function () {

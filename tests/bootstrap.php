@@ -6,7 +6,7 @@
 
 // WordPress constants the plugin guards against.
 define( 'ABSPATH', __DIR__ . '/' );
-define( 'JZSA_VERSION', '0.0.0-test' );
+define( 'JZSA_VERSION', '2.4.0' );
 define( 'JZSA_PLUGIN_FILE', dirname( __DIR__ ) . '/janzeman-shared-albums-for-google-photos.php' );
 define( 'JZSA_PLUGIN_DIR', dirname( __DIR__ ) . '/' );
 define( 'JZSA_PLUGIN_URL', 'https://site.example/wp-content/plugins/jzsa/' );
@@ -15,6 +15,7 @@ define( 'JZSA_COMMUNITY_PLUGIN_READ_KEY', 'test-read-key' );
 define( 'JZSA_VERSION_OPTION', 'jzsa_plugin_version' );
 define( 'JZSA_DEFAULT_VIEWER_OPTION', 'jzsa_default_viewer' );
 define( 'JZSA_VIEWER_MIGRATION_NOTICE_OPTION', 'jzsa_viewer_migration_notice' );
+define( 'JZSA_VIEWER_MIGRATION_CUTOFF_VERSION', '2.4.0' );
 
 function jzsa_get_default_viewer() {
     $value = get_option( JZSA_DEFAULT_VIEWER_OPTION, 'lightbox' );
@@ -39,6 +40,9 @@ if ( ! function_exists( 'add_action' ) ) {
 }
 if ( ! function_exists( 'add_filter' ) ) {
     function add_filter( $hook, $callback, $priority = 10, $accepted_args = 1 ) {}
+}
+if ( ! function_exists( 'register_activation_hook' ) ) {
+    function register_activation_hook( $file, $callback ) {}
 }
 if ( ! function_exists( 'is_admin' ) ) {
     function is_admin() { return false; }
@@ -552,3 +556,4 @@ require_once $includes . 'class-shortcode-tools.php';
 require_once $includes . 'class-community.php';
 require_once $includes . 'class-admin-pages.php';
 require_once $includes . 'class-orchestrator.php';
+require_once $includes . 'plugin-lifecycle.php';

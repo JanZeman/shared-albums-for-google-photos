@@ -290,7 +290,7 @@ test.describe('Shortcode Migration Tool', () => {
         await expect(page.locator('#jzsa-migration-result')).toContainText('Behavior preserved.');
         await expect(page.locator('#jzsa-migration-result')).toContainText('Validation: valid');
 
-        await page.locator('#jzsa-load-migrated').click();
+        await page.getByRole('button', { name: 'Preview in Playground' }).click();
         await expect(page.locator('#jzsa-playground-shortcode')).toContainText('viewer="fullscreen"');
     });
 
