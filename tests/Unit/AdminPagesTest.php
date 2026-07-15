@@ -3,6 +3,7 @@
  * Tests for admin-page integration helpers.
  */
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class AdminPagesTest extends TestCase {
@@ -24,6 +25,8 @@ class AdminPagesTest extends TestCase {
 		$GLOBALS['jzsa_test_do_shortcode_calls']    = array();
 		$GLOBALS['jzsa_test_admin_page_title']      = 'Shared Albums';
 		$GLOBALS['jzsa_test_current_screen_id']     = null;
+		$GLOBALS['jzsa_test_current_user_can']      = false;
+		$GLOBALS['jzsa_test_nonce_valid']           = true;
 		$GLOBALS['jzsa_test_options']               = array();
 		$GLOBALS['jzsa_test_user_meta']             = array();
 	}
@@ -31,6 +34,107 @@ class AdminPagesTest extends TestCase {
 	protected function tearDown(): void {
 		$_GET = array();
 		$_POST = array();
+		$GLOBALS['jzsa_test_current_user_can'] = false;
+		$GLOBALS['jzsa_test_nonce_valid']      = true;
+	}
+
+	private function callAjax( string $method ): JZSA_Test_JSON_Response {
+		try {
+			$this->admin_pages->$method();
+		} catch ( JZSA_Test_JSON_Response $response ) {
+			return $response;
+		}
+
+		$this->fail( 'Expected ' . $method . ' to send a JSON response.' );
+	}
+
+	public static function shortcodeToolEndpointProvider(): array {
+		return array(
+			'validation' => array(
+				'handle_validate_shortcode',
+				array( 'nonce' => 'test-nonce', 'shortcode' => '[jzsa-album link="https://photos.google.com/share/test"]' ),
+			),
+			'migration' => array(
+				'handle_migrate_shortcode',
+				array( 'nonce' => 'test-nonce', 'shortcode' => '[jzsa-album link="https://photos.google.com/share/test"]', 'goal' => 'preserve' ),
+			),
+			'default viewer' => array(
+				'handle_set_default_viewer',
+				array( 'nonce' => 'test-nonce', 'viewer' => 'lightbox' ),
+			),
+		);
+	}
+
+	#[DataProvider( 'shortcodeToolEndpointProvider' )]
+	public function test_shortcode_tool_endpoints_reject_users_without_capability( string $method, array $post ): void {
+		update_option( JZSA_DEFAULT_VIEWER_OPTION, 'fullscreen' );
+		$_POST = $post;
+
+		$response = $this->callAjax( $method );
+
+		$this->assertFalse( $response->success );
+		$this->assertSame( 403, $response->status_code );
+		$this->assertSame( 'Insufficient permissions', $response->data );
+		$this->assertSame( 'fullscreen', get_option( JZSA_DEFAULT_VIEWER_OPTION ) );
+	}
+
+	#[DataProvider( 'shortcodeToolEndpointProvider' )]
+	public function test_shortcode_tool_endpoints_reject_invalid_nonces( string $method, array $post ): void {
+		$GLOBALS['jzsa_test_current_user_can'] = true;
+		$GLOBALS['jzsa_test_nonce_valid']      = false;
+		update_option( JZSA_DEFAULT_VIEWER_OPTION, 'fullscreen' );
+		$_POST = $post;
+
+		$response = $this->callAjax( $method );
+
+		$this->assertFalse( $response->success );
+		$this->assertSame( 403, $response->status_code );
+		$this->assertSame( 'Invalid nonce', $response->data );
+		$this->assertSame( 'fullscreen', get_option( JZSA_DEFAULT_VIEWER_OPTION ) );
+	}
+
+	public function test_default_viewer_endpoint_rejects_invalid_value_without_mutation(): void {
+		$GLOBALS['jzsa_test_current_user_can'] = true;
+		update_option( JZSA_DEFAULT_VIEWER_OPTION, 'fullscreen' );
+		$_POST = array( 'nonce' => 'test-nonce', 'viewer' => 'both' );
+
+		$response = $this->callAjax( 'handle_set_default_viewer' );
+
+		$this->assertFalse( $response->success );
+		$this->assertSame( 400, $response->status_code );
+		$this->assertSame( 'Invalid default viewer.', $response->data );
+		$this->assertSame( 'fullscreen', get_option( JZSA_DEFAULT_VIEWER_OPTION ) );
+	}
+
+	public function test_default_viewer_endpoint_saves_an_authorized_value(): void {
+		$GLOBALS['jzsa_test_current_user_can'] = true;
+		update_option( JZSA_DEFAULT_VIEWER_OPTION, 'fullscreen' );
+		$_POST = array( 'nonce' => 'test-nonce', 'viewer' => 'lightbox' );
+
+		$response = $this->callAjax( 'handle_set_default_viewer' );
+
+		$this->assertTrue( $response->success );
+		$this->assertSame( array( 'viewer' => 'lightbox' ), $response->data );
+		$this->assertSame( 'lightbox', get_option( JZSA_DEFAULT_VIEWER_OPTION ) );
+	}
+
+	public function test_migration_endpoint_returns_output_for_an_authorized_request(): void {
+		$GLOBALS['jzsa_test_current_user_can'] = true;
+		update_option( JZSA_DEFAULT_VIEWER_OPTION, 'fullscreen' );
+		$_POST = array(
+			'nonce'     => 'test-nonce',
+			'shortcode' => '[jzsa-album link="https://photos.google.com/share/test"]',
+			'goal'      => 'preserve',
+		);
+
+		$response = $this->callAjax( 'handle_migrate_shortcode' );
+
+		$this->assertTrue( $response->success );
+		$this->assertTrue( $response->data['ok'] );
+		$this->assertSame(
+			'[jzsa-album link="https://photos.google.com/share/test" viewer="fullscreen"]',
+			$response->data['shortcode']
+		);
 	}
 
 	private function setLazySamplePreviews( bool $enabled ): void {
