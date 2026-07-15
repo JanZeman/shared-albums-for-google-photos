@@ -238,14 +238,14 @@ $pages = array(
 		'content' => implode(
 			"\n\n",
 			array(
-				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer="both" viewer-max-width="600" viewer-max-height="400"]',
-				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer="both" viewer-max-width="600" viewer-max-height="400" fullscreen-max-width="1200" fullscreen-max-height="800"]',
-				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer="both" viewer-image-fit="cover"]',
-				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer="both" fullscreen-image-fit="cover"]',
-				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" image-fit="contain" background-color="rgba(128,0,64,0.7)" viewer="both" lightbox-corner-radius="16" viewer-max-width="600" viewer-max-height="400" viewer-background-color="rgba(128,0,64,0.7)" lightbox-backdrop-color="rgba(0,128,64,0.7)"]',
-				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer="both" viewer-controls-color="#E63946" lightbox-controls-color="#00A878"]',
-				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer="fullscreen" fullscreen-slideshow="auto"]',
-				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer="both" viewer-slideshow="auto" lightbox-slideshow-delay="1" fullscreen-slideshow-delay="7-9"]',
+				'[jzsa-album link="' . $album_link . '" viewer="both" mode="slider" width="600" corner-radius="16" viewer-max-width="600" viewer-max-height="400"]',
+				'[jzsa-album link="' . $album_link . '" viewer="both" mode="slider" width="600" corner-radius="16" viewer-max-width="600" viewer-max-height="400" fullscreen-max-width="1200" fullscreen-max-height="800"]',
+				'[jzsa-album link="' . $album_link . '" viewer="both" mode="slider" width="600" corner-radius="16" viewer-image-fit="cover"]',
+				'[jzsa-album link="' . $album_link . '" viewer="both" mode="slider" width="600" corner-radius="16" fullscreen-image-fit="cover"]',
+				'[jzsa-album link="' . $album_link . '" viewer="both" mode="slider" width="600" corner-radius="16" image-fit="contain" background-color="rgba(128,0,64,0.7)" lightbox-corner-radius="16" viewer-max-width="600" viewer-max-height="400" viewer-background-color="rgba(128,0,64,0.7)" lightbox-backdrop-color="rgba(0,128,64,0.7)"]',
+				'[jzsa-album link="' . $album_link . '" viewer="both" mode="slider" width="600" corner-radius="16" viewer-controls-color="#E63946" lightbox-controls-color="#00A878"]',
+				'[jzsa-album link="' . $album_link . '" viewer="fullscreen" mode="slider" width="600" corner-radius="16" fullscreen-slideshow="auto"]',
+				'[jzsa-album link="' . $album_link . '" viewer="both" mode="slider" width="600" corner-radius="16" viewer-slideshow="auto" lightbox-slideshow-delay="1" fullscreen-slideshow-delay="7-9"]',
 			)
 		),
 	),

@@ -21,6 +21,7 @@ class AdminPagesTest extends TestCase {
 		$GLOBALS['jzsa_test_enqueued_styles']       = array();
 		$GLOBALS['jzsa_test_enqueued_scripts']      = array();
 		$GLOBALS['jzsa_test_localized_scripts']     = array();
+		$GLOBALS['jzsa_test_do_shortcode_calls']    = array();
 		$GLOBALS['jzsa_test_admin_page_title']      = 'Shared Albums';
 		$GLOBALS['jzsa_test_current_screen_id']     = null;
 		$GLOBALS['jzsa_test_options']               = array();
@@ -159,6 +160,17 @@ class AdminPagesTest extends TestCase {
 		$this->assertStringContainsString( 'Viewer Examples', $output );
 		$this->assertStringContainsString( 'viewer=&quot;lightbox&quot; viewer-trigger=&quot;double-click&quot;', $output );
 		$this->assertStringContainsString( 'viewer=&quot;both&quot; lightbox-trigger=&quot;double-click&quot; fullscreen-trigger=&quot;button&quot;', $output );
+	}
+
+	public function test_guide_samples_set_the_viewer_immediately_after_the_link(): void {
+		$source = file_get_contents( dirname( __DIR__, 2 ) . '/includes/class-admin-pages.php' );
+		preg_match_all( '/^.*\$[a-z_]*shortcode\s*=\s*\'\[jzsa-album link=.*$/m', $source, $matches );
+
+		$this->assertNotEmpty( $matches[0] );
+		foreach ( $matches[0] as $declaration ) {
+			$this->assertMatchesRegularExpression( '/link=.*viewer="(?:lightbox|fullscreen|both|disabled)"/', $declaration );
+			$this->assertLessThan( strpos( $declaration, 'viewer=' ), strpos( $declaration, 'link=' ) );
+		}
 	}
 
 	public function test_shortcode_validation_offers_safe_legacy_migration(): void {
