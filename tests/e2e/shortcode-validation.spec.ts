@@ -37,6 +37,24 @@ test.describe('Shortcode validation - Playground live feedback', () => {
         await expect(area).not.toHaveClass(/jzsa-code-validation--(warning|error)/);
     });
 
+    test('all published Guide shortcodes use the canonical leading parameter order', async ({ page }) => {
+        const violations = await page.locator('.jzsa-code-block code').evaluateAll((nodes) => {
+            return nodes.flatMap((node) => {
+                const shortcode = (node.textContent || '').trim();
+                if (!shortcode.startsWith('[jzsa-album')) {
+                    return [];
+                }
+                const names = Array.from(shortcode.matchAll(/\s([\w-]+)\s*=/g), (match) => match[1]);
+                const viewerTriggerIndex = names.indexOf('viewer-trigger');
+                const valid = names[0] === 'link' && names[1] === 'viewer' &&
+                    (viewerTriggerIndex === -1 || viewerTriggerIndex === 2);
+                return valid ? [] : [shortcode];
+            });
+        });
+
+        expect(violations).toEqual([]);
+    });
+
     test('missing link parameter reports an error', async ({ page }) => {
         await setShortcode(page, '[jzsa-album mode="slider"]');
         const area = page.locator(VALIDATION);
