@@ -133,7 +133,7 @@ class JZSA_Shortcode_Tools {
 		}
 
 		if ( 'both' === $viewer && ( isset( $attributes['viewer-trigger'] ) || isset( $attributes['viewer-toggle'] ) ) ) {
-			$issues[] = self::issue( 'viewer_trigger_ambiguous', 'error', array( 'viewer', 'viewer-trigger' ), __( 'The shared viewer trigger cannot be used with viewer="both". Assign a gesture to either Lightbox or Fullscreen.', 'janzeman-shared-albums-for-google-photos' ) );
+			$issues[] = self::issue( 'viewer_trigger_ambiguous', 'error', array( 'viewer', 'viewer-trigger' ), __( 'The shared viewer trigger cannot be used with viewer="both". Visitors need a clear way to understand which viewer will open. Keep both viewers button-only, or assign a gesture to only one mode-specific trigger.', 'janzeman-shared-albums-for-google-photos' ) );
 		}
 
 		$lb_trigger = self::trigger_value( $attributes, 'lightbox-trigger' );
@@ -179,7 +179,8 @@ class JZSA_Shortcode_Tools {
 			return array( 'ok' => false, 'issues' => array( self::issue( 'invalid_migration_goal', 'error', array(), __( 'Select a valid migration goal.', 'janzeman-shared-albums-for-google-photos' ) ) ) );
 		}
 
-		$attributes = $parsed['attributes'];
+		$attributes        = $parsed['attributes'];
+		$source_attributes = $attributes;
 		$source_model = self::classify_model( $attributes );
 		$input_issues = self::validate_semantics( $attributes, 'migration' );
 		if ( 'preserve' === $goal && self::has_errors( $input_issues ) ) {
@@ -230,8 +231,10 @@ class JZSA_Shortcode_Tools {
 			$attributes['viewer-trigger'] = $trigger;
 		}
 
-		$output = self::serialize( $attributes );
-		$check  = self::validate_semantics( $attributes, 'migration' );
+		$output       = self::serialize( $attributes );
+		$check        = self::validate_semantics( $attributes, 'migration' );
+		$input_issues = array_merge( $parsed['warnings'], $input_issues );
+		$replacements = self::describe_migration_replacements( $source_attributes, $attributes );
 		return array(
 			'ok'                 => ! self::has_errors( $check ),
 			'shortcode'          => $output,
@@ -240,7 +243,11 @@ class JZSA_Shortcode_Tools {
 			'targetViewer'       => $target,
 			'behaviorPreserved'  => 'preserve' === $goal,
 			'validationStatus'   => self::has_errors( $check ) ? 'error' : 'valid',
-			'issues'             => array_merge( $parsed['warnings'], $input_issues, $check ),
+			'inputIssues'        => $input_issues,
+			'outputIssues'       => $check,
+			'replacements'       => $replacements,
+			'changes'            => self::describe_migration_changes( $source_attributes, $attributes, $parsed['order'], $replacements ),
+			'issues'             => array_merge( $input_issues, $check ),
 		);
 	}
 
@@ -339,6 +346,142 @@ class JZSA_Shortcode_Tools {
 			unset( $attributes[ $obsolete ] );
 		}
 		return $attributes;
+	}
+
+	/**
+	 * Describe obsolete viewer syntax replaced in the generated shortcode.
+	 *
+	 * @param array $source Source shortcode attributes.
+	 * @param array $output Generated shortcode attributes.
+	 * @return array
+	 */
+	private static function describe_migration_replacements( $source, $output ) {
+		$rows = array();
+		$aliases = array(
+			'viewer-display-max-width'      => 'viewer-max-width',
+			'viewer-display-max-height'     => 'viewer-max-height',
+			'fullscreen-display-max-width'  => 'fullscreen-max-width',
+			'fullscreen-display-max-height' => 'fullscreen-max-height',
+		);
+
+		foreach ( $aliases as $obsolete => $canonical ) {
+			if ( isset( $source[ $obsolete ], $output[ $canonical ] ) ) {
+				$rows[] = array(
+					'obsolete'     => $obsolete,
+					'replacements' => array( self::attribute_token( $canonical, $output[ $canonical ] ) ),
+				);
+			}
+		}
+
+		foreach ( array( 'viewer-toggle', 'lightbox-toggle', 'fullscreen-toggle' ) as $obsolete ) {
+			if ( ! isset( $source[ $obsolete ] ) ) {
+				continue;
+			}
+			$modern = array();
+			foreach ( array( 'viewer', 'viewer-trigger' ) as $name ) {
+				if ( isset( $output[ $name ] ) ) {
+					$modern[] = self::attribute_token( $name, $output[ $name ] );
+				}
+			}
+			$mode_trigger = 'lightbox-toggle' === $obsolete ? 'lightbox-trigger' : ( 'fullscreen-toggle' === $obsolete ? 'fullscreen-trigger' : '' );
+			if ( $mode_trigger && isset( $output[ $mode_trigger ] ) ) {
+				$modern[] = self::attribute_token( $mode_trigger, $output[ $mode_trigger ] );
+			}
+			$rows[] = array(
+				'obsolete'     => $obsolete,
+				'replacements' => array_values( array_unique( $modern ) ),
+			);
+		}
+
+		return $rows;
+	}
+
+	private static function attribute_token( $name, $value ) {
+		return $name . '="' . (string) $value . '"';
+	}
+
+	/**
+	 * Report every effective transformation applied by the migrator.
+	 *
+	 * @param array $source       Source shortcode attributes.
+	 * @param array $output       Generated shortcode attributes.
+	 * @param array $source_order Source parameter order.
+	 * @param array $replacements Obsolete-to-current replacement rows.
+	 * @return array
+	 */
+	private static function describe_migration_changes( $source, $output, $source_order, $replacements ) {
+		$replaced_source = array();
+		$replacement_targets = array();
+		foreach ( $replacements as $replacement ) {
+			$replaced_source[] = $replacement['obsolete'];
+			foreach ( $replacement['replacements'] as $token ) {
+				$replacement_targets[] = strstr( $token, '=', true );
+			}
+		}
+
+		$added = array();
+		foreach ( $output as $name => $value ) {
+			if ( ! array_key_exists( $name, $source ) && ! in_array( $name, $replacement_targets, true ) ) {
+				$added[] = self::attribute_token( $name, $value );
+			}
+		}
+
+		$removed = array();
+		foreach ( $source as $name => $value ) {
+			if ( ! array_key_exists( $name, $output ) && ! in_array( $name, $replaced_source, true ) ) {
+				$removed[] = self::attribute_token( $name, $value );
+			}
+		}
+
+		$changed = array();
+		foreach ( $source as $name => $value ) {
+			if ( array_key_exists( $name, $output ) && (string) $value !== (string) $output[ $name ] ) {
+				$changed[] = array(
+					'from' => self::attribute_token( $name, $value ),
+					'to'   => self::attribute_token( $name, $output[ $name ] ),
+				);
+			}
+		}
+
+		$common_source_order = array_values(
+			array_filter(
+				$source_order,
+				function ( $name ) use ( $output ) {
+					return array_key_exists( $name, $output );
+				}
+			)
+		);
+		$common_output_order = array_values(
+			array_filter(
+				self::serialized_attribute_order( $output ),
+				function ( $name ) use ( $source ) {
+					return array_key_exists( $name, $source );
+				}
+			)
+		);
+
+		return array(
+			'added'           => $added,
+			'removed'         => $removed,
+			'changed'         => $changed,
+			'orderNormalized' => $common_source_order !== $common_output_order,
+		);
+	}
+
+	private static function serialized_attribute_order( $attributes ) {
+		$order    = array();
+		$priority = array( 'link', 'viewer', 'viewer-trigger', 'lightbox-trigger', 'fullscreen-trigger' );
+		foreach ( $priority as $name ) {
+			if ( array_key_exists( $name, $attributes ) ) {
+				$order[] = $name;
+			}
+		}
+		foreach ( array_keys( $attributes ) as $name ) {
+			if ( ! in_array( $name, $priority, true ) ) {
+				$order[] = $name;
+			}
+		}
+		return $order;
 	}
 
 	private static function serialize( $attributes ) {

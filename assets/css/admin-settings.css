@@ -372,6 +372,36 @@
     font-family: Consolas, Monaco, monospace;
 }
 
+#jzsa-migration-shortcode::placeholder {
+    color: rgba(44, 51, 56, 0.48);
+    opacity: 1;
+}
+
+.jzsa-shortcode-migrator > .jzsa-code-validation {
+    margin: 6px 0 14px;
+}
+
+.jzsa-migration-replacements {
+    margin: 8px 0 14px;
+    padding: 9px 12px;
+    color: #135e2d;
+    background: #edfaef;
+    border: 1px solid #8fd19e;
+    border-radius: 4px;
+}
+
+.jzsa-migration-replacements ul {
+    margin: 6px 0 0 20px;
+}
+
+.jzsa-migration-replacements p {
+    margin: 6px 0 0;
+}
+
+.jzsa-migration-replacements li {
+    margin-bottom: 3px;
+}
+
 .jzsa-migration-goals {
     display: grid;
     gap: 8px;
@@ -381,6 +411,12 @@
 .jzsa-migration-goals legend {
     margin-bottom: 8px;
     font-weight: 600;
+}
+
+.jzsa-migration-goal-note {
+    margin-left: 3px;
+    color: #646970;
+    font-size: 12px;
 }
 
 .jzsa-default-viewer-setting > label {

@@ -260,7 +260,9 @@ test.describe('Shortcode validation - parameter values', () => {
         );
         const area = page.locator(VALIDATION);
         await expect(area.locator('.jzsa-code-validation__list li')).toHaveCount(6);
-        await expect(area).toContainText('2 more issues not shown.');
+		await expect(area).toContainText(
+			'2 additional issues are hidden to keep this list readable. Fix the visible issues, then validate again.',
+		);
     });
 });
 
@@ -287,8 +289,15 @@ test.describe('Shortcode Migration Tool', () => {
         await expect(output).toHaveValue(/viewer-trigger="click"/);
         await expect(output).toHaveValue(/fullscreen-source-width="800"/);
         await expect(output).toHaveValue(/lightbox-source-width="800"/);
+		await expect(page.locator('#jzsa-migration-source-validation')).toContainText(
+			'Parameter "fullscreen-toggle" is deprecated',
+		);
+		await expect(page.locator('.jzsa-migration-replacements')).toContainText('fullscreen-toggle');
+		await expect(page.locator('.jzsa-migration-replacements')).toContainText('viewer="fullscreen"');
+		await expect(page.locator('.jzsa-migration-replacements')).toContainText('viewer-trigger="click"');
+		await expect(page.locator('.jzsa-migration-replacements')).toContainText('What changed:');
         await expect(page.locator('#jzsa-migration-result')).toContainText('Behavior preserved.');
-        await expect(page.locator('#jzsa-migration-result')).toContainText('Validation: valid');
+        await expect(page.locator('#jzsa-migration-result')).not.toContainText('Validation: valid');
 
         await page.getByRole('button', { name: 'Preview in Playground' }).click();
         await expect(page.locator('#jzsa-playground-shortcode')).toContainText('viewer="fullscreen"');
@@ -301,7 +310,7 @@ test.describe('Shortcode Migration Tool', () => {
         );
         await page.locator('#jzsa-migrate-shortcode').click();
 
-        await expect(page.locator('#jzsa-migration-result')).toContainText(
+        await expect(page.locator('#jzsa-migration-source-validation')).toContainText(
             'legacy Lightbox and Fullscreen gestures compete',
         );
         await expect(page.locator('#jzsa-migrated-shortcode')).toHaveCount(0);
@@ -314,7 +323,7 @@ test.describe('Shortcode Migration Tool', () => {
         await page.locator('#jzsa-migrate-shortcode').click();
 
         await expect(page.locator('#jzsa-migrated-shortcode')).toHaveValue(/sparkle="true"/);
-        await expect(page.locator('#jzsa-migration-result')).toContainText('Validation: warning');
+        await expect(page.locator('#jzsa-migration-result')).toContainText('Migrated shortcode validation:');
         await expect(page.locator('#jzsa-migration-result')).toContainText('Unknown parameter "sparkle"');
     });
 });

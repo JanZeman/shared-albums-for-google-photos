@@ -57,6 +57,50 @@ class ShortcodeToolsTest extends TestCase {
 		$this->assertStringContainsString( 'viewer="fullscreen"', $result['shortcode'] );
 	}
 
+	public function test_migration_reports_modern_replacements_for_obsolete_viewer_syntax(): void {
+		$result = JZSA_Shortcode_Tools::migrate(
+			'[jzsa-album link="https://photos.google.com/share/test" fullscreen-toggle="click"]',
+			'preserve',
+			'fullscreen'
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertSame( 'fullscreen-toggle', $result['replacements'][0]['obsolete'] );
+		$this->assertSame(
+			array( 'viewer="fullscreen"', 'viewer-trigger="click"' ),
+			$result['replacements'][0]['replacements']
+		);
+	}
+
+	public function test_migration_explains_order_normalization_for_modern_syntax(): void {
+		$result = JZSA_Shortcode_Tools::migrate(
+			'[jzsa-album mode="slider" link="https://photos.google.com/share/test" viewer="both"]',
+			'preserve',
+			'fullscreen'
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertTrue( $result['changes']['orderNormalized'] );
+		$this->assertSame( array(), $result['changes']['added'] );
+		$this->assertSame( array(), $result['changes']['removed'] );
+		$this->assertSame( array(), $result['changes']['changed'] );
+	}
+
+	public function test_migration_reports_when_modern_syntax_needs_no_changes(): void {
+		$result = JZSA_Shortcode_Tools::migrate(
+			'[jzsa-album link="https://photos.google.com/share/test" viewer="both" mode="slider"]',
+			'preserve',
+			'fullscreen'
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertFalse( $result['changes']['orderNormalized'] );
+		$this->assertSame( array(), $result['replacements'] );
+		$this->assertSame( array(), $result['changes']['added'] );
+		$this->assertSame( array(), $result['changes']['removed'] );
+		$this->assertSame( array(), $result['changes']['changed'] );
+	}
+
 	public function test_intentional_lightbox_migration_is_reported(): void {
 		$result = JZSA_Shortcode_Tools::migrate(
 			'[jzsa-album link="https://photos.google.com/share/test" fullscreen-toggle="click"]',

@@ -1211,7 +1211,7 @@ function jzsaValidateShortcode( raw ) {
 	if ( seen[ 'viewer' ] && seen[ 'viewer-toggle' ] ) {
 		var viewerVal = ( attrValues[ 'viewer' ] || '' ).trim().toLowerCase().replace( /\s*,\s*/g, ', ' );
 		if ( viewerVal === 'lightbox, fullscreen' || viewerVal === 'both' ) {
-			warnings.push( 'The obsolete "viewer-toggle" parameter is ambiguous with viewer="both". Use one mode-specific trigger.' );
+			warnings.push( 'The obsolete "viewer-toggle" parameter is ambiguous with viewer="both". Visitors need a clear way to understand which viewer will open. Keep both viewers button-only, or assign a gesture to only one mode-specific trigger.' );
 		}
 		if ( viewerVal === 'disabled' ) {
 			warnings.push( '"viewer-toggle" has no effect when viewer="disabled".' );
@@ -1243,11 +1243,18 @@ function jzsaRenderValidation( validationEl, result ) {
 	validationEl.classList.add( 'jzsa-code-validation--' + result.state );
 
 	var issues = [];
+	var seenMessages = {};
 	result.errors.forEach( function ( msg ) {
-		issues.push( { icon: '\u2715', message: msg } );
+		if ( ! seenMessages[ msg ] ) {
+			seenMessages[ msg ] = true;
+			issues.push( { icon: '\u2715', message: msg } );
+		}
 	} );
 	result.warnings.forEach( function ( msg ) {
-		issues.push( { icon: '\u26A0', message: msg } );
+		if ( ! seenMessages[ msg ] ) {
+			seenMessages[ msg ] = true;
+			issues.push( { icon: '\u26A0', message: msg } );
+		}
 	} );
 
 	var items = '';
@@ -1255,7 +1262,11 @@ function jzsaRenderValidation( validationEl, result ) {
 		items += '<li>' + issue.icon + ' ' + jzsaEscapeHtml( issue.message ) + '</li>';
 	} );
 	if ( issues.length > maxVisibleIssues ) {
-		items += '<li>' + jzsaEscapeHtml( String( issues.length - maxVisibleIssues ) + ' more issues not shown.' ) + '</li>';
+		var hiddenCount = issues.length - maxVisibleIssues;
+		items += '<li>' + jzsaEscapeHtml(
+			String( hiddenCount ) + ' additional ' + ( hiddenCount === 1 ? 'issue is' : 'issues are' ) +
+			' hidden to keep this list readable. Fix the visible issues, then validate again.'
+		) + '</li>';
 	}
 	validationEl.innerHTML = '<ul class="jzsa-code-validation__list">' + items + '</ul>';
 	if ( result.migration ) {
@@ -1586,8 +1597,9 @@ function jzsaAdminPost( action, nonce, values ) {
 function jzsaSetupMigrationTool() {
 	var migrateBtn = document.getElementById( 'jzsa-migrate-shortcode' );
 	var input = document.getElementById( 'jzsa-migration-shortcode' );
+	var sourceValidation = document.getElementById( 'jzsa-migration-source-validation' );
 	var result = document.getElementById( 'jzsa-migration-result' );
-	if ( migrateBtn && input && result ) {
+	if ( migrateBtn && input && sourceValidation && result ) {
 		migrateBtn.addEventListener( 'click', function () {
 			var selected = document.querySelector( 'input[name="jzsa-migration-goal"]:checked' );
 			migrateBtn.disabled = true;
@@ -1598,34 +1610,63 @@ function jzsaSetupMigrationTool() {
 			} ).then( function ( response ) {
 				var payload = response && response.data ? response.data : {};
 				var issues = payload.issues || [];
+				var sourceResult = jzsaValidateShortcode( input.value );
+				( payload.inputIssues || issues ).forEach( function ( issue ) {
+					var message = issue.message || String( issue );
+					var target = 'error' === issue.severity ? sourceResult.errors : sourceResult.warnings;
+					if ( target.indexOf( message ) === -1 ) { target.push( message ); }
+				} );
+				sourceResult.state = sourceResult.errors.length ? 'error' : ( sourceResult.warnings.length ? 'warning' : 'ok' );
+				jzsaRenderValidation( sourceValidation, sourceResult );
 				var generatedValidation = payload.shortcode ? jzsaValidateShortcode( payload.shortcode ) : null;
-				var validationStatus = generatedValidation && 'ok' !== generatedValidation.state
-					? generatedValidation.state
-					: ( payload.validationStatus || 'unknown' );
 				var html = '';
 				if ( payload.shortcode ) {
+					var changes = payload.changes || {};
+					var replacements = payload.replacements || [];
+					var hasChanges = replacements.length || ( changes.added || [] ).length ||
+						( changes.removed || [] ).length || ( changes.changed || [] ).length || changes.orderNormalized;
 					html += '<p><strong>' + ( payload.behaviorPreserved ? 'Behavior preserved.' : 'Viewer behavior intentionally changed.' ) + '</strong></p>';
 					html += '<p>Detected model: <strong>' + jzsaEscapeHtml( payload.sourceModel || 'unknown' ) +
 						'</strong>. Viewer: <strong>' + jzsaEscapeHtml( payload.currentViewer || 'unknown' ) +
 						'</strong> to <strong>' + jzsaEscapeHtml( payload.targetViewer || 'unknown' ) +
-						'</strong>. Validation: <strong>' + jzsaEscapeHtml( validationStatus ) + '</strong>.</p>';
+						'</strong>.</p>';
 					html += '<textarea id="jzsa-migrated-shortcode" rows="5" readonly>' + jzsaEscapeHtml( payload.shortcode ) + '</textarea>';
+					html += '<div class="jzsa-migration-replacements"><strong>What changed:</strong>';
+					if ( hasChanges ) {
+						html += '<ul>';
+						replacements.forEach( function ( replacement ) {
+							html += '<li><code>' + jzsaEscapeHtml( replacement.obsolete ) + '</code> was replaced by ' +
+								( replacement.replacements || [] ).map( function ( current ) {
+									return '<code>' + jzsaEscapeHtml( current ) + '</code>';
+								} ).join( ' + ' ) + '</li>';
+						} );
+						( changes.added || [] ).forEach( function ( token ) {
+							html += '<li>Added <code>' + jzsaEscapeHtml( token ) + '</code> to make the behavior explicit.</li>';
+						} );
+						( changes.changed || [] ).forEach( function ( change ) {
+							html += '<li><code>' + jzsaEscapeHtml( change.from ) + '</code> was changed to <code>' +
+								jzsaEscapeHtml( change.to ) + '</code>.</li>';
+						} );
+						( changes.removed || [] ).forEach( function ( token ) {
+							html += '<li>Removed <code>' + jzsaEscapeHtml( token ) + '</code> because it is no longer needed.</li>';
+						} );
+						if ( changes.orderNormalized ) {
+							html += '<li>Normalized parameter order: link, viewer, viewer-trigger, then other parameters.</li>';
+						}
+						html += '</ul>';
+					} else {
+						html += '<p>No syntax changes were needed. This shortcode already uses the current syntax.</p>';
+					}
+					html += '</div>';
+					if ( generatedValidation && ( generatedValidation.errors.length || generatedValidation.warnings.length ) ) {
+						html += '<div class="jzsa-code-validation jzsa-code-validation--' + jzsaEscapeHtml( generatedValidation.state ) + '"><strong>Migrated shortcode validation:</strong><ul class="jzsa-code-validation__list">';
+						generatedValidation.errors.concat( generatedValidation.warnings ).forEach( function ( message ) {
+							html += '<li>' + jzsaEscapeHtml( message ) + '</li>';
+						} );
+						html += '</ul></div>';
+					}
 					html += '<p><button type="button" class="button" id="jzsa-copy-migrated">Copy Migrated Shortcode</button> ' +
 						'<button type="button" class="button" id="jzsa-preview-migrated">Preview in Playground</button></p>';
-				}
-				if ( issues.length ) {
-					html += '<ul class="jzsa-code-validation__list">';
-					issues.forEach( function ( issue ) {
-						html += '<li>' + jzsaEscapeHtml( issue.message || String( issue ) ) + '</li>';
-					} );
-					html += '</ul>';
-				}
-				if ( generatedValidation && ( generatedValidation.errors.length || generatedValidation.warnings.length ) ) {
-					html += '<ul class="jzsa-code-validation__list">';
-					generatedValidation.errors.concat( generatedValidation.warnings ).forEach( function ( message ) {
-						html += '<li>' + jzsaEscapeHtml( message ) + '</li>';
-					} );
-					html += '</ul>';
 				}
 				if ( ! payload.shortcode && ! issues.length ) {
 					html = '<p>Migration could not be completed.</p>';
@@ -1654,6 +1695,7 @@ function jzsaSetupMigrationTool() {
 					} );
 				}
 			} ).catch( function () {
+				sourceValidation.textContent = '';
 				result.textContent = 'Migration request failed.';
 			} ).finally( function () {
 				migrateBtn.disabled = false;
