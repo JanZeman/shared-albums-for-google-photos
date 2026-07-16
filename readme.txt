@@ -124,10 +124,8 @@ No. This plugin is not affiliated with or endorsed by Google LLC. Google Photosâ
 = 2.3.1 =
 * Tested with WordPress 7.0
 * New: Lightbox - an alternative to native fullscreen
-* Thanks to `@valterbruno` for the Lightbox feature request!
 * Basic shortcode real-time validation
 * Preparation of the Community feature for the release
-* Once more huge thanks to `@naveenbachwani` for sharp and inspiring feedback about this feature!
 
 = 2.2.0 =
 * New: Community Directory - browse, copy, and publish shortcode configurations and inspire others :-)
@@ -135,11 +133,10 @@ No. This plugin is not affiliated with or endorsed by Google LLC. Google Photosâ
 * Passwordless authentication: Connect from your WordPress admin, with no email or external account required
 * Interaction points and shortcode ratings are community fun, not a competition
 * Delete your account and all published entries at any time
-* Special thanks to `@naveenbachwani` for the truly inspirational "Gallery links" request!
 
 = 2.1.8 =
-* Fullscreen support of mosaic. Many thanks `@luisbenitez777` for sharing the idea.
-* Warning added: Google truncates descriptions to 100 chars. Thanks `@naveenbachwani` for the detailed repro steps.
+* Fullscreen support of mosaic
+* Warning added: Google truncates descriptions to 100 chars
 
 = 2.1.7 =
 * Fixed info-wrap bug
@@ -150,7 +147,6 @@ No. This plugin is not affiliated with or endorsed by Google LLC. Google Photosâ
 = 2.1.5 =
 * Reworked Guide page loading to reduce blocking and improve responsiveness
 * Improved cache/help guidance on the settings page
-* Big thanks to `@naveenbachwani` for detailed testing, UX observations, and support-thread feedback
 
 = 2.1.4 =
 * Screenshots added
@@ -198,14 +194,12 @@ No. This plugin is not affiliated with or endorsed by Google LLC. Google Photosâ
 
 = 2.0.4 =
 * New: Mosaic thumbnail strip (`mosaic="true"`) for slider and carousel modes
-* Mosaic feature inspired by Mateusz Starzak's fork
 * Added `fullscreen-background-color` (default `#000`) to control fullscreen background separately
 * Fixed gallery mode where `show-download-button="true"` did not render the download button
 * Fixed slideshow option logic: use `disabled`, `manual`, or `auto` for `slideshow` and `fullscreen-slideshow`
 * Fixed `fullscreen-toggle="click"` for video slides in gallery mode
 * Improved iPhone pseudo-fullscreen behavior, including fullscreen arrow navigation
 * Added restore-to-last-viewed position when closing fullscreen
-* Thanks to Peter and Ulf for detailed bug reports and testing
 
 = 2.0.3 =
 * New parameter: "cache-refresh"
@@ -249,6 +243,28 @@ No. This plugin is not affiliated with or endorsed by Google LLC. Google Photosâ
 * 24-hour caching mechanism
 * User-friendly error messages for invalid album URLs
 * Responsive design with touch gestures
+
+== Community Acknowledgements ==
+
+This plugin has been shaped not only by code, but also by people willing to test early versions, question design decisions, and explain their real-world needs. Their ideas and thoughtful feedback continue to make it more useful and easier to use.
+
+= Special Recognition =
+
+* **[Naveen Bachwani](https://profiles.wordpress.org/naveenbachwani/) (`@naveenbachwani`)** - An early adopter with a sharp eye and analytical mind. His feedback often improved usability while new features were still being designed, before they reached a public release. His many feature ideas, extensive testing, UX feedback, and detailed design discussions have helped shape photo information and descriptions, mobile and Fullscreen behavior, the Community Directory, and the current Lightbox and Fullscreen experience.
+
+Personal note: It has been a genuine pleasure working with you, Naveen!
+  
+= Key Contributors =
+
+* **[Peter Berger](https://profiles.wordpress.org/peterpolow/) (`@peterpolow`)** - Detailed feature requests and patient real-device testing that helped drive video support, Gallery mode, separate inline and Fullscreen controls, and more discoverable button behavior on iPhone and other mobile devices.
+* **[Ulf](https://profiles.wordpress.org/toonwolf/) (`@toonwolf`)** - Real-world testing and thoughtful presentation requests based on using the plugin for digital signage on a screen in his tennis club cafe.
+
+= Additional Acknowledgements =
+
+* **[Valter Bruno](https://profiles.wordpress.org/valterbruno/) (`@valterbruno`)** - The original Lightbox feature request and continued real-world testing of the plugin and its shortcode workflow.
+* **[Luis](https://profiles.wordpress.org/luisbenitez777/) (`@luisbenitez777`)** - The request to support mosaic thumbnails in Fullscreen, which became the Fullscreen mosaic feature.
+* **[Mateusz Starzak](https://github.com/matiaspl) (GitHub `@matiaspl`)** - A public fork that inspired the original mosaic feature.
+* **[GMRobbins](https://profiles.wordpress.org/gmrobbins/) (`@gmrobbins`)** - An early usability review that led to clearer onboarding and helped inspire Gallery mode and the carousel-to-single experience.
 
 == Credits ==
 
