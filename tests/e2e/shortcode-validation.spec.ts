@@ -310,6 +310,26 @@ test.describe('Shortcode validation - parameter values', () => {
         await expect(area.getByRole('button', { name: 'Update to Current Syntax' })).toHaveCount(0);
     });
 
+    test('Update to Current Syntax removes line-break whitespace from the album link', async ({ page }) => {
+        const link =
+            'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ' +
+            '?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R';
+        await setShortcode(
+            page,
+            `[jzsa-album link="${link.replace('?key=', '?\n  key=')}" mode="slider" corner-radius="16"]`,
+        );
+        const area = page.locator(VALIDATION);
+        await expect(area).toContainText(
+            'The Google Photos link contains invalid whitespace. The generated shortcode removes it because URLs cannot contain spaces or line breaks.',
+        );
+        await area.getByRole('button', { name: 'Update to Current Syntax' }).click();
+
+        await expect(page.locator('#jzsa-playground-shortcode')).toHaveText(
+            `[jzsa-album link="${link}" mode="slider" viewer="fullscreen" corner-radius="16"]`,
+        );
+        await expect(area).not.toContainText('The Google Photos link contains invalid whitespace.');
+    });
+
     test('validation limits the number of visible issues', async ({ page }) => {
         await setShortcode(
             page,

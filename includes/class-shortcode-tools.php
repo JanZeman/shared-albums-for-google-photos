@@ -73,11 +73,12 @@ class JZSA_Shortcode_Tools {
 			return compact( 'shortcode', 'errors', 'warnings' ) + array( 'attributes' => array(), 'duplicates' => array() );
 		}
 
-		$attribute_text = isset( $outer[1] ) ? $outer[1] : '';
-		$attributes     = array();
-		$order          = array();
-		$duplicates     = array();
-		$pattern        = '/([\w-]+)\s*=\s*(?:"([^"]*)"|\'([^\']*)\'|([^\s\]]+))/';
+		$attribute_text          = isset( $outer[1] ) ? $outer[1] : '';
+		$attributes              = array();
+		$order                   = array();
+		$duplicates              = array();
+		$link_whitespace_removed = false;
+		$pattern                 = '/([\w-]+)\s*=\s*(?:"([^"]*)"|\'([^\']*)\'|([^\s\]]+))/';
 		preg_match_all( $pattern, $attribute_text, $matches, PREG_SET_ORDER );
 
 		foreach ( $matches as $match ) {
@@ -88,6 +89,10 @@ class JZSA_Shortcode_Tools {
 				$value = isset( $match[3] ) ? $match[3] : '';
 			} else {
 				$value = isset( $match[4] ) ? $match[4] : '';
+			}
+			if ( 'link' === $name && preg_match( '/\s/', $value ) ) {
+				$value = preg_replace( '/\s+/', '', $value );
+				$link_whitespace_removed = true;
 			}
 			if ( array_key_exists( $name, $attributes ) ) {
 				$duplicates[] = $name;
@@ -110,6 +115,9 @@ class JZSA_Shortcode_Tools {
 
 		if ( ! isset( $attributes['link'] ) ) {
 			$errors[] = self::issue( 'missing_link', 'error', array( 'link' ), __( 'The shortcode is missing its Google Photos link.', 'janzeman-shared-albums-for-google-photos' ) );
+		}
+		if ( $link_whitespace_removed ) {
+			$warnings[] = self::issue( 'link_whitespace_removed', 'warning', array( 'link' ), __( 'The Google Photos link contains invalid whitespace. The generated shortcode removes it because URLs cannot contain spaces or line breaks.', 'janzeman-shared-albums-for-google-photos' ) );
 		}
 		foreach ( array_unique( $duplicates ) as $name ) {
 			$warnings[] = self::issue( 'duplicate_parameter', 'warning', array( $name ), sprintf( __( 'The parameter "%s" appears more than once. Only its final value is effective.', 'janzeman-shared-albums-for-google-photos' ), $name ) );

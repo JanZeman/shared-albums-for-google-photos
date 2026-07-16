@@ -4,7 +4,7 @@ Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 7.0
-Stable tag: 2.4.1
+Stable tag: 2.4.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -107,7 +107,7 @@ No. This plugin is not affiliated with or endorsed by Google LLC. Google Photosâ
 
 == Changelog ==
 
-= 2.4.1 =
+= 2.4.2 =
 * Lightbox is new recommended viewer and the default for new installations.
 * Existing installations keep their current Fullscreen default. Updating the plugin does not require a shortcode change.
 * The Guide includes a validator-backed Migration Tool, viewer comparison samples, and a reversible site default.

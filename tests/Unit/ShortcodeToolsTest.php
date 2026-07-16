@@ -219,6 +219,21 @@ class ShortcodeToolsTest extends TestCase {
 		);
 	}
 
+	public function test_migration_removes_whitespace_inside_link_only(): void {
+		$result = JZSA_Shortcode_Tools::migrate(
+			"[jzsa-album link=\"https://photos.google.com/share/AF1QipOg3EA51ATc?\n  key=RGwySFNhbmhqMFBD\" mode=\"slider\" corner-radius=\"16\" info-top=\"Album title\"]",
+			'preserve',
+			'fullscreen'
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertSame(
+			'[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc?key=RGwySFNhbmhqMFBD" mode="slider" viewer="fullscreen" corner-radius="16" info-top="Album title"]',
+			$result['shortcode']
+		);
+		$this->assertSame( 'link_whitespace_removed', $result['inputIssues'][0]['code'] );
+	}
+
 	public function test_format_reports_canonical_shortcode_as_unchanged(): void {
 		$shortcode = '[jzsa-album link="https://photos.google.com/share/test" mode="slider" viewer="lightbox" width="600"]';
 		$result = JZSA_Shortcode_Tools::format( $shortcode );
