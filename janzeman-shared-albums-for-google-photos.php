@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Shared Albums for Google Photos (by JanZeman)
+ * Plugin Name: Shared Albums for Google Photos
  * Plugin URI: https://github.com/JanZeman/shared-albums-for-google-photos
  * Author URI: https://github.com/JanZeman
  * Description: Display publicly shared Google Photos albums with a modern Swiper-based gallery viewer. Not affiliated with or endorsed by Google LLC.

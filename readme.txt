@@ -1,4 +1,4 @@
-=== Shared Albums for Google Photos (by JanZeman) ===
+=== Shared Albums for Google Photos ===
 Contributors: janzeman
 Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.0
@@ -270,7 +270,6 @@ Personal note: It has been a genuine pleasure working with you, Naveen!
 
 * Uses [Swiper](https://swiperjs.com/) - MIT License
 * Uses [Plyr](https://plyr.io/) - MIT License
-* Developed by Jan Zeman
 
 == Privacy Policy ==
 
