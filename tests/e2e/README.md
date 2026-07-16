@@ -202,7 +202,7 @@ the guide sample order.
 
 [jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer="fullscreen" viewer-trigger="double-click"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer="lightbox" viewer-trigger="double-click" lightbox-fullscreen="button"]
+[jzsa-album link="YOUR_LINK" viewer="lightbox" viewer-trigger="button" mode="slider" width="600" corner-radius="16" lightbox-fullscreen="button"]
 
 [jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer="both" viewer-mosaic="true" viewer-mosaic-count="4" viewer-mosaic-position="left" viewer-mosaic-layout="overlay" viewer-mosaic-gap="4"]
 

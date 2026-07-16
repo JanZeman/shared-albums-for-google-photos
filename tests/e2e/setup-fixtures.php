@@ -258,7 +258,7 @@ $pages = array(
 				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer="lightbox" viewer-trigger="double-click"]',
 				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer="fullscreen"]',
 				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer="fullscreen" viewer-trigger="double-click"]',
-				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer="lightbox" viewer-trigger="double-click" lightbox-fullscreen="button"]',
+				'[jzsa-album link="' . $album_link . '" viewer="lightbox" viewer-trigger="button" mode="slider" width="600" corner-radius="16" lightbox-fullscreen="button"]',
 				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer="both" viewer-mosaic="true" viewer-mosaic-count="4" viewer-mosaic-position="left" viewer-mosaic-layout="overlay" viewer-mosaic-gap="4"]',
 				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer="both" viewer-max-width="700" viewer-max-height="420" lightbox-max-width="500" fullscreen-max-width="1100" viewer-image-fit="cover" fullscreen-image-fit="contain" lightbox-controls-color="#00A878" fullscreen-controls-color="#2A9D8F"]',
 				'[jzsa-album link="' . $album_link . '" mode="slider" width="600" corner-radius="16" viewer="both" viewer-background-color="rgba(128,0,64,0.7)" lightbox-backdrop-color="rgba(0,128,64,0.7)" viewer-controls-color="#E63946" lightbox-controls-color="#00A878" fullscreen-controls-color="#2A9D8F"]',

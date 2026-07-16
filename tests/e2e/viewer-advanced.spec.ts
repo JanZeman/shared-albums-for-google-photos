@@ -93,20 +93,22 @@ test.describe('Random Shortcode Tests', () => {
         await waitForNativeFullscreen(page, false);
     });
 
-    test('mixed double-click and fullscreen-button mode opens lightbox first, then fullscreen', async ({ page }) => {
+    test('lightbox-first mode offers fullscreen only after lightbox opens', async ({ page }) => {
         const album = await waitForAlbum(page, 4);
 
-        await album.locator(ACTIVE_SLIDE).click();
-        await page.waitForTimeout(250);
-        await expect(backdrop(page)).not.toBeVisible();
+        await expect(album.locator(LIGHTBOX_BUTTON)).toBeVisible();
+        await expect(album.locator(FULLSCREEN_BUTTON)).not.toBeVisible();
 
-        await album.locator(ACTIVE_SLIDE).dblclick();
+        await album.locator(LIGHTBOX_BUTTON).evaluate((button: HTMLElement) => button.click());
         await expect(backdrop(page)).toBeVisible();
+        await backdrop(page).locator('.jzsa-album').hover();
+        await expect(backdrop(page).locator(FULLSCREEN_BUTTON)).toBeVisible();
 
         await backdrop(page).locator(FULLSCREEN_BUTTON).click({ force: true });
         await waitForNativeFullscreen(page, true);
         await page.evaluate(() => document.fullscreenElement && document.exitFullscreen());
         await waitForNativeFullscreen(page, false);
+        await expect(backdrop(page)).toBeVisible();
 
         await page.keyboard.press('Escape');
         await expect(backdrop(page)).not.toBeVisible();

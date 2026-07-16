@@ -422,7 +422,7 @@ class AdminPagesTest extends TestCase {
 		$this->assertStringContainsString( 'Use Lightbox', $output );
 		$this->assertStringContainsString( '(recommended)', $output );
 		$this->assertStringContainsString( 'Offer both Lightbox and Fullscreen', $output );
-		$this->assertStringContainsString( '(Will visitors understand both options? Sometimes less is more.)', $output );
+		$this->assertStringContainsString( '(Will visitors understand both options? Investigate samples 29 &amp; 30.)', $output );
 		$this->assertMatchesRegularExpression( '/value="preserve" checked/', $output );
 		$this->assertLessThan( strpos( $output, 'value="preserve"' ), strpos( $output, 'value="lightbox"' ) );
 		$this->assertStringNotContainsString( 'Manual Migration Reference', $output );

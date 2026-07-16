@@ -195,7 +195,7 @@ class JZSA_Admin_Pages {
 							<legend><?php esc_html_e( 'Migration goal', 'janzeman-shared-albums-for-google-photos' ); ?></legend>
 							<label><input type="radio" name="jzsa-migration-goal" value="lightbox"> <?php esc_html_e( 'Use Lightbox', 'janzeman-shared-albums-for-google-photos' ); ?> <small class="jzsa-migration-goal-note"><?php esc_html_e( '(recommended)', 'janzeman-shared-albums-for-google-photos' ); ?></small></label>
 							<label><input type="radio" name="jzsa-migration-goal" value="fullscreen"> <?php esc_html_e( 'Use Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?></label>
-							<label><input type="radio" name="jzsa-migration-goal" value="both"> <?php esc_html_e( 'Offer both Lightbox and Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?> <small class="jzsa-migration-goal-note"><?php esc_html_e( '(Will visitors understand both options? Sometimes less is more.)', 'janzeman-shared-albums-for-google-photos' ); ?></small></label>
+							<label><input type="radio" name="jzsa-migration-goal" value="both"> <?php esc_html_e( 'Offer both Lightbox and Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?> <small class="jzsa-migration-goal-note"><?php esc_html_e( '(Will visitors understand both options? Investigate samples 29 & 30.)', 'janzeman-shared-albums-for-google-photos' ); ?></small></label>
 							<label><input type="radio" name="jzsa-migration-goal" value="preserve" checked> <?php esc_html_e( 'Keep this gallery working exactly as it does now', 'janzeman-shared-albums-for-google-photos' ); ?> <small class="jzsa-migration-goal-note"><?php esc_html_e( '(update shortcode syntax only)', 'janzeman-shared-albums-for-google-photos' ); ?></small></label>
 						</fieldset>
 						<p><button type="button" class="button button-primary" id="jzsa-migrate-shortcode"><?php esc_html_e( 'Analyze and Migrate', 'janzeman-shared-albums-for-google-photos' ); ?></button></p>
@@ -1402,9 +1402,9 @@ class JZSA_Admin_Pages {
 						<div class="jzsa-sample-card">
 							<div class="jzsa-sample-card-header">
 								<h3><?php echo 'Sample 29: ' . esc_html__( 'Viewer - Independent Lightbox and Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-								<span class="jzsa-sample-card-hint"><?php esc_html_e( 'Both buttons in inline, but no fullscreen inside lightbox', 'janzeman-shared-albums-for-google-photos' ); ?></span>
+								<span class="jzsa-sample-card-hint"><?php esc_html_e( 'Visitors choose Lightbox or Fullscreen directly from the inline gallery', 'janzeman-shared-albums-for-google-photos' ); ?></span>
 							</div>
-							<p><?php esc_html_e( 'This is an uncommon combination and none of the other Viewer samples repeat it. It exists solely to demonstrate the lightbox-fullscreen parameter. Both Lightbox and Fullscreen buttons appear in the inline gallery, but entering Lightbox leads to a self-contained view with no path to Fullscreen - the two modes are deliberately kept independent. Most setups that enable both viewer modes will want to keep the default behaviour (Fullscreen button visible inside Lightbox), so this opt-out should be used only when a strict separation is the goal.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'Both Lightbox and Fullscreen are available as separate buttons in the inline gallery. This can suit sites where visitors understand the difference and may deliberately choose between a contained page view and immersive browser Fullscreen. The parameter lightbox-fullscreen="disabled" keeps those paths independent, so entering Lightbox does not introduce another Fullscreen choice. Sometimes less is more.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
 							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" viewer="both" mode="slider" width="600" corner-radius="16" lightbox-fullscreen="disabled"]';
 						?>
@@ -1422,12 +1422,12 @@ class JZSA_Admin_Pages {
 
 						<div class="jzsa-sample-card">
 							<div class="jzsa-sample-card-header">
-								<h3><?php echo 'Sample 30: ' . esc_html__( 'Viewer - Lightbox Double-Click with Fullscreen Path', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-								<span class="jzsa-sample-card-hint"><?php esc_html_e( 'Double-click opens Lightbox; Lightbox shows a Fullscreen button', 'janzeman-shared-albums-for-google-photos' ); ?></span>
+								<h3><?php echo 'Sample 30: ' . esc_html__( 'Viewer - Lightbox First, Fullscreen Later', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+								<span class="jzsa-sample-card-hint"><?php esc_html_e( 'One Lightbox button inline; Fullscreen becomes available inside Lightbox', 'janzeman-shared-albums-for-google-photos' ); ?></span>
 							</div>
-							<p><?php esc_html_e( 'Double-click opens Lightbox from the inline view. Inside Lightbox a Fullscreen button is shown explicitly, giving visitors a path all the way to native Fullscreen. Without lightbox-fullscreen="button" the Fullscreen button would not appear inside Lightbox unless Fullscreen is also active from inline.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'The inline gallery offers one clear choice: open Lightbox with its dedicated button. Inside Lightbox, visitors can continue to browser Fullscreen when they want a more immersive view. Exiting Fullscreen returns to Lightbox, and closing Lightbox returns to the inline gallery. This gradual path avoids asking visitors to choose between two viewer modes at the start.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" viewer="lightbox" viewer-trigger="double-click" mode="slider" width="600" corner-radius="16" lightbox-fullscreen="button"]';
+							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" viewer="lightbox" viewer-trigger="button" mode="slider" width="600" corner-radius="16" lightbox-fullscreen="button"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
