@@ -434,7 +434,7 @@ class AdminPagesTest extends TestCase {
 		$this->assertStringContainsString( 'Offer both Lightbox and Fullscreen', $output );
 		$this->assertStringContainsString( '(Will visitors understand both options? Investigate samples 29 &amp; 30.)', $output );
 		$this->assertMatchesRegularExpression( '/value="preserve" checked/', $output );
-		$this->assertLessThan( strpos( $output, 'value="preserve"' ), strpos( $output, 'value="lightbox"' ) );
+		$this->assertLessThan( strpos( $output, 'value="lightbox"' ), strpos( $output, 'value="preserve"' ) );
 		$this->assertStringNotContainsString( 'Manual Migration Reference', $output );
 		$this->assertStringContainsString( 'Recommended Migration Path', $output );
 		$this->assertStringContainsString( '<strong>Shortcode Migration Tool</strong>', $output );

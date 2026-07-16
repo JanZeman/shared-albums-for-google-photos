@@ -197,10 +197,10 @@ class JZSA_Admin_Pages {
 						<div id="jzsa-migration-source-validation" class="jzsa-code-validation" aria-live="polite"></div>
 						<fieldset class="jzsa-migration-goals">
 							<legend><?php esc_html_e( 'Migration goal', 'janzeman-shared-albums-for-google-photos' ); ?></legend>
+							<label><input type="radio" name="jzsa-migration-goal" value="preserve" checked> <?php esc_html_e( 'Keep this gallery working exactly as it does now', 'janzeman-shared-albums-for-google-photos' ); ?> <small class="jzsa-migration-goal-note"><?php esc_html_e( '(update shortcode syntax only)', 'janzeman-shared-albums-for-google-photos' ); ?></small></label>
 							<label><input type="radio" name="jzsa-migration-goal" value="lightbox"> <?php esc_html_e( 'Use Lightbox', 'janzeman-shared-albums-for-google-photos' ); ?> <small class="jzsa-migration-goal-note"><?php esc_html_e( '(recommended)', 'janzeman-shared-albums-for-google-photos' ); ?></small></label>
 							<label><input type="radio" name="jzsa-migration-goal" value="fullscreen"> <?php esc_html_e( 'Use Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?></label>
 							<label><input type="radio" name="jzsa-migration-goal" value="both"> <?php esc_html_e( 'Offer both Lightbox and Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?> <small class="jzsa-migration-goal-note"><?php esc_html_e( '(Will visitors understand both options? Investigate samples 29 & 30.)', 'janzeman-shared-albums-for-google-photos' ); ?></small></label>
-							<label><input type="radio" name="jzsa-migration-goal" value="preserve" checked> <?php esc_html_e( 'Keep this gallery working exactly as it does now', 'janzeman-shared-albums-for-google-photos' ); ?> <small class="jzsa-migration-goal-note"><?php esc_html_e( '(update shortcode syntax only)', 'janzeman-shared-albums-for-google-photos' ); ?></small></label>
 						</fieldset>
 						<p><button type="button" class="button button-primary" id="jzsa-migrate-shortcode"><?php esc_html_e( 'Analyze and Migrate', 'janzeman-shared-albums-for-google-photos' ); ?></button></p>
 						<div id="jzsa-migration-result" aria-live="polite"></div>

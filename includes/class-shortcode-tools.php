@@ -470,7 +470,7 @@ class JZSA_Shortcode_Tools {
 
 	private static function serialized_attribute_order( $attributes ) {
 		$order    = array();
-		$priority = array( 'link', 'viewer', 'viewer-trigger', 'lightbox-trigger', 'fullscreen-trigger' );
+		$priority = self::canonical_attribute_priority();
 		foreach ( $priority as $name ) {
 			if ( array_key_exists( $name, $attributes ) ) {
 				$order[] = $name;
@@ -486,7 +486,7 @@ class JZSA_Shortcode_Tools {
 
 	private static function serialize( $attributes ) {
 		$tokens   = array();
-		$priority = array( 'link', 'viewer', 'viewer-trigger', 'lightbox-trigger', 'fullscreen-trigger' );
+		$priority = self::canonical_attribute_priority();
 
 		foreach ( $priority as $name ) {
 			if ( array_key_exists( $name, $attributes ) ) {
@@ -500,6 +500,10 @@ class JZSA_Shortcode_Tools {
 			$tokens[] = $name . '="' . str_replace( '"', '&quot;', (string) $value ) . '"';
 		}
 		return '[jzsa-album ' . implode( ' ', $tokens ) . ']';
+	}
+
+	private static function canonical_attribute_priority() {
+		return array( 'link', 'mode', 'viewer', 'viewer-trigger', 'lightbox-trigger', 'fullscreen-trigger' );
 	}
 
 	private static function trigger_value( $attributes, $name ) {

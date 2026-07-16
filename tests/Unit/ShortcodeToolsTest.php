@@ -74,12 +74,16 @@ class ShortcodeToolsTest extends TestCase {
 
 	public function test_migration_explains_order_normalization_for_modern_syntax(): void {
 		$result = JZSA_Shortcode_Tools::migrate(
-			'[jzsa-album mode="slider" link="https://photos.google.com/share/test" viewer="both"]',
+			'[jzsa-album viewer="both" link="https://photos.google.com/share/test" mode="slider"]',
 			'preserve',
 			'fullscreen'
 		);
 
 		$this->assertTrue( $result['ok'] );
+		$this->assertSame(
+			'[jzsa-album link="https://photos.google.com/share/test" mode="slider" viewer="both"]',
+			$result['shortcode']
+		);
 		$this->assertTrue( $result['changes']['orderNormalized'] );
 		$this->assertSame( array(), $result['changes']['added'] );
 		$this->assertSame( array(), $result['changes']['removed'] );
@@ -88,7 +92,7 @@ class ShortcodeToolsTest extends TestCase {
 
 	public function test_migration_reports_when_modern_syntax_needs_no_changes(): void {
 		$result = JZSA_Shortcode_Tools::migrate(
-			'[jzsa-album link="https://photos.google.com/share/test" viewer="both" mode="slider"]',
+			'[jzsa-album link="https://photos.google.com/share/test" mode="slider" viewer="both"]',
 			'preserve',
 			'fullscreen'
 		);
@@ -214,16 +218,44 @@ class ShortcodeToolsTest extends TestCase {
 		);
 	}
 
-	public function test_migration_places_viewer_fields_after_link_and_preserves_other_parameter_order(): void {
+	public function test_migration_uses_natural_canonical_prefix_and_preserves_other_parameter_order(): void {
 		$result = JZSA_Shortcode_Tools::migrate(
-			'[jzsa-album mode="slider" width="600" link="https://photos.google.com/share/test" viewer="fullscreen" viewer-trigger="double-click" corner-radius="16"]',
+			'[jzsa-album width="600" viewer-trigger="double-click" link="https://photos.google.com/share/test" corner-radius="16" viewer="fullscreen" mode="slider" unknown-option="keep-me"]',
 			'preserve',
 			'lightbox'
 		);
 
 		$this->assertTrue( $result['ok'] );
 		$this->assertSame(
-			'[jzsa-album link="https://photos.google.com/share/test" viewer="fullscreen" viewer-trigger="double-click" mode="slider" width="600" corner-radius="16"]',
+			'[jzsa-album link="https://photos.google.com/share/test" mode="slider" viewer="fullscreen" viewer-trigger="double-click" width="600" corner-radius="16" unknown-option="keep-me"]',
+			$result['shortcode']
+		);
+	}
+
+	public function test_migration_orders_mode_specific_trigger_after_viewer(): void {
+		$result = JZSA_Shortcode_Tools::migrate(
+			'[jzsa-album fullscreen-image-fit="contain" lightbox-trigger="double-click" viewer="both" mode="carousel" link="https://photos.google.com/share/test" width="720"]',
+			'preserve',
+			'fullscreen'
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertSame(
+			'[jzsa-album link="https://photos.google.com/share/test" mode="carousel" viewer="both" lightbox-trigger="double-click" fullscreen-image-fit="contain" width="720"]',
+			$result['shortcode']
+		);
+	}
+
+	public function test_migration_skips_absent_mode_without_reordering_remaining_parameters(): void {
+		$result = JZSA_Shortcode_Tools::migrate(
+			'[jzsa-album corner-radius="16" link="https://photos.google.com/share/test" viewer="lightbox" width="600"]',
+			'preserve',
+			'fullscreen'
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertSame(
+			'[jzsa-album link="https://photos.google.com/share/test" viewer="lightbox" corner-radius="16" width="600"]',
 			$result['shortcode']
 		);
 	}

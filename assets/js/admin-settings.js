@@ -1651,7 +1651,7 @@ function jzsaSetupMigrationTool() {
 							html += '<li>Removed <code>' + jzsaEscapeHtml( token ) + '</code> because it is no longer needed.</li>';
 						} );
 						if ( changes.orderNormalized ) {
-							html += '<li>Normalized parameter order: link, viewer, viewer-trigger, then other parameters.</li>';
+							html += '<li>Normalized parameter order: link, mode, viewer, applicable trigger parameters, then remaining parameters.</li>';
 						}
 						html += '</ul>';
 					} else {
