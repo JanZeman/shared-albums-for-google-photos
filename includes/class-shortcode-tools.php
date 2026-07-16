@@ -252,6 +252,7 @@ class JZSA_Shortcode_Tools {
 			$attributes = self::materialize_legacy_presentation( $attributes );
 		}
 		$attributes = self::canonicalize_obsolete_aliases( $attributes );
+		$attributes = self::collapse_shared_viewer_attributes( $attributes );
 
 		foreach ( array_keys( $attributes ) as $name ) {
 			if ( in_array( $name, array( 'viewer', 'viewer-toggle', 'viewer-trigger', 'lightbox-toggle', 'fullscreen-toggle', 'lightbox-trigger', 'fullscreen-trigger' ), true ) ) {
@@ -537,22 +538,7 @@ class JZSA_Shortcode_Tools {
 	 * @return array
 	 */
 	private static function materialize_legacy_presentation( $attributes ) {
-		$pairs = array(
-			array( 'fullscreen-source-width', 'lightbox-source-width' ),
-			array( 'fullscreen-source-height', 'lightbox-source-height' ),
-			array( 'fullscreen-image-fit', 'lightbox-image-fit' ),
-			array( 'fullscreen-controls-color', 'lightbox-controls-color' ),
-			array( 'fullscreen-video-controls-color', 'lightbox-video-controls-color' ),
-			array( 'fullscreen-video-controls-autohide', 'lightbox-video-controls-autohide' ),
-			array( 'fullscreen-show-navigation', 'lightbox-show-navigation' ),
-			array( 'fullscreen-show-link-button', 'lightbox-show-link-button' ),
-			array( 'fullscreen-show-download-button', 'lightbox-show-download-button' ),
-			array( 'fullscreen-slideshow', 'lightbox-slideshow' ),
-			array( 'fullscreen-slideshow-delay', 'lightbox-slideshow-delay' ),
-			array( 'fullscreen-slideshow-autoresume', 'lightbox-slideshow-autoresume' ),
-		);
-
-		foreach ( $pairs as $pair ) {
+		foreach ( self::legacy_sideways_attribute_pairs() as $pair ) {
 			$first_set  = isset( $attributes[ $pair[0] ] ) && '' !== trim( (string) $attributes[ $pair[0] ] );
 			$second_set = isset( $attributes[ $pair[1] ] ) && '' !== trim( (string) $attributes[ $pair[1] ] );
 			if ( $first_set && ! $second_set ) {
@@ -560,6 +546,101 @@ class JZSA_Shortcode_Tools {
 			} elseif ( $second_set && ! $first_set ) {
 				$attributes[ $pair[0] ] = $attributes[ $pair[1] ];
 			}
+		}
+
+		return $attributes;
+	}
+
+	/**
+	 * Parameters that inherited sideways between viewer modes in 2.3.7.
+	 *
+	 * @return array
+	 */
+	private static function legacy_sideways_attribute_pairs() {
+		return array(
+			'viewer-source-width'            => array( 'fullscreen-source-width', 'lightbox-source-width' ),
+			'viewer-source-height'           => array( 'fullscreen-source-height', 'lightbox-source-height' ),
+			'viewer-image-fit'               => array( 'fullscreen-image-fit', 'lightbox-image-fit' ),
+			'viewer-controls-color'          => array( 'fullscreen-controls-color', 'lightbox-controls-color' ),
+			'viewer-video-controls-color'    => array( 'fullscreen-video-controls-color', 'lightbox-video-controls-color' ),
+			'viewer-video-controls-autohide' => array( 'fullscreen-video-controls-autohide', 'lightbox-video-controls-autohide' ),
+			'viewer-show-navigation'         => array( 'fullscreen-show-navigation', 'lightbox-show-navigation' ),
+			'viewer-show-link-button'        => array( 'fullscreen-show-link-button', 'lightbox-show-link-button' ),
+			'viewer-show-download-button'    => array( 'fullscreen-show-download-button', 'lightbox-show-download-button' ),
+			'viewer-slideshow'               => array( 'fullscreen-slideshow', 'lightbox-slideshow' ),
+			'viewer-slideshow-delay'         => array( 'fullscreen-slideshow-delay', 'lightbox-slideshow-delay' ),
+			'viewer-slideshow-autoresume'    => array( 'fullscreen-slideshow-autoresume', 'lightbox-slideshow-autoresume' ),
+		);
+	}
+
+	/**
+	 * Shared modern viewer parameters and their concrete mode overrides.
+	 *
+	 * @return array
+	 */
+	private static function current_viewer_attribute_pairs() {
+		return array(
+			'viewer-max-width'                 => array( 'fullscreen-max-width', 'lightbox-max-width' ),
+			'viewer-max-height'                => array( 'fullscreen-max-height', 'lightbox-max-height' ),
+			'viewer-source-width'              => array( 'fullscreen-source-width', 'lightbox-source-width' ),
+			'viewer-source-height'             => array( 'fullscreen-source-height', 'lightbox-source-height' ),
+			'viewer-image-fit'                 => array( 'fullscreen-image-fit', 'lightbox-image-fit' ),
+			'viewer-background-color'          => array( 'fullscreen-background-color', 'lightbox-background-color' ),
+			'viewer-corner-radius'             => array( 'fullscreen-corner-radius', 'lightbox-corner-radius' ),
+			'viewer-controls-color'            => array( 'fullscreen-controls-color', 'lightbox-controls-color' ),
+			'viewer-video-controls-color'      => array( 'fullscreen-video-controls-color', 'lightbox-video-controls-color' ),
+			'viewer-video-controls-autohide'   => array( 'fullscreen-video-controls-autohide', 'lightbox-video-controls-autohide' ),
+			'viewer-show-navigation'           => array( 'fullscreen-show-navigation', 'lightbox-show-navigation' ),
+			'viewer-show-link-button'          => array( 'fullscreen-show-link-button', 'lightbox-show-link-button' ),
+			'viewer-show-download-button'      => array( 'fullscreen-show-download-button', 'lightbox-show-download-button' ),
+			'viewer-slideshow'                 => array( 'fullscreen-slideshow', 'lightbox-slideshow' ),
+			'viewer-slideshow-delay'           => array( 'fullscreen-slideshow-delay', 'lightbox-slideshow-delay' ),
+			'viewer-slideshow-autoresume'      => array( 'fullscreen-slideshow-autoresume', 'lightbox-slideshow-autoresume' ),
+			'viewer-info-bottom'               => array( 'fullscreen-info-bottom', 'lightbox-info-bottom' ),
+			'viewer-info-top'                  => array( 'fullscreen-info-top', 'lightbox-info-top' ),
+			'viewer-info-top-secondary'        => array( 'fullscreen-info-top-secondary', 'lightbox-info-top-secondary' ),
+			'viewer-info-font-size'            => array( 'fullscreen-info-font-size', 'lightbox-info-font-size' ),
+			'viewer-info-font-family'          => array( 'fullscreen-info-font-family', 'lightbox-info-font-family' ),
+			'viewer-info-font-color'           => array( 'fullscreen-info-font-color', 'lightbox-info-font-color' ),
+			'viewer-mosaic'                    => array( 'fullscreen-mosaic', 'lightbox-mosaic' ),
+			'viewer-mosaic-position'           => array( 'fullscreen-mosaic-position', 'lightbox-mosaic-position' ),
+			'viewer-mosaic-layout'             => array( 'fullscreen-mosaic-layout', 'lightbox-mosaic-layout' ),
+			'viewer-mosaic-count'              => array( 'fullscreen-mosaic-count', 'lightbox-mosaic-count' ),
+			'viewer-mosaic-gap'                => array( 'fullscreen-mosaic-gap', 'lightbox-mosaic-gap' ),
+			'viewer-mosaic-opacity'            => array( 'fullscreen-mosaic-opacity', 'lightbox-mosaic-opacity' ),
+			'viewer-mosaic-background'         => array( 'fullscreen-mosaic-background', 'lightbox-mosaic-background' ),
+			'viewer-mosaic-corner-radius'      => array( 'fullscreen-mosaic-corner-radius', 'lightbox-mosaic-corner-radius' ),
+		);
+	}
+
+	/**
+	 * Replace identical concrete viewer values with their shared modern form.
+	 *
+	 * Different values remain isolated as explicit Lightbox and Fullscreen
+	 * overrides.
+	 *
+	 * @param array $attributes Shortcode attributes.
+	 * @return array
+	 */
+	private static function collapse_shared_viewer_attributes( $attributes ) {
+		$allows_empty = array( 'viewer-info-bottom', 'viewer-info-top', 'viewer-info-top-secondary' );
+		foreach ( self::current_viewer_attribute_pairs() as $viewer_key => $pair ) {
+			if ( ! array_key_exists( $pair[0], $attributes ) || ! array_key_exists( $pair[1], $attributes ) ) {
+				continue;
+			}
+
+			$first  = (string) $attributes[ $pair[0] ];
+			$second = (string) $attributes[ $pair[1] ];
+			if ( ( '' === trim( $first ) && ! in_array( $viewer_key, $allows_empty, true ) ) || $first !== $second ) {
+				continue;
+			}
+
+			if ( array_key_exists( $viewer_key, $attributes ) && (string) $attributes[ $viewer_key ] !== $first ) {
+				continue;
+			}
+
+			$attributes[ $viewer_key ] = $attributes[ $pair[0] ];
+			unset( $attributes[ $pair[0] ], $attributes[ $pair[1] ] );
 		}
 
 		return $attributes;

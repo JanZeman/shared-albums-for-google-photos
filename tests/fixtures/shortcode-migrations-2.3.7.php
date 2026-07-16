@@ -72,7 +72,7 @@ return array(
 		'shortcode'      => '[jzsa-album link="' . $link . '" mode="slider" corner-radius="16" lightbox-toggle="button-only" fullscreen-toggle="button-only" lightbox-max-width="1100" lightbox-max-height="750" fullscreen-controls-color="#E63946"]',
 		'source_model'   => 'legacy',
 		'current_viewer' => 'both',
-		'contains'       => array( 'viewer="both"', 'lightbox-controls-color="#E63946"', 'fullscreen-controls-color="#E63946"' ),
-		'absent'         => array( 'lightbox-toggle=', 'fullscreen-toggle=' ),
+		'contains'       => array( 'viewer="both"', 'viewer-controls-color="#E63946"' ),
+		'absent'         => array( 'lightbox-toggle=', 'fullscreen-toggle=', 'lightbox-controls-color=', 'fullscreen-controls-color=' ),
 	),
 );

@@ -344,7 +344,7 @@ class ShortcodeToolsTest extends TestCase {
 		$this->assertSame( 'viewer_trigger_ambiguous', $result['issues'][0]['code'] );
 	}
 
-	public function test_preserve_migration_materializes_legacy_sideways_values(): void {
+	public function test_preserve_migration_collapses_legacy_sideways_values_into_shared_parameter(): void {
 		$result = JZSA_Shortcode_Tools::migrate(
 			'[jzsa-album link="https://photos.google.com/share/test" fullscreen-toggle="button-only" fullscreen-source-width="800"]',
 			'preserve',
@@ -353,8 +353,127 @@ class ShortcodeToolsTest extends TestCase {
 
 		$this->assertTrue( $result['ok'] );
 		$this->assertStringContainsString( 'viewer="fullscreen"', $result['shortcode'] );
-		$this->assertStringContainsString( 'fullscreen-source-width="800"', $result['shortcode'] );
-		$this->assertStringContainsString( 'lightbox-source-width="800"', $result['shortcode'] );
+		$this->assertStringContainsString( 'viewer-source-width="800"', $result['shortcode'] );
+		$this->assertStringNotContainsString( 'fullscreen-source-width', $result['shortcode'] );
+		$this->assertStringNotContainsString( 'lightbox-source-width', $result['shortcode'] );
+	}
+
+	public function test_preserve_migration_collapses_every_proven_legacy_sideways_pair(): void {
+		$pairs = array(
+			'viewer-source-width'            => array( 'fullscreen-source-width', '800' ),
+			'viewer-source-height'           => array( 'fullscreen-source-height', '600' ),
+			'viewer-image-fit'               => array( 'fullscreen-image-fit', 'cover' ),
+			'viewer-controls-color'          => array( 'fullscreen-controls-color', '#112233' ),
+			'viewer-video-controls-color'    => array( 'fullscreen-video-controls-color', '#223344' ),
+			'viewer-video-controls-autohide' => array( 'fullscreen-video-controls-autohide', 'true' ),
+			'viewer-show-navigation'         => array( 'fullscreen-show-navigation', 'false' ),
+			'viewer-show-link-button'        => array( 'fullscreen-show-link-button', 'false' ),
+			'viewer-show-download-button'    => array( 'fullscreen-show-download-button', 'false' ),
+			'viewer-slideshow'               => array( 'fullscreen-slideshow', 'auto' ),
+			'viewer-slideshow-delay'         => array( 'fullscreen-slideshow-delay', '7' ),
+			'viewer-slideshow-autoresume'    => array( 'fullscreen-slideshow-autoresume', '3' ),
+		);
+
+		foreach ( $pairs as $viewer_key => $legacy ) {
+			$result = JZSA_Shortcode_Tools::migrate(
+				'[jzsa-album link="https://photos.google.com/share/test" fullscreen-toggle="button-only" ' . $legacy[0] . '="' . $legacy[1] . '"]',
+				'preserve',
+				'fullscreen'
+			);
+
+			$this->assertTrue( $result['ok'], $viewer_key );
+			$this->assertStringContainsString( $viewer_key . '="' . $legacy[1] . '"', $result['shortcode'], $viewer_key );
+			$this->assertStringNotContainsString( $legacy[0] . '=', $result['shortcode'], $viewer_key );
+			$this->assertStringNotContainsString( str_replace( 'fullscreen-', 'lightbox-', $legacy[0] ) . '=', $result['shortcode'], $viewer_key );
+		}
+	}
+
+	public function test_migration_collapses_every_equal_modern_viewer_pair(): void {
+		$pairs = array(
+			'viewer-max-width'                 => array( 'fullscreen-max-width', 'lightbox-max-width', '900' ),
+			'viewer-max-height'                => array( 'fullscreen-max-height', 'lightbox-max-height', '700' ),
+			'viewer-source-width'              => array( 'fullscreen-source-width', 'lightbox-source-width', '1200' ),
+			'viewer-source-height'             => array( 'fullscreen-source-height', 'lightbox-source-height', '900' ),
+			'viewer-image-fit'                 => array( 'fullscreen-image-fit', 'lightbox-image-fit', 'cover' ),
+			'viewer-background-color'          => array( 'fullscreen-background-color', 'lightbox-background-color', '#112233' ),
+			'viewer-corner-radius'             => array( 'fullscreen-corner-radius', 'lightbox-corner-radius', '16' ),
+			'viewer-controls-color'            => array( 'fullscreen-controls-color', 'lightbox-controls-color', '#223344' ),
+			'viewer-video-controls-color'      => array( 'fullscreen-video-controls-color', 'lightbox-video-controls-color', '#334455' ),
+			'viewer-video-controls-autohide'   => array( 'fullscreen-video-controls-autohide', 'lightbox-video-controls-autohide', 'true' ),
+			'viewer-show-navigation'           => array( 'fullscreen-show-navigation', 'lightbox-show-navigation', 'false' ),
+			'viewer-show-link-button'          => array( 'fullscreen-show-link-button', 'lightbox-show-link-button', 'true' ),
+			'viewer-show-download-button'      => array( 'fullscreen-show-download-button', 'lightbox-show-download-button', 'true' ),
+			'viewer-slideshow'                 => array( 'fullscreen-slideshow', 'lightbox-slideshow', 'auto' ),
+			'viewer-slideshow-delay'           => array( 'fullscreen-slideshow-delay', 'lightbox-slideshow-delay', '7' ),
+			'viewer-slideshow-autoresume'      => array( 'fullscreen-slideshow-autoresume', 'lightbox-slideshow-autoresume', '3' ),
+			'viewer-info-bottom'               => array( 'fullscreen-info-bottom', 'lightbox-info-bottom', '' ),
+			'viewer-info-top'                  => array( 'fullscreen-info-top', 'lightbox-info-top', '{item}' ),
+			'viewer-info-top-secondary'        => array( 'fullscreen-info-top-secondary', 'lightbox-info-top-secondary', '{description}' ),
+			'viewer-info-font-size'            => array( 'fullscreen-info-font-size', 'lightbox-info-font-size', '14' ),
+			'viewer-info-font-family'          => array( 'fullscreen-info-font-family', 'lightbox-info-font-family', 'Georgia, serif' ),
+			'viewer-info-font-color'           => array( 'fullscreen-info-font-color', 'lightbox-info-font-color', '#445566' ),
+			'viewer-mosaic'                    => array( 'fullscreen-mosaic', 'lightbox-mosaic', 'true' ),
+			'viewer-mosaic-position'           => array( 'fullscreen-mosaic-position', 'lightbox-mosaic-position', 'bottom' ),
+			'viewer-mosaic-layout'             => array( 'fullscreen-mosaic-layout', 'lightbox-mosaic-layout', 'overlay' ),
+			'viewer-mosaic-count'              => array( 'fullscreen-mosaic-count', 'lightbox-mosaic-count', '8' ),
+			'viewer-mosaic-gap'                => array( 'fullscreen-mosaic-gap', 'lightbox-mosaic-gap', '6' ),
+			'viewer-mosaic-opacity'            => array( 'fullscreen-mosaic-opacity', 'lightbox-mosaic-opacity', '0.5' ),
+			'viewer-mosaic-background'         => array( 'fullscreen-mosaic-background', 'lightbox-mosaic-background', '#556677' ),
+			'viewer-mosaic-corner-radius'      => array( 'fullscreen-mosaic-corner-radius', 'lightbox-mosaic-corner-radius', '8' ),
+		);
+
+		foreach ( $pairs as $viewer_key => $pair ) {
+			$result = JZSA_Shortcode_Tools::migrate(
+				'[jzsa-album link="https://photos.google.com/share/test" viewer="both" ' . $pair[0] . '="' . $pair[2] . '" ' . $pair[1] . '="' . $pair[2] . '"]',
+				'preserve',
+				'fullscreen'
+			);
+
+			$this->assertTrue( $result['ok'], $viewer_key );
+			$this->assertStringContainsString( $viewer_key . '="' . $pair[2] . '"', $result['shortcode'], $viewer_key );
+			$this->assertStringNotContainsString( $pair[0] . '=', $result['shortcode'], $viewer_key );
+			$this->assertStringNotContainsString( $pair[1] . '=', $result['shortcode'], $viewer_key );
+		}
+	}
+
+	public function test_viewer_slideshow_consolidation_keeps_inline_slideshow_separate(): void {
+		$result = JZSA_Shortcode_Tools::migrate(
+			'[jzsa-album link="https://photos.google.com/share/test" slideshow="true" slideshow-delay="4-12" fullscreen-slideshow="true" fullscreen-toggle="double-click"]',
+			'preserve',
+			'fullscreen'
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertStringContainsString( 'slideshow="true" slideshow-delay="4-12"', $result['shortcode'] );
+		$this->assertStringContainsString( 'viewer-slideshow="true"', $result['shortcode'] );
+		$this->assertStringNotContainsString( 'fullscreen-slideshow=', $result['shortcode'] );
+		$this->assertStringNotContainsString( 'lightbox-slideshow=', $result['shortcode'] );
+	}
+
+	public function test_migration_keeps_different_mode_specific_values_isolated(): void {
+		$result = JZSA_Shortcode_Tools::migrate(
+			'[jzsa-album link="https://photos.google.com/share/test" viewer="both" fullscreen-image-fit="cover" lightbox-image-fit="contain"]',
+			'preserve',
+			'fullscreen'
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertStringContainsString( 'fullscreen-image-fit="cover"', $result['shortcode'] );
+		$this->assertStringContainsString( 'lightbox-image-fit="contain"', $result['shortcode'] );
+		$this->assertStringNotContainsString( 'viewer-image-fit=', $result['shortcode'] );
+	}
+
+	public function test_migration_keeps_equal_overrides_when_the_shared_baseline_differs(): void {
+		$result = JZSA_Shortcode_Tools::migrate(
+			'[jzsa-album link="https://photos.google.com/share/test" viewer="both" viewer-image-fit="contain" fullscreen-image-fit="cover" lightbox-image-fit="cover"]',
+			'preserve',
+			'fullscreen'
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertStringContainsString( 'viewer-image-fit="contain"', $result['shortcode'] );
+		$this->assertStringContainsString( 'fullscreen-image-fit="cover"', $result['shortcode'] );
+		$this->assertStringContainsString( 'lightbox-image-fit="cover"', $result['shortcode'] );
 	}
 
 	public function test_preserve_migration_keeps_single_gesture_owner_with_both_modes(): void {
