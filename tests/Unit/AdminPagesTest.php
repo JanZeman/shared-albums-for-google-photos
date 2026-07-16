@@ -386,7 +386,7 @@ class AdminPagesTest extends TestCase {
 		$this->admin_pages->render_dashboard_announcement();
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( 'Lightbox is the recommended default viewer', $output );
+		$this->assertStringContainsString( 'Lightbox is now the recommended default viewer', $output );
 		$this->assertStringContainsString( 'No worries, your existing galleries keep their current behavior.', $output );
 		$this->assertStringContainsString( 'Open Viewer Guide', $output );
 		$this->assertStringNotContainsString( 'Shared Albums now has a Community', $output );

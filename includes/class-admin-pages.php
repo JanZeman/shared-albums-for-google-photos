@@ -2460,7 +2460,7 @@ class JZSA_Admin_Pages {
 					<img src="<?php echo $logo_url; ?>" alt="" width="56" height="56">
 				</div>
 				<div class="jzsa-dash-promo-body">
-					<h3><?php esc_html_e( 'Lightbox is the recommended default viewer', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<h3><?php esc_html_e( 'Lightbox is now the recommended default viewer', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 					<p><?php esc_html_e( 'No worries, your existing galleries keep their current behavior. We recommend opening the Guide to learn more, then decide whether you want to migrate.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<a href="<?php echo $guide_url; ?>" class="button"><?php esc_html_e( 'Open Viewer Guide', 'janzeman-shared-albums-for-google-photos' ); ?></a>
 				</div>
