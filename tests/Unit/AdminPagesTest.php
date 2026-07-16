@@ -266,15 +266,15 @@ class AdminPagesTest extends TestCase {
 		$this->assertStringContainsString( 'viewer=&quot;both&quot; lightbox-trigger=&quot;double-click&quot; fullscreen-trigger=&quot;button&quot;', $output );
 	}
 
-	public function test_guide_samples_use_the_canonical_leading_parameter_order(): void {
+	public function test_guide_samples_use_the_complete_canonical_parameter_order(): void {
 		$source = file_get_contents( dirname( __DIR__, 2 ) . '/includes/class-admin-pages.php' );
 		preg_match_all( '/^.*\$[a-z_]*shortcode\s*=\s*\'\[jzsa-album link=.*$/m', $source, $matches );
-		$priority = array( 'link', 'mode', 'viewer', 'viewer-trigger', 'lightbox-trigger', 'fullscreen-trigger' );
+		$priority = JZSA_Shortcode_Tools::canonical_attribute_order();
 
 		$this->assertNotEmpty( $matches[0] );
 		foreach ( $matches[0] as $declaration ) {
 			preg_match_all( '/\s([\w-]+)=/', $declaration, $names );
-			$expected_prefix = array_values(
+			$expected_order = array_values(
 				array_filter(
 					$priority,
 					function ( $name ) use ( $names ) {
@@ -284,7 +284,7 @@ class AdminPagesTest extends TestCase {
 			);
 
 			$this->assertContains( 'viewer', $names[1] );
-			$this->assertSame( $expected_prefix, array_slice( $names[1], 0, count( $expected_prefix ) ) );
+			$this->assertSame( $expected_order, array_slice( $names[1], 0, count( $expected_order ) ) );
 		}
 	}
 

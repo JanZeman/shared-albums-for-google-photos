@@ -719,7 +719,7 @@ class JZSA_Admin_Pages {
 						<?php esc_html_e( 'Use this area to experiment with the [jzsa-album] shortcode. You can paste your own shortcode here and adjust it before using it on a page or post.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="slider" viewer="lightbox" limit="12" corner-radius="16" mosaic="true" mosaic-count="10"]';
+						$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="slider" viewer="lightbox" limit="12" mosaic="true" mosaic-count="10" corner-radius="16"]';
 					?>
 
 					<div class="jzsa-code-block jzsa-playground-code-block">
@@ -848,7 +848,7 @@ class JZSA_Admin_Pages {
 							<h3><?php echo 'Sample 1: ' . esc_html__( 'Gallery - Limited Count, No Pagination', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Uses the default "gallery" mode to display album entries as a thumbnail gallery. Every cell has the same size. Tiles stay clean by default, and opening a thumbnail in Lightbox still shows the current item counter. Pagination is not required - all thumbnails are shown at once, limited only by limit.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" viewer="lightbox" width="800" corner-radius="16" limit="6" gallery-gap="8"]';
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" viewer="lightbox" limit="6" width="800" gallery-gap="8" corner-radius="16"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -866,7 +866,7 @@ class JZSA_Admin_Pages {
 									<h3><?php echo 'Sample 2: ' . esc_html__( 'Gallery - Paged (Default Page Counter)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 									<p><?php esc_html_e( 'Use gallery-rows to split the gallery into pages. By default, paginated galleries keep the tiles clean and show the page counter in the navigation bar. Use gallery-sizing="ratio" (default) to keep fixed tile aspect ratio, or gallery-sizing="fill" to stretch row heights and fill explicit control height.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 							<?php
-								$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" viewer="lightbox" width="800" corner-radius="16" gallery-rows="2" limit="18" gallery-gap="8" info-font-size="18"]';
+								$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" viewer="lightbox" limit="18" width="800" gallery-rows="2" gallery-gap="8" corner-radius="16" info-font-size="18"]';
 							?>
 							<div class="jzsa-code-block">
 								<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -884,7 +884,7 @@ class JZSA_Admin_Pages {
 								<h3><?php echo 'Sample 3: ' . esc_html__( 'Gallery - Paged (Custom Page Counter)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 									<p><?php esc_html_e( 'Same as above but with a custom page counter format in the navigation bar. Use this when you want to include album context such as the album title together with the page count.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 								<?php
-									$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" viewer="lightbox" width="800" corner-radius="16" gallery-rows="2" limit="18" gallery-gap="8" gallery-info-bottom="{album-title}: {page} / {pages}" info-font-size="18"]';
+									$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" viewer="lightbox" limit="18" width="800" gallery-rows="2" gallery-gap="8" corner-radius="16" gallery-info-bottom="{album-title}: {page} / {pages}" info-font-size="18"]';
 								?>
 								<div class="jzsa-code-block">
 										<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -902,7 +902,7 @@ class JZSA_Admin_Pages {
 									<h3><?php echo 'Sample 4: ' . esc_html__( 'Gallery - Paged (Tile Counter Override)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 									<p><?php esc_html_e( 'Same paged gallery layout, but with per-tile item numbers instead of the page counter in the navigation bar. Use this when you want to keep pagination while labeling each tile with its item position in the album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 								<?php
-									$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" viewer="lightbox" width="800" corner-radius="16" gallery-rows="2" limit="18" gallery-gap="8" info-bottom="{item} / {items}" gallery-info-bottom=""]';
+									$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" viewer="lightbox" limit="18" width="800" gallery-rows="2" gallery-gap="8" corner-radius="16" info-bottom="{item} / {items}" gallery-info-bottom=""]';
 								?>
 								<div class="jzsa-code-block">
 									<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -925,7 +925,7 @@ class JZSA_Admin_Pages {
 								<p><?php esc_html_e( 'If that is a concern, consider Sample 4 (paged gallery) instead. If you do use this mode on mobile, place the gallery in a two-column WordPress layout with the second column left empty and "Stack on mobile" turned off. The visible gap beside the gallery signals to visitors that the gallery is a self-contained scroll area.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 							</div>
 						<?php
-							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" viewer="lightbox" width="800" corner-radius="16" gallery-rows="2" gallery-scrollable="true" gallery-gap="8" limit="18"]';
+							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" viewer="lightbox" limit="18" width="800" gallery-rows="2" gallery-scrollable="true" gallery-gap="8" corner-radius="16"]';
 						?>
 						<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -943,7 +943,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 6: ' . esc_html__( 'Gallery - Justified Layout', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Uses gallery-layout="justified" so photos keep their natural aspect ratios and fill each row edge-to-edge, similar to Google Photos. Use the viewer button on any thumbnail to open it in Lightbox.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" viewer="lightbox" width="800" corner-radius="16" gallery-layout="justified" gallery-row-height="180" limit="7" gallery-gap="8"]';
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" viewer="lightbox" limit="7" width="800" gallery-layout="justified" gallery-row-height="180" gallery-gap="8" corner-radius="16"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1003,7 +1003,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 9: ' . esc_html__( 'Hide Navigation Arrows', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Hides previous/next arrows. Useful for headless slideshows such as digital signage. Swipe and keyboard navigation still work.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="disabled" corner-radius="16" slideshow="auto" show-navigation="false" info-bottom=""]';
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="disabled" slideshow="auto" show-navigation="false" corner-radius="16" info-bottom=""]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1021,7 +1021,7 @@ class JZSA_Admin_Pages {
 							<h3><?php echo 'Sample 10: ' . esc_html__( 'Interaction Lock (Controls and Navigation Disabled)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php echo wp_kses( __( 'Uses interaction-lock="true" as a <strong>hard override</strong> for interactions: swipe/drag, keyboard navigation, click/tap navigation, and viewer entry are disabled. Notice that all navigation buttons are hidden despite the shortcode explicitly enabling them (show-link-button, show-download-button, viewer). Counter and slideshow countdown stay visible.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" viewer-trigger="double-click" corner-radius="16" show-link-button="true" show-download-button="true" slideshow="auto" slideshow-delay="2" interaction-lock="true"]';
+							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" viewer-trigger="double-click" slideshow="auto" slideshow-delay="2" show-link-button="true" show-download-button="true" interaction-lock="true" corner-radius="16"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1039,7 +1039,7 @@ class JZSA_Admin_Pages {
 								<h3><?php echo 'Sample 11: ' . esc_html__( 'Limit Number of Entries Per Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 								<p><?php esc_html_e( 'Load only a limited number of album entries from a large mixed album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" corner-radius="16" limit="5"]';
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" limit="5" corner-radius="16"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1057,7 +1057,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 12: ' . esc_html__( 'Custom Slideshow Speed', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Slideshow here is set to one second. You can easily see the difference in speed compared to the sample above :)', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" corner-radius="16" slideshow="auto" slideshow-delay="1"]';
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" slideshow="auto" slideshow-delay="1" corner-radius="16"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1075,7 +1075,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 13: ' . esc_html__( 'Random Start without Slideshow', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Starts at a random photo with slideshow disabled. Each page load shows a different photo, but the viewer stays on it until the user navigates manually.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" corner-radius="16" start-at="random" slideshow="disabled"]';
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" start-at="random" slideshow="disabled" corner-radius="16"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1093,7 +1093,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 14: ' . esc_html__( 'Disable Cropping and Set Custom Background', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Shows photos fully without cropping by using image-fit="contain". This exposes the background color. Here we set it to yellow to make it very visible.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" corner-radius="16" image-fit="contain" background-color="#FFE50D"]';
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" image-fit="contain" background-color="#FFE50D" corner-radius="16"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1114,7 +1114,7 @@ class JZSA_Admin_Pages {
 						</div>
 						<p><?php esc_html_e( 'Same as above but with fullscreen-background-color="#0000FF" to override the fullscreen background to blue, while the inline background is transparent.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="fullscreen" corner-radius="16" image-fit="contain" background-color="transparent" fullscreen-background-color="#0000FF"]';
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="fullscreen" image-fit="contain" background-color="transparent" corner-radius="16" fullscreen-background-color="#0000FF"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1132,8 +1132,8 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 16: ' . esc_html__( 'High-Resolution Inline Photos', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Compare default resolution (left) with high-resolution source (right). Both use the same container size and image-fit="cover".', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$low_res_shortcode  = '[jzsa-album link="' . $album_sample_link . '" mode="slider" viewer="lightbox" width="400" height="480" corner-radius="16" image-fit="cover" slideshow="auto" slideshow-delay="5" source-width="400" source-height="300"]';
-						$high_res_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="slider" viewer="lightbox" width="400" height="480" corner-radius="16" image-fit="cover" slideshow="auto" slideshow-delay="5" source-width="1920" source-height="1440"]';
+						$low_res_shortcode  = '[jzsa-album link="' . $album_sample_link . '" mode="slider" viewer="lightbox" width="400" height="480" source-width="400" source-height="300" image-fit="cover" slideshow="auto" slideshow-delay="5" corner-radius="16"]';
+						$high_res_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="slider" viewer="lightbox" width="400" height="480" source-width="1920" source-height="1440" image-fit="cover" slideshow="auto" slideshow-delay="5" corner-radius="16"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $low_res_shortcode ); ?></code>
@@ -1189,7 +1189,7 @@ class JZSA_Admin_Pages {
 						</div>
 						<p><?php esc_html_e( 'Combine a smaller fullscreen source image with a smaller centered fullscreen display box. Useful when you want fullscreen mode, but do not want the photo to expand wall-to-wall across the screen.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="fullscreen" width="400" height="300" corner-radius="16" fullscreen-source-width="512" fullscreen-source-height="340" fullscreen-max-width="640" fullscreen-max-height="425"]';
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="fullscreen" width="400" height="300" corner-radius="16" fullscreen-max-width="640" fullscreen-max-height="425" fullscreen-source-width="512" fullscreen-source-height="340"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1207,7 +1207,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 19: ' . esc_html__( 'Manual Slideshow', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'The play/pause button is shown but the slideshow does not start automatically. The user must press play to begin auto-advancing.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" corner-radius="16" slideshow="manual" slideshow-delay="10"]';
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" slideshow="manual" slideshow-delay="10" corner-radius="16"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1225,7 +1225,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 20: ' . esc_html__( 'Slideshow with Autostart and Autoresume', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'When the slideshow is running and you swipe or click to navigate manually, the slideshow is interrupted and pauses. After 20 seconds of inactivity it resumes automatically. Try it: let the slideshow advance, then swipe manually and wait. Note: if you stop the slideshow via the pause button, it stays stopped - autoresume only applies to interruptions by manual navigation.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" corner-radius="16" slideshow="auto" slideshow-autoresume="20"]';
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" slideshow="auto" slideshow-autoresume="20" corner-radius="16"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1542,7 +1542,7 @@ class JZSA_Admin_Pages {
 							</div>
 							<p><?php esc_html_e( 'Viewer colors split into two surfaces. The shared viewer-background-color setting controls the box behind the photo in both Lightbox and Fullscreen. Open both modes to compare it, then open Lightbox to see the separate lightbox-backdrop-color behind the box.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="both" width="600" corner-radius="16" image-fit="contain" background-color="rgba(128,0,64,0.7)" lightbox-corner-radius="16" viewer-max-width="600" viewer-max-height="400" viewer-background-color="rgba(128,0,64,0.7)" lightbox-backdrop-color="rgba(0,128,64,0.7)"]';
+							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="both" width="600" image-fit="contain" background-color="rgba(128,0,64,0.7)" corner-radius="16" viewer-max-width="600" viewer-max-height="400" viewer-background-color="rgba(128,0,64,0.7)" lightbox-backdrop-color="rgba(0,128,64,0.7)" lightbox-corner-radius="16"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1630,7 +1630,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 39: ' . esc_html__( 'Show "Open in Google Photos" Button', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Enables the show-link-button parameter to display an external link button to the original album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" corner-radius="16" show-link-button="true"]';
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" show-link-button="true" corner-radius="16"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1648,7 +1648,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 40: ' . esc_html__( 'Show Download Button', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Enables the show-download-button parameter to add a download button for the current media item (photo or video).', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" corner-radius="16" show-download-button="true"]';
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" show-download-button="true" corner-radius="16"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1666,7 +1666,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 41: ' . esc_html__( 'Show Link and Download Buttons - Gallery Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Gallery mode with link and download buttons on each thumbnail. Hover over a thumbnail to see the download and link buttons (top-left) appear alongside the viewer button (top-right).', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="gallery" viewer="lightbox" width="800" corner-radius="16" show-download-button="true" show-link-button="true" limit="6"]';
+						$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="gallery" viewer="lightbox" limit="6" width="800" show-link-button="true" show-download-button="true" corner-radius="16"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1684,7 +1684,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 42: ' . esc_html__( 'Gallery Mode: Link Button in Inline and Fullscreen, Download Button in Fullscreen Only', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Gallery mode where the link button is enabled in both inline and fullscreen views, while the download button is shown only in fullscreen.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="gallery" viewer="fullscreen" width="800" corner-radius="16" show-link-button="true" show-download-button="false" fullscreen-show-link-button="true" fullscreen-show-download-button="true" limit="6"]';
+						$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="gallery" viewer="fullscreen" limit="6" width="800" show-link-button="true" show-download-button="false" corner-radius="16" fullscreen-show-link-button="true" fullscreen-show-download-button="true"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1702,7 +1702,7 @@ class JZSA_Admin_Pages {
 							<h3><?php echo 'Sample 43: ' . esc_html__( 'Custom Colors', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Example with a bright yellow controls-color and a separate yellow info-font-color, plus top info text to make the difference clearly visible.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="slider" viewer="lightbox" corner-radius="16" slideshow="auto" show-link-button="true" show-download-button="true" controls-color="#FFD400" info-font-color="#FFFF00" info-top="Info box font with a color..." info-top-secondary="... that is different from the controls"]';
+						$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="slider" viewer="lightbox" slideshow="auto" show-link-button="true" show-download-button="true" controls-color="#FFD400" corner-radius="16" info-top="Info box font with a color..." info-top-secondary="... that is different from the controls" info-font-color="#FFFF00"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1744,7 +1744,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 45: ' . esc_html__( 'Video (Blue Accent)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Baseline video sample in slider mode with videos enabled and blue accent color.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="slider" viewer="lightbox" corner-radius="16" show-videos="true" limit="8" video-controls-color="#00B2FF"]';
+							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="slider" viewer="lightbox" limit="8" show-videos="true" corner-radius="16" video-controls-color="#00B2FF"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1762,7 +1762,7 @@ class JZSA_Admin_Pages {
 							<h3><?php echo 'Sample 46: ' . esc_html__( 'Video in Carousel (Auto-Hide Controls)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Demonstrates carousel mode with video controls auto-hiding after inactivity.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="carousel" viewer="lightbox" corner-radius="16" show-videos="true" limit="8" video-controls-color="#FF6B35" video-controls-autohide="true"]';
+							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="carousel" viewer="lightbox" limit="8" show-videos="true" corner-radius="16" video-controls-color="#FF6B35" video-controls-autohide="true"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1780,7 +1780,7 @@ class JZSA_Admin_Pages {
 							<h3><?php echo 'Sample 47: ' . esc_html__( 'Video in Gallery (Button-only to Fullscreen)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Gallery mode with videos included. Fullscreen opens via the fullscreen button only. Once in fullscreen, click left or right to navigate between items.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" viewer="fullscreen" width="800" corner-radius="16" show-videos="true" limit="6" gallery-layout="grid" video-controls-color="#00A878" gallery-gap="8"]';
+							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" viewer="fullscreen" limit="6" show-videos="true" width="800" gallery-layout="grid" gallery-gap="8" corner-radius="16" video-controls-color="#00A878"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1798,7 +1798,7 @@ class JZSA_Admin_Pages {
 							<h3><?php echo 'Sample 48: ' . esc_html__( 'Video in Gallery (Single-click to Fullscreen)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php echo wp_kses( __( 'Single-click on any thumbnail opens fullscreen. Trade-off: click can no longer navigate between items in fullscreen - use the arrow buttons instead. <strong>Consider double-click instead</strong> to keep click navigation available.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" viewer="fullscreen" viewer-trigger="click" width="800" corner-radius="16" show-videos="true" limit="6" gallery-layout="grid" video-controls-color="#E0527E" gallery-gap="8"]';
+							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" viewer="fullscreen" viewer-trigger="click" limit="6" show-videos="true" width="800" gallery-layout="grid" gallery-gap="8" corner-radius="16" video-controls-color="#E0527E"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1816,7 +1816,7 @@ class JZSA_Admin_Pages {
 							<h3><?php echo 'Sample 49: ' . esc_html__( 'Video in Gallery (Double-click to Fullscreen)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php echo wp_kses( __( 'Double-click (or double-tap) on any thumbnail opens fullscreen; double-click again to exit. <strong>Recommended over single-click</strong>: click still navigates between items in fullscreen, and the gesture is less likely to be triggered accidentally.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" viewer="fullscreen" viewer-trigger="double-click" width="800" show-videos="true" limit="6" gallery-layout="grid" video-controls-color="#7A5CFF" gallery-gap="8"]';
+							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" viewer="fullscreen" viewer-trigger="double-click" limit="6" show-videos="true" width="800" gallery-layout="grid" gallery-gap="8" video-controls-color="#7A5CFF"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1834,7 +1834,7 @@ class JZSA_Admin_Pages {
 							<h3><?php echo 'Sample 50: ' . esc_html__( 'Photos-Only Sample (Videos Disabled)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Uses show-videos="false" to filter out videos from the same mixed album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" viewer="lightbox" width="800" corner-radius="16" show-videos="false" limit="6" gallery-gap="8"]';
+							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" viewer="lightbox" limit="6" show-videos="false" width="800" gallery-gap="8" corner-radius="16"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1858,7 +1858,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 51: ' . esc_html__( 'Slider - Mosaic Strip at the Bottom', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Slider with a horizontal thumbnail strip below the main photo. Click any thumbnail to jump to that photo. By default, the thumbnails apply the same corner radius as the main photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="slider" viewer="lightbox" width="800" height="600" corner-radius="16" mosaic="true" mosaic-position="bottom" mosaic-count="12"]';
+							$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="slider" viewer="lightbox" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="12" corner-radius="16"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1876,7 +1876,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 52: ' . esc_html__( 'Slider - Mosaic Strip With Explicit Rounded Corners', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Same as above, but with square slider corners via corner-radius="0" and rounded corners only on the thumbnail strip via mosaic-corner-radius="16".', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="slider" viewer="lightbox" width="800" height="600" corner-radius="0" mosaic="true" mosaic-position="bottom" mosaic-count="12" mosaic-corner-radius="16"]';
+							$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="slider" viewer="lightbox" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="12" mosaic-corner-radius="16" corner-radius="0"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1894,7 +1894,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 53: ' . esc_html__( 'Slider - Mosaic Strip on the Right', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Slider with a vertical thumbnail strip on the right side. Great for landscape photos where the strip can use the full height.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="slider" viewer="lightbox" width="800" height="600" corner-radius="16" mosaic="true" mosaic-position="right"]';
+							$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="slider" viewer="lightbox" width="800" height="600" mosaic="true" mosaic-position="right" corner-radius="16"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1912,7 +1912,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 54: ' . esc_html__( 'Mosaic Strip with Carousel', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Carousel mode with a thumbnail strip at the bottom. The carousel shows multiple photos at once; the mosaic strip provides an overview of the full album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="carousel" viewer="lightbox" width="800" height="600" corner-radius="24" mosaic="true" mosaic-position="bottom" mosaic-count="18"]';
+							$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="carousel" viewer="lightbox" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="18" corner-radius="24"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1930,7 +1930,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 55: ' . esc_html__( 'Slider - Mosaic Strip with Custom Gap and Opacity', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Demonstrates mosaic-gap and mosaic-opacity together. A tighter gap between thumbnails and a lower inactive opacity create a stronger visual contrast between the active and inactive thumbnails.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="slider" viewer="lightbox" width="800" height="600" corner-radius="16" mosaic="true" mosaic-position="bottom" mosaic-count="12" mosaic-gap="16" mosaic-opacity="0.7"]';
+							$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="slider" viewer="lightbox" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="12" mosaic-gap="16" mosaic-opacity="0.7" corner-radius="16"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1951,7 +1951,7 @@ class JZSA_Admin_Pages {
 						</div>
 						<p><?php esc_html_e( 'Combines the inline mosaic strip with fullscreen-mosaic="true". In fullscreen, the default layout now reserves a dedicated rail for the thumbnail strip so it no longer sits on top of the photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="fullscreen" corner-radius="16" mosaic="true" fullscreen-mosaic="true" mosaic-count="8" fullscreen-mosaic-count="16" fullscreen-slideshow="auto" limit="24"]';
+							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="fullscreen" limit="24" mosaic="true" mosaic-count="8" corner-radius="16" fullscreen-slideshow="auto" fullscreen-mosaic="true" fullscreen-mosaic-count="16"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -1972,7 +1972,7 @@ class JZSA_Admin_Pages {
 						</div>
 						<p><?php esc_html_e( 'Adds fullscreen-mosaic-layout="overlay" and fullscreen-image-fit="cover". The thumbnail strip floats on top of the photo in fullscreen instead of occupying a separate rail, and the photo fills the full screen behind it for a cinema-style experience.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="fullscreen" corner-radius="16" mosaic="true" fullscreen-mosaic="true" mosaic-count="8" fullscreen-mosaic-count="16" fullscreen-slideshow="auto" limit="24" fullscreen-image-fit="cover" fullscreen-mosaic-layout="overlay"]';
+							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="fullscreen" limit="24" mosaic="true" mosaic-count="8" corner-radius="16" fullscreen-image-fit="cover" fullscreen-slideshow="auto" fullscreen-mosaic="true" fullscreen-mosaic-layout="overlay" fullscreen-mosaic-count="16"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -2075,7 +2075,7 @@ class JZSA_Admin_Pages {
 					<p><?php esc_html_e( 'The live preview below shows all three inline info boxes with descriptive labels so you can see where each box appears:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
 					<?php
-					$info_boxes_demo_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" width="400" height="300" corner-radius="16" limit="7" start-at="1" slideshow="auto" slideshow-delay="10" show-link-button="true" show-download-button="true" info-bottom="Bottom" info-top="Top" info-top-secondary="Top secondary"]';
+					$info_boxes_demo_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" limit="7" start-at="1" width="400" height="300" slideshow="auto" slideshow-delay="10" show-link-button="true" show-download-button="true" corner-radius="16" info-top="Top" info-top-secondary="Top secondary" info-bottom="Bottom"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $info_boxes_demo_shortcode ); ?></code>
@@ -2102,7 +2102,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 61: ' . esc_html__( 'Slider with Photo Info', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Shows per-photo info overlays in slider mode.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" corner-radius="16" info-bottom="{item} / {items}" info-top="{album-title}" info-top-secondary="{filename} ({dimensions})"]';
+							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" corner-radius="16" info-top="{album-title}" info-top-secondary="{filename} ({dimensions})" info-bottom="{item} / {items}"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -2120,7 +2120,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 62: ' . esc_html__( 'Carousel with Photo Info', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Shows per-photo info overlays in carousel mode.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel" viewer="lightbox" corner-radius="16" info-bottom="{item} / {items}" info-top="{filename}" info-top-secondary="{dimensions}"]';
+							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel" viewer="lightbox" corner-radius="16" info-top="{filename}" info-top-secondary="{dimensions}" info-bottom="{item} / {items}"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -2138,7 +2138,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 63: ' . esc_html__( 'Gallery with Photo Info', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Shows per-photo info overlays on gallery thumbnails.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="gallery" viewer="lightbox" width="800" corner-radius="16" limit="6" info-font-size="10" info-top="{filename}" info-top-secondary="{dimensions}"]';
+							$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="gallery" viewer="lightbox" limit="6" width="800" corner-radius="16" info-top="{filename}" info-top-secondary="{dimensions}" info-font-size="10"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -2160,7 +2160,7 @@ class JZSA_Admin_Pages {
 							<span><?php esc_html_e( 'EXIF output depends heavily on how complete and clean the metadata is across the photos in your shared album.', 'janzeman-shared-albums-for-google-photos' ); ?></span>
 						</p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $info_sample_link . '" mode="slider" viewer="lightbox" width="512" corner-radius="16" show-link-button="true" show-download-button="true" info-font-size="18" info-font-family="ui-monospace, SFMono-Regular, Consolas, monospace" info-top="{description}" info-top-secondary="{camera}" info-bottom="{aperture} ⸱ {shutter} ⸱ {focal} ⸱ {iso}" start-at="1"]';
+							$sample_shortcode = '[jzsa-album link="' . $info_sample_link . '" mode="slider" viewer="lightbox" start-at="1" width="512" show-link-button="true" show-download-button="true" corner-radius="16" info-top="{description}" info-top-secondary="{camera}" info-bottom="{aperture} ⸱ {shutter} ⸱ {focal} ⸱ {iso}" info-font-size="18" info-font-family="ui-monospace, SFMono-Regular, Consolas, monospace"]';
 						?>
 						<div class="jzsa-code-block">
 								<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -2178,7 +2178,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 65: ' . esc_html__( 'EXIF Camera Info', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Shows the raw EXIF camera make and model separately, with {camera} underneath as the plugin\'s best-guess combined display value. Use the raw placeholders when you need exact source values and {camera} only when the combined output looks right for your album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $info_sample_link . '" mode="slider" viewer="lightbox" width="512" corner-radius="16" show-link-button="true" show-download-button="true" info-font-size="18" info-font-family="ui-monospace, SFMono-Regular, Consolas, monospace" info-top="{camera-make}" info-top-secondary="{camera-model}" info-bottom="{camera}" start-at="2"]';
+							$sample_shortcode = '[jzsa-album link="' . $info_sample_link . '" mode="slider" viewer="lightbox" start-at="2" width="512" show-link-button="true" show-download-button="true" corner-radius="16" info-top="{camera-make}" info-top-secondary="{camera-model}" info-bottom="{camera}" info-font-size="18" info-font-family="ui-monospace, SFMono-Regular, Consolas, monospace"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -2196,7 +2196,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 66: ' . esc_html__( 'Long Text: Truncated (Default)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'When text is too long it is cut off with "..." by default. Notice that info-top is intentionally narrower than info-top-secondary: it shares the top corners with action buttons (such as the viewer button), so space is reserved on both sides to avoid overlap. info-top-secondary and info-bottom have no such constraint and can use the full width.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $info_sample_link . '" mode="slider" viewer="lightbox" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" start-at="3"]';
+							$sample_shortcode = '[jzsa-album link="' . $info_sample_link . '" mode="slider" viewer="lightbox" start-at="3" width="384" corner-radius="16" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-font-size="14"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -2214,7 +2214,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 67: ' . esc_html__( 'Long Text: Wrapped (info-wrap="true")', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'The same shortcode with info-wrap="true" added. Long text breaks to a new line instead of being cut off; the pill expands vertically to fit all content. Consider reducing info-font-size slightly if the result feels too large. Note that {description} is capped at 100 characters by Google - see the placeholder reference.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $info_sample_link . '" mode="slider" viewer="lightbox" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-wrap="true" start-at="3"]';
+							$sample_shortcode = '[jzsa-album link="' . $info_sample_link . '" mode="slider" viewer="lightbox" start-at="3" width="384" corner-radius="16" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-font-size="14" info-wrap="true"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -2232,7 +2232,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 68: ' . esc_html__( 'Long Text: Wrapped with Link and Download Buttons', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'The same wrapped shortcode, but with show-link-button="true" and show-download-button="true" added. Both buttons appear in the top-left corner, so the plugin now reserves two slots on each side, making info-top noticeably shorter than in the previous example. This is intentional: without the extra reservation, info-top would overlap the buttons. Note that {description} is capped at 100 characters by Google - see the placeholder reference.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $info_sample_link . '" mode="slider" viewer="lightbox" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-wrap="true" show-link-button="true" show-download-button="true" start-at="3"]';
+							$sample_shortcode = '[jzsa-album link="' . $info_sample_link . '" mode="slider" viewer="lightbox" start-at="3" width="384" show-link-button="true" show-download-button="true" corner-radius="16" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-font-size="14" info-wrap="true"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -2250,7 +2250,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 69: ' . esc_html__( 'Text Halo Effect Per-Box Override', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'This sample keeps the global halo enabled, then disables it only for info-top-secondary with info-top-secondary-halo-effect="false". That lets you compare both treatments on the same photo while the bottom counter stays at its normal halo-enabled default.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $info_sample_link . '" mode="slider" viewer="lightbox" width="384" corner-radius="16" info-font-size="14" info-wrap="true" info-top="This is a text with the halo effect. It usually delivers better readability." info-top-secondary="And this is the text without that effect. Compare the differences." info-top-secondary-halo-effect="false" start-at="4"]';
+							$sample_shortcode = '[jzsa-album link="' . $info_sample_link . '" mode="slider" viewer="lightbox" start-at="4" width="384" corner-radius="16" info-top="This is a text with the halo effect. It usually delivers better readability." info-top-secondary="And this is the text without that effect. Compare the differences." info-font-size="14" info-wrap="true" info-top-secondary-halo-effect="false"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -2268,7 +2268,7 @@ class JZSA_Admin_Pages {
 						<h3><?php echo 'Sample 70: ' . esc_html__( 'Per-Box Text Alignment', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Each info box can have its own alignment using info-top-text-align, info-top-secondary-text-align, and info-bottom-text-align. These override the global info-text-align for that box only. Here info-top is left-aligned, info-top-secondary is centered, and info-bottom is right-aligned.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $info_sample_link . '" mode="slider" viewer="lightbox" width="384" corner-radius="16" info-font-size="14" info-top="This text is left-aligned. This text is left-aligned." info-top-secondary="This text is centered. This text is centered." info-bottom="This text is right-aligned. This text is right-aligned." info-wrap="true" info-top-text-align="left" info-top-secondary-text-align="center" info-bottom-text-align="right" start-at="5"]';
+							$sample_shortcode = '[jzsa-album link="' . $info_sample_link . '" mode="slider" viewer="lightbox" start-at="5" width="384" corner-radius="16" info-top="This text is left-aligned. This text is left-aligned." info-top-secondary="This text is centered. This text is centered." info-bottom="This text is right-aligned. This text is right-aligned." info-font-size="14" info-wrap="true" info-top-text-align="left" info-top-secondary-text-align="center" info-bottom-text-align="right"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -2336,7 +2336,7 @@ class JZSA_Admin_Pages {
 							<h3><?php echo 'Sample 72: ' . esc_html__( 'Basic Album with Deprecated Link Format (Admin-Only Warning)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Same as above, but using the older short link format. Visitors will NOT see this warning, but you as an administrator should update the link to the new format.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 							<?php
-								$sample_shortcode = '[jzsa-album link="https://photos.app.goo.gl/6qmxgmqdouBFKH3i8" viewer="lightbox" width="600" limit="6"]';
+								$sample_shortcode = '[jzsa-album link="https://photos.app.goo.gl/6qmxgmqdouBFKH3i8" viewer="lightbox" limit="6" width="600"]';
 							?>
 							<div class="jzsa-code-block">
 									<code><?php echo esc_html( $sample_shortcode ); ?></code>

@@ -126,13 +126,13 @@ assets the static fixture needs.
 ### `gallery-fixture`
 
 ```text
-[jzsa-album link="YOUR_LINK" mode="gallery" gallery-columns="3" fullscreen-toggle="button-only"]
+[jzsa-album link="YOUR_LINK" mode="gallery" fullscreen-toggle="button-only" gallery-columns="3"]
 
-[jzsa-album link="YOUR_LINK" mode="gallery" gallery-layout="justified" fullscreen-toggle="button-only"]
+[jzsa-album link="YOUR_LINK" mode="gallery" fullscreen-toggle="button-only" gallery-layout="justified"]
 
-[jzsa-album link="YOUR_LINK" mode="gallery" gallery-scrollable="true" fullscreen-toggle="button-only"]
+[jzsa-album link="YOUR_LINK" mode="gallery" fullscreen-toggle="button-only" gallery-scrollable="true"]
 
-[jzsa-album link="YOUR_LINK" mode="gallery" gallery-rows="2" fullscreen-toggle="button-only"]
+[jzsa-album link="YOUR_LINK" mode="gallery" fullscreen-toggle="button-only" gallery-rows="2"]
 
 [jzsa-album link="YOUR_LINK" mode="gallery" lightbox-toggle="click" fullscreen-toggle="disabled"]
 ```
@@ -159,9 +159,9 @@ shortcode parser currently defaults that value to `bottom`.
 
 [jzsa-album link="YOUR_LINK" mode="slider" info-top="{album-title}"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" info-bottom="{item}" info-top="{album-title}"]
+[jzsa-album link="YOUR_LINK" mode="slider" info-top="{album-title}" info-bottom="{item}"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" info-bottom="{item}" info-top="{filename}" info-top-secondary="{camera} {description}"]
+[jzsa-album link="YOUR_LINK" mode="slider" info-top="{filename}" info-top-secondary="{camera} {description}" info-bottom="{item}"]
 ```
 
 ### `viewer-fixture`
@@ -179,7 +179,7 @@ stable over time.
 
 [jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" fullscreen-image-fit="cover"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" image-fit="contain" background-color="rgba(128,0,64,0.7)" lightbox-corner-radius="16" viewer-max-width="600" viewer-max-height="400" viewer-background-color="rgba(128,0,64,0.7)" lightbox-backdrop-color="rgba(0,128,64,0.7)"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" image-fit="contain" background-color="rgba(128,0,64,0.7)" corner-radius="16" viewer-max-width="600" viewer-max-height="400" viewer-background-color="rgba(128,0,64,0.7)" lightbox-backdrop-color="rgba(0,128,64,0.7)" lightbox-corner-radius="16"]
 
 [jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-controls-color="#E63946" lightbox-controls-color="#00A878"]
 
@@ -204,15 +204,15 @@ the guide sample order.
 
 [jzsa-album link="YOUR_LINK" mode="slider" viewer="lightbox" viewer-trigger="button" width="600" corner-radius="16" lightbox-fullscreen="button"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-mosaic="true" viewer-mosaic-count="4" viewer-mosaic-position="left" viewer-mosaic-layout="overlay" viewer-mosaic-gap="4"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-mosaic="true" viewer-mosaic-position="left" viewer-mosaic-layout="overlay" viewer-mosaic-count="4" viewer-mosaic-gap="4"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-max-width="700" viewer-max-height="420" lightbox-max-width="500" fullscreen-max-width="1100" viewer-image-fit="cover" fullscreen-image-fit="contain" lightbox-controls-color="#00A878" fullscreen-controls-color="#2A9D8F"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-max-width="700" viewer-max-height="420" viewer-image-fit="cover" lightbox-max-width="500" lightbox-controls-color="#00A878" fullscreen-max-width="1100" fullscreen-image-fit="contain" fullscreen-controls-color="#2A9D8F"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-background-color="rgba(128,0,64,0.7)" lightbox-backdrop-color="rgba(0,128,64,0.7)" viewer-controls-color="#E63946" lightbox-controls-color="#00A878" fullscreen-controls-color="#2A9D8F"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-background-color="rgba(128,0,64,0.7)" viewer-controls-color="#E63946" lightbox-backdrop-color="rgba(0,128,64,0.7)" lightbox-controls-color="#00A878" fullscreen-controls-color="#2A9D8F"]
 
 [jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-slideshow="auto" lightbox-slideshow-delay="2-4" fullscreen-slideshow-delay="9"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-show-navigation="false" viewer-info-top="Wild {item}" viewer-info-bottom="{item} / {items}" viewer-corner-radius="24" lightbox-corner-radius="8" fullscreen-corner-radius="0"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-corner-radius="24" viewer-show-navigation="false" viewer-info-top="Wild {item}" viewer-info-bottom="{item} / {items}" lightbox-corner-radius="8" fullscreen-corner-radius="0"]
 ```
 
 ### `feature-fixture`
@@ -220,7 +220,7 @@ the guide sample order.
 ```text
 [jzsa-album link="YOUR_LINK" mode="slider" show-navigation="true"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" show-download-button="true" show-link-button="true"]
+[jzsa-album link="YOUR_LINK" mode="slider" show-link-button="true" show-download-button="true"]
 
 [jzsa-album link="YOUR_LINK" mode="slider" interaction-lock="true"]
 

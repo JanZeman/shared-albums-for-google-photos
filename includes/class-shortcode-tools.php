@@ -498,7 +498,7 @@ class JZSA_Shortcode_Tools {
 
 	private static function serialized_attribute_order( $attributes ) {
 		$order    = array();
-		$priority = self::canonical_attribute_priority();
+		$priority = self::canonical_attribute_order();
 		foreach ( $priority as $name ) {
 			if ( array_key_exists( $name, $attributes ) ) {
 				$order[] = $name;
@@ -514,7 +514,7 @@ class JZSA_Shortcode_Tools {
 
 	private static function serialize( $attributes ) {
 		$tokens   = array();
-		$priority = self::canonical_attribute_priority();
+		$priority = self::canonical_attribute_order();
 
 		foreach ( $priority as $name ) {
 			if ( array_key_exists( $name, $attributes ) ) {
@@ -530,8 +530,242 @@ class JZSA_Shortcode_Tools {
 		return '[jzsa-album ' . implode( ' ', $tokens ) . ']';
 	}
 
-	private static function canonical_attribute_priority() {
-		return array( 'link', 'mode', 'viewer', 'viewer-trigger', 'lightbox-trigger', 'fullscreen-trigger' );
+	/**
+	 * Return the standard display order for every accepted shortcode parameter.
+	 *
+	 * Unknown extension parameters are serialized after this list in their original order.
+	 *
+	 * @return string[]
+	 */
+	public static function canonical_attribute_order() {
+		return array(
+			// Source and primary visitor experience.
+			'link',
+			'mode',
+			'viewer',
+			'viewer-trigger',
+			'viewer-toggle',
+			'lightbox-trigger',
+			'lightbox-toggle',
+			'fullscreen-trigger',
+			'fullscreen-toggle',
+
+			// Content selection and initial state.
+			'limit',
+			'start-at',
+			'show-videos',
+
+			// Inline frame and source quality.
+			'width',
+			'height',
+			'source-width',
+			'source-height',
+			'image-fit',
+
+			// Gallery layout.
+			'gallery-layout',
+			'gallery-sizing',
+			'gallery-columns',
+			'gallery-columns-tablet',
+			'gallery-columns-mobile',
+			'gallery-row-height',
+			'gallery-rows',
+			'gallery-scrollable',
+			'gallery-gap',
+			'gallery-buttons-on-mobile',
+
+			// Inline mosaic.
+			'mosaic',
+			'mosaic-position',
+			'mosaic-count',
+			'mosaic-gap',
+			'mosaic-opacity',
+			'mosaic-background',
+			'mosaic-corner-radius',
+
+			// Inline playback, controls, and appearance.
+			'slideshow',
+			'slideshow-delay',
+			'slideshow-autoresume',
+			'show-navigation',
+			'show-link-button',
+			'show-download-button',
+			'interaction-lock',
+			'background-color',
+			'controls-color',
+			'corner-radius',
+			'video-controls-color',
+			'video-controls-autohide',
+
+			// Inline information.
+			'info-top',
+			'info-top-secondary',
+			'info-bottom',
+			'gallery-info-bottom',
+			'info-font-size',
+			'info-font-family',
+			'info-font-color',
+			'info-wrap',
+			'info-text-align',
+			'info-top-text-align',
+			'info-top-secondary-text-align',
+			'info-bottom-text-align',
+			'info-halo-effect',
+			'info-top-halo-effect',
+			'info-top-secondary-halo-effect',
+			'info-bottom-halo-effect',
+			'gallery-info-bottom-halo-effect',
+			'album-title-halo-effect',
+
+			// Shared expanded-view settings.
+			'viewer-max-width',
+			'viewer-max-height',
+			'viewer-source-width',
+			'viewer-source-height',
+			'viewer-image-fit',
+			'viewer-background-color',
+			'viewer-corner-radius',
+			'viewer-controls-color',
+			'viewer-video-controls-color',
+			'viewer-video-controls-autohide',
+			'viewer-show-navigation',
+			'viewer-show-link-button',
+			'viewer-show-download-button',
+			'viewer-slideshow',
+			'viewer-slideshow-delay',
+			'viewer-slideshow-autoresume',
+			'viewer-info-top',
+			'viewer-info-top-secondary',
+			'viewer-info-bottom',
+			'viewer-info-font-size',
+			'viewer-info-font-family',
+			'viewer-info-font-color',
+			'viewer-mosaic',
+			'viewer-mosaic-position',
+			'viewer-mosaic-layout',
+			'viewer-mosaic-count',
+			'viewer-mosaic-gap',
+			'viewer-mosaic-opacity',
+			'viewer-mosaic-background',
+			'viewer-mosaic-corner-radius',
+
+			// Lightbox-specific overrides.
+			'lightbox-fullscreen',
+			'lightbox-max-width',
+			'lightbox-max-height',
+			'lightbox-source-width',
+			'lightbox-source-height',
+			'lightbox-image-fit',
+			'lightbox-background-color',
+			'lightbox-backdrop-color',
+			'lightbox-corner-radius',
+			'lightbox-controls-color',
+			'lightbox-video-controls-color',
+			'lightbox-video-controls-autohide',
+			'lightbox-show-navigation',
+			'lightbox-show-link-button',
+			'lightbox-show-download-button',
+			'lightbox-slideshow',
+			'lightbox-slideshow-delay',
+			'lightbox-slideshow-autoresume',
+			'lightbox-info-top',
+			'lightbox-info-top-secondary',
+			'lightbox-info-bottom',
+			'lightbox-info-font-size',
+			'lightbox-info-font-family',
+			'lightbox-info-font-color',
+			'lightbox-mosaic',
+			'lightbox-mosaic-position',
+			'lightbox-mosaic-layout',
+			'lightbox-mosaic-count',
+			'lightbox-mosaic-gap',
+			'lightbox-mosaic-opacity',
+			'lightbox-mosaic-background',
+			'lightbox-mosaic-corner-radius',
+
+			// Fullscreen-specific overrides.
+			'fullscreen-max-width',
+			'fullscreen-max-height',
+			'fullscreen-source-width',
+			'fullscreen-source-height',
+			'fullscreen-image-fit',
+			'fullscreen-background-color',
+			'fullscreen-corner-radius',
+			'fullscreen-controls-color',
+			'fullscreen-video-controls-color',
+			'fullscreen-video-controls-autohide',
+			'fullscreen-show-navigation',
+			'fullscreen-show-link-button',
+			'fullscreen-show-download-button',
+			'fullscreen-slideshow',
+			'fullscreen-slideshow-delay',
+			'fullscreen-slideshow-autoresume',
+			'fullscreen-info-top',
+			'fullscreen-info-top-secondary',
+			'fullscreen-info-bottom',
+			'fullscreen-info-font-size',
+			'fullscreen-info-font-family',
+			'fullscreen-info-font-color',
+			'fullscreen-mosaic',
+			'fullscreen-mosaic-position',
+			'fullscreen-mosaic-layout',
+			'fullscreen-mosaic-count',
+			'fullscreen-mosaic-gap',
+			'fullscreen-mosaic-opacity',
+			'fullscreen-mosaic-background',
+			'fullscreen-mosaic-corner-radius',
+
+			// Technical settings.
+			'album-cache-refresh',
+			'download-size-warning',
+
+			// Accepted obsolete names, kept deterministic for legacy shortcodes.
+			'cache-refresh',
+			'viewer-display-max-width',
+			'viewer-display-max-height',
+			'fullscreen-display-max-width',
+			'fullscreen-display-max-height',
+			'gallery-page-bottom',
+			'show-title',
+			'show-counter',
+			'info-top-1',
+			'info-top-2',
+			'fullscreen-show-title',
+			'fullscreen-show-counter',
+			'fullscreen-info-top-1',
+			'fullscreen-info-top-2',
+			'expanded-toggle',
+			'expanded-max-width',
+			'expanded-max-height',
+			'expanded-source-width',
+			'expanded-source-height',
+			'expanded-image-fit',
+			'expanded-background-color',
+			'expanded-corner-radius',
+			'expanded-controls-color',
+			'expanded-video-controls-color',
+			'expanded-video-controls-autohide',
+			'expanded-show-navigation',
+			'expanded-show-link-button',
+			'expanded-show-download-button',
+			'expanded-slideshow',
+			'expanded-slideshow-delay',
+			'expanded-slideshow-autoresume',
+			'expanded-info-top',
+			'expanded-info-top-secondary',
+			'expanded-info-bottom',
+			'expanded-info-font-size',
+			'expanded-info-font-family',
+			'expanded-info-font-color',
+			'expanded-mosaic',
+			'expanded-mosaic-position',
+			'expanded-mosaic-layout',
+			'expanded-mosaic-count',
+			'expanded-mosaic-gap',
+			'expanded-mosaic-opacity',
+			'expanded-mosaic-background',
+			'expanded-mosaic-corner-radius',
+		);
 	}
 
 	private static function trigger_value( $attributes, $name ) {

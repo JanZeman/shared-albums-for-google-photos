@@ -94,7 +94,7 @@ If you need to display descriptions longer than 100 characters, you have two opt
 2. **Use info-wrap="true"** to allow the truncated 100-character description to wrap to multiple lines:
 
    ```shortcode
-   [jzsa-album link="..." info-wrap="true" info-bottom="{description} | {date}"]
+   [jzsa-album link="..." info-bottom="{description} | {date}" info-wrap="true"]
    ```
 
 ---

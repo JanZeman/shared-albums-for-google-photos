@@ -155,7 +155,7 @@ class ShortcodeToolsTest extends TestCase {
 
 		$this->assertTrue( $result['ok'] );
 		$this->assertSame(
-			'[jzsa-album link="https://photos.google.com/share/test" mode="slider" sparkle="yes" fullscreen-toggle="double-click"]',
+			'[jzsa-album link="https://photos.google.com/share/test" mode="slider" fullscreen-toggle="double-click" sparkle="yes"]',
 			$result['shortcode']
 		);
 		$this->assertStringNotContainsString( 'viewer=', $result['shortcode'] );
@@ -271,7 +271,7 @@ class ShortcodeToolsTest extends TestCase {
 		);
 	}
 
-	public function test_migration_uses_natural_canonical_prefix_and_preserves_other_parameter_order(): void {
+	public function test_migration_uses_the_complete_canonical_parameter_order(): void {
 		$result = JZSA_Shortcode_Tools::migrate(
 			'[jzsa-album width="600" viewer-trigger="double-click" link="https://photos.google.com/share/test" corner-radius="16" viewer="fullscreen" mode="slider" unknown-option="keep-me"]',
 			'preserve',
@@ -294,12 +294,12 @@ class ShortcodeToolsTest extends TestCase {
 
 		$this->assertTrue( $result['ok'] );
 		$this->assertSame(
-			'[jzsa-album link="https://photos.google.com/share/test" mode="carousel" viewer="both" lightbox-trigger="double-click" fullscreen-image-fit="contain" width="720"]',
+			'[jzsa-album link="https://photos.google.com/share/test" mode="carousel" viewer="both" lightbox-trigger="double-click" width="720" fullscreen-image-fit="contain"]',
 			$result['shortcode']
 		);
 	}
 
-	public function test_migration_skips_absent_mode_without_reordering_remaining_parameters(): void {
+	public function test_migration_skips_absent_mode_and_orders_remaining_known_parameters(): void {
 		$result = JZSA_Shortcode_Tools::migrate(
 			'[jzsa-album corner-radius="16" link="https://photos.google.com/share/test" viewer="lightbox" width="600"]',
 			'preserve',
@@ -308,9 +308,53 @@ class ShortcodeToolsTest extends TestCase {
 
 		$this->assertTrue( $result['ok'] );
 		$this->assertSame(
-			'[jzsa-album link="https://photos.google.com/share/test" viewer="lightbox" corner-radius="16" width="600"]',
+			'[jzsa-album link="https://photos.google.com/share/test" viewer="lightbox" width="600" corner-radius="16"]',
 			$result['shortcode']
 		);
+	}
+
+	public function test_format_orders_every_parameter_group_and_keeps_unknowns_last(): void {
+		$result = JZSA_Shortcode_Tools::format(
+			'[jzsa-album second-extension="2" album-cache-refresh="24" fullscreen-info-bottom="F" lightbox-max-width="900" viewer-controls-color="#fff" info-top="I" corner-radius="16" slideshow="auto" mosaic="true" gallery-gap="8" width="600" limit="12" viewer-trigger="button" viewer="lightbox" mode="slider" link="https://photos.google.com/share/test" first-extension="1"]'
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertSame(
+			'[jzsa-album link="https://photos.google.com/share/test" mode="slider" viewer="lightbox" viewer-trigger="button" limit="12" width="600" gallery-gap="8" mosaic="true" slideshow="auto" corner-radius="16" info-top="I" viewer-controls-color="#fff" lightbox-max-width="900" fullscreen-info-bottom="F" album-cache-refresh="24" second-extension="2" first-extension="1"]',
+			$result['shortcode']
+		);
+	}
+
+	public function test_canonical_order_contains_every_parameter_accepted_by_validation_once(): void {
+		$script = file_get_contents( dirname( __DIR__, 2 ) . '/assets/js/admin-settings.js' );
+		preg_match( '/var JZSA_KNOWN_PARAMS = \[(.*?)\];/s', $script, $known_match );
+		preg_match( '/var JZSA_LEGACY_PARAMS = \[(.*?)\];/s', $script, $legacy_match );
+		preg_match( '/var replacements = \{(.*?)\};/s', $script, $replacement_match );
+		preg_match( '/var suffixes = \[(.*?)\];/s', $script, $suffix_match );
+
+		$quoted_names = static function ( $source ) {
+			preg_match_all( "/'([^']+)'/", $source, $matches );
+			return $matches[1];
+		};
+		$accepted = array_merge(
+			$quoted_names( $known_match[1] ),
+			$quoted_names( $legacy_match[1] ),
+			$quoted_names( $replacement_match[1] ),
+			array_map(
+				static function ( $suffix ) {
+					return 'expanded-' . $suffix;
+				},
+				$quoted_names( $suffix_match[1] )
+			)
+		);
+		$accepted = array_values( array_unique( $accepted ) );
+		$order    = JZSA_Shortcode_Tools::canonical_attribute_order();
+
+		$this->assertSame( $order, array_values( array_unique( $order ) ), 'The canonical order contains duplicate names.' );
+		sort( $accepted );
+		$sorted_order = $order;
+		sort( $sorted_order );
+		$this->assertSame( $accepted, $sorted_order );
 	}
 
 	public function test_migration_is_idempotent_on_its_modern_output(): void {

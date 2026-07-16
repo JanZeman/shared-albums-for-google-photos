@@ -1395,7 +1395,6 @@ function jzsaSetupCodeBlock( block ) {
 		var shortcode = codeEl.textContent || '';
 		var localResult = jzsaValidateShortcode( shortcode );
 		prettifiedShortcode = null;
-		prettifyBtn.disabled = true;
 		prettifyBtn.title = 'Checking shortcode formatting';
 		jzsaRenderValidation( validationEl, localResult );
 		if ( semanticTimer ) {
@@ -1432,16 +1431,18 @@ function jzsaSetupCodeBlock( block ) {
 								: 'This shortcode does not set the viewer explicitly. Updating to the current syntax is recommended.'
 						);
 					}
-					merged.state = merged.errors.length ? 'error' : ( merged.warnings.length ? 'warning' : 'ok' );
 					if ( format && format.changed && ! merged.errors.length ) {
 						prettifiedShortcode = format.shortcode;
-						prettifyBtn.disabled = false;
 						prettifyBtn.title = 'Standardize quotes, whitespace, parameter names, and order';
+						merged.warnings.push(
+							'Prettify is recommended. It standardizes quotes, spacing, and parameter order, then applies the shortcode.'
+						);
 					} else {
 						prettifyBtn.title = ! format
 							? 'Resolve shortcode issues before prettifying'
 							: 'This shortcode is already prettified';
 					}
+					merged.state = merged.errors.length ? 'error' : ( merged.warnings.length ? 'warning' : 'ok' );
 					jzsaRenderValidation( validationEl, merged );
 					var modernizeBtn = validationEl.querySelector( '[data-jzsa-action="modernize-shortcode"]' );
 					if ( modernizeBtn && migration.shortcode ) {
@@ -1477,23 +1478,7 @@ function jzsaSetupCodeBlock( block ) {
 		jzsaApplyPreview( codeEl, revertBtn, previewContainer, 'Reverted!', revertOverride );
 	} );
 
-	// Prettify changes syntax presentation only; the rendered preview is unchanged.
-	prettifyBtn.addEventListener( 'click', function () {
-		if ( ! prettifiedShortcode ) {
-			runValidation();
-			return;
-		}
-		codeEl.textContent = prettifiedShortcode;
-		jzsaHighlightPlaceholders( codeEl );
-		prettifyBtn.textContent = 'Prettified!';
-		runValidation();
-		window.setTimeout( function () {
-			prettifyBtn.textContent = 'Prettify';
-		}, 1200 );
-	} );
-
-	// Apply: AJAX preview.
-	applyBtn.addEventListener( 'click', function () {
+	var applyShortcode = function ( triggerBtn, flashLabel ) {
 		var shortcode = codeEl.textContent || '';
 		var localResult = jzsaValidateShortcode( shortcode );
 		jzsaRenderValidation( validationEl, localResult );
@@ -1510,8 +1495,25 @@ function jzsaSetupCodeBlock( block ) {
 					} );
 					return;
 				}
-				jzsaApplyPreview( codeEl, applyBtn, previewContainer );
+				jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel );
 			} );
+	};
+
+	// Prettify normalizes the text and immediately applies it to the preview.
+	prettifyBtn.addEventListener( 'click', function () {
+		if ( ! prettifiedShortcode ) {
+			runValidation();
+			return;
+		}
+		codeEl.textContent = prettifiedShortcode;
+		jzsaHighlightPlaceholders( codeEl );
+		runValidation();
+		applyShortcode( prettifyBtn, 'Prettified!' );
+	} );
+
+	// Apply: AJAX preview.
+	applyBtn.addEventListener( 'click', function () {
+		applyShortcode( applyBtn );
 	} );
 }
 
@@ -1695,7 +1697,7 @@ function jzsaSetupMigrationTool() {
 							html += '<li>Removed <code>' + jzsaEscapeHtml( token ) + '</code> because it is no longer needed.</li>';
 						} );
 						if ( changes.orderNormalized ) {
-							html += '<li>Normalized parameter order: link, mode, viewer, applicable trigger parameters, then remaining parameters.</li>';
+							html += '<li>Normalized all known parameters into the standard shortcode order.</li>';
 						}
 						html += '</ul>';
 					} else {

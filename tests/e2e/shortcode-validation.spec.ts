@@ -54,7 +54,7 @@ test.describe('Shortcode validation - Playground live feedback', () => {
         expect(dimensions.editor).toBeGreaterThanOrEqual(dimensions.buttons);
     });
 
-    test('Prettify standardizes syntax without applying the preview', async ({ page }) => {
+    test('Prettify standardizes syntax and applies the preview', async ({ page }) => {
         const preview = page.locator('.jzsa-playground-code-block').locator(
             'xpath=following-sibling::*[contains(@class, "jzsa-preview-container")][1]',
         );
@@ -71,18 +71,22 @@ test.describe('Shortcode validation - Playground live feedback', () => {
         });
         await setShortcode(
             page,
-            "[jzsa-album   viewer='lightbox' width='600' link='https://photos.google.com/share/x' mode='slider']",
+            "[jzsa-album   corner-radius='16' viewer='lightbox' width='600' link='https://photos.google.com/share/x' mode='slider']",
         );
         const button = page.locator(PRETTIFY_BTN);
         await expect(button).toBeEnabled();
+        await expect(page.locator(VALIDATION)).toContainText(
+            'Prettify is recommended. It standardizes quotes, spacing, and parameter order, then applies the shortcode.',
+        );
+        await expect(page.locator(VALIDATION)).toHaveClass(/jzsa-code-validation--warning/);
         await button.click();
 
         await expect(page.locator('#jzsa-playground-shortcode')).toHaveText(
-            '[jzsa-album link="https://photos.google.com/share/x" mode="slider" viewer="lightbox" width="600"]',
+            '[jzsa-album link="https://photos.google.com/share/x" mode="slider" viewer="lightbox" width="600" corner-radius="16"]',
         );
-        await expect(button).toBeDisabled();
-        await page.waitForTimeout(500);
-        expect(previewRequests).toBe(0);
+        await expect(button).toBeEnabled();
+        await expect(page.locator(VALIDATION)).not.toBeVisible();
+        await expect.poll(() => previewRequests).toBe(1);
     });
 
     test('all published Guide shortcodes use the canonical leading parameter order', async ({ page }) => {
