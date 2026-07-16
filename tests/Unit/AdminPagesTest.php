@@ -214,8 +214,10 @@ class AdminPagesTest extends TestCase {
 
 		$this->assertStringContainsString( 'Settings are intentionally limited', $output );
 		$this->assertStringContainsString( 'Most of the plugin is driven by shortcodes, so the global settings stay intentionally small.', $output );
-		$this->assertStringContainsString( 'This setting determines which viewer is used only when a shortcode does not explicitly contain the <code>viewer</code> parameter.', $output );
-		$this->assertStringContainsString( 'Shortcodes that explicitly set the <code>viewer</code> parameter are not affected by this setting.', $output );
+		$this->assertStringContainsString( 'Recommended: Set the Viewer Explicitly', $output );
+		$this->assertStringContainsString( 'If all your shortcodes set it, you can safely ignore the default viewer setting below.', $output );
+		$this->assertStringContainsString( 'The default viewer is only a fallback for shortcodes that omit the <code>viewer</code> parameter.', $output );
+		$this->assertLessThan( strpos( $output, 'The default viewer is only a fallback' ), strpos( $output, 'Recommended: Set the Viewer Explicitly' ) );
 		$this->assertStringNotContainsString( 'Changing it never rewrites your posts or pages.', $output );
 		$this->assertStringContainsString( 'Default Viewer for Shortcodes Without an Explicit Viewer', $output );
 		$this->assertStringContainsString( 'Lightbox, recommended', $output );

@@ -358,6 +358,39 @@
     line-height: 1.6;
 }
 
+.jzsa-viewer-explicit-recommendation {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin: 0 0 18px;
+    padding: 16px 18px;
+    border: 1px solid #9ec9e8;
+    border-left: 5px solid #2271b1;
+    border-radius: 4px;
+    background: #f0f7fc;
+}
+
+.jzsa-viewer-explicit-recommendation .dashicons {
+    width: 36px;
+    height: 36px;
+    font-size: 36px;
+    line-height: 36px;
+    color: #2271b1;
+    flex-shrink: 0;
+}
+
+.jzsa-viewer-explicit-recommendation h3 {
+    margin: 0 0 5px;
+    font-size: 16px;
+    line-height: 1.35;
+}
+
+.jzsa-viewer-explicit-recommendation p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
 .jzsa-shortcode-migrator,
 .jzsa-default-viewer-setting {
     margin: 20px 0 0;

@@ -12,6 +12,11 @@ const E2E_SETUP_ENV_KEYS = [
     'JZSA_E2E_CONNECTED_USER',
     'JZSA_E2E_CONNECTED_PASS',
     'JZSA_E2E_CONNECTED_JWT',
+    'JZSA_E2E_DB_HOST',
+    'JZSA_E2E_DB_NAME',
+    'JZSA_E2E_DB_USER',
+    'JZSA_E2E_DB_PASS',
+    'JZSA_E2E_DB_PORT',
     'JZSA_E2E_DISCONNECTED_USER',
     'JZSA_E2E_DISCONNECTED_PASS',
     'WP_ROOT',
@@ -27,9 +32,9 @@ const DISCONNECTED_PASS = process.env.JZSA_E2E_DISCONNECTED_PASS ?? 'testpass123
 // (RFC 6761 reserved domain), so they can be identified and wiped without
 // touching real entries or the seeded sample.
 const COMMUNITY_DB_SERVICE = process.env.JZSA_E2E_DB_SERVICE ?? 'mariadb';
-const COMMUNITY_DB_NAME = process.env.JZSA_E2E_DB_NAME ?? 'jzsa_api';
-const COMMUNITY_DB_USER = process.env.JZSA_E2E_DB_USER ?? 'jzsa_api';
-const COMMUNITY_DB_PASS = process.env.JZSA_E2E_DB_PASS ?? 'jzsa_api';
+const COMMUNITY_DB_NAME = process.env.JZSA_E2E_DB_NAME ?? 'jz_sa';
+const COMMUNITY_DB_USER = process.env.JZSA_E2E_DB_USER ?? 'jz_sa';
+const COMMUNITY_DB_PASS = process.env.JZSA_E2E_DB_PASS ?? 'jz_sa';
 
 interface FixtureSpec {
     slug: string;

@@ -68,3 +68,6 @@ Production release:
 ```bash
 ./release.sh X.Y.Z --prod
 ```
+
+The production command runs the complete `./test.sh` suite after Git preflight
+and before building or publishing any release artifacts.

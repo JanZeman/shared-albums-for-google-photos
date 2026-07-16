@@ -56,12 +56,13 @@ The production release script will:
 
 1. **Validate** that the requested version matches all versioned files
 2. **Check git state** - must be on `main` with a clean working tree, and the requested git tag must not already exist locally or on origin
-3. **Build a ZIP** at `release/janzeman-shared-albums-for-google-photos-X.Y.Z.zip`
-4. **Copy the ZIP** to `~/Downloads/janzeman-shared-albums-for-google-photos-X.Y.Z.zip`
-5. **Sync to SVN trunk** (fails if the SVN working copy is missing)
-6. **Commit to SVN** and create an SVN tag under `tags/X.Y.Z`
-7. **Push the git branch, create the git tag, and push the git tag** only after successful SVN delivery
-8. **Clean up** temporary build files
+3. **Run the full test suite** with `./test.sh` and stop immediately on any failure
+4. **Build a ZIP** at `release/janzeman-shared-albums-for-google-photos-X.Y.Z.zip`
+5. **Copy the ZIP** to `~/Downloads/janzeman-shared-albums-for-google-photos-X.Y.Z.zip`
+6. **Sync to SVN trunk** (fails if the SVN working copy is missing)
+7. **Commit to SVN** and create an SVN tag under `tags/X.Y.Z`
+8. **Push the git branch, create the git tag, and push the git tag** only after successful SVN delivery
+9. **Clean up** temporary build files
 
 ## One-time SVN setup
 

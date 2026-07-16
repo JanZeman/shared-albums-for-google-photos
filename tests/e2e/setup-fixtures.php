@@ -406,9 +406,15 @@ function jzsa_e2e_signin_user( int $wp_user_id, string $email, string $display_n
 	// account for the test user. Only clears pending_verifications for
 	// $email (in case a prior /auth/start call burned through rate
 	// limit budget); does NOT touch user_installs or users.
-	$db = new mysqli( 'mariadb', 'jzsa_api', 'jzsa_api', 'jzsa_api', 3306 );
+	$db = new mysqli(
+		jzsa_e2e_env( 'JZSA_E2E_DB_HOST', 'mariadb' ),
+		jzsa_e2e_env( 'JZSA_E2E_DB_USER', 'jz_sa' ),
+		jzsa_e2e_env( 'JZSA_E2E_DB_PASS', 'jz_sa' ),
+		jzsa_e2e_env( 'JZSA_E2E_DB_NAME', 'jz_sa' ),
+		(int) jzsa_e2e_env( 'JZSA_E2E_DB_PORT', '3306' )
+	);
 	if ( $db->connect_error ) {
-		throw new RuntimeException( "Could not connect to jzsa_api DB: {$db->connect_error}" );
+		throw new RuntimeException( "Could not connect to the community test database: {$db->connect_error}" );
 	}
 	$stmt = $db->prepare( 'DELETE FROM pending_verifications WHERE email = ?' );
 	$stmt->bind_param( 's', $email );

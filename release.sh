@@ -249,6 +249,16 @@ else
     exit 1
 fi
 
+# ---------------------------------------------------------------------------
+# Full test gate (only with --prod)
+# ---------------------------------------------------------------------------
+if [ "$RELEASE_MODE" = "prod" ]; then
+    echo ""
+    echo -e "${YELLOW}Running the full test suite before production release...${NC}"
+    "${SCRIPT_DIR}/test.sh"
+    echo -e "${GREEN}✓ Full test suite passed${NC}"
+fi
+
 echo -e "${BLUE}================================================================${NC}"
 echo -e "${BLUE}  Shared Albums for Google Photos (by JanZeman) Release Script  ${NC}"
 echo -e "${BLUE}================================================================${NC}"
