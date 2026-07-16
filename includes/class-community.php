@@ -365,6 +365,7 @@ class JZSA_Community {
 	public static function api_headers( array $opts = array() ) {
 		$headers = array(
 			'X-JZSA-Install' => self::get_install_secret_hash(),
+			'X-JZSA-Version' => JZSA_VERSION,
 		);
 		if ( ! empty( $opts['auth'] ) ) {
 			$jwt = self::get_jwt();
@@ -1421,10 +1422,16 @@ class JZSA_Community {
 		$entry_info  = self::truncate_string( $entry_info, 256 );
 		$tags = self::normalize_community_tags( $tags_raw );
 		$tags = array_slice( $tags, 0, 5 );
+		$variants = JZSA_Shortcode_Tools::community_variants( $shortcode, jzsa_get_default_viewer() );
+		if ( empty( $variants['ok'] ) ) {
+			wp_send_json_error( __( 'The shortcode could not be converted into a Community-compatible form. Validate it in the Playground and try again.', 'janzeman-shared-albums-for-google-photos' ) );
+			return;
+		}
 
 		$payload = array(
 			'title'                   => $title,
-			'shortcode'               => $shortcode,
+			'shortcode'               => $variants['v2_3_7'],
+			'shortcode_2_4_0'         => $variants['v2_4_0'],
 			'description'             => $description,
 			'tags'                    => $tags,
 			'plugin_version'          => JZSA_VERSION,
@@ -1838,10 +1845,17 @@ class JZSA_Community {
 		$entry_info  = self::truncate_string( $entry_info, 256 );
 		$tags = self::normalize_community_tags( $tags_raw );
 		$tags = array_slice( $tags, 0, 5 );
+		$variants = JZSA_Shortcode_Tools::community_variants( $shortcode, jzsa_get_default_viewer() );
+		if ( empty( $variants['ok'] ) ) {
+			wp_send_json_error( __( 'The shortcode could not be converted into a Community-compatible form. Validate it in the Playground and try again.', 'janzeman-shared-albums-for-google-photos' ) );
+			return;
+		}
 
 		$body = array(
 			'title'              => $title,
-			'shortcode'          => $shortcode,
+			'shortcode'          => $variants['v2_3_7'],
+			'shortcode_2_4_0'    => $variants['v2_4_0'],
+			'plugin_version'     => JZSA_VERSION,
 			'description'        => $description,
 			'tags'               => $tags,
 			'site_url'           => $entry_url ?: null,

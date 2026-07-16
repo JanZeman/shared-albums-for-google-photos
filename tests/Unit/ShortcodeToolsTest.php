@@ -234,6 +234,76 @@ class ShortcodeToolsTest extends TestCase {
 		$this->assertSame( 'link_whitespace_removed', $result['inputIssues'][0]['code'] );
 	}
 
+	public function test_community_variants_export_2_4_0_lightbox_for_2_3_7(): void {
+		$result = JZSA_Shortcode_Tools::community_variants(
+			'[jzsa-album link="https://photos.google.com/share/test" mode="slider" viewer="lightbox" viewer-trigger="click" viewer-max-width="1100"]',
+			'fullscreen'
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertSame(
+			'[jzsa-album link="https://photos.google.com/share/test" mode="slider" lightbox-toggle="click" fullscreen-toggle="disabled" lightbox-max-width="1100" fullscreen-display-max-width="1100"]',
+			$result['v2_3_7']
+		);
+		$this->assertSame(
+			'[jzsa-album link="https://photos.google.com/share/test" mode="slider" viewer="lightbox" viewer-trigger="click" viewer-max-width="1100"]',
+			$result['v2_4_0']
+		);
+	}
+
+	public function test_community_variants_export_both_viewers_with_one_gesture_owner(): void {
+		$result = JZSA_Shortcode_Tools::community_variants(
+			'[jzsa-album link="https://photos.google.com/share/test" viewer="both" lightbox-trigger="double-click" viewer-controls-color="#E63946"]',
+			'fullscreen'
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertStringContainsString( 'lightbox-toggle="double-click"', $result['v2_3_7'] );
+		$this->assertStringContainsString( 'fullscreen-toggle="button-only"', $result['v2_3_7'] );
+		$this->assertStringContainsString( 'lightbox-controls-color="#E63946"', $result['v2_3_7'] );
+		$this->assertStringContainsString( 'fullscreen-controls-color="#E63946"', $result['v2_3_7'] );
+		$this->assertStringNotContainsString( 'viewer=', $result['v2_3_7'] );
+		$this->assertStringNotContainsString( 'viewer-', $result['v2_3_7'] );
+	}
+
+	public function test_community_2_3_7_variant_uses_only_supported_viewer_groups(): void {
+		$result = JZSA_Shortcode_Tools::community_variants(
+			'[jzsa-album link="https://photos.google.com/share/test" viewer="both" viewer-info-top="{item}" viewer-mosaic="true" viewer-corner-radius="12" lightbox-info-bottom="modern only"]',
+			'fullscreen'
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertStringContainsString( 'fullscreen-info-top="{item}"', $result['v2_3_7'] );
+		$this->assertStringContainsString( 'fullscreen-mosaic="true"', $result['v2_3_7'] );
+		$this->assertStringContainsString( 'lightbox-corner-radius="12"', $result['v2_3_7'] );
+		$this->assertStringNotContainsString( 'lightbox-info-', $result['v2_3_7'] );
+		$this->assertStringNotContainsString( 'lightbox-mosaic', $result['v2_3_7'] );
+		$this->assertStringNotContainsString( 'fullscreen-corner-radius', $result['v2_3_7'] );
+	}
+
+	public function test_community_2_3_7_variant_blocks_sideways_inheritance_for_both_viewers(): void {
+		$result = JZSA_Shortcode_Tools::community_variants(
+			'[jzsa-album link="https://photos.google.com/share/test" viewer="both" controls-color="#FFFFFF" fullscreen-controls-color="#E63946" fullscreen-image-fit="" lightbox-image-fit="cover"]',
+			'fullscreen'
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertStringContainsString( 'fullscreen-controls-color="#E63946"', $result['v2_3_7'] );
+		$this->assertStringContainsString( 'lightbox-controls-color="#FFFFFF"', $result['v2_3_7'] );
+		$this->assertStringContainsString( 'lightbox-image-fit="cover"', $result['v2_3_7'] );
+		$this->assertStringContainsString( 'fullscreen-image-fit="contain"', $result['v2_3_7'] );
+	}
+
+	public function test_community_variants_upgrade_2_3_7_submission_and_keep_compatible_copy(): void {
+		$source = '[jzsa-album link="https://photos.google.com/share/test" fullscreen-toggle="double-click" fullscreen-source-width="800"]';
+		$result = JZSA_Shortcode_Tools::community_variants( $source, 'fullscreen' );
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertStringContainsString( 'fullscreen-toggle="double-click"', $result['v2_3_7'] );
+		$this->assertStringContainsString( 'viewer="fullscreen" viewer-trigger="double-click"', $result['v2_4_0'] );
+		$this->assertStringContainsString( 'fullscreen-source-width="800"', $result['v2_3_7'] );
+	}
+
 	public function test_format_reports_canonical_shortcode_as_unchanged(): void {
 		$shortcode = '[jzsa-album link="https://photos.google.com/share/test" mode="slider" viewer="lightbox" width="600"]';
 		$result = JZSA_Shortcode_Tools::format( $shortcode );

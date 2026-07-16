@@ -139,6 +139,7 @@ class CommunityAjaxTest extends TestCase {
         $request = $GLOBALS['jzsa_test_http_requests'][0];
         $this->assertSame( $url, $request['url'] );
         $this->assertSame( 'test-read-key', $request['args']['headers']['X-JZSA-Plugin-Key'] );
+        $this->assertSame( JZSA_VERSION, $request['args']['headers']['X-JZSA-Version'] );
         $this->assertSame( 'Bearer jwt-token', $request['args']['headers']['Authorization'] );
     }
 
@@ -210,9 +211,13 @@ class CommunityAjaxTest extends TestCase {
         $payload = json_decode( $request['args']['body'], true );
         $this->assertSame( 'POST', $request['method'] );
         $this->assertSame( 'Bearer jwt-token', $request['args']['headers']['Authorization'] );
+        $this->assertSame( JZSA_VERSION, $request['args']['headers']['X-JZSA-Version'] );
         $this->assertSame( array( 'landscape', 'travel' ), $payload['tags'] );
         $this->assertSame( 'https://example.com/gallery', $payload['site_url'] );
         $this->assertTrue( $payload['public_showcase_consent'] );
+        $this->assertStringContainsString( 'lightbox-toggle="button-only"', $payload['shortcode'] );
+        $this->assertStringContainsString( 'fullscreen-toggle="disabled"', $payload['shortcode'] );
+        $this->assertStringContainsString( 'viewer="lightbox"', $payload['shortcode_2_4_0'] );
     }
 
     public function test_publish_validation_error_happens_before_http_request(): void {
@@ -401,6 +406,9 @@ class CommunityAjaxTest extends TestCase {
         $this->assertSame( 'PATCH', $GLOBALS['jzsa_test_http_requests'][0]['method'] );
         $payload = json_decode( $GLOBALS['jzsa_test_http_requests'][0]['args']['body'], true );
         $this->assertArrayNotHasKey( 'public_showcase_consent', $payload );
+        $this->assertSame( JZSA_VERSION, $payload['plugin_version'] );
+        $this->assertStringContainsString( 'lightbox-toggle="button-only"', $payload['shortcode'] );
+        $this->assertStringContainsString( 'viewer="lightbox"', $payload['shortcode_2_4_0'] );
     }
 
     public function test_update_entry_includes_explicit_false_consent(): void {

@@ -289,6 +289,201 @@ class JZSA_Shortcode_Tools {
 		);
 	}
 
+	/**
+	 * Build the two shortcode forms stored by the Community API.
+	 *
+	 * The 2.3.7 form remains compatible with that exact plugin generation. The 2.4.0 form
+	 * uses explicit viewer syntax and is returned only to compatible clients.
+	 *
+	 * @param string $shortcode      Submitted shortcode.
+	 * @param string $default_viewer Site default used for implicit shortcodes.
+	 * @return array
+	 */
+	public static function community_variants( $shortcode, $default_viewer ) {
+		$current = self::migrate( $shortcode, 'preserve', $default_viewer );
+		if ( empty( $current['ok'] ) ) {
+			return array(
+				'ok'     => false,
+				'issues' => isset( $current['issues'] ) ? $current['issues'] : array(),
+			);
+		}
+
+		$parsed = self::parse( $current['shortcode'] );
+		$viewer = isset( $parsed['attributes']['viewer'] ) ? strtolower( trim( (string) $parsed['attributes']['viewer'] ) ) : '';
+		if ( ! in_array( $viewer, array( 'lightbox', 'fullscreen', 'both', 'disabled' ), true ) ) {
+			return array(
+				'ok'     => false,
+				'issues' => array( self::issue( 'invalid_viewer', 'error', array( 'viewer' ), __( 'The viewer parameter must use lightbox, fullscreen, both, or disabled before this shortcode can be shared.', 'janzeman-shared-albums-for-google-photos' ) ) ),
+			);
+		}
+
+		return array(
+			'ok'      => true,
+			'v2_3_7'  => self::serialize( self::v2_3_7_community_attributes( $parsed['attributes'] ) ),
+			'v2_4_0'  => $current['shortcode'],
+			'issues'  => isset( $current['issues'] ) ? $current['issues'] : array(),
+		);
+	}
+
+	/**
+	 * Convert canonical 2.4.0 attributes to the syntax understood by 2.3.7.
+	 *
+	 * @param array $attributes Canonical current attributes.
+	 * @return array
+	 */
+	private static function v2_3_7_community_attributes( $attributes ) {
+		$viewer             = strtolower( trim( (string) $attributes['viewer'] ) );
+		$shared_trigger     = isset( $attributes['viewer-trigger'] ) ? self::v2_3_7_trigger( $attributes['viewer-trigger'] ) : 'button-only';
+		$lightbox_trigger   = isset( $attributes['lightbox-trigger'] ) ? self::v2_3_7_trigger( $attributes['lightbox-trigger'] ) : 'button-only';
+		$fullscreen_trigger = isset( $attributes['fullscreen-trigger'] ) ? self::v2_3_7_trigger( $attributes['fullscreen-trigger'] ) : 'button-only';
+
+		$lightbox_toggle   = 'disabled';
+		$fullscreen_toggle = 'disabled';
+		if ( 'lightbox' === $viewer ) {
+			$lightbox_toggle = $shared_trigger;
+		} elseif ( 'fullscreen' === $viewer ) {
+			$fullscreen_toggle = $shared_trigger;
+		} elseif ( 'both' === $viewer ) {
+			$lightbox_toggle   = $lightbox_trigger;
+			$fullscreen_toggle = $fullscreen_trigger;
+		}
+
+		foreach ( self::viewer_attribute_pairs() as $viewer_key => $concrete_keys ) {
+			if ( ! array_key_exists( $viewer_key, $attributes ) ) {
+				continue;
+			}
+			foreach ( $concrete_keys as $concrete_key ) {
+				if ( ! array_key_exists( $concrete_key, $attributes ) ) {
+					$attributes[ $concrete_key ] = $attributes[ $viewer_key ];
+				}
+			}
+		}
+		if ( 'both' === $viewer ) {
+			$attributes = self::isolate_v2_3_7_sideways_pairs( $attributes );
+		}
+
+		if ( array_key_exists( 'fullscreen-max-width', $attributes ) ) {
+			$attributes['fullscreen-display-max-width'] = $attributes['fullscreen-max-width'];
+		}
+		if ( array_key_exists( 'fullscreen-max-height', $attributes ) ) {
+			$attributes['fullscreen-display-max-height'] = $attributes['fullscreen-max-height'];
+		}
+
+		foreach ( array_keys( $attributes ) as $name ) {
+			$is_unsupported_lightbox_group = 0 === strpos( $name, 'lightbox-info-' ) || 0 === strpos( $name, 'lightbox-mosaic' );
+			$is_modern_viewer_parameter = 'viewer' === $name || 0 === strpos( $name, 'viewer-' );
+			$is_renamed_parameter       = in_array( $name, array( 'lightbox-trigger', 'fullscreen-trigger', 'fullscreen-max-width', 'fullscreen-max-height', 'fullscreen-corner-radius' ), true );
+			if ( $is_modern_viewer_parameter || $is_unsupported_lightbox_group || $is_renamed_parameter ) {
+				unset( $attributes[ $name ] );
+			}
+		}
+
+		$attributes['lightbox-toggle']   = $lightbox_toggle;
+		$attributes['fullscreen-toggle'] = $fullscreen_toggle;
+		return $attributes;
+	}
+
+	/**
+	 * Prevent 2.3.7 sideways inheritance from changing a 2.4.0 mode override.
+	 *
+	 * TODO(viewer-legacy-removal): Remove this exporter support only when 2.3.7
+	 * Community responses are retired under the criteria in safe_upgrade.md.
+	 *
+	 * @param array $attributes 2.4.0 attributes materialized for 2.3.7.
+	 * @return array
+	 */
+	private static function isolate_v2_3_7_sideways_pairs( $attributes ) {
+		$inline_autoresume = self::first_attribute_value(
+			$attributes,
+			array( 'slideshow-autoresume', 'slideshow-autoresume-timeout', 'slideshow-inactivity-timeout' ),
+			'30'
+		);
+		$pairs = array(
+			array( 'fullscreen-source-width', 'lightbox-source-width', '1920' ),
+			array( 'fullscreen-source-height', 'lightbox-source-height', '1440' ),
+			array( 'fullscreen-image-fit', 'lightbox-image-fit', 'contain' ),
+			array( 'fullscreen-controls-color', 'lightbox-controls-color', self::first_attribute_value( $attributes, array( 'controls-color' ), '#ffffff' ) ),
+			array( 'fullscreen-video-controls-color', 'lightbox-video-controls-color', self::first_attribute_value( $attributes, array( 'video-controls-color' ), '#00b2ff' ) ),
+			array( 'fullscreen-video-controls-autohide', 'lightbox-video-controls-autohide', self::first_attribute_value( $attributes, array( 'video-controls-autohide' ), 'false' ) ),
+			array( 'fullscreen-show-navigation', 'lightbox-show-navigation', self::first_attribute_value( $attributes, array( 'show-navigation' ), 'true' ) ),
+			array( 'fullscreen-show-link-button', 'lightbox-show-link-button', self::first_attribute_value( $attributes, array( 'show-link-button' ), 'false' ) ),
+			array( 'fullscreen-show-download-button', 'lightbox-show-download-button', self::first_attribute_value( $attributes, array( 'show-download-button' ), 'false' ) ),
+			array( 'fullscreen-slideshow', 'lightbox-slideshow', 'disabled' ),
+			array( 'fullscreen-slideshow-delay', 'lightbox-slideshow-delay', '5' ),
+			array( 'fullscreen-slideshow-autoresume', 'lightbox-slideshow-autoresume', $inline_autoresume ),
+		);
+
+		foreach ( $pairs as $pair ) {
+			$fullscreen_set = self::has_non_empty_attribute( $attributes, $pair[0] );
+			$lightbox_set   = self::has_non_empty_attribute( $attributes, $pair[1] );
+			if ( $fullscreen_set && ! $lightbox_set ) {
+				$attributes[ $pair[1] ] = $pair[2];
+			} elseif ( $lightbox_set && ! $fullscreen_set ) {
+				$attributes[ $pair[0] ] = $pair[2];
+			}
+		}
+
+		return $attributes;
+	}
+
+	private static function has_non_empty_attribute( $attributes, $name ) {
+		return array_key_exists( $name, $attributes ) && '' !== trim( (string) $attributes[ $name ] );
+	}
+
+	private static function first_attribute_value( $attributes, $names, $default ) {
+		foreach ( $names as $name ) {
+			if ( array_key_exists( $name, $attributes ) ) {
+				return $attributes[ $name ];
+			}
+		}
+		return $default;
+	}
+
+	/**
+	 * Shared viewer parameters and their 2.3.7-compatible concrete forms.
+	 *
+	 * @return array
+	 */
+	private static function viewer_attribute_pairs() {
+		return array(
+			'viewer-max-width'            => array( 'fullscreen-display-max-width', 'lightbox-max-width' ),
+			'viewer-max-height'           => array( 'fullscreen-display-max-height', 'lightbox-max-height' ),
+			'viewer-source-width'         => array( 'fullscreen-source-width', 'lightbox-source-width' ),
+			'viewer-source-height'        => array( 'fullscreen-source-height', 'lightbox-source-height' ),
+			'viewer-image-fit'            => array( 'fullscreen-image-fit', 'lightbox-image-fit' ),
+			'viewer-background-color'     => array( 'fullscreen-background-color', 'lightbox-background-color' ),
+			'viewer-corner-radius'        => array( 'lightbox-corner-radius' ),
+			'viewer-controls-color'       => array( 'fullscreen-controls-color', 'lightbox-controls-color' ),
+			'viewer-video-controls-color' => array( 'fullscreen-video-controls-color', 'lightbox-video-controls-color' ),
+			'viewer-video-controls-autohide' => array( 'fullscreen-video-controls-autohide', 'lightbox-video-controls-autohide' ),
+			'viewer-show-navigation'      => array( 'fullscreen-show-navigation', 'lightbox-show-navigation' ),
+			'viewer-show-link-button'     => array( 'fullscreen-show-link-button', 'lightbox-show-link-button' ),
+			'viewer-show-download-button' => array( 'fullscreen-show-download-button', 'lightbox-show-download-button' ),
+			'viewer-slideshow'            => array( 'fullscreen-slideshow', 'lightbox-slideshow' ),
+			'viewer-slideshow-delay'      => array( 'fullscreen-slideshow-delay', 'lightbox-slideshow-delay' ),
+			'viewer-slideshow-autoresume' => array( 'fullscreen-slideshow-autoresume', 'lightbox-slideshow-autoresume' ),
+			'viewer-info-bottom'          => array( 'fullscreen-info-bottom' ),
+			'viewer-info-top'             => array( 'fullscreen-info-top' ),
+			'viewer-info-top-secondary'   => array( 'fullscreen-info-top-secondary' ),
+			'viewer-info-font-size'       => array( 'fullscreen-info-font-size' ),
+			'viewer-info-font-family'     => array( 'fullscreen-info-font-family' ),
+			'viewer-info-font-color'      => array( 'fullscreen-info-font-color' ),
+			'viewer-mosaic'               => array( 'fullscreen-mosaic' ),
+			'viewer-mosaic-position'      => array( 'fullscreen-mosaic-position' ),
+			'viewer-mosaic-layout'        => array( 'fullscreen-mosaic-layout' ),
+			'viewer-mosaic-count'         => array( 'fullscreen-mosaic-count' ),
+			'viewer-mosaic-gap'           => array( 'fullscreen-mosaic-gap' ),
+			'viewer-mosaic-opacity'       => array( 'fullscreen-mosaic-opacity' ),
+			'viewer-mosaic-background'    => array( 'fullscreen-mosaic-background' ),
+			'viewer-mosaic-corner-radius' => array( 'fullscreen-mosaic-corner-radius' ),
+		);
+	}
+
+	private static function v2_3_7_trigger( $value ) {
+		$value = strtolower( trim( (string) $value ) );
+		return in_array( $value, array( 'click', 'double-click' ), true ) ? $value : 'button-only';
+	}
+
 	private static function classify_model( $attributes ) {
 		foreach ( array_keys( $attributes ) as $name ) {
 			if ( 'viewer' === $name || 0 === strpos( $name, 'viewer-' ) ) {
