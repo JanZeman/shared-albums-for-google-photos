@@ -2524,8 +2524,16 @@ class JZSA_Admin_Pages {
 		$parsed    = JZSA_Shortcode_Tools::parse( $shortcode );
 		$issues    = array_merge( $parsed['errors'], $parsed['warnings'] );
 		$migration = null;
+		$format    = null;
 		if ( empty( $parsed['errors'] ) ) {
 			$issues = array_merge( $issues, JZSA_Shortcode_Tools::validate_semantics( $parsed['attributes'] ) );
+			$format_candidate = JZSA_Shortcode_Tools::format( $shortcode );
+			if ( ! empty( $format_candidate['ok'] ) ) {
+				$format = array(
+					'shortcode' => $format_candidate['shortcode'],
+					'changed'   => $format_candidate['changed'],
+				);
+			}
 			$candidate = JZSA_Shortcode_Tools::migrate( $shortcode, 'preserve', jzsa_get_default_viewer() );
 			if ( ! empty( $candidate['ok'] ) && in_array( $candidate['sourceModel'], array( 'legacy', 'implicit' ), true ) ) {
 				$migration = array(
@@ -2538,6 +2546,7 @@ class JZSA_Admin_Pages {
 			array(
 				'issues'    => $issues,
 				'migration' => $migration,
+				'format'    => $format,
 			)
 		);
 	}

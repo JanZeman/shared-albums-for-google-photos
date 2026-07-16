@@ -126,6 +126,59 @@ class ShortcodeToolsTest extends TestCase {
 		$this->assertSame( 'invalid_shortcode_syntax', $unparsed['errors'][0]['code'] );
 	}
 
+	public function test_format_normalizes_quotes_whitespace_names_and_order(): void {
+		$result = JZSA_Shortcode_Tools::format(
+			"  [JZSA-ALBUM   WIDTH = '600' VIEWER = 'lightbox' link = 'https://photos.google.com/share/test' mode = 'slider' info-top = 'A B']  "
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertTrue( $result['changed'] );
+		$this->assertSame(
+			'[jzsa-album link="https://photos.google.com/share/test" mode="slider" viewer="lightbox" width="600" info-top="A B"]',
+			$result['shortcode']
+		);
+	}
+
+	public function test_format_reports_canonical_shortcode_as_unchanged(): void {
+		$shortcode = '[jzsa-album link="https://photos.google.com/share/test" mode="slider" viewer="lightbox" width="600"]';
+		$result = JZSA_Shortcode_Tools::format( $shortcode );
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertFalse( $result['changed'] );
+		$this->assertSame( $shortcode, $result['shortcode'] );
+	}
+
+	public function test_format_preserves_legacy_and_unknown_parameters(): void {
+		$result = JZSA_Shortcode_Tools::format(
+			'[jzsa-album sparkle="yes" fullscreen-toggle="double-click" mode="slider" link="https://photos.google.com/share/test"]'
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertSame(
+			'[jzsa-album link="https://photos.google.com/share/test" mode="slider" sparkle="yes" fullscreen-toggle="double-click"]',
+			$result['shortcode']
+		);
+		$this->assertStringNotContainsString( 'viewer=', $result['shortcode'] );
+	}
+
+	public function test_format_refuses_duplicate_parameters(): void {
+		$result = JZSA_Shortcode_Tools::format(
+			'[jzsa-album link="https://photos.google.com/share/first" link="https://photos.google.com/share/second"]'
+		);
+
+		$this->assertFalse( $result['ok'] );
+		$this->assertSame( 'duplicate_parameter', $result['issues'][0]['code'] );
+	}
+
+	public function test_format_refuses_semantically_invalid_viewer_combination(): void {
+		$result = JZSA_Shortcode_Tools::format(
+			'[jzsa-album link="https://photos.google.com/share/test" viewer="both" viewer-trigger="click"]'
+		);
+
+		$this->assertFalse( $result['ok'] );
+		$this->assertSame( 'viewer_trigger_ambiguous', $result['issues'][0]['code'] );
+	}
+
 	public function test_preserve_migration_materializes_legacy_sideways_values(): void {
 		$result = JZSA_Shortcode_Tools::migrate(
 			'[jzsa-album link="https://photos.google.com/share/test" fullscreen-toggle="button-only" fullscreen-source-width="800"]',

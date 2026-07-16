@@ -7,6 +7,7 @@ const GUIDE_URL = '/wp-admin/admin.php?page=janzeman-shared-albums-for-google-ph
 // the Playground code block on the Guide page.
 const VALIDATION = '.jzsa-playground-code-block + .jzsa-code-validation';
 const REVERT_BTN = '.jzsa-playground-code-block [data-jzsa-action="revert"]';
+const PRETTIFY_BTN = '.jzsa-playground-code-block [data-jzsa-action="prettify"]';
 
 /**
  * Replace the Playground shortcode and fire an `input` event so the shared
@@ -35,6 +36,53 @@ test.describe('Shortcode validation - Playground live feedback', () => {
         const area = page.locator(VALIDATION);
         await expect(area).not.toBeVisible();
         await expect(area).not.toHaveClass(/jzsa-code-validation--(warning|error)/);
+    });
+
+    test('editable shortcode controls keep the requested order and minimum height', async ({ page }) => {
+        const block = page.locator('.jzsa-playground-code-block');
+        const labels = await block.locator('.jzsa-code-block-btns .jzsa-action-btn').allTextContents();
+        const dimensions = await block.evaluate((element) => {
+            const editor = element.querySelector('code');
+            const buttons = element.querySelector('.jzsa-code-block-btns');
+            return {
+                editor: editor?.getBoundingClientRect().height || 0,
+                buttons: buttons?.getBoundingClientRect().height || 0,
+            };
+        });
+
+        expect(labels).toEqual(['Apply', 'Prettify', 'Revert', 'Copy']);
+        expect(dimensions.editor).toBeGreaterThanOrEqual(dimensions.buttons);
+    });
+
+    test('Prettify standardizes syntax without applying the preview', async ({ page }) => {
+        const preview = page.locator('.jzsa-playground-code-block').locator(
+            'xpath=following-sibling::*[contains(@class, "jzsa-preview-container")][1]',
+        );
+        await expect(preview.locator('[data-lazy-state="loaded"]')).toHaveCount(1, { timeout: 20_000 });
+        let previewRequests = 0;
+        page.on('request', (request) => {
+            const params = new URLSearchParams(request.postData() || '');
+            if (
+                params.get('action') === 'jzsa_shortcode_preview' &&
+                (params.get('shortcode') || '').includes('photos.google.com/share/x')
+            ) {
+                previewRequests++;
+            }
+        });
+        await setShortcode(
+            page,
+            "[jzsa-album   viewer='lightbox' width='600' link='https://photos.google.com/share/x' mode='slider']",
+        );
+        const button = page.locator(PRETTIFY_BTN);
+        await expect(button).toBeEnabled();
+        await button.click();
+
+        await expect(page.locator('#jzsa-playground-shortcode')).toHaveText(
+            '[jzsa-album link="https://photos.google.com/share/x" mode="slider" viewer="lightbox" width="600"]',
+        );
+        await expect(button).toBeDisabled();
+        await page.waitForTimeout(500);
+        expect(previewRequests).toBe(0);
     });
 
     test('all published Guide shortcodes use the canonical leading parameter order', async ({ page }) => {

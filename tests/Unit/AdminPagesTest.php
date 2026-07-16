@@ -325,6 +325,27 @@ class AdminPagesTest extends TestCase {
 		}
 	}
 
+	public function test_shortcode_validation_returns_a_behavior_neutral_format_candidate(): void {
+		$GLOBALS['jzsa_test_current_user_can'] = true;
+		$_POST = array(
+			'nonce'     => wp_create_nonce( 'jzsa_validate_shortcode' ),
+			'shortcode' => "[jzsa-album viewer='lightbox' link='https://photos.google.com/share/test' mode='slider']",
+		);
+
+		try {
+			$this->admin_pages->handle_validate_shortcode();
+			$this->fail( 'Expected a JSON response.' );
+		} catch ( JZSA_Test_JSON_Response $response ) {
+			$this->assertTrue( $response->success );
+			$this->assertTrue( $response->data['format']['changed'] );
+			$this->assertSame(
+				'[jzsa-album link="https://photos.google.com/share/test" mode="slider" viewer="lightbox"]',
+				$response->data['format']['shortcode']
+			);
+			$this->assertNull( $response->data['migration'] );
+		}
+	}
+
 	public function test_admin_assets_are_not_enqueued_for_unrelated_admin_page(): void {
 		$_GET['page'] = 'plugins';
 

@@ -119,6 +119,34 @@ class JZSA_Shortcode_Tools {
 	}
 
 	/**
+	 * Normalize shortcode presentation without changing its parameters.
+	 *
+	 * @param string $shortcode Shortcode text.
+	 * @return array
+	 */
+	public static function format( $shortcode ) {
+		$parsed = self::parse( $shortcode );
+		$issues = array_merge( $parsed['errors'], $parsed['warnings'] );
+		if ( ! empty( $parsed['errors'] ) || ! empty( $parsed['duplicates'] ) ) {
+			return array( 'ok' => false, 'issues' => $issues );
+		}
+
+		$semantic_issues = self::validate_semantics( $parsed['attributes'] );
+		$issues = array_merge( $issues, $semantic_issues );
+		if ( self::has_errors( $semantic_issues ) ) {
+			return array( 'ok' => false, 'issues' => $issues );
+		}
+
+		$formatted = self::serialize( $parsed['attributes'] );
+		return array(
+			'ok'        => true,
+			'shortcode' => $formatted,
+			'changed'   => trim( (string) $shortcode ) !== $formatted,
+			'issues'    => $issues,
+		);
+	}
+
+	/**
 	 * Validate relationships between viewer parameters.
 	 *
 	 * @param array  $attributes Parsed attributes.

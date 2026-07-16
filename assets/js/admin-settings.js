@@ -1275,7 +1275,7 @@ function jzsaRenderValidation( validationEl, result ) {
 }
 
 /**
- * Set up Copy/Apply/Revert on a single .jzsa-code-block.
+ * Set up Apply/Prettify/Revert/Copy on a single .jzsa-code-block.
  * Safe to call on dynamically created blocks after page load.
  *
  * @param {HTMLElement} block
@@ -1305,11 +1305,12 @@ function jzsaSetupCodeBlock( block ) {
 		codeEl.classList.add( 'jzsa-editable-code' );
 	}
 
-	// Build button column: Copy + (Apply + Revert if preview exists).
+	// Build the shared action column. Blocks without a preview remain copy-only.
 	var btnCol = block.querySelector( '.jzsa-code-block-btns' );
 	var copyBtn = btnCol ? btnCol.querySelector( '[data-jzsa-action="copy"]' ) : null;
 
 	var applyBtn = null;
+	var prettifyBtn = null;
 	var revertBtn = null;
 
 	if ( ! btnCol ) {
@@ -1331,6 +1332,7 @@ function jzsaSetupCodeBlock( block ) {
 
 	if ( hasPreview ) {
 		applyBtn = btnCol.querySelector( '[data-jzsa-action="apply"]' );
+		prettifyBtn = btnCol.querySelector( '[data-jzsa-action="prettify"]' );
 		revertBtn = btnCol.querySelector( '[data-jzsa-action="revert"]' );
 
 		if ( ! applyBtn ) {
@@ -1339,7 +1341,14 @@ function jzsaSetupCodeBlock( block ) {
 			applyBtn.className = 'jzsa-action-btn';
 			applyBtn.setAttribute( 'data-jzsa-action', 'apply' );
 			applyBtn.textContent = 'Apply';
-			btnCol.appendChild( applyBtn );
+		}
+
+		if ( ! prettifyBtn ) {
+			prettifyBtn = document.createElement( 'button' );
+			prettifyBtn.type = 'button';
+			prettifyBtn.className = 'jzsa-action-btn';
+			prettifyBtn.setAttribute( 'data-jzsa-action', 'prettify' );
+			prettifyBtn.textContent = 'Prettify';
 		}
 
 		if ( ! revertBtn ) {
@@ -1348,8 +1357,13 @@ function jzsaSetupCodeBlock( block ) {
 			revertBtn.className = 'jzsa-action-btn';
 			revertBtn.setAttribute( 'data-jzsa-action', 'revert' );
 			revertBtn.textContent = 'Revert';
-			btnCol.appendChild( revertBtn );
 		}
+
+		// Appending existing nodes also repairs the order on repeated initialization.
+		btnCol.appendChild( applyBtn );
+		btnCol.appendChild( prettifyBtn );
+		btnCol.appendChild( revertBtn );
+		btnCol.appendChild( copyBtn );
 	}
 
 	// Copy handler. Refresh validation on Copy so problems surface even when
@@ -1375,15 +1389,20 @@ function jzsaSetupCodeBlock( block ) {
 	}
 	var semanticTimer = null;
 	var semanticSequence = 0;
+	var prettifiedShortcode = null;
 	runValidation = function () {
 		semanticSequence++;
 		var shortcode = codeEl.textContent || '';
 		var localResult = jzsaValidateShortcode( shortcode );
+		prettifiedShortcode = null;
+		prettifyBtn.disabled = true;
+		prettifyBtn.title = 'Checking shortcode formatting';
 		jzsaRenderValidation( validationEl, localResult );
 		if ( semanticTimer ) {
 			clearTimeout( semanticTimer );
 		}
 		if ( 'error' === localResult.state || 'empty' === localResult.state || ! window.jzsaAdminAjax ) {
+			prettifyBtn.title = 'Fix shortcode errors before prettifying';
 			return;
 		}
 		var sequence = semanticSequence;
@@ -1392,6 +1411,7 @@ function jzsaSetupCodeBlock( block ) {
 				.then( function ( response ) {
 					if ( sequence !== semanticSequence || ! response.success ) { return; }
 					var migration = response.data.migration || null;
+					var format = response.data.format || null;
 					var merged = {
 						state: localResult.state,
 						errors: localResult.errors.slice(),
@@ -1413,6 +1433,15 @@ function jzsaSetupCodeBlock( block ) {
 						);
 					}
 					merged.state = merged.errors.length ? 'error' : ( merged.warnings.length ? 'warning' : 'ok' );
+					if ( format && format.changed && ! merged.errors.length ) {
+						prettifiedShortcode = format.shortcode;
+						prettifyBtn.disabled = false;
+						prettifyBtn.title = 'Standardize quotes, whitespace, parameter names, and order';
+					} else {
+						prettifyBtn.title = ! format
+							? 'Resolve shortcode issues before prettifying'
+							: 'This shortcode is already prettified';
+					}
 					jzsaRenderValidation( validationEl, merged );
 					var modernizeBtn = validationEl.querySelector( '[data-jzsa-action="modernize-shortcode"]' );
 					if ( modernizeBtn && migration.shortcode ) {
@@ -1446,6 +1475,21 @@ function jzsaSetupCodeBlock( block ) {
 		runValidation();
 		var revertOverride = codeEl.dataset.revertShortcode || undefined;
 		jzsaApplyPreview( codeEl, revertBtn, previewContainer, 'Reverted!', revertOverride );
+	} );
+
+	// Prettify changes syntax presentation only; the rendered preview is unchanged.
+	prettifyBtn.addEventListener( 'click', function () {
+		if ( ! prettifiedShortcode ) {
+			runValidation();
+			return;
+		}
+		codeEl.textContent = prettifiedShortcode;
+		jzsaHighlightPlaceholders( codeEl );
+		prettifyBtn.textContent = 'Prettified!';
+		runValidation();
+		window.setTimeout( function () {
+			prettifyBtn.textContent = 'Prettify';
+		}, 1200 );
 	} );
 
 	// Apply: AJAX preview.
