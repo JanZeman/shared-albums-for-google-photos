@@ -211,6 +211,7 @@ class JZSA_Shortcode_Tools {
 		$source_attributes = $attributes;
 		$source_model = self::classify_model( $attributes );
 		$input_issues = self::validate_semantics( $attributes, 'migration' );
+		$input_has_errors = self::has_errors( $input_issues );
 		if ( 'preserve' === $goal && self::has_errors( $input_issues ) ) {
 			return array(
 				'ok'     => false,
@@ -228,7 +229,8 @@ class JZSA_Shortcode_Tools {
 
 		$current    = self::detect_viewer( $attributes, $default_viewer, $source_model );
 		$target     = 'preserve' === $goal ? $current['viewer'] : $goal;
-		if ( 'preserve' === $goal ) {
+		$same_viewer_target = $target === $current['viewer'];
+		if ( 'preserve' === $goal || ( $same_viewer_target && 'both' !== $target ) ) {
 			$trigger = $current['trigger'];
 		} elseif ( 'lightbox' === $target && self::is_gesture( $current['lightboxTrigger'] ) ) {
 			$trigger = $current['lightboxTrigger'];
@@ -249,7 +251,7 @@ class JZSA_Shortcode_Tools {
 			}
 		}
 		$attributes['viewer'] = $target;
-		if ( 'both' === $target && 'preserve' === $goal ) {
+		if ( 'both' === $target && ( 'preserve' === $goal || $same_viewer_target ) ) {
 			if ( self::is_gesture( $current['lightboxTrigger'] ) ) {
 				$attributes['lightbox-trigger'] = $current['lightboxTrigger'];
 			} elseif ( self::is_gesture( $current['fullscreenTrigger'] ) ) {
@@ -269,7 +271,7 @@ class JZSA_Shortcode_Tools {
 			'sourceModel'        => $source_model,
 			'currentViewer'      => $current['viewer'],
 			'targetViewer'       => $target,
-			'behaviorPreserved'  => 'preserve' === $goal,
+			'behaviorPreserved'  => 'preserve' === $goal || ( $same_viewer_target && ! $input_has_errors ),
 			'validationStatus'   => self::has_errors( $check ) ? 'error' : 'valid',
 			'inputIssues'        => $input_issues,
 			'outputIssues'       => $check,

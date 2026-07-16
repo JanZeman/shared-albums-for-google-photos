@@ -115,7 +115,87 @@ class ShortcodeToolsTest extends TestCase {
 		$this->assertTrue( $result['ok'] );
 		$this->assertFalse( $result['behaviorPreserved'] );
 		$this->assertStringContainsString( 'viewer="lightbox"', $result['shortcode'] );
+		$this->assertStringNotContainsString( 'viewer-trigger=', $result['shortcode'] );
 		$this->assertStringNotContainsString( 'fullscreen-toggle', $result['shortcode'] );
+	}
+
+	public function test_same_modern_lightbox_goal_preserves_obsolete_shared_click_trigger(): void {
+		$result = JZSA_Shortcode_Tools::migrate(
+			'[jzsa-album link="https://photos.google.com/share/test" viewer="lightbox" viewer-toggle="click" corner-radius="16" viewer-toggle="click"]',
+			'lightbox',
+			'fullscreen'
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertTrue( $result['behaviorPreserved'] );
+		$this->assertSame(
+			'[jzsa-album link="https://photos.google.com/share/test" viewer="lightbox" viewer-trigger="click" corner-radius="16"]',
+			$result['shortcode']
+		);
+	}
+
+	public function test_same_modern_both_goal_preserves_existing_gesture_owner(): void {
+		$result = JZSA_Shortcode_Tools::migrate(
+			'[jzsa-album link="https://photos.google.com/share/test" viewer="both" lightbox-trigger="double-click"]',
+			'both',
+			'fullscreen'
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertTrue( $result['behaviorPreserved'] );
+		$this->assertStringContainsString( 'viewer="both" lightbox-trigger="double-click"', $result['shortcode'] );
+	}
+
+	public function test_actual_2_3_7_shortcodes_preserve_viewer_behavior(): void {
+		$cases = require dirname( __DIR__ ) . '/fixtures/shortcode-migrations-2.3.7.php';
+
+		foreach ( $cases as $name => $case ) {
+			$result = JZSA_Shortcode_Tools::migrate( $case['shortcode'], 'preserve', 'fullscreen' );
+
+			$this->assertTrue( $result['ok'], $name );
+			$this->assertTrue( $result['behaviorPreserved'], $name );
+			$this->assertSame( $case['source_model'], $result['sourceModel'], $name );
+			$this->assertSame( $case['current_viewer'], $result['currentViewer'], $name );
+			$this->assertSame( $case['current_viewer'], $result['targetViewer'], $name );
+			foreach ( $case['contains'] as $token ) {
+				$this->assertStringContainsString( $token, $result['shortcode'], $name );
+			}
+			foreach ( $case['absent'] as $token ) {
+				$this->assertStringNotContainsString( $token, $result['shortcode'], $name );
+			}
+		}
+	}
+
+	public function test_actual_2_3_7_shortcodes_keep_behavior_for_same_viewer_goal(): void {
+		$cases = require dirname( __DIR__ ) . '/fixtures/shortcode-migrations-2.3.7.php';
+
+		foreach ( $cases as $name => $case ) {
+			if ( 'disabled' === $case['current_viewer'] ) {
+				continue;
+			}
+			$result = JZSA_Shortcode_Tools::migrate( $case['shortcode'], $case['current_viewer'], 'fullscreen' );
+
+			$this->assertTrue( $result['ok'], $name );
+			$this->assertTrue( $result['behaviorPreserved'], $name );
+			$this->assertSame( $case['current_viewer'], $result['targetViewer'], $name );
+			foreach ( $case['contains'] as $token ) {
+				$this->assertStringContainsString( $token, $result['shortcode'], $name );
+			}
+		}
+	}
+
+	public function test_actual_2_3_7_shortcodes_support_every_selectable_viewer_goal(): void {
+		$cases = require dirname( __DIR__ ) . '/fixtures/shortcode-migrations-2.3.7.php';
+
+		foreach ( $cases as $name => $case ) {
+			foreach ( array( 'lightbox', 'fullscreen', 'both' ) as $goal ) {
+				$result = JZSA_Shortcode_Tools::migrate( $case['shortcode'], $goal, 'fullscreen' );
+
+				$this->assertTrue( $result['ok'], $name . ': ' . $goal );
+				$this->assertSame( $goal, $result['targetViewer'], $name . ': ' . $goal );
+				$this->assertStringContainsString( 'viewer="' . $goal . '"', $result['shortcode'], $name . ': ' . $goal );
+			}
+		}
 	}
 
 	public function test_parser_rejects_surrounding_or_unparsed_text(): void {

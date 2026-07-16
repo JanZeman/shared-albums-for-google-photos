@@ -361,6 +361,24 @@ test.describe('Shortcode Migration Tool', () => {
         await expect(page.locator('#jzsa-playground-shortcode')).toContainText('viewer="fullscreen"');
     });
 
+    test('keeps the click trigger when Use Lightbox matches the current viewer', async ({ page }) => {
+        await page.locator('#jzsa-migration-shortcode').fill(
+            '[jzsa-album link="https://photos.google.com/share/test" viewer="lightbox" ' +
+                'viewer-toggle="click" corner-radius="16" viewer-toggle="click"]',
+        );
+        await page.getByLabel('Use Lightbox').check();
+        await page.locator('#jzsa-migrate-shortcode').click();
+
+        await expect(page.locator('#jzsa-migrated-shortcode')).toHaveValue(
+            '[jzsa-album link="https://photos.google.com/share/test" viewer="lightbox" ' +
+                'viewer-trigger="click" corner-radius="16"]',
+        );
+        await expect(page.locator('#jzsa-migration-result')).toContainText('Behavior preserved.');
+        await expect(page.locator('#jzsa-migration-result')).not.toContainText(
+            'Viewer behavior intentionally changed.',
+        );
+    });
+
     test('rejects competing legacy gestures instead of guessing an owner', async ({ page }) => {
         await page.locator('#jzsa-migration-shortcode').fill(
             '[jzsa-album link="https://photos.google.com/share/test" ' +
