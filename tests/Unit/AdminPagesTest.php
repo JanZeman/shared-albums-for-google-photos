@@ -266,14 +266,25 @@ class AdminPagesTest extends TestCase {
 		$this->assertStringContainsString( 'viewer=&quot;both&quot; lightbox-trigger=&quot;double-click&quot; fullscreen-trigger=&quot;button&quot;', $output );
 	}
 
-	public function test_guide_samples_set_the_viewer_immediately_after_the_link(): void {
+	public function test_guide_samples_use_the_canonical_leading_parameter_order(): void {
 		$source = file_get_contents( dirname( __DIR__, 2 ) . '/includes/class-admin-pages.php' );
 		preg_match_all( '/^.*\$[a-z_]*shortcode\s*=\s*\'\[jzsa-album link=.*$/m', $source, $matches );
+		$priority = array( 'link', 'mode', 'viewer', 'viewer-trigger', 'lightbox-trigger', 'fullscreen-trigger' );
 
 		$this->assertNotEmpty( $matches[0] );
 		foreach ( $matches[0] as $declaration ) {
-			$this->assertMatchesRegularExpression( '/link=.*viewer="(?:lightbox|fullscreen|both|disabled)"/', $declaration );
-			$this->assertLessThan( strpos( $declaration, 'viewer=' ), strpos( $declaration, 'link=' ) );
+			preg_match_all( '/\s([\w-]+)=/', $declaration, $names );
+			$expected_prefix = array_values(
+				array_filter(
+					$priority,
+					function ( $name ) use ( $names ) {
+						return in_array( $name, $names[1], true );
+					}
+				)
+			);
+
+			$this->assertContains( 'viewer', $names[1] );
+			$this->assertSame( $expected_prefix, array_slice( $names[1], 0, count( $expected_prefix ) ) );
 		}
 	}
 

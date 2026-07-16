@@ -171,21 +171,21 @@ page and the guide-sample tests in the same order so the sample numbers stay
 stable over time.
 
 ```text
-[jzsa-album link="YOUR_LINK" viewer="both" mode="slider" width="600" corner-radius="16" viewer-max-width="600" viewer-max-height="400"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-max-width="600" viewer-max-height="400"]
 
-[jzsa-album link="YOUR_LINK" viewer="both" mode="slider" width="600" corner-radius="16" viewer-max-width="600" viewer-max-height="400" fullscreen-max-width="1200" fullscreen-max-height="800"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-max-width="600" viewer-max-height="400" fullscreen-max-width="1200" fullscreen-max-height="800"]
 
-[jzsa-album link="YOUR_LINK" viewer="both" mode="slider" width="600" corner-radius="16" viewer-image-fit="cover"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-image-fit="cover"]
 
-[jzsa-album link="YOUR_LINK" viewer="both" mode="slider" width="600" corner-radius="16" fullscreen-image-fit="cover"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" fullscreen-image-fit="cover"]
 
-[jzsa-album link="YOUR_LINK" viewer="both" mode="slider" width="600" corner-radius="16" image-fit="contain" background-color="rgba(128,0,64,0.7)" lightbox-corner-radius="16" viewer-max-width="600" viewer-max-height="400" viewer-background-color="rgba(128,0,64,0.7)" lightbox-backdrop-color="rgba(0,128,64,0.7)"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" image-fit="contain" background-color="rgba(128,0,64,0.7)" lightbox-corner-radius="16" viewer-max-width="600" viewer-max-height="400" viewer-background-color="rgba(128,0,64,0.7)" lightbox-backdrop-color="rgba(0,128,64,0.7)"]
 
-[jzsa-album link="YOUR_LINK" viewer="both" mode="slider" width="600" corner-radius="16" viewer-controls-color="#E63946" lightbox-controls-color="#00A878"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-controls-color="#E63946" lightbox-controls-color="#00A878"]
 
-[jzsa-album link="YOUR_LINK" viewer="fullscreen" mode="slider" width="600" corner-radius="16" fullscreen-slideshow="auto"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="fullscreen" width="600" corner-radius="16" fullscreen-slideshow="auto"]
 
-[jzsa-album link="YOUR_LINK" viewer="both" mode="slider" width="600" corner-radius="16" viewer-slideshow="auto" lightbox-slideshow-delay="1" fullscreen-slideshow-delay="7-9"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-slideshow="auto" lightbox-slideshow-delay="1" fullscreen-slideshow-delay="7-9"]
 ```
 
 ### `random-fixture`
@@ -194,25 +194,25 @@ Ten more varied sliders for stress testing. These are intentionally not tied to
 the guide sample order.
 
 ```text
-[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer="lightbox"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="lightbox" width="600" corner-radius="16"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer="lightbox" viewer-trigger="double-click"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="lightbox" viewer-trigger="double-click" width="600" corner-radius="16"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer="fullscreen"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="fullscreen" width="600" corner-radius="16"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer="fullscreen" viewer-trigger="double-click"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="fullscreen" viewer-trigger="double-click" width="600" corner-radius="16"]
 
-[jzsa-album link="YOUR_LINK" viewer="lightbox" viewer-trigger="button" mode="slider" width="600" corner-radius="16" lightbox-fullscreen="button"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="lightbox" viewer-trigger="button" width="600" corner-radius="16" lightbox-fullscreen="button"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer="both" viewer-mosaic="true" viewer-mosaic-count="4" viewer-mosaic-position="left" viewer-mosaic-layout="overlay" viewer-mosaic-gap="4"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-mosaic="true" viewer-mosaic-count="4" viewer-mosaic-position="left" viewer-mosaic-layout="overlay" viewer-mosaic-gap="4"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer="both" viewer-max-width="700" viewer-max-height="420" lightbox-max-width="500" fullscreen-max-width="1100" viewer-image-fit="cover" fullscreen-image-fit="contain" lightbox-controls-color="#00A878" fullscreen-controls-color="#2A9D8F"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-max-width="700" viewer-max-height="420" lightbox-max-width="500" fullscreen-max-width="1100" viewer-image-fit="cover" fullscreen-image-fit="contain" lightbox-controls-color="#00A878" fullscreen-controls-color="#2A9D8F"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer="both" viewer-background-color="rgba(128,0,64,0.7)" lightbox-backdrop-color="rgba(0,128,64,0.7)" viewer-controls-color="#E63946" lightbox-controls-color="#00A878" fullscreen-controls-color="#2A9D8F"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-background-color="rgba(128,0,64,0.7)" lightbox-backdrop-color="rgba(0,128,64,0.7)" viewer-controls-color="#E63946" lightbox-controls-color="#00A878" fullscreen-controls-color="#2A9D8F"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer="both" viewer-slideshow="auto" lightbox-slideshow-delay="2-4" fullscreen-slideshow-delay="9"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-slideshow="auto" lightbox-slideshow-delay="2-4" fullscreen-slideshow-delay="9"]
 
-[jzsa-album link="YOUR_LINK" mode="slider" width="600" corner-radius="16" viewer="both" viewer-show-navigation="false" viewer-info-top="Wild {item}" viewer-info-bottom="{item} / {items}" viewer-corner-radius="24" lightbox-corner-radius="8" fullscreen-corner-radius="0"]
+[jzsa-album link="YOUR_LINK" mode="slider" viewer="both" width="600" corner-radius="16" viewer-show-navigation="false" viewer-info-top="Wild {item}" viewer-info-bottom="{item} / {items}" viewer-corner-radius="24" lightbox-corner-radius="8" fullscreen-corner-radius="0"]
 ```
 
 ### `feature-fixture`

@@ -45,9 +45,15 @@ test.describe('Shortcode validation - Playground live feedback', () => {
                     return [];
                 }
                 const names = Array.from(shortcode.matchAll(/\s([\w-]+)\s*=/g), (match) => match[1]);
-                const viewerTriggerIndex = names.indexOf('viewer-trigger');
-                const valid = names[0] === 'link' && names[1] === 'viewer' &&
-                    (viewerTriggerIndex === -1 || viewerTriggerIndex === 2);
+                const priority = [
+                    'link',
+                    'mode',
+                    'viewer',
+                    'viewer-trigger',
+                    'lightbox-trigger',
+                    'fullscreen-trigger',
+                ].filter((name) => names.includes(name));
+                const valid = priority.every((name, index) => names[index] === name);
                 return valid ? [] : [shortcode];
             });
         });
