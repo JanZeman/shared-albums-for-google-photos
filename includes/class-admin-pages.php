@@ -170,6 +170,10 @@ class JZSA_Admin_Pages {
 	}
 
 	private function render_guide_migration_tutorial() {
+		if ( '1' !== get_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '' ) ) {
+			return;
+		}
+
 		$should_open   = $this->should_open_guide_migration_tutorial();
 		$dismiss_nonce = wp_create_nonce( 'jzsa_dismiss_guide_migration' );
 		$default_viewer = jzsa_get_default_viewer();

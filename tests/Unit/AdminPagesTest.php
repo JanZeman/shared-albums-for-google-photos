@@ -393,6 +393,16 @@ class AdminPagesTest extends TestCase {
 		$this->assertStringNotContainsString( 'Keep Fullscreen as default', $output );
 	}
 
+	public function test_guide_migration_tutorial_is_hidden_without_viewer_migration_flag(): void {
+		$method = $this->reflection->getMethod( 'render_guide_migration_tutorial' );
+
+		ob_start();
+		$method->invoke( $this->admin_pages );
+		$output = ob_get_clean();
+
+		$this->assertSame( '', $output );
+	}
+
 	public function test_guide_migration_tutorial_explains_safe_viewer_update(): void {
 		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1' );
 		update_option( JZSA_DEFAULT_VIEWER_OPTION, 'fullscreen' );
