@@ -29,9 +29,9 @@
 							<tr>
 								<td><code>mode</code></td>
 								<td>Gallery mode:<br>
-									• "gallery": Thumbnail gallery with optional paging or scrolling via <code>gallery-rows</code> and <code>gallery-scrollable</code>; each thumbnail includes a fullscreen button by default<br>
-									• "slider": Single photo viewer with zoom support (pinch on touch devices)<br>
-									• "carousel": Multiple photos visible at once (2 on mobile/tablet, 3 on desktop). Each photo includes a fullscreen button by default</td>
+									• "gallery": Thumbnail gallery with optional paging or scrolling via <code>gallery-rows</code> and <code>gallery-scrollable</code>; each thumbnail includes a button for the active viewer by default<br>
+									• "slider": Single-photo inline display with zoom support (pinch on touch devices)<br>
+									• "carousel": Multiple photos visible at once (2 on mobile/tablet, 3 on desktop). Each photo includes a button for the active viewer by default</td>
 								<td>gallery</td>
 							</tr>
 							<tr>
@@ -104,7 +104,7 @@
 							</tr>
 							<tr>
 								<td><code>gallery-buttons-on-mobile</code></td>
-								<td><?php esc_html_e( 'Controls when the action buttons (fullscreen, link, download) are visible on touch devices. Desktop always uses hover. "on-interaction" (default): interacting with a thumbnail activates that item, keeps its buttons visible until another item becomes active or the item leaves the viewport, and restores the same item after returning from fullscreen. "always": buttons are permanently visible on touch devices.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Controls when the action buttons (viewer, link, download) are visible on touch devices. Desktop always uses hover. "on-interaction" (default): interacting with a thumbnail activates that item, keeps its buttons visible until another item becomes active or the item leaves the viewport, and restores the same item after returning from the viewer. "always": buttons are permanently visible on touch devices.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>on-interaction</td>
 							</tr>
 							<tr>
@@ -132,12 +132,12 @@
 							</tr>
 							<tr>
 								<td><code>controls-color</code></td>
-									<td>Color for custom album controls (previous/next, fullscreen, link, download, play/pause) in inline mode. Any valid 6-digit hex color. Use <code>viewer-controls-color</code> first.</td>
+									<td>Color for inline album controls (previous/next, viewer, link, download, play/pause). Any valid 6-digit hex color. Use <code>viewer-controls-color</code> for controls inside Lightbox and Fullscreen.</td>
 								<td>#ffffff</td>
 							</tr>
 							<tr>
 								<td><code>corner-radius</code></td>
-								<td><?php esc_html_e( 'Rounded corner radius in pixels. Applies to slider, carousel, gallery thumbnails, and mosaic strips. Use 0 for square corners. Disabled in fullscreen mode. Use mosaic-corner-radius to override the radius for the mosaic strip independently.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php echo wp_kses_post( __( 'Rounded corner radius in pixels for the inline slider, carousel, gallery thumbnails, and mosaic strips. Use <code>0</code> for square corners. Use <code>mosaic-corner-radius</code> to override the inline mosaic, and <code>viewer-corner-radius</code> to control viewer frames.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td>
 								<td>0</td>
 							</tr>
 							<tr>
@@ -180,7 +180,7 @@
 							</tr>
 							<tr>
 								<td><code>slideshow-autoresume</code></td>
-									<td>When a user swipes or clicks to navigate forward or backward manually, the slideshow is interrupted. This is the number of seconds of inactivity after which the interrupted slideshow resumes and advances automatically. Set to "disabled" to turn off autoresume - the slideshow stays interrupted until the user presses play. Does not apply when the user pauses the slideshow via the pause button - that stays paused until manually resumed. Use <code>viewer-slideshow-autoresume</code> first.</td>
+									<td>When a user swipes or clicks to navigate forward or backward manually, the inline slideshow is interrupted. This is the number of seconds of inactivity after which it resumes and advances automatically. Set to "disabled" to keep it interrupted until the user presses play. A pause made with the pause button always remains paused until manually resumed. Use <code>viewer-slideshow-autoresume</code> for Lightbox and Fullscreen.</td>
 								<td>30</td>
 							</tr>
 							<tr>
@@ -208,12 +208,12 @@
 							</tr>
 							<tr>
 								<td><code>show-link-button</code></td>
-								<td>Show external link button in inline (non-fullscreen) view: "false" or "true"</td>
+								<td>Show the external Google Photos link button in the inline album: "false" or "true"</td>
 								<td>false</td>
 							</tr>
 							<tr>
 								<td><code>show-download-button</code></td>
-								<td>Show download button in inline (non-fullscreen) view: "false" or "true"</td>
+								<td>Show the download button in the inline album: "false" or "true"</td>
 								<td>false</td>
 							</tr>
 						</tbody>
@@ -285,7 +285,7 @@
 							<tr><td><code>viewer-slideshow</code></td><td><?php esc_html_e( 'Slideshow behavior for either viewer mode: "auto", "manual", or "disabled".', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>disabled</td></tr>
 							<tr><td><code>viewer-slideshow-delay</code></td><td><?php esc_html_e( 'Slideshow delay for either viewer mode, in seconds.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>5</td></tr>
 							<tr><td><code>viewer-slideshow-autoresume</code></td><td><?php esc_html_e( 'Inactivity delay before a viewer slideshow resumes, or "disabled".', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits slideshow-autoresume', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
-							<tr><td><code>viewer-info-bottom</code></td><td><?php esc_html_e( 'Bottom info format in either viewer mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits viewer-mode legacy value', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>viewer-info-bottom</code></td><td><?php esc_html_e( 'Bottom info format in either viewer mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'mode-aware info-bottom default', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 							<tr><td><code>viewer-info-top</code></td><td><?php esc_html_e( 'First top info format in either viewer mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits info-top', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 							<tr><td><code>viewer-info-top-secondary</code></td><td><?php esc_html_e( 'Second top info format in either viewer mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits info-top-secondary', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 							<tr><td><code>viewer-info-font-size</code></td><td><?php esc_html_e( 'Info font size in either viewer mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits info-font-size', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
@@ -303,7 +303,7 @@
 						</table>
 
 						<h3><?php esc_html_e( 'Mode-Specific Overrides', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php echo wp_kses_post( __( 'As explained above, use the shared <code>viewer-*</code> parameters first and switch to <code>lightbox-*</code> or <code>fullscreen-*</code> only when one viewer mode needs a different value.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+						<p><?php echo wp_kses_post( __( 'Use the shared <code>viewer-*</code> parameters first. Every shared parameter listed above supports corresponding <code>lightbox-*</code> and <code>fullscreen-*</code> overrides with the same accepted values. For example, start with <code>viewer-image-fit="contain"</code>, then add <code>fullscreen-image-fit="cover"</code> only if Fullscreen needs different behavior. The two Lightbox settings below are unique and have no shared or Fullscreen equivalent.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 							<table class="jzsa-settings-table jzsa-settings-table--params">
 								<thead>
 									<tr>
@@ -327,7 +327,7 @@
 						</table>
 
 					<h3><?php esc_html_e( 'Mosaic Thumbnail Strip', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<p><?php esc_html_e( 'Display a strip of thumbnail previews alongside the main slider or carousel. Works with mode="slider" and mode="carousel". The strip is synchronized with the main swiper - clicking a thumbnail jumps to that photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<p><?php esc_html_e( 'Display a strip of thumbnail previews alongside the inline slider or carousel. Works with mode="slider" and mode="carousel". The strip is synchronized with the inline display - clicking a thumbnail jumps to that photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<table class="jzsa-settings-table jzsa-settings-table--params">
 						<thead>
 							<tr>
@@ -344,7 +344,7 @@
 							</tr>
 							<tr>
 								<td><code>mosaic-position</code></td>
-								<td><?php esc_html_e( 'Position of the thumbnail strip relative to the main viewer: "top", "bottom", "left", or "right".', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Position of the thumbnail strip relative to the inline display: "top", "bottom", "left", or "right".', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>bottom</td>
 							</tr>
 							<tr>
@@ -421,7 +421,7 @@
 							</tr>
 							<tr>
 								<td><code>interaction-lock</code></td>
-								<td>Master interaction lock: when "true", disables swipe/drag, keyboard navigation, click/tap photo navigation, gallery thumbnail fullscreen opening, and fullscreen entry gestures/buttons. Interactive controls are hidden; passive indicators like counter/progress can remain visible.</td>
+								<td>Master interaction lock: when "true", disables swipe/drag, keyboard navigation, click/tap photo navigation, and viewer entry through gallery thumbnails, gestures, or buttons. Interactive controls are hidden; passive indicators such as counters and progress indicators can remain visible.</td>
 								<td>false</td>
 							</tr>
 							<tr>
