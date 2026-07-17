@@ -108,10 +108,12 @@ No. This plugin is not affiliated with or endorsed by Google LLC. Google Photosâ
 == Changelog ==
 
 = 2.4.3 =
-* Lightbox is new recommended viewer and the default for new installations.
-* Existing installations keep their current Fullscreen default. Updating the plugin does not require a shortcode change.
-* The Guide includes a validator-backed Migration Tool, viewer comparison samples, and a reversible site default.
-* New viewer parameters make Lightbox and Fullscreen selection, triggers, and mode-specific overrides explicit.
+* Lightbox is now recommended and is the default for new installations; existing installations retain Fullscreen for shortcodes without an explicit viewer.
+* The redesigned viewer syntax adds explicit selection and triggers, shared settings, isolated mode overrides, and broader feature parity between Lightbox and Fullscreen.
+* The Guide adds comparison samples, semantic validation, one-click legacy conversion, and a Migration Tool that explains every change.
+* Editable shortcodes now include Prettify, which standardizes quotes, spacing, and parameter order before applying the result.
+* The Community Directory stores version-compatible shortcode forms, and a new Community Acknowledgements section recognizes major contributors.
+* Fixed mosaic navigation arrows, viewer background stacking, Fullscreen autoplay, button routing, and whitespace inside migrated album links.
 
 = 2.3.7 =
 * Improved plugin intro
