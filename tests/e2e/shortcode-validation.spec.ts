@@ -365,15 +365,16 @@ test.describe('Shortcode Migration Tool', () => {
         await expect(output).toBeVisible();
         await expect(output).toHaveValue(/viewer="fullscreen"/);
         await expect(output).toHaveValue(/viewer-trigger="click"/);
-        await expect(output).toHaveValue(/fullscreen-source-width="800"/);
-        await expect(output).toHaveValue(/lightbox-source-width="800"/);
-		await expect(page.locator('#jzsa-migration-source-validation')).toContainText(
-			'Parameter "fullscreen-toggle" is deprecated',
-		);
-		await expect(page.locator('.jzsa-migration-replacements')).toContainText('fullscreen-toggle');
-		await expect(page.locator('.jzsa-migration-replacements')).toContainText('viewer="fullscreen"');
-		await expect(page.locator('.jzsa-migration-replacements')).toContainText('viewer-trigger="click"');
-		await expect(page.locator('.jzsa-migration-replacements')).toContainText('What changed:');
+        await expect(output).toHaveValue(/viewer-source-width="800"/);
+        await expect(output).not.toHaveValue(/fullscreen-source-width=/);
+        await expect(output).not.toHaveValue(/lightbox-source-width=/);
+        await expect(page.locator('#jzsa-migration-source-validation')).toContainText(
+            'Parameter "fullscreen-toggle" is deprecated',
+        );
+        await expect(page.locator('.jzsa-migration-replacements')).toContainText('fullscreen-toggle');
+        await expect(page.locator('.jzsa-migration-replacements')).toContainText('viewer="fullscreen"');
+        await expect(page.locator('.jzsa-migration-replacements')).toContainText('viewer-trigger="click"');
+        await expect(page.locator('.jzsa-migration-replacements')).toContainText('What changed:');
         await expect(page.locator('#jzsa-migration-result')).toContainText('Behavior preserved.');
         await expect(page.locator('#jzsa-migration-result')).not.toContainText('Validation: valid');
 
