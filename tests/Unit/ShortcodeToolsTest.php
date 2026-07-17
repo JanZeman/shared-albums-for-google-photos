@@ -360,31 +360,72 @@ class ShortcodeToolsTest extends TestCase {
 
 	public function test_preserve_migration_collapses_every_proven_legacy_sideways_pair(): void {
 		$pairs = array(
-			'viewer-source-width'            => array( 'fullscreen-source-width', '800' ),
-			'viewer-source-height'           => array( 'fullscreen-source-height', '600' ),
-			'viewer-image-fit'               => array( 'fullscreen-image-fit', 'cover' ),
-			'viewer-controls-color'          => array( 'fullscreen-controls-color', '#112233' ),
-			'viewer-video-controls-color'    => array( 'fullscreen-video-controls-color', '#223344' ),
-			'viewer-video-controls-autohide' => array( 'fullscreen-video-controls-autohide', 'true' ),
-			'viewer-show-navigation'         => array( 'fullscreen-show-navigation', 'false' ),
-			'viewer-show-link-button'        => array( 'fullscreen-show-link-button', 'false' ),
-			'viewer-show-download-button'    => array( 'fullscreen-show-download-button', 'false' ),
-			'viewer-slideshow'               => array( 'fullscreen-slideshow', 'auto' ),
-			'viewer-slideshow-delay'         => array( 'fullscreen-slideshow-delay', '7' ),
-			'viewer-slideshow-autoresume'    => array( 'fullscreen-slideshow-autoresume', '3' ),
+			'viewer-source-width'            => array( 'fullscreen-source-width', 'lightbox-source-width', '800' ),
+			'viewer-source-height'           => array( 'fullscreen-source-height', 'lightbox-source-height', '600' ),
+			'viewer-image-fit'               => array( 'fullscreen-image-fit', 'lightbox-image-fit', 'cover' ),
+			'viewer-controls-color'          => array( 'fullscreen-controls-color', 'lightbox-controls-color', '#112233' ),
+			'viewer-video-controls-color'    => array( 'fullscreen-video-controls-color', 'lightbox-video-controls-color', '#223344' ),
+			'viewer-video-controls-autohide' => array( 'fullscreen-video-controls-autohide', 'lightbox-video-controls-autohide', 'true' ),
+			'viewer-show-navigation'         => array( 'fullscreen-show-navigation', 'lightbox-show-navigation', 'false' ),
+			'viewer-show-link-button'        => array( 'fullscreen-show-link-button', 'lightbox-show-link-button', 'false' ),
+			'viewer-show-download-button'    => array( 'fullscreen-show-download-button', 'lightbox-show-download-button', 'false' ),
+			'viewer-slideshow'               => array( 'fullscreen-slideshow', 'lightbox-slideshow', 'auto' ),
+			'viewer-slideshow-delay'         => array( 'fullscreen-slideshow-delay', 'lightbox-slideshow-delay', '7' ),
+			'viewer-slideshow-autoresume'    => array( 'fullscreen-slideshow-autoresume', 'lightbox-slideshow-autoresume', '3' ),
 		);
 
 		foreach ( $pairs as $viewer_key => $legacy ) {
-			$result = JZSA_Shortcode_Tools::migrate(
-				'[jzsa-album link="https://photos.google.com/share/test" fullscreen-toggle="button-only" ' . $legacy[0] . '="' . $legacy[1] . '"]',
-				'preserve',
-				'fullscreen'
-			);
+			foreach ( array( $legacy[0], $legacy[1] ) as $source_key ) {
+				$result = JZSA_Shortcode_Tools::migrate(
+					'[jzsa-album link="https://photos.google.com/share/test" fullscreen-toggle="button-only" ' . $source_key . '="' . $legacy[2] . '"]',
+					'preserve',
+					'fullscreen'
+				);
 
-			$this->assertTrue( $result['ok'], $viewer_key );
-			$this->assertStringContainsString( $viewer_key . '="' . $legacy[1] . '"', $result['shortcode'], $viewer_key );
-			$this->assertStringNotContainsString( $legacy[0] . '=', $result['shortcode'], $viewer_key );
-			$this->assertStringNotContainsString( str_replace( 'fullscreen-', 'lightbox-', $legacy[0] ) . '=', $result['shortcode'], $viewer_key );
+				$case = $viewer_key . ': ' . $source_key;
+				$this->assertTrue( $result['ok'], $case );
+				$this->assertStringContainsString( $viewer_key . '="' . $legacy[2] . '"', $result['shortcode'], $case );
+				$this->assertStringNotContainsString( $legacy[0] . '=', $result['shortcode'], $case );
+				$this->assertStringNotContainsString( $legacy[1] . '=', $result['shortcode'], $case );
+			}
+		}
+	}
+
+	public function test_generated_legacy_viewer_trigger_matrix_is_deterministic(): void {
+		$modes    = array( null, 'slider', 'gallery', 'carousel' );
+		$toggles  = array( null, 'disabled', 'button-only', 'click', 'double-click' );
+		$gestures = array( 'click', 'double-click' );
+
+		foreach ( $modes as $mode ) {
+			foreach ( $toggles as $lightbox ) {
+				foreach ( $toggles as $fullscreen ) {
+					$tokens = array( '[jzsa-album', 'link="https://photos.google.com/share/test"' );
+					if ( null !== $mode ) {
+						$tokens[] = 'mode="' . $mode . '"';
+					}
+					if ( null !== $lightbox ) {
+						$tokens[] = 'lightbox-toggle="' . $lightbox . '"';
+					}
+					if ( null !== $fullscreen ) {
+						$tokens[] = 'fullscreen-toggle="' . $fullscreen . '"';
+					}
+					$shortcode = implode( ' ', $tokens ) . ']';
+					$case = sprintf( 'mode=%s, lightbox=%s, fullscreen=%s', $mode ?? 'absent', $lightbox ?? 'absent', $fullscreen ?? 'absent' );
+					$result = JZSA_Shortcode_Tools::migrate( $shortcode, 'preserve', 'fullscreen' );
+
+					if ( in_array( $lightbox, $gestures, true ) && in_array( $fullscreen, $gestures, true ) ) {
+						$this->assertFalse( $result['ok'], $case );
+						$this->assertSame( 'legacy_gesture_conflict', $result['issues'][0]['code'], $case );
+						continue;
+					}
+
+					$this->assertTrue( $result['ok'], $case );
+					$this->assertTrue( $result['behaviorPreserved'], $case );
+					$second = JZSA_Shortcode_Tools::migrate( $result['shortcode'], 'preserve', 'fullscreen' );
+					$this->assertTrue( $second['ok'], $case . ' second migration' );
+					$this->assertSame( $result['shortcode'], $second['shortcode'], $case . ' is not idempotent' );
+				}
+			}
 		}
 	}
 

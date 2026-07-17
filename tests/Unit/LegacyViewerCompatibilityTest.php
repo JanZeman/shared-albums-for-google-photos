@@ -6,6 +6,7 @@ namespace JZSA\Tests\Unit;
 
 use JZSA_Shared_Albums;
 use JZSA_Renderer;
+use JZSA_Shortcode_Tools;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -71,6 +72,48 @@ class LegacyViewerCompatibilityTest extends TestCase {
 		);
 	}
 
+	public function test_every_2_3_7_guide_shortcode_preserves_effective_configuration_after_migration(): void {
+		$shortcodes  = require dirname( __DIR__ ) . '/fixtures/guide-shortcodes-2.3.7.php';
+		$legacy_keys = self::fixture()['legacy-keys'];
+		$had_default = array_key_exists( JZSA_DEFAULT_VIEWER_OPTION, $GLOBALS['jzsa_test_options'] );
+		$old_default = get_option( JZSA_DEFAULT_VIEWER_OPTION, null );
+
+		$this->assertCount( 70, $shortcodes );
+		update_option( JZSA_DEFAULT_VIEWER_OPTION, 'fullscreen' );
+
+		try {
+			foreach ( $shortcodes as $name => $shortcode ) {
+				$source = JZSA_Shortcode_Tools::parse( $shortcode );
+				$this->assertSame( array(), $source['errors'], $name . ' source syntax is invalid' );
+
+				$migration = JZSA_Shortcode_Tools::migrate( $shortcode, 'preserve', 'fullscreen' );
+				$this->assertTrue( $migration['ok'], $name . ' migration failed: ' . wp_json_encode( $migration['issues'] ) );
+				$this->assertTrue( $migration['behaviorPreserved'], $name . ' did not preserve behavior' );
+
+				$migrated = JZSA_Shortcode_Tools::parse( $migration['shortcode'] );
+				$this->assertSame( array(), $migrated['errors'], $name . ' generated invalid syntax' );
+
+				$source_config   = $this->parseConfig( $source['attributes'] );
+				$migrated_config = $this->parseConfig( $migrated['attributes'] );
+				$this->assertSame(
+					self::legacyProjection( $source_config, $legacy_keys ),
+					self::legacyProjection( $migrated_config, $legacy_keys ),
+					$name . " changed effective configuration\nSource: {$shortcode}\nMigrated: {$migration['shortcode']}"
+				);
+
+				$second = JZSA_Shortcode_Tools::migrate( $migration['shortcode'], 'preserve', 'fullscreen' );
+				$this->assertTrue( $second['ok'], $name . ' second migration failed' );
+				$this->assertSame( $migration['shortcode'], $second['shortcode'], $name . ' migration is not idempotent' );
+			}
+		} finally {
+			if ( $had_default ) {
+				update_option( JZSA_DEFAULT_VIEWER_OPTION, $old_default );
+			} else {
+				delete_option( JZSA_DEFAULT_VIEWER_OPTION );
+			}
+		}
+	}
+
 	public function test_every_production_sample_avoids_legacy_toggle_attributes(): void {
 		$sample_cases = self::productionSampleCases();
 
@@ -111,6 +154,27 @@ class LegacyViewerCompatibilityTest extends TestCase {
 
 	private static function fixture(): array {
 		return require dirname( __DIR__ ) . '/fixtures/legacy-viewer-compatibility.php';
+	}
+
+	private function parseConfig( array $attributes ): array {
+		$url = isset( $attributes['link'] ) ? (string) $attributes['link'] : self::ALBUM_URL;
+		unset( $attributes['link'] );
+
+		return $this->reflection
+			->getMethod( 'parse_shortcode_config' )
+			->invoke( $this->orchestrator, $attributes, $url );
+	}
+
+	private static function legacyProjection( array $config, array $legacy_keys ): array {
+		$projection = array();
+		foreach ( $legacy_keys as $key ) {
+			if ( ! array_key_exists( $key, $config ) ) {
+				throw new \RuntimeException( 'Configuration lost legacy key ' . $key );
+			}
+			$projection[ $key ] = $config[ $key ];
+		}
+
+		return $projection;
 	}
 
 	private static function productionSampleCases(): array {
