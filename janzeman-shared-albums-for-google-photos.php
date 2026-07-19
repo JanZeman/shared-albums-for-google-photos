@@ -260,24 +260,7 @@ add_action( 'admin_init', 'jzsa_activation_redirect' );
  * @return array Modified plugin action links
  */
 function jzsa_add_plugin_action_links( $links ) {
-	$guide_link = sprintf(
-		'<a href="%s">%s</a>',
-		JZSA_Admin_Pages::get_guide_page_url(),
-		esc_html__( 'Guide', 'janzeman-shared-albums-for-google-photos' )
-	);
-	$parameters_link = sprintf(
-		'<a href="%s">%s</a>',
-		JZSA_Admin_Pages::get_shortcode_parameters_page_url(),
-		esc_html__( 'Parameters', 'janzeman-shared-albums-for-google-photos' )
-	);
-	$placeholders_link = sprintf(
-		'<a href="%s">%s</a>',
-		JZSA_Admin_Pages::get_placeholders_page_url(),
-		esc_html__( 'Placeholders', 'janzeman-shared-albums-for-google-photos' )
-	);
-
-	array_unshift( $links, $guide_link, $parameters_link, $placeholders_link );
-	return $links;
+	return JZSA_Admin_Pages::add_plugin_action_links( $links );
 }
 add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'jzsa_add_plugin_action_links' );
 

@@ -48,6 +48,19 @@ class AdminPagesTest extends TestCase {
 		$this->fail( 'Expected ' . $method . ' to send a JSON response.' );
 	}
 
+	public function test_plugin_action_links_prioritize_guide_settings_and_community(): void {
+		$links = JZSA_Admin_Pages::add_plugin_action_links( array( '<a href="plugins.php">Deactivate</a>' ) );
+
+		$this->assertCount( 4, $links );
+		$this->assertStringContainsString( JZSA_Admin_Pages::get_guide_page_url(), $links[0] );
+		$this->assertStringContainsString( '>Guide<', $links[0] );
+		$this->assertStringContainsString( JZSA_Admin_Pages::get_settings_page_url(), $links[1] );
+		$this->assertStringContainsString( '>Settings<', $links[1] );
+		$this->assertStringContainsString( JZSA_Admin_Pages::get_community_page_url(), $links[2] );
+		$this->assertStringContainsString( '>Community<', $links[2] );
+		$this->assertStringContainsString( '>Deactivate<', $links[3] );
+	}
+
 	public static function shortcodeToolEndpointProvider(): array {
 		return array(
 			'validation' => array(

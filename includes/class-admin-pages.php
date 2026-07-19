@@ -353,6 +353,33 @@ class JZSA_Admin_Pages {
 	}
 
 	/**
+	 * Add the most useful admin destinations to the Plugins list.
+	 *
+	 * @param array $links Existing plugin action links.
+	 * @return array Modified plugin action links.
+	 */
+	public static function add_plugin_action_links( $links ) {
+		$guide_link = sprintf(
+			'<a href="%s">%s</a>',
+			self::get_guide_page_url(),
+			esc_html__( 'Guide', 'janzeman-shared-albums-for-google-photos' )
+		);
+		$settings_link = sprintf(
+			'<a href="%s">%s</a>',
+			self::get_settings_page_url(),
+			esc_html__( 'Settings', 'janzeman-shared-albums-for-google-photos' )
+		);
+		$community_link = sprintf(
+			'<a href="%s">%s</a>',
+			self::get_community_page_url(),
+			esc_html__( 'Community', 'janzeman-shared-albums-for-google-photos' )
+		);
+
+		array_unshift( $links, $guide_link, $settings_link, $community_link );
+		return $links;
+	}
+
+	/**
 	 * Enqueue admin styles and scripts
 	 *
 	 * @param string $hook Current admin page hook
