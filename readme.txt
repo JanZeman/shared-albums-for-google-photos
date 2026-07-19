@@ -4,7 +4,7 @@ Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 7.0
-Stable tag: 2.4.3
+Stable tag: 2.4.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -106,6 +106,9 @@ Yes. The gallery is responsive and supports touch gestures, fullscreen viewing, 
 No. This plugin is not affiliated with or endorsed by Google LLC. Google Photos™ is a trademark of Google LLC.
 
 == Changelog ==
+
+= 2.4.4 =
+* Minor changes
 
 = 2.4.3 =
 * Lightbox is now recommended and is the default for new installations; existing installations retain Fullscreen for shortcodes without an explicit viewer.
