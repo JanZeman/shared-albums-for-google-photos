@@ -1,8 +1,8 @@
 === Shared Albums for Google Photos ===
 Contributors: janzeman
 Tags: google-photos, album, gallery, embed, swiper
-Requires at least: 5.0
-Tested up to: 7.0
+Requires at least: 5.5
+Tested up to: 7.1
 Requires PHP: 7.0
 Stable tag: 2.4.5
 License: GPLv2 or later
@@ -109,6 +109,8 @@ No. This plugin is not affiliated with or endorsed by Google LLC. Google Photosâ
 
 = 2.4.5 =
 * Bug fixes
+* Confirmed compatibility with WordPress 7.1.
+* Raised the minimum supported WordPress version from 5.0 to 5.5.
 
 = 2.4.4 =
 * Minor changes

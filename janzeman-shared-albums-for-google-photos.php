@@ -5,7 +5,7 @@
  * Author URI: https://github.com/JanZeman
  * Description: Display publicly shared Google Photos albums with a modern Swiper-based gallery viewer. Not affiliated with or endorsed by Google LLC.
  * Version: 2.4.5
- * Requires at least: 5.0
+ * Requires at least: 5.5
  * Requires PHP: 7.0
  * Author: Jan Zeman
  * License: GPL v2 or later

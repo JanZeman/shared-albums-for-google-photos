@@ -1,7 +1,7 @@
 # Shared Albums for Google Photos (by JanZeman)
 
 [![WordPress Plugin Version](https://img.shields.io/badge/version-2.4.5-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
-[![WordPress Compatibility](https://img.shields.io/badge/wordpress-5.0%2B-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
+[![WordPress Compatibility](https://img.shields.io/badge/wordpress-5.5%2B-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
 [![PHP Version](https://img.shields.io/badge/php-7.0%2B-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
 [![License](https://img.shields.io/badge/license-GPL--2.0%2B-blue.svg)](LICENSE)
 
@@ -132,7 +132,7 @@ janzeman-shared-albums-for-google-photos/
 
 ### Requirements
 
-- WordPress 5.0 or higher
+- WordPress 5.5 or higher
 - PHP 7.0 or higher
 - Public Google Photos album (shared via link)
 
