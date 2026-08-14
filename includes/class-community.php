@@ -1662,11 +1662,14 @@ class JZSA_Community {
 		// They are all invalid the moment install_secret changes, so leaving
 		// them around would just produce phantom "Signed in" badges.
 		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Intentional uncached account-reset cleanup.
 		$wpdb->delete( $wpdb->usermeta, array( 'meta_key' => self::OPT_JWT ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Intentional uncached account-reset cleanup.
 		$wpdb->delete( $wpdb->usermeta, array( 'meta_key' => self::OPT_DISPLAY_NAME ) );
 
 		// Sweep any in-flight sign-in transients so a half-finished attempt
 		// doesn't keep its pending_id around after the reset.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Intentional uncached account-reset cleanup.
 		$wpdb->query( $wpdb->prepare(
 			"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s OR option_name LIKE %s OR option_name LIKE %s",
 			$wpdb->esc_like( '_transient_' . self::SIGNIN_PENDING_PREFIX ) . '%',

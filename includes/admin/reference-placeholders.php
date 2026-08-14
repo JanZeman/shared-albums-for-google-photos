@@ -1,3 +1,8 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>
 					<p><?php esc_html_e( 'Box content is a text string. You can use plain text (as in the preview above) or placeholders like {date}, {item}, and {page} that resolve to per-photo metadata or gallery page state. Placeholders that cannot be resolved (no data available) are silently removed together with any surrounding separator characters. Most placeholders resolve instantly; background metadata appears with a brief delay only the first time and then loads immediately from cache.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
 					<table class="jzsa-settings-table">

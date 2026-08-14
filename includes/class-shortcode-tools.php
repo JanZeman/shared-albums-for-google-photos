@@ -120,7 +120,16 @@ class JZSA_Shortcode_Tools {
 			$warnings[] = self::issue( 'link_whitespace_removed', 'warning', array( 'link' ), __( 'The Google Photos link contains invalid whitespace. The generated shortcode removes it because URLs cannot contain spaces or line breaks.', 'janzeman-shared-albums-for-google-photos' ) );
 		}
 		foreach ( array_unique( $duplicates ) as $name ) {
-			$warnings[] = self::issue( 'duplicate_parameter', 'warning', array( $name ), sprintf( __( 'The parameter "%s" appears more than once. Only its final value is effective.', 'janzeman-shared-albums-for-google-photos' ), $name ) );
+			$warnings[] = self::issue(
+				'duplicate_parameter',
+				'warning',
+				array( $name ),
+				sprintf(
+					/* translators: %s: shortcode parameter name. */
+					__( 'The parameter "%s" appears more than once. Only its final value is effective.', 'janzeman-shared-albums-for-google-photos' ),
+					$name
+				)
+			);
 		}
 
 		return compact( 'shortcode', 'attributes', 'order', 'duplicates', 'errors', 'warnings' );

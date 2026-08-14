@@ -84,11 +84,14 @@ function jzsa_get_frontend_i18n_strings() {
 		'nextGalleryPage'       => __( 'Next gallery page', 'janzeman-shared-albums-for-google-photos' ),
 		'openInGooglePhotos'    => __( 'Open in Google Photos', 'janzeman-shared-albums-for-google-photos' ),
 		'openAlbumGooglePhotos' => __( 'Open album in Google Photos', 'janzeman-shared-albums-for-google-photos' ),
+		/* translators: %d: one-based media position. */
 		'openMediaFullscreen'   => __( 'Open media %d in fullscreen', 'janzeman-shared-albums-for-google-photos' ),
 		'downloadCurrentMedia'  => __( 'Download current media', 'janzeman-shared-albums-for-google-photos' ),
+		/* translators: %d: one-based media position. */
 		'downloadMedia'         => __( 'Download media %d', 'janzeman-shared-albums-for-google-photos' ),
 		'largeDownloadWarning'  => __( 'This file is larger than the configured download warning threshold.', 'janzeman-shared-albums-for-google-photos' ),
 		'openLightbox'          => __( 'Open in lightbox', 'janzeman-shared-albums-for-google-photos' ),
+		/* translators: %d: one-based media position. */
 		'openMediaLightbox'     => __( 'Open media %d in lightbox', 'janzeman-shared-albums-for-google-photos' ),
 		'closeLightbox'         => __( 'Close', 'janzeman-shared-albums-for-google-photos' ),
 		'lightboxDialogLabel'   => __( 'Photo viewer', 'janzeman-shared-albums-for-google-photos' ),

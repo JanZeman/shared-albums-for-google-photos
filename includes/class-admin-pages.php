@@ -210,7 +210,12 @@ class JZSA_Admin_Pages {
 						<div id="jzsa-migration-result" aria-live="polite"></div>
 					</div>
 					<h3><?php esc_html_e( 'Set the Viewer Explicitly', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<p><?php echo wp_kses_post( sprintf( __( 'For the sake of simplicity, we recommend always setting the <code>viewer</code> parameter explicitly in each shortcode. If it is omitted, the site default is used: <strong>%1$s</strong>. <a href="%2$s">Change it in Settings</a>.', 'janzeman-shared-albums-for-google-photos' ), 'lightbox' === $default_viewer ? __( 'Lightbox', 'janzeman-shared-albums-for-google-photos' ) : __( 'Fullscreen', 'janzeman-shared-albums-for-google-photos' ), esc_url( self::get_settings_page_url() ) ) ); ?></p>
+					<p>
+						<?php
+						/* translators: 1: default viewer name, 2: settings page URL. */
+						echo wp_kses_post( sprintf( __( 'For the sake of simplicity, we recommend always setting the <code>viewer</code> parameter explicitly in each shortcode. If it is omitted, the site default is used: <strong>%1$s</strong>. <a href="%2$s">Change it in Settings</a>.', 'janzeman-shared-albums-for-google-photos' ), 'lightbox' === $default_viewer ? __( 'Lightbox', 'janzeman-shared-albums-for-google-photos' ) : __( 'Fullscreen', 'janzeman-shared-albums-for-google-photos' ), esc_url( self::get_settings_page_url() ) ) );
+						?>
+					</p>
 				<?php if ( $should_open ) : ?>
 						<p><button type="button" class="button" id="jzsa-dismiss-guide-migration"><?php esc_html_e( 'Collapse this migration guide', 'janzeman-shared-albums-for-google-photos' ); ?></button></p>
 				<?php endif; ?>
@@ -614,11 +619,11 @@ class JZSA_Admin_Pages {
 		$this->lazy_sample_previews = true;
 
 		// Reusable UI strings - define once, echo everywhere below.
-		$s_copy            = esc_html__( 'Copy', 'janzeman-shared-albums-for-google-photos' );
-		$s_apply           = esc_html__( 'Apply', 'janzeman-shared-albums-for-google-photos' );
-		$s_revert          = esc_html__( 'Revert', 'janzeman-shared-albums-for-google-photos' );
-		$s_fullscreen_hint = esc_html__( 'Open fullscreen to see the effect', 'janzeman-shared-albums-for-google-photos' );
-		$s_lightbox_hint   = esc_html__( 'Click a photo to open the lightbox', 'janzeman-shared-albums-for-google-photos' );
+		$s_copy            = __( 'Copy', 'janzeman-shared-albums-for-google-photos' );
+		$s_apply           = __( 'Apply', 'janzeman-shared-albums-for-google-photos' );
+		$s_revert          = __( 'Revert', 'janzeman-shared-albums-for-google-photos' );
+		$s_fullscreen_hint = __( 'Open fullscreen to see the effect', 'janzeman-shared-albums-for-google-photos' );
+		$s_lightbox_hint   = __( 'Click a photo to open the lightbox', 'janzeman-shared-albums-for-google-photos' );
 		?>
 		<div class="wrap jzsa-settings-wrap">
 			<h1>
@@ -764,9 +769,9 @@ class JZSA_Admin_Pages {
 							aria-label="<?php esc_attr_e( 'Shortcode to test', 'janzeman-shared-albums-for-google-photos' ); ?>"
 						><?php echo esc_html( $sample_shortcode ); ?></code>
 						<div class="jzsa-code-block-btns">
-							<button type="button" class="jzsa-action-btn" data-jzsa-action="copy"><?php echo $s_copy; ?></button>
-							<button type="button" class="jzsa-action-btn" data-jzsa-action="apply"><?php echo $s_apply; ?></button>
-							<button type="button" class="jzsa-action-btn" data-jzsa-action="revert"><?php echo $s_revert; ?></button>
+							<button type="button" class="jzsa-action-btn" data-jzsa-action="copy"><?php echo esc_html( $s_copy ); ?></button>
+							<button type="button" class="jzsa-action-btn" data-jzsa-action="apply"><?php echo esc_html( $s_apply ); ?></button>
+							<button type="button" class="jzsa-action-btn" data-jzsa-action="revert"><?php echo esc_html( $s_revert ); ?></button>
 						</div>
 					</div>
 
@@ -883,7 +888,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-gallery-grid" style="height:auto;">
 						<?php
@@ -901,7 +906,7 @@ class JZSA_Admin_Pages {
 							?>
 							<div class="jzsa-code-block">
 								<code><?php echo esc_html( $sample_shortcode ); ?></code>
-								<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+								<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-gallery-paged" style="height:auto;">
 							<?php
@@ -919,7 +924,7 @@ class JZSA_Admin_Pages {
 								?>
 								<div class="jzsa-code-block">
 										<code><?php echo esc_html( $sample_shortcode ); ?></code>
-									<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+									<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 								</div>
 								<div class="jzsa-preview-container jzsa-preview-container-gallery-paged-page-pagination" style="height:auto;">
 									<?php
@@ -937,7 +942,7 @@ class JZSA_Admin_Pages {
 								?>
 								<div class="jzsa-code-block">
 									<code><?php echo esc_html( $sample_shortcode ); ?></code>
-									<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+									<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 								</div>
 								<div class="jzsa-preview-container jzsa-preview-container-gallery-paged-page-pagination" style="height:auto;">
 									<?php
@@ -960,7 +965,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-gallery-scrollable" style="height:auto;">
 						<?php
@@ -978,7 +983,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-gallery-justified" style="height:auto;">
 						<?php
@@ -1002,7 +1007,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-basic">
 							<?php
@@ -1020,7 +1025,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-custom-size">
 							<?php
@@ -1038,7 +1043,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 						<div class="jzsa-preview-container jzsa-preview-container-hide-navigation">
 							<?php
@@ -1056,7 +1061,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-interaction-lock">
 							<?php
@@ -1074,7 +1079,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-limit-photos">
 						<?php
@@ -1092,7 +1097,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-slower-autoplay">
 						<?php
@@ -1110,7 +1115,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-no-autoplay">
 						<?php
@@ -1128,7 +1133,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-no-crop">
 						<?php
@@ -1141,7 +1146,7 @@ class JZSA_Admin_Pages {
 					<div class="jzsa-sample-card">
 						<div class="jzsa-sample-card-header">
 							<h3><?php echo 'Sample 15: ' . esc_html__( 'Custom Background Color for Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<span class="jzsa-sample-card-hint"><?php echo $s_fullscreen_hint; ?></span>
+							<span class="jzsa-sample-card-hint"><?php echo esc_html( $s_fullscreen_hint ); ?></span>
 						</div>
 						<p><?php esc_html_e( 'Same as above but with fullscreen-background-color="#0000FF" to override the fullscreen background to blue, while the inline background is transparent.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -1149,7 +1154,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-fs-bg-color">
 						<?php
@@ -1168,11 +1173,11 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $low_res_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $high_res_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-hires-inline" style="display: flex; gap: 20px; justify-content: center;">
 						<div>
@@ -1195,7 +1200,7 @@ class JZSA_Admin_Pages {
 					<div class="jzsa-sample-card">
 						<div class="jzsa-sample-card-header">
 							<h3><?php echo 'Sample 17: ' . esc_html__( 'High-Resolution Fullscreen Photos', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<span class="jzsa-sample-card-hint"><?php echo $s_fullscreen_hint; ?></span>
+							<span class="jzsa-sample-card-hint"><?php echo esc_html( $s_fullscreen_hint ); ?></span>
 						</div>
 						<p><?php esc_html_e( 'Request extra-high-resolution photos for fullscreen mode. The default fullscreen resolution is 1920x1440. Increase for 4K displays.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -1203,7 +1208,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-hires-fullscreen">
 						<?php
@@ -1216,7 +1221,7 @@ class JZSA_Admin_Pages {
 					<div class="jzsa-sample-card">
 						<div class="jzsa-sample-card-header">
 							<h3><?php echo 'Sample 18: ' . esc_html__( 'Low-Resolution Fullscreen Photos with Limited Display Size', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<span class="jzsa-sample-card-hint"><?php echo $s_fullscreen_hint; ?></span>
+							<span class="jzsa-sample-card-hint"><?php echo esc_html( $s_fullscreen_hint ); ?></span>
 						</div>
 						<p><?php esc_html_e( 'Combine a smaller fullscreen source image with a smaller centered fullscreen display box. Useful when you want fullscreen mode, but do not want the photo to expand wall-to-wall across the screen.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
@@ -1224,7 +1229,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-lowres-fullscreen-limited">
 						<?php
@@ -1242,7 +1247,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-manual-slideshow">
 						<?php
@@ -1260,7 +1265,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-autoplay-timeout">
 						<?php
@@ -1289,7 +1294,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-gallery-grid" style="height:auto;">
 							<?php
@@ -1307,7 +1312,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-fs-disabled">
 							<?php
@@ -1320,7 +1325,7 @@ class JZSA_Admin_Pages {
 						<div class="jzsa-sample-card">
 							<div class="jzsa-sample-card-header">
 								<h3><?php echo 'Sample 23: ' . esc_html__( 'Viewer - Lightbox from Photo Click', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-								<span class="jzsa-sample-card-hint"><?php echo $s_lightbox_hint; ?></span>
+								<span class="jzsa-sample-card-hint"><?php echo esc_html( $s_lightbox_hint ); ?></span>
 							</div>
 							<p><?php esc_html_e( 'Use viewer="lightbox" viewer-trigger="click" when the photo itself should open Lightbox. This is direct and easy to understand, but click is now used for opening the overlay.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1328,7 +1333,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-gallery-grid" style="height:auto;">
 							<?php
@@ -1346,7 +1351,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-fs-switch-double">
 							<?php
@@ -1364,7 +1369,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-fs-switch-button">
 							<?php
@@ -1382,7 +1387,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-fs-switch-single">
 							<?php
@@ -1395,7 +1400,7 @@ class JZSA_Admin_Pages {
 						<div class="jzsa-sample-card">
 							<div class="jzsa-sample-card-header">
 								<h3><?php echo 'Sample 27: ' . esc_html__( 'Viewer - Fullscreen from Double-Click', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-								<span class="jzsa-sample-card-hint"><?php echo $s_fullscreen_hint; ?></span>
+								<span class="jzsa-sample-card-hint"><?php echo esc_html( $s_fullscreen_hint ); ?></span>
 							</div>
 							<p><?php esc_html_e( 'Use viewer="fullscreen" viewer-trigger="double-click" when you want a gesture shortcut but do not want single click to enter fullscreen. This is usually safer than click. After the visitor enters fullscreen, the plugin also shows a short first-time hint with fullscreen navigation and exit guidance.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1403,7 +1408,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-fs-switch-double">
 							<?php
@@ -1424,7 +1429,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-dual-expand">
 							<?php
@@ -1445,7 +1450,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-dual-expand">
 							<?php
@@ -1466,7 +1471,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-fs-switch-double">
 							<?php
@@ -1493,7 +1498,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-dual-expand">
 							<?php
@@ -1514,7 +1519,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-dual-expand">
 							<?php
@@ -1535,7 +1540,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-dual-expand">
 							<?php
@@ -1556,7 +1561,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-dual-expand">
 							<?php
@@ -1577,7 +1582,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-fs-switch-button">
 							<?php
@@ -1598,7 +1603,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-dual-expand">
 							<?php
@@ -1621,7 +1626,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-fullscreen-only">
 							<?php
@@ -1639,7 +1644,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-dual-expand">
 							<?php
@@ -1665,7 +1670,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-link-button">
 						<?php
@@ -1683,7 +1688,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-download-button">
 						<?php
@@ -1701,7 +1706,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-download-gallery">
 						<?php
@@ -1719,7 +1724,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-download-gallery-fullscreen-only">
 						<?php
@@ -1737,7 +1742,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-controls-color-custom">
 						<?php
@@ -1755,7 +1760,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-carousel">
 						<?php
@@ -1779,7 +1784,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-video-slider">
 							<?php
@@ -1797,7 +1802,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-video-carousel">
 							<?php
@@ -1815,7 +1820,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-video-gallery">
 							<?php
@@ -1833,7 +1838,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-video-gallery-click">
 							<?php
@@ -1851,7 +1856,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-video-gallery-dblclick">
 							<?php
@@ -1869,7 +1874,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-video-disabled">
 							<?php
@@ -1893,7 +1898,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-mosaic-bottom">
 							<?php
@@ -1911,7 +1916,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-mosaic-rounded">
 							<?php
@@ -1929,7 +1934,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-mosaic-right">
 							<?php
@@ -1947,7 +1952,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-mosaic-carousel" style="height:auto;">
 							<?php
@@ -1965,7 +1970,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-mosaic-gap-opacity" style="height:auto;">
 							<?php
@@ -1978,7 +1983,7 @@ class JZSA_Admin_Pages {
 					<div class="jzsa-sample-card">
 						<div class="jzsa-sample-card-header">
 							<h3><?php echo 'Sample 56: ' . esc_html__( 'Fullscreen Mosaic Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<span class="jzsa-sample-card-hint"><?php echo $s_fullscreen_hint; ?></span>
+							<span class="jzsa-sample-card-hint"><?php echo esc_html( $s_fullscreen_hint ); ?></span>
 						</div>
 						<p><?php esc_html_e( 'Combines the inline mosaic strip with fullscreen-mosaic="true". In fullscreen, the default layout now reserves a dedicated rail for the thumbnail strip so it no longer sits on top of the photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -1986,7 +1991,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-fullscreen-mosaic">
 							<?php
@@ -1999,7 +2004,7 @@ class JZSA_Admin_Pages {
 					<div class="jzsa-sample-card">
 						<div class="jzsa-sample-card-header">
 							<h3><?php echo 'Sample 57: ' . esc_html__( 'Fullscreen Mosaic - Overlay Layout', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<span class="jzsa-sample-card-hint"><?php echo $s_fullscreen_hint; ?></span>
+							<span class="jzsa-sample-card-hint"><?php echo esc_html( $s_fullscreen_hint ); ?></span>
 						</div>
 						<p><?php esc_html_e( 'Adds fullscreen-mosaic-layout="overlay" and fullscreen-image-fit="cover". The thumbnail strip floats on top of the photo in fullscreen instead of occupying a separate rail, and the photo fills the full screen behind it for a cinema-style experience.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
@@ -2007,7 +2012,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-fullscreen-mosaic-overlay" style="height:auto;">
 							<?php
@@ -2078,7 +2083,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 							<p class="jzsa-help-text"><?php esc_html_e( 'Replace YOUR_LINK_HERE with the full link you copied from Google Photos.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
@@ -2110,7 +2115,7 @@ class JZSA_Admin_Pages {
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $info_boxes_demo_shortcode ); ?></code>
-						<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
 					<div class="jzsa-preview-container" style="max-width: 400px; margin-left: auto; margin-right: auto;">
 						<?php
@@ -2137,7 +2142,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-info-slider">
 							<?php
@@ -2155,7 +2160,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-info-carousel">
 							<?php
@@ -2173,7 +2178,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-info-gallery" style="height:auto;">
 							<?php
@@ -2195,7 +2200,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 								<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-info-exif">
 							<?php
@@ -2213,7 +2218,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-info-exif">
 							<?php
@@ -2231,7 +2236,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container">
 							<?php
@@ -2249,7 +2254,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container">
 							<?php
@@ -2267,7 +2272,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container">
 							<?php
@@ -2285,7 +2290,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container">
 							<?php
@@ -2303,7 +2308,7 @@ class JZSA_Admin_Pages {
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
-							<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 						</div>
 						<div class="jzsa-preview-container">
 							<?php
@@ -2344,7 +2349,7 @@ class JZSA_Admin_Pages {
 							?>
 							<div class="jzsa-code-block">
 								<code><?php echo esc_html( $sample_shortcode ); ?></code>
-								<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+								<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 							</div>
 							<div class="jzsa-preview-container jzsa-preview-container-error-sample">
 								<?php
@@ -2367,11 +2372,12 @@ class JZSA_Admin_Pages {
 							<h3><?php echo 'Sample 72: ' . esc_html__( 'Basic Album with Deprecated Link Format (Admin-Only Warning)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Same as above, but using the older short link format. Visitors will NOT see this warning, but you as an administrator should update the link to the new format.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 							<?php
+								// phpcs:ignore PluginCheck.CodeAnalysis.ShortURL.Found -- Intentional deprecated-link example used by the Guide.
 								$sample_shortcode = '[jzsa-album link="https://photos.app.goo.gl/6qmxgmqdouBFKH3i8" viewer="lightbox" limit="6" width="600"]';
 							?>
 							<div class="jzsa-code-block">
 									<code><?php echo esc_html( $sample_shortcode ); ?></code>
-								<button class="jzsa-copy-btn" type="button"><?php echo $s_copy; ?></button>
+								<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 							</div>
 							<div class="jzsa-preview-container jzsa-preview-container-basic-deprecated">
 								<?php
@@ -2410,8 +2416,8 @@ class JZSA_Admin_Pages {
 			return;
 		}
 		$dismiss_nonce  = wp_create_nonce( 'jzsa_dismiss_announcement' );
-		$guide_url      = esc_url( self::get_guide_page_url() );
-		$logo_url       = esc_url( JZSA_PLUGIN_URL . 'assets/icon-256x256.gif' );
+		$guide_url      = self::get_guide_page_url();
+		$logo_url       = JZSA_PLUGIN_URL . 'assets/icon-256x256.gif';
 		?>
 		<style>
 		#jzsa-announcement {
@@ -2492,12 +2498,12 @@ class JZSA_Admin_Pages {
 		<div id="jzsa-announcement">
 			<div class="jzsa-dash-promo-inner">
 				<div class="jzsa-dash-promo-logo" aria-hidden="true">
-					<img src="<?php echo $logo_url; ?>" alt="" width="56" height="56">
+					<img src="<?php echo esc_url( $logo_url ); ?>" alt="" width="56" height="56">
 				</div>
 				<div class="jzsa-dash-promo-body">
 					<h3><?php esc_html_e( 'Lightbox is now the recommended default viewer', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 					<p><?php esc_html_e( 'No worries, your existing galleries keep their current behavior. We recommend opening the Guide to learn more, then decide whether you want to migrate.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<a href="<?php echo $guide_url; ?>" class="button"><?php esc_html_e( 'Open Viewer Guide', 'janzeman-shared-albums-for-google-photos' ); ?></a>
+					<a href="<?php echo esc_url( $guide_url ); ?>" class="button"><?php esc_html_e( 'Open Viewer Guide', 'janzeman-shared-albums-for-google-photos' ); ?></a>
 				</div>
 			</div>
 			<button type="button" class="jzsa-dash-promo-dismiss" aria-label="<?php esc_attr_e( 'Dismiss this notice', 'janzeman-shared-albums-for-google-photos' ); ?>">&times;</button>
@@ -2551,6 +2557,7 @@ class JZSA_Admin_Pages {
 
 	public function handle_validate_shortcode() {
 		$this->verify_shortcode_tool_request( 'jzsa_validate_shortcode' );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by verify_shortcode_tool_request() above.
 		$shortcode = isset( $_POST['shortcode'] ) ? sanitize_textarea_field( wp_unslash( $_POST['shortcode'] ) ) : '';
 		$parsed    = JZSA_Shortcode_Tools::parse( $shortcode );
 		$issues    = array_merge( $parsed['errors'], $parsed['warnings'] );
@@ -2584,7 +2591,9 @@ class JZSA_Admin_Pages {
 
 	public function handle_migrate_shortcode() {
 		$this->verify_shortcode_tool_request( 'jzsa_migrate_shortcode' );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by verify_shortcode_tool_request() above.
 		$shortcode = isset( $_POST['shortcode'] ) ? sanitize_textarea_field( wp_unslash( $_POST['shortcode'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by verify_shortcode_tool_request() above.
 		$goal      = isset( $_POST['goal'] ) ? sanitize_key( wp_unslash( $_POST['goal'] ) ) : '';
 		$result    = JZSA_Shortcode_Tools::migrate( $shortcode, $goal, jzsa_get_default_viewer() );
 		wp_send_json_success( $result );
@@ -2592,6 +2601,7 @@ class JZSA_Admin_Pages {
 
 	public function handle_set_default_viewer() {
 		$this->verify_shortcode_tool_request( 'jzsa_set_default_viewer' );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by verify_shortcode_tool_request() above.
 		$viewer = isset( $_POST['viewer'] ) ? sanitize_key( wp_unslash( $_POST['viewer'] ) ) : '';
 		if ( ! in_array( $viewer, array( 'lightbox', 'fullscreen' ), true ) ) {
 			wp_send_json_error( __( 'Invalid default viewer.', 'janzeman-shared-albums-for-google-photos' ), 400 );

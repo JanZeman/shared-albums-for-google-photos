@@ -2246,6 +2246,7 @@ class JZSA_Shared_Albums {
 		if ( ! headers_sent() && ! wp_doing_ajax() ) {
 			nocache_headers();
 			if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+				// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Standard cache-plugin interoperability constant.
 				define( 'DONOTCACHEPAGE', true );
 			}
 		}
@@ -3084,7 +3085,9 @@ class JZSA_Shared_Albums {
 		}
 
 		// Get media URL (new param) with image_url fallback for backward compatibility.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized after fallback selection, then restricted to an approved HTTPS host.
 		$posted_media_url = isset( $_POST['media_url'] ) ? wp_unslash( $_POST['media_url'] ) : '';
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized after fallback selection, then restricted to an approved HTTPS host.
 		$posted_image_url = isset( $_POST['image_url'] ) ? wp_unslash( $_POST['image_url'] ) : '';
 		$raw_media_url    = ! empty( $posted_media_url ) ? $posted_media_url : $posted_image_url;
 		if ( empty( $raw_media_url ) ) {
@@ -3137,8 +3140,8 @@ class JZSA_Shared_Albums {
 		if ( is_wp_error( $response ) ) {
 			wp_send_json_error(
 				array(
-					/* translators: %s: error message returned from WordPress HTTP API */
 					'message' => sprintf(
+						/* translators: %s: error message returned from WordPress HTTP API. */
 						__( 'Failed to fetch media: %s', 'janzeman-shared-albums-for-google-photos' ),
 						$response->get_error_message()
 					),
