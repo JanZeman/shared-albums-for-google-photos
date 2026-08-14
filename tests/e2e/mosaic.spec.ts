@@ -26,6 +26,29 @@ async function waitForWrapper(page: Page, index: number): Promise<Locator> {
     return page.locator('.jzsa-gallery-wrapper').nth(index);
 }
 
+async function placeFirstTwoMosaicsInViewport(page: Page): Promise<[Locator, Locator]> {
+    const first = await waitForWrapper(page, 0);
+    const second = await waitForWrapper(page, 1);
+
+    await page.locator('.jzsa-gallery-wrapper').evaluateAll((wrappers) => {
+        wrappers.slice(0, 2).forEach((wrapper, index) => {
+            const element = wrapper as HTMLElement;
+            element.style.position = 'fixed';
+            element.style.top = '80px';
+            element.style.left = index === 0 ? '20px' : '660px';
+            element.style.width = '580px';
+            element.style.zIndex = '1000';
+            element.style.background = '#fff';
+        });
+    });
+
+    return [first, second];
+}
+
+async function activePhotoIndex(album: Locator): Promise<string | null> {
+    return album.locator('.swiper-slide-active').getAttribute('data-swiper-slide-index');
+}
+
 test.describe('Mosaic - wrapper position classes', () => {
     test.beforeEach(async ({ page }) => {
         await gotoFixture(page, FIXTURE_URL);
@@ -142,5 +165,35 @@ test.describe('Mosaic - thumbnail click advances main slider', () => {
             const activeIdx = await album.locator('.swiper-slide-active').getAttribute('data-swiper-slide-index');
             expect(activeIdx).toBe('0');
         }).toPass({ timeout: 2_000 });
+    });
+});
+
+test.describe('Mosaic - keyboard ownership', () => {
+    test.beforeEach(async ({ page }) => {
+        await gotoFixture(page, FIXTURE_URL);
+    });
+
+    test('arrow keys move only the hovered gallery', async ({ page }) => {
+        const [firstWrapper, secondWrapper] = await placeFirstTwoMosaicsInViewport(page);
+        const firstAlbum = firstWrapper.locator('.jzsa-album');
+        const secondAlbum = secondWrapper.locator('.jzsa-album');
+
+        await firstAlbum.hover();
+        await page.keyboard.press('ArrowRight');
+
+        await expect.poll(() => activePhotoIndex(firstAlbum)).toBe('1');
+        await expect.poll(() => activePhotoIndex(secondAlbum)).toBe('0');
+    });
+
+    test('arrow keys move only the keyboard-focused gallery', async ({ page }) => {
+        const [firstWrapper, secondWrapper] = await placeFirstTwoMosaicsInViewport(page);
+        const firstAlbum = firstWrapper.locator('.jzsa-album');
+        const secondAlbum = secondWrapper.locator('.jzsa-album');
+
+        await secondAlbum.locator('.swiper-button-next').focus();
+        await page.keyboard.press('ArrowRight');
+
+        await expect.poll(() => activePhotoIndex(firstAlbum)).toBe('0');
+        await expect.poll(() => activePhotoIndex(secondAlbum)).toBe('1');
     });
 });

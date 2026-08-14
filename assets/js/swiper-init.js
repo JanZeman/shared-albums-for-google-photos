@@ -89,6 +89,73 @@
 
 	var swipers = {};
 	var galleryInitObserver = null;
+    var keyboardOwnerGalleryId = null;
+
+    function applyGalleryKeyboardOwner() {
+        Object.keys(swipers).forEach(function(galleryId) {
+            var swiper = swipers[galleryId];
+            if (!swiper || swiper.destroyed || !swiper.keyboard) {
+                return;
+            }
+
+            var shouldEnable = galleryId === keyboardOwnerGalleryId && swiper._jzsaKeyboardAllowed;
+            if (shouldEnable && !swiper.keyboard.enabled) {
+                swiper.keyboard.enable();
+            } else if (!shouldEnable && swiper.keyboard.enabled) {
+                swiper.keyboard.disable();
+            }
+        });
+    }
+
+    function claimGalleryKeyboardOwner(galleryId) {
+        if (!galleryId || !swipers[galleryId] || !swipers[galleryId]._jzsaKeyboardAllowed) {
+            return;
+        }
+        keyboardOwnerGalleryId = galleryId;
+        applyGalleryKeyboardOwner();
+    }
+
+    function restoreGalleryKeyboardOwner(galleryId) {
+        if (galleryId && swipers[galleryId] && swipers[galleryId]._jzsaKeyboardAllowed) {
+            keyboardOwnerGalleryId = galleryId;
+        } else {
+            keyboardOwnerGalleryId = null;
+        }
+        applyGalleryKeyboardOwner();
+    }
+
+    function setupGalleryKeyboardOwnership($container, swiper, interactionLock) {
+        if (!$container || !$container.length || !swiper) {
+            return;
+        }
+
+        var galleryId = $container.attr('id');
+        if (!galleryId) {
+            return;
+        }
+
+        swiper._jzsaKeyboardAllowed = !interactionLock;
+        var $scope = $container.closest('.jzsa-gallery-wrapper');
+        if (!$scope.length) {
+            $scope = $container;
+        }
+        var namespace = '.jzsaKeyboardOwner-' + galleryId;
+        $scope.off(namespace);
+        $scope.on(
+            'mouseenter' + namespace +
+            ' focusin' + namespace +
+            ' pointerdown' + namespace +
+            ' touchstart' + namespace,
+            function() {
+                claimGalleryKeyboardOwner(galleryId);
+            }
+        );
+
+        if (!keyboardOwnerGalleryId && !interactionLock && $container.is(':visible')) {
+            keyboardOwnerGalleryId = galleryId;
+        }
+        applyGalleryKeyboardOwner();
+    }
 
 	function ensureGalleryId($gallery, fallbackIndex) {
 		if (!$gallery || !$gallery.length || $gallery.attr('id')) {
@@ -406,6 +473,10 @@
         }
 
         var swiper = swipers[element.id];
+        if (swiper) {
+            swiper._jzsaKeyboardOwnerBeforeLightbox = keyboardOwnerGalleryId;
+            claimGalleryKeyboardOwner(element.id);
+        }
         if (swiper && $el.attr('data-mode') === 'carousel') {
             if (swiper._jzsaLightboxOriginalSlidesPerView == null) {
                 swiper._jzsaLightboxOriginalSlidesPerView = swiper.params.slidesPerView;
@@ -585,6 +656,7 @@
         } catch (e) { /* ignore */ }
 
         var swiper = swipers[element.id];
+        var keyboardOwnerBeforeLightbox = swiper ? swiper._jzsaKeyboardOwnerBeforeLightbox : null;
         if (swiper && swiper._jzsaLightboxOriginalSlidesPerView != null) {
             var targetIndex = (typeof swiper.realIndex === 'number') ? swiper.realIndex : swiper.activeIndex;
             swiper.params.slidesPerView  = swiper._jzsaLightboxOriginalSlidesPerView;
@@ -640,6 +712,16 @@
         $el.removeData('jzsa-sample-anchor-id');
 
         _jzsaLightboxActiveEl = null;
+        if (swiper) {
+            delete swiper._jzsaKeyboardOwnerBeforeLightbox;
+            if (keyboardOwnerBeforeLightbox && keyboardOwnerBeforeLightbox !== element.id) {
+                restoreGalleryKeyboardOwner(keyboardOwnerBeforeLightbox);
+            } else if ($el.is(':visible')) {
+                claimGalleryKeyboardOwner(element.id);
+            } else {
+                restoreGalleryKeyboardOwner(null);
+            }
+        }
         // Only restore focus when the lightbox was opened via keyboard. For mouse-
         // opened lightboxes, restoring focus causes :focus-visible to appear on the
         // gallery thumbnail button, making it look stale after close.
@@ -3678,6 +3760,10 @@
 				// Entering fullscreen - switch to fullscreen autoplay settings
 				var logPrefix = params.browserPrefix ? ' (' + params.browserPrefix + ')' : '';
 				jzsaDebug('🔍 Fullscreen entered for gallery' + logPrefix + ':', params.galleryId);
+            if (!params._fullscreenActive) {
+                swiper._jzsaKeyboardOwnerBeforeFullscreen = keyboardOwnerGalleryId;
+            }
+            claimGalleryKeyboardOwner(containerElement.id);
             params._fullscreenActive = true;
             if (swiper && swiper._jzsaExpandedMosaicController) {
                 swiper._jzsaExpandedMosaicController.useFullscreen();
@@ -3911,6 +3997,17 @@
 	                swiper.autoplay.stop();
 	                // console.log('⏸️  Autoplay stopped (not auto in normal mode' + logPrefix + ')');
 	            }
+            var keyboardOwnerBeforeFullscreen = swiper._jzsaKeyboardOwnerBeforeFullscreen;
+            delete swiper._jzsaKeyboardOwnerBeforeFullscreen;
+            if (isReturningToLightbox) {
+                claimGalleryKeyboardOwner(containerElement.id);
+            } else if (keyboardOwnerBeforeFullscreen && keyboardOwnerBeforeFullscreen !== containerElement.id) {
+                restoreGalleryKeyboardOwner(keyboardOwnerBeforeFullscreen);
+            } else if ($(containerElement).is(':visible')) {
+                claimGalleryKeyboardOwner(containerElement.id);
+            } else {
+                restoreGalleryKeyboardOwner(null);
+            }
             params._fullscreenActive = false;
 	        }
 	    }
@@ -5446,9 +5543,10 @@
             noSwiping: true,
             noSwipingSelector: '.plyr__controls, .plyr__control',
 
-            // Keyboard control
+            // Keyboard control is enabled for exactly one gallery by the
+            // page-level ownership coordinator after Swiper initialization.
             keyboard: {
-                enabled: !interactionLock,
+                enabled: false,
             },
 
             // Mouse wheel
@@ -6462,6 +6560,7 @@
             // Initialize Swiper (pass the DOM element directly to avoid selector resolution issues)
             var swiper = new Swiper($container[0], swiperConfig);
             swipers[galleryId] = swiper;
+            setupGalleryKeyboardOwnership($container, swiper, interactionLock);
             swiper._jzsaExpandedMosaicController = setupFullscreenMosaic(swiper);
 
             // Sync mosaic with main gallery: scroll mosaic to keep active thumb visible
