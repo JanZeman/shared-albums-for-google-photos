@@ -341,7 +341,7 @@ class JZSA_Data_Provider {
 		// Structure per photo: ["AF1Qip…", ["url", WIDTH, HEIGHT, null×5, […], [FILESIZE]], TIMESTAMP, "", TZ_OFFSET]
 		$url_meta = array();
 		if ( preg_match_all(
-			'/\["(AF1Qip[^"]+)"\s*,\s*\["(https?:\/\/[^"]+googleusercontent\.com[^"]+)"\s*,\s*(\d+)\s*,\s*(\d+).*?\[(\d+)\].*?\]\s*,\s*(\d{10,13})\s*,\s*"[^"]*"\s*,\s*(\d+)/is',
+			'/\["(AF1Qip[^"]+)"\s*,\s*\["(https?:\/\/[^"]+googleusercontent\.com[^"]+)"\s*,\s*(\d+)\s*,\s*(\d+).*?\[(\d+)\].*?\]\s*,\s*(\d{10,13})\s*,\s*"[^"]*"\s*,\s*(-?\d+)/is',
 			$html,
 			$id_matches
 		) ) {

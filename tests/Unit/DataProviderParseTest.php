@@ -233,6 +233,23 @@ class DataProviderParseTest extends TestCase {
 		$this->assertGreaterThan( 0, $first['timestamp'] );
 	}
 
+	public function test_metadata_enrichment_accepts_negative_timezone_offset(): void {
+		$id   = 'AF1QipNegativeTimezoneOffset';
+		$url  = 'https://lh3.googleusercontent.com/pw/negative-timezone-photo';
+		$html = '<title>Negative timezone - Google Photos</title><script>'
+			. '["' . $id . '",["' . $url . '",4000,3000,null,null,null,null,null,[null,null,1],[10790043]],1760378090026,"token",-21600000]'
+			. '</script>';
+
+		$GLOBALS['jzsa_test_http_responses']['*'] = array( 'body' => $html );
+		$result = $this->provider->fetch_album( 'https://photos.google.com/share/AF1QipNegativeTimezoneAlbum' );
+
+		$this->assertTrue( $result['success'] );
+		$first = $result['data']['photos'][0];
+		$this->assertIsArray( $first, 'A photo with a negative timezone offset should retain its metadata' );
+		$this->assertSame( $id, $first['id'] );
+		$this->assertSame( 1760378090026, $first['timestamp'] );
+	}
+
 	// -------------------------------------------------------------------------
 	// Video album fixture (album-video.html)
 	// -------------------------------------------------------------------------
