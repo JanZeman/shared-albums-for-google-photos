@@ -91,10 +91,31 @@
 	var galleryInitObserver = null;
     var keyboardOwnerGalleryId = null;
 
+    function isSwiperElementLive(el) {
+        if (!el || !document.body.contains(el)) {
+            return false;
+        }
+        // openLightbox() moves the element into the single shared body-level backdrop and
+        // leaves a comment-node placeholder behind at its original spot; closeLightbox()
+        // uses that placeholder to move it back. A Playground/lazy-preview re-render can
+        // wipe the placeholder's parent (previewContainer.innerHTML = ...) while the element
+        // is still sitting inside the backdrop -- still document.body.contains()-true, but
+        // with nowhere left to be restored to. Once its placeholder is gone, it is orphaned.
+        if (_jzsaLightboxBackdrop && _jzsaLightboxBackdrop.contains(el)) {
+            var placeholder = $(el).data('jzsaLightboxPlaceholder');
+            // parentNode alone is not enough: a whole subtree can be detached from
+            // document (e.g. by previewContainer.innerHTML = ...) while its internal
+            // parent-child links stay intact, so the placeholder's parentNode would
+            // still be non-null even though neither is reachable from the live DOM.
+            return !!(placeholder && document.body.contains(placeholder));
+        }
+        return true;
+    }
+
     function applyGalleryKeyboardOwner() {
         Object.keys(swipers).forEach(function(galleryId) {
             var swiper = swipers[galleryId];
-            var isAttached = swiper && swiper.el && document.body.contains(swiper.el);
+            var isAttached = swiper && swiper.el && isSwiperElementLive(swiper.el);
             if (!swiper || swiper.destroyed || !isAttached) {
                 // Playground/lazy-preview re-renders replace a container's innerHTML without
                 // calling swiper.destroy(), so this is the only place a stale entry is noticed.
@@ -128,6 +149,14 @@
                 }
                 $scope.off('.jzsaKeyboardOwner-' + galleryId);
             } catch (e) { /* ignore */ }
+            // A stale element orphaned inside the shared lightbox backdrop (see
+            // isSwiperElementLive) would otherwise sit there, hidden, forever.
+            if (_jzsaLightboxBackdrop && swiper.el.parentNode === _jzsaLightboxBackdrop) {
+                try { _jzsaLightboxBackdrop.removeChild(swiper.el); } catch (e) { /* ignore */ }
+                if (_jzsaLightboxActiveEl === swiper.el) {
+                    _jzsaLightboxActiveEl = null;
+                }
+            }
         }
         delete swipers[galleryId];
         if (keyboardOwnerGalleryId === galleryId) {

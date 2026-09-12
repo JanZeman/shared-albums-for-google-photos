@@ -38,13 +38,14 @@ describe('gallery keyboard ownership: stale-entry pruning', () => {
         swipers = {};
         helpers = loadHelpers(
             [
+                'isSwiperElementLive',
                 'applyGalleryKeyboardOwner',
                 'pruneGalleryKeyboardOwnership',
                 'claimGalleryKeyboardOwner',
                 'restoreGalleryKeyboardOwner',
                 'setupGalleryKeyboardOwnership',
             ],
-            { $: jQuery, swipers, keyboardOwnerGalleryId: null }
+            { $: jQuery, swipers, keyboardOwnerGalleryId: null, _jzsaLightboxBackdrop: null, _jzsaLightboxActiveEl: null }
         );
     });
 
@@ -111,5 +112,80 @@ describe('gallery keyboard ownership: stale-entry pruning', () => {
 
         expect(Object.keys(swipers)).toHaveLength(1);
         expect(Object.keys(swipers)[0]).toBe('gen-24');
+    });
+
+    // openLightbox() moves an album into the single shared body-level backdrop and leaves a
+    // comment-node placeholder at its original spot, restored on close. If a Playground/lazy
+    // preview re-render replaces that spot's container while the lightbox is still open, the
+    // element stays document.body.contains()-true (it's inside the backdrop) even though its
+    // placeholder's whole subtree has been detached -- so document.body.contains() must be
+    // checked on the placeholder too, not just `placeholder.parentNode` (non-null even for a
+    // fully orphaned subtree, since detachment doesn't sever internal parent-child links).
+    describe('an album relocated into the shared lightbox backdrop', () => {
+        let backdrop;
+
+        beforeEach(() => {
+            backdrop = document.createElement('div');
+            backdrop.className = 'jzsa-lightbox-backdrop';
+            document.body.appendChild(backdrop);
+            helpers = loadHelpers(
+                [
+                    'isSwiperElementLive',
+                    'applyGalleryKeyboardOwner',
+                    'pruneGalleryKeyboardOwnership',
+                    'claimGalleryKeyboardOwner',
+                    'restoreGalleryKeyboardOwner',
+                    'setupGalleryKeyboardOwnership',
+                ],
+                { $: jQuery, swipers, keyboardOwnerGalleryId: null, _jzsaLightboxBackdrop: backdrop, _jzsaLightboxActiveEl: null }
+            );
+        });
+
+        test('stays live while its original placeholder is still connected to the document', () => {
+            const originalParent = document.createElement('div');
+            document.body.appendChild(originalParent);
+            const placeholder = document.createComment('jzsa-lightbox-placeholder');
+            originalParent.appendChild(placeholder);
+
+            const el = document.createElement('div');
+            el.id = 'open-lightbox';
+            backdrop.appendChild(el);
+            jQuery(el).data('jzsaLightboxPlaceholder', placeholder);
+            const swiper = makeFakeSwiper(el);
+            swiper._jzsaKeyboardAllowed = true;
+            swipers[el.id] = swiper;
+
+            helpers.applyGalleryKeyboardOwner();
+
+            expect(Object.keys(swipers)).toEqual(['open-lightbox']);
+            expect(swiper.destroy).not.toHaveBeenCalled();
+        });
+
+        test('is pruned once its original container is replaced out from under it', () => {
+            const originalParent = document.createElement('div');
+            document.body.appendChild(originalParent);
+            const placeholder = document.createComment('jzsa-lightbox-placeholder');
+            originalParent.appendChild(placeholder);
+
+            const el = document.createElement('div');
+            el.id = 'orphaned-lightbox';
+            backdrop.appendChild(el);
+            jQuery(el).data('jzsaLightboxPlaceholder', placeholder);
+            const swiper = makeFakeSwiper(el);
+            swiper._jzsaKeyboardAllowed = true;
+            swipers[el.id] = swiper;
+
+            // Playground "Apply" replaces the original container's innerHTML while the
+            // lightbox is still open: the placeholder's subtree is detached, but the
+            // element itself is still sitting inside the backdrop (still in document.body).
+            originalParent.innerHTML = '<div>new preview content</div>';
+
+            helpers.applyGalleryKeyboardOwner();
+
+            expect(Object.keys(swipers)).toEqual([]);
+            expect(swiper.destroy).toHaveBeenCalled();
+            // The dead element must not be left behind, hidden, inside the backdrop forever.
+            expect(backdrop.contains(el)).toBe(false);
+        });
     });
 });
