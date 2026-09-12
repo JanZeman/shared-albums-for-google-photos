@@ -94,7 +94,16 @@
     function applyGalleryKeyboardOwner() {
         Object.keys(swipers).forEach(function(galleryId) {
             var swiper = swipers[galleryId];
-            if (!swiper || swiper.destroyed || !swiper.keyboard) {
+            var isAttached = swiper && swiper.el && document.body.contains(swiper.el);
+            if (!swiper || swiper.destroyed || !isAttached) {
+                // Playground/lazy-preview re-renders replace a container's innerHTML without
+                // calling swiper.destroy(), so this is the only place a stale entry is noticed.
+                // Left unpruned, every mouseenter/focusin/pointerdown/touchstart on any gallery
+                // -- and every fullscreen/lightbox toggle -- re-scans an ever-growing registry.
+                pruneGalleryKeyboardOwnership(galleryId, swiper);
+                return;
+            }
+            if (!swiper.keyboard) {
                 return;
             }
 
@@ -105,6 +114,25 @@
                 swiper.keyboard.disable();
             }
         });
+    }
+
+    function pruneGalleryKeyboardOwnership(galleryId, swiper) {
+        if (swiper && !swiper.destroyed) {
+            try { swiper.destroy(true, true); } catch (e) { /* ignore */ }
+        }
+        if (swiper && swiper.el) {
+            try {
+                var $scope = $(swiper.el).closest('.jzsa-gallery-wrapper');
+                if (!$scope.length) {
+                    $scope = $(swiper.el);
+                }
+                $scope.off('.jzsaKeyboardOwner-' + galleryId);
+            } catch (e) { /* ignore */ }
+        }
+        delete swipers[galleryId];
+        if (keyboardOwnerGalleryId === galleryId) {
+            keyboardOwnerGalleryId = null;
+        }
     }
 
     function claimGalleryKeyboardOwner(galleryId) {
