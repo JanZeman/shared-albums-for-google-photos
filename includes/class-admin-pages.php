@@ -2480,7 +2480,7 @@ class JZSA_Admin_Pages {
 				</div>
 				<div class="jzsa-dash-promo-body">
 					<h3><?php esc_html_e( 'Shared Albums now has a Community', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<p><?php esc_html_e( 'Browse real album setups shared by other users, and share your own to help newcomers get started.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<p><?php esc_html_e( 'Start quickly by getting inspired by what others built. Share your solution to help someone else start just as fast.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<a href="<?php echo esc_url( $community_url ); ?>" class="button button-primary"><?php esc_html_e( 'Open Community', 'janzeman-shared-albums-for-google-photos' ); ?></a>
 				</div>
 			</div>

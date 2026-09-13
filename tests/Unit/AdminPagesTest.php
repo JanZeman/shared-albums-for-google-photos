@@ -460,7 +460,8 @@ class AdminPagesTest extends TestCase {
 		// Deliberately not gated on JZSA_VIEWER_MIGRATION_NOTICE_OPTION: unlike the Lightbox
 		// announcement it replaced, the Community teaser is for every site, fresh installs too.
 		$this->assertStringContainsString( 'Shared Albums now has a Community', $output );
-		$this->assertStringContainsString( 'Browse real album setups shared by other users', $output );
+		$this->assertStringContainsString( 'Start quickly by getting inspired by what others built.', $output );
+		$this->assertStringContainsString( 'Share your solution to help someone else start just as fast.', $output );
 		$this->assertStringContainsString( 'Open Community', $output );
 		$this->assertStringNotContainsString( 'Lightbox is now the recommended default viewer', $output );
 		$this->assertStringNotContainsString( 'Open Viewer Guide', $output );
