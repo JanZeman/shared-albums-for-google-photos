@@ -37,12 +37,12 @@ test.describe('Admin - Guide page', () => {
         await expect(link).toBeAttached();
     });
 
-    test('Migration tool sits near the bottom, collapsed, not as a recommendation', async ({ page }) => {
+    test('Migration tool sits after Troubleshooting, collapsed, not as a recommendation', async ({ page }) => {
         // Roadmap 016. The Lightbox recommendation was a temporary campaign; the tool it wraps
         // is not. On a site that upgraded from a pre-2.4.0 version the section still renders,
-        // but as a collapsed utility just above Troubleshooting rather than as the first thing
-        // on the page. On a site that never upgraded it does not render at all, which is why
-        // every assertion below is skipped when the section is absent.
+        // but as a collapsed utility at the very end of the page rather than as the first thing
+        // on it. On a site that never upgraded it does not render at all, which is why every
+        // assertion below is skipped when the section is absent.
         await page.goto(GUIDE_URL);
         await expect(page.locator('.jzsa-settings-wrap')).toBeAttached({ timeout: 10_000 });
 
@@ -56,7 +56,10 @@ test.describe('Admin - Guide page', () => {
         await expect(migration.locator('summary')).toContainText('Shortcode Migration Tool');
         await expect(migration).not.toContainText('Recommended Update');
 
-        // Positioned after the Playground and before Troubleshooting.
+        // Explains, right up front, who this is even for.
+        await expect(migration).toContainText('In July 2026, the shortcode syntax partially changed.');
+
+        // Positioned after the Playground and after Troubleshooting, not before it.
         const order = await page.evaluate(() => {
             const all = Array.from(document.querySelectorAll('.jzsa-section'));
             const indexOf = (predicate: (el: Element) => boolean) => all.findIndex(predicate);
@@ -69,7 +72,7 @@ test.describe('Admin - Guide page', () => {
         expect(order.playground).toBeGreaterThanOrEqual(0);
         expect(order.troubleshooting).toBeGreaterThanOrEqual(0);
         expect(order.migration).toBeGreaterThan(order.playground);
-        expect(order.migration).toBeLessThan(order.troubleshooting);
+        expect(order.migration).toBeGreaterThan(order.troubleshooting);
     });
 
     test('Deep-linking to the migration tool from Settings opens it', async ({ page }) => {

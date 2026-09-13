@@ -516,6 +516,13 @@ class AdminPagesTest extends TestCase {
 		$this->assertLessThan( strpos( $output, 'value="lightbox"' ), strpos( $output, 'value="preserve"' ) );
 		$this->assertStringContainsString( 'Analyze and Migrate', $output );
 
+		// Opens by explaining who this is even for, before anything else in the tool.
+		$this->assertStringContainsString( 'In July 2026, the shortcode syntax partially changed.', $output );
+		$this->assertLessThan(
+			strpos( $output, 'id="jzsa-migration-shortcode"' ),
+			strpos( $output, 'In July 2026, the shortcode syntax partially changed.' )
+		);
+
 		// The one piece of rationale worth keeping: it answers a real question.
 		$this->assertStringContainsString( '<strong>Why migrate if nothing looks broken?</strong>', $output );
 		$this->assertStringContainsString( 'will be removed in a future major version', $output );

@@ -167,6 +167,7 @@ class JZSA_Admin_Pages {
 		<div id="jzsa-guide-migration" class="jzsa-section jzsa-viewer-migration-guide">
 			<details id="jzsa-guide-migration-details">
 				<summary><?php esc_html_e( 'Shortcode Migration Tool (legacy syntax)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
+				<p><?php esc_html_e( 'In July 2026, the shortcode syntax partially changed. If you created your shortcodes before then, this tool will help you update them.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 				<div class="jzsa-shortcode-migrator">
 					<p><?php esc_html_e( 'Paste one existing shortcode. The tool will analyze it, preserve its behavior by default, and generate a validated modern shortcode without editing your content.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<p><?php echo wp_kses_post( __( '<strong>Why migrate if nothing looks broken?</strong> Nothing is broken. Older shortcodes keep working through a compatibility layer that translates them at runtime, but that layer is temporary and will be removed in a future major version. A shortcode written in the current syntax is the one that keeps working without translation.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
@@ -2297,7 +2298,6 @@ class JZSA_Admin_Pages {
 			</div>
 
 
-				<?php $this->render_guide_migration_tutorial(); ?>
 <!-- Troubleshooting -->
 				<div class="jzsa-section">
 					<h2><?php esc_html_e( 'Troubleshooting', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
@@ -2373,6 +2373,8 @@ class JZSA_Admin_Pages {
 					</div>
 				</div>
 
+
+				<?php $this->render_guide_migration_tutorial(); ?>
 				<?php $this->render_unhappy_section(); ?>
 				<?php $this->render_happy_section(); ?>
 			</div>
