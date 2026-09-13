@@ -397,8 +397,14 @@ function jzsaStartBackgroundLazyPreviewQueue() {
 
 	jzsaLazyPreviewBackgroundStarted = true;
 
-	var initialDelayMs = 1200;
-	var betweenLoadsMs = 700;
+	// Brief pause after the page reaches load + idle, so the queue does not compete
+	// with whatever the browser is still settling (paint, other onload handlers)
+	// the instant it goes idle.
+	var initialDelayMs = 300;
+	// Not meaningful pacing (requests already run one at a time; real spacing between
+	// them is the ~250-300ms network round trip, not this). Kept small and explicit so
+	// the intent - yield to the event loop between iterations - stays visible in code.
+	var betweenLoadsMs = 10;
 
 	var loadNext = function () {
 		var pendingPreviews = document.querySelectorAll( '.jzsa-lazy-preview[data-lazy-state="pending"]' );
