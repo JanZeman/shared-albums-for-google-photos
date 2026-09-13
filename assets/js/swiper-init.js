@@ -30,6 +30,18 @@
 		return jzsaI18n(key).replace('%d', String(value));
 	}
 
+	// Whether to speculatively warm the browser cache with full-resolution images before any
+	// viewer is opened. PHP turns this off in the admin, where no viewer is ever opened.
+	// wp_localize_script casts booleans to strings ("1" and ""), hence the truthiness check
+	// rather than a strict comparison. A missing key means a payload from before this flag
+	// existed, so fall back to preloading and keep the historical behavior.
+	function jzsaShouldPreloadFullImages() {
+		if (typeof jzsaAjax === 'undefined' || typeof jzsaAjax.preloadFullImages === 'undefined') {
+			return true;
+		}
+		return !!jzsaAjax.preloadFullImages;
+	}
+
 	function jzsaEscapeAttr(value) {
 		return String(value)
 			.replace(/&/g, '&amp;')
@@ -5475,6 +5487,16 @@
 
             fullscreenGateToken += 1;
             setFullscreenQualityGate(false);
+
+            // Outside fullscreen this is purely speculative: it never changes what is on screen
+            // (the thumbnail keeps its preview src), it only warms the browser cache so the
+            // quality gate does not appear if a viewer is opened later. The admin never opens
+            // one, so PHP switches it off there -- see preloadFullImages in class-orchestrator.
+            // Deliberately the only gated step: the branch above and the unconditional first
+            // call below still run, because fullscreen entry depends on their gate bookkeeping.
+            if (!jzsaShouldPreloadFullImages()) {
+                return;
+            }
 
             // Outside fullscreen, keep previews on screen but warm the cache for likely next images.
             processOffsets([0, 1, -1, 2], preloadFullImage);

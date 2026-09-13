@@ -297,14 +297,21 @@ class JZSA_Shared_Albums {
 			'jzsa-init',
 			'jzsaAjax',
 			array(
-				'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
-				'downloadNonce'  => $download_nonce,
-				'previewNonce'   => $preview_nonce,
-				'refreshNonce'   => $refresh_nonce,
-				'chunkNonce'     => $chunk_nonce,
-				'photoMetaNonce' => $photo_meta_nonce,
-				'plyrSvgUrl'     => plugins_url( 'assets/vendor/plyr/plyr.svg', $this->plugin_file ),
-				'i18n'           => jzsa_get_frontend_i18n_strings(),
+				'ajaxUrl'           => admin_url( 'admin-ajax.php' ),
+				'downloadNonce'     => $download_nonce,
+				'previewNonce'      => $preview_nonce,
+				'refreshNonce'      => $refresh_nonce,
+				'chunkNonce'        => $chunk_nonce,
+				'photoMetaNonce'    => $photo_meta_nonce,
+				'plyrSvgUrl'        => plugins_url( 'assets/vendor/plyr/plyr.svg', $this->plugin_file ),
+				// Speculatively warming the full-resolution cache only pays off if a viewer is
+				// actually opened later. In the admin it never is: the Guide page alone renders
+				// dozens of documentation samples nobody expands, and the Community page renders
+				// browse-card previews, so the bet loses once per gallery. Visitor pages keep it.
+				// is_admin() also covers the jzsa_shortcode_preview admin-ajax endpoint, so
+				// Playground previews are included.
+				'preloadFullImages' => ! is_admin(),
+				'i18n'              => jzsa_get_frontend_i18n_strings(),
 			)
 		);
 	}
