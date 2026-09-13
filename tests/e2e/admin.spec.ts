@@ -4,6 +4,7 @@ import { loginAsAdmin } from './support/auth';
 const GUIDE_URL      = '/wp-admin/admin.php?page=janzeman-shared-albums-for-google-photos';
 const PARAMS_URL     = '/wp-admin/admin.php?page=janzeman-shared-albums-for-google-photos-shortcode-parameters';
 const COMMUNITY_URL  = '/wp-admin/admin.php?page=janzeman-shared-albums-for-google-photos-community';
+const SETTINGS_URL   = '/wp-admin/admin.php?page=janzeman-shared-albums-for-google-photos-settings';
 
 test.describe('Admin - Guide page', () => {
     test.beforeEach(async ({ page }) => {
@@ -34,6 +35,63 @@ test.describe('Admin - Guide page', () => {
         await page.goto(GUIDE_URL);
         const link = page.locator(`a[href*="page=janzeman-shared-albums-for-google-photos-shortcode-parameters"]`).first();
         await expect(link).toBeAttached();
+    });
+
+    test('Migration tool sits near the bottom, collapsed, not as a recommendation', async ({ page }) => {
+        // Roadmap 016. The Lightbox recommendation was a temporary campaign; the tool it wraps
+        // is not. On a site that upgraded from a pre-2.4.0 version the section still renders,
+        // but as a collapsed utility just above Troubleshooting rather than as the first thing
+        // on the page. On a site that never upgraded it does not render at all, which is why
+        // every assertion below is skipped when the section is absent.
+        await page.goto(GUIDE_URL);
+        await expect(page.locator('.jzsa-settings-wrap')).toBeAttached({ timeout: 10_000 });
+
+        const migration = page.locator('#jzsa-guide-migration');
+        if ((await migration.count()) === 0) {
+            test.skip(true, 'Site was not upgraded from a pre-2.4.0 version, so the tool is absent by design.');
+        }
+
+        // Collapsed, and labelled as a tool.
+        await expect(migration.locator('details')).not.toHaveAttribute('open', /.*/);
+        await expect(migration.locator('summary')).toContainText('Shortcode Migration Tool');
+        await expect(migration).not.toContainText('Recommended Update');
+
+        // Positioned after the Playground and before Troubleshooting.
+        const order = await page.evaluate(() => {
+            const all = Array.from(document.querySelectorAll('.jzsa-section'));
+            const indexOf = (predicate: (el: Element) => boolean) => all.findIndex(predicate);
+            return {
+                playground: indexOf((el) => el.classList.contains('jzsa-playground-section')),
+                migration: indexOf((el) => el.id === 'jzsa-guide-migration'),
+                troubleshooting: indexOf((el) => (el.querySelector('h2')?.textContent ?? '').includes('Troubleshooting')),
+            };
+        });
+        expect(order.playground).toBeGreaterThanOrEqual(0);
+        expect(order.troubleshooting).toBeGreaterThanOrEqual(0);
+        expect(order.migration).toBeGreaterThan(order.playground);
+        expect(order.migration).toBeLessThan(order.troubleshooting);
+    });
+
+    test('Deep-linking to the migration tool from Settings opens it', async ({ page }) => {
+        // The section id sits on the wrapping <div>, not the <details> itself, so the browser's
+        // native "opening a fragment inside a closed <details> auto-expands it" behavior does
+        // not apply: the linked element is the details' container, not its descendant. Without
+        // the explicit open-on-hash script, following the deep link from Settings would land on
+        // a still-collapsed section that is easy to miss.
+        await page.goto(GUIDE_URL);
+        const migration = page.locator('#jzsa-guide-migration');
+        if ((await migration.count()) === 0) {
+            test.skip(true, 'Site was not upgraded from a pre-2.4.0 version, so the tool is absent by design.');
+        }
+
+        await page.goto(SETTINGS_URL);
+        const settingsLink = page.locator('a[href*="#jzsa-guide-migration"]');
+        await expect(settingsLink).toBeAttached({ timeout: 10_000 });
+        await settingsLink.click();
+
+        await expect(page.locator('.jzsa-settings-wrap')).toBeAttached({ timeout: 10_000 });
+        await expect(page.locator('#jzsa-guide-migration-details')).toHaveAttribute('open', /.*/);
+        await expect(migration.locator('summary')).toBeInViewport();
     });
 
     test('Guide page does not speculatively preload full-resolution images', async ({ page }) => {

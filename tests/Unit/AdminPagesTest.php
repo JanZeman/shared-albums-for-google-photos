@@ -36,6 +36,12 @@ class AdminPagesTest extends TestCase {
 		$_POST = array();
 		$GLOBALS['jzsa_test_current_user_can'] = false;
 		$GLOBALS['jzsa_test_nonce_valid']      = true;
+		// setUp() clears these for tests in this class, but the stub stores are plain globals
+		// shared with every other test class. Without clearing them here too, whichever test
+		// happens to run last leaks its options into the next class, so an unrelated suite
+		// starts with, say, a non-default viewer and fails purely because of ordering.
+		$GLOBALS['jzsa_test_options']   = array();
+		$GLOBALS['jzsa_test_user_meta'] = array();
 	}
 
 	private function callAjax( string $method ): JZSA_Test_JSON_Response {
@@ -239,6 +245,29 @@ class AdminPagesTest extends TestCase {
 		$this->assertStringNotContainsString( 'Recommended Update: Try Lightbox', $output );
 	}
 
+	public function test_settings_page_links_to_the_migration_tool_on_upgraded_sites(): void {
+		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1' );
+		$method = $this->reflection->getMethod( 'render_default_viewer_setting_section' );
+
+		ob_start();
+		$method->invoke( $this->admin_pages );
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( '#jzsa-guide-migration', $output );
+		$this->assertStringContainsString( 'Shortcode Migration Tool', $output );
+	}
+
+	public function test_settings_page_omits_the_migration_link_without_the_upgrade_flag(): void {
+		$method = $this->reflection->getMethod( 'render_default_viewer_setting_section' );
+
+		ob_start();
+		$method->invoke( $this->admin_pages );
+		$output = ob_get_clean();
+
+		// A site that never ran a pre-2.4.0 version has no migration tool to link to.
+		$this->assertStringNotContainsString( '#jzsa-guide-migration', $output );
+	}
+
 	public function test_settings_notice_can_be_dismissed_per_user(): void {
 		update_user_meta( 1, JZSA_Admin_Pages::SETTINGS_ANNOUNCEMENT_META, '' );
 		$GLOBALS['jzsa_test_current_user_can'] = true;
@@ -415,29 +444,31 @@ class AdminPagesTest extends TestCase {
 		);
 	}
 
-	public function test_dashboard_announcement_is_hidden_without_viewer_migration_flag(): void {
+	public function test_dashboard_announcement_promotes_the_community_on_every_site(): void {
 		$GLOBALS['jzsa_test_current_screen_id'] = 'dashboard';
+
+		ob_start();
+		$this->admin_pages->render_dashboard_announcement();
+		$output = ob_get_clean();
+
+		// Deliberately not gated on JZSA_VIEWER_MIGRATION_NOTICE_OPTION: unlike the Lightbox
+		// announcement it replaced, the Community teaser is for every site, fresh installs too.
+		$this->assertStringContainsString( 'Shared Albums now has a Community', $output );
+		$this->assertStringContainsString( 'Browse real album setups shared by other users', $output );
+		$this->assertStringContainsString( 'Open Community', $output );
+		$this->assertStringNotContainsString( 'Lightbox is now the recommended default viewer', $output );
+		$this->assertStringNotContainsString( 'Open Viewer Guide', $output );
+	}
+
+	public function test_dashboard_announcement_can_be_dismissed_per_user(): void {
+		$GLOBALS['jzsa_test_current_screen_id'] = 'dashboard';
+		update_user_meta( 1, JZSA_Admin_Pages::DASHBOARD_ANNOUNCEMENT_META, JZSA_Admin_Pages::ANNOUNCEMENT_VERSION );
 
 		ob_start();
 		$this->admin_pages->render_dashboard_announcement();
 		$output = ob_get_clean();
 
 		$this->assertSame( '', $output );
-	}
-
-	public function test_dashboard_announcement_recommends_lightbox_without_changing_existing_galleries(): void {
-		$GLOBALS['jzsa_test_current_screen_id'] = 'dashboard';
-		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1' );
-
-		ob_start();
-		$this->admin_pages->render_dashboard_announcement();
-		$output = ob_get_clean();
-
-		$this->assertStringContainsString( 'Lightbox is now the recommended default viewer', $output );
-		$this->assertStringContainsString( 'No worries, your existing galleries keep their current behavior.', $output );
-		$this->assertStringContainsString( 'Open Viewer Guide', $output );
-		$this->assertStringNotContainsString( 'Shared Albums now has a Community', $output );
-		$this->assertStringNotContainsString( 'Keep Fullscreen as default', $output );
 	}
 
 	public function test_guide_migration_tutorial_is_hidden_without_viewer_migration_flag(): void {
@@ -450,7 +481,7 @@ class AdminPagesTest extends TestCase {
 		$this->assertSame( '', $output );
 	}
 
-	public function test_guide_migration_tutorial_explains_safe_viewer_update(): void {
+	public function test_guide_migration_tutorial_is_a_collapsed_tool_not_a_recommendation(): void {
 		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1' );
 		update_option( JZSA_DEFAULT_VIEWER_OPTION, 'fullscreen' );
 		$method = $this->reflection->getMethod( 'render_guide_migration_tutorial' );
@@ -459,63 +490,40 @@ class AdminPagesTest extends TestCase {
 		$method->invoke( $this->admin_pages );
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( 'Recommended Update: Try Lightbox', $output );
-		$this->assertStringContainsString( 'This is not a breaking change. It is only a recommendation.', $output );
-		$this->assertStringContainsString( 'Your existing galleries keep their current behavior.', $output );
-		$this->assertStringContainsString( 'Why Lightbox?', $output );
-		$this->assertStringContainsString( '<li>Lightbox is easier to exit and keeps visitors inside the page.</li>', $output );
-		$this->assertStringContainsString( '<li>Based on broad internet research, roughly 75% of online galleries use Lightbox as the default.</li>', $output );
-		$this->assertStringContainsString( '<li>That still leaves the final choice to you as the admin, and you can keep Fullscreen if it fits your site better.</li>', $output );
-		$this->assertStringContainsString( 'Set the Viewer Explicitly', $output );
-		$this->assertStringContainsString( 'For the sake of simplicity, we recommend always setting the <code>viewer</code> parameter explicitly in each shortcode.', $output );
-		$this->assertStringContainsString( 'If it is omitted, the site default is used: <strong>Fullscreen</strong>.', $output );
-		$this->assertStringContainsString( '>Change it in Settings</a>', $output );
-		$this->assertStringNotContainsString( 'Current site default:', $output );
-		$this->assertStringNotContainsString( 'Default Viewer for Shortcodes Without an Explicit Viewer', $output );
-		$this->assertStringContainsString( '<strong>Viewer Samples (21-38)</strong>', $output );
-		$this->assertStringContainsString( 'Shortcode Migration Tool', $output );
+		// Presented as a utility, always collapsed, with no campaign framing left.
+		$this->assertStringContainsString( 'Shortcode Migration Tool (legacy syntax)', $output );
+		$this->assertStringNotContainsString( '<details id="jzsa-guide-migration-details" open>', $output );
+		$this->assertStringNotContainsString( 'Recommended Update: Try Lightbox', $output );
+		$this->assertStringNotContainsString( 'Why Lightbox?', $output );
+		$this->assertStringNotContainsString( 'Recommended Migration Path', $output );
+		$this->assertStringNotContainsString( 'A Safe Way to Decide', $output );
+		$this->assertStringNotContainsString( 'Collapse this migration guide', $output );
+
+		// The tool itself is unchanged and still fully functional.
+		$this->assertStringContainsString( 'id="jzsa-migration-shortcode"', $output );
 		$this->assertStringContainsString( 'Keep this gallery working exactly as it does now', $output );
 		$this->assertStringContainsString( '(update shortcode syntax only)', $output );
 		$this->assertStringContainsString( 'Use Lightbox', $output );
-		$this->assertStringContainsString( '(recommended)', $output );
 		$this->assertStringContainsString( 'Offer both Lightbox and Fullscreen', $output );
 		$this->assertStringContainsString( '(Will visitors understand both options? Investigate samples 29 &amp; 30.)', $output );
 		$this->assertMatchesRegularExpression( '/value="preserve" checked/', $output );
 		$this->assertLessThan( strpos( $output, 'value="lightbox"' ), strpos( $output, 'value="preserve"' ) );
-		$this->assertStringNotContainsString( 'Manual Migration Reference', $output );
-		$this->assertStringContainsString( 'Recommended Migration Path', $output );
-		$this->assertStringContainsString( '<strong>Shortcode Migration Tool</strong>', $output );
-		$this->assertStringContainsString( '<strong>Playground</strong>', $output );
-		$this->assertStringContainsString( 'It will guide you safely through the process.', $output );
-		$this->assertStringContainsString( 'We recommend migrating even if you want to keep the gallery working exactly as it does now.', $output );
-		$this->assertStringContainsString( 'to update only the shortcode syntax without changing the viewer experience.', $output );
-		$this->assertStringContainsString( 'Never update a live page until you have verified its shortcode with this tool', $output );
-		$this->assertStringContainsString( 'The section will be collapsed. You can expand it anytime or check the Parameters page for the details.', $output );
+		$this->assertStringContainsString( 'Analyze and Migrate', $output );
+
+		// The one piece of rationale worth keeping: it answers a real question.
+		$this->assertStringContainsString( '<strong>Why migrate if nothing looks broken?</strong>', $output );
+		$this->assertStringContainsString( 'will be removed in a future major version', $output );
+
+		// Still explains the site default and links to Settings.
+		$this->assertStringContainsString( 'Set the Viewer Explicitly', $output );
+		$this->assertStringContainsString( 'If it is omitted, the site default is used: <strong>Fullscreen</strong>.', $output );
+		$this->assertStringContainsString( '>Change it in Settings</a>', $output );
+
+		// A deep link to the wrapping div would otherwise land on a still-collapsed <details>,
+		// since the browser's native fragment-opens-an-ancestor-<details> behavior only applies
+		// when the linked element is a descendant of the <details>, not its container.
+		$this->assertStringContainsString( "window.location.hash !== '#jzsa-guide-migration'", $output );
+		$this->assertStringContainsString( "details.open = true", $output );
 	}
 
-	public function test_guide_migration_dismissal_is_independent_from_dashboard_dismissal(): void {
-		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1' );
-		update_user_meta( 1, JZSA_Admin_Pages::DASHBOARD_ANNOUNCEMENT_META, JZSA_Admin_Pages::ANNOUNCEMENT_VERSION );
-		$method = $this->reflection->getMethod( 'render_guide_migration_tutorial' );
-
-		ob_start();
-		$method->invoke( $this->admin_pages );
-		$output = ob_get_clean();
-
-		$this->assertStringContainsString( 'Recommended Update: Try Lightbox', $output );
-	}
-
-	public function test_guide_migration_tutorial_stays_visible_but_collapsed_after_guide_dismissal(): void {
-		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1' );
-		update_user_meta( 1, JZSA_Admin_Pages::GUIDE_ANNOUNCEMENT_META, JZSA_Admin_Pages::ANNOUNCEMENT_VERSION );
-		$method = $this->reflection->getMethod( 'render_guide_migration_tutorial' );
-
-		ob_start();
-		$method->invoke( $this->admin_pages );
-		$output = ob_get_clean();
-
-		$this->assertStringContainsString( 'Recommended Update: Try Lightbox', $output );
-		$this->assertStringNotContainsString( '<details id="jzsa-guide-migration-details" open>', $output );
-		$this->assertStringNotContainsString( 'Collapse this migration guide', $output );
-	}
 }

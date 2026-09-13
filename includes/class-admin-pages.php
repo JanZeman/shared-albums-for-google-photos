@@ -22,9 +22,17 @@ class JZSA_Admin_Pages {
 	const PLACEHOLDERS_SLUG         = 'janzeman-shared-albums-for-google-photos-placeholders';
 	const COMMUNITY_SLUG            = 'janzeman-shared-albums-for-google-photos-community';
 	const SETTINGS_SLUG             = 'janzeman-shared-albums-for-google-photos-settings';
-	const ANNOUNCEMENT_VERSION      = 'viewer-migration-1';
+	const ANNOUNCEMENT_VERSION      = 'community-2';
+	/**
+	 * Dismissal version for the Settings page explainer.
+	 *
+	 * That notice is not an announcement; it explains why the Settings page is small. It used
+	 * to share ANNOUNCEMENT_VERSION, so every campaign bump re-showed it for no reason. The
+	 * value is frozen at what ANNOUNCEMENT_VERSION held when the two were decoupled, so anyone
+	 * who already dismissed it stays undisturbed.
+	 */
+	const SETTINGS_NOTICE_VERSION   = 'viewer-migration-1';
 	const DASHBOARD_ANNOUNCEMENT_META = 'jzsa_viewer_migration_dashboard_dismissed';
-	const GUIDE_ANNOUNCEMENT_META     = 'jzsa_viewer_migration_guide_dismissed';
 	const SETTINGS_ANNOUNCEMENT_META  = 'jzsa_viewer_migration_settings_dismissed';
 
 	/**
@@ -47,7 +55,6 @@ class JZSA_Admin_Pages {
 		add_action( 'admin_notices', array( $this, 'render_dashboard_announcement' ) );
 		add_action( 'wp_ajax_jzsa_dismiss_announcement', array( $this, 'handle_dismiss_announcement' ) );
 		add_action( 'wp_ajax_jzsa_dismiss_settings_notice', array( $this, 'handle_dismiss_settings_notice' ) );
-		add_action( 'wp_ajax_jzsa_dismiss_guide_migration', array( $this, 'handle_dismiss_guide_migration' ) );
 		add_action( 'wp_ajax_jzsa_validate_shortcode', array( $this, 'handle_validate_shortcode' ) );
 		add_action( 'wp_ajax_jzsa_migrate_shortcode', array( $this, 'handle_migrate_shortcode' ) );
 		add_action( 'wp_ajax_jzsa_set_default_viewer', array( $this, 'handle_set_default_viewer' ) );
@@ -83,38 +90,8 @@ class JZSA_Admin_Pages {
 		);
 	}
 
-	private function should_show_viewer_migration_notice( $dismiss_meta_key ) {
-		if ( '1' !== get_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '' ) ) {
-			return false;
-		}
-
-		return self::ANNOUNCEMENT_VERSION !== get_user_meta( get_current_user_id(), $dismiss_meta_key, true );
-	}
-
-	private function should_open_guide_migration_tutorial() {
-		return $this->should_show_viewer_migration_notice( self::GUIDE_ANNOUNCEMENT_META );
-	}
-
 	private function should_show_settings_notice() {
-		return self::ANNOUNCEMENT_VERSION !== get_user_meta( get_current_user_id(), self::SETTINGS_ANNOUNCEMENT_META, true );
-	}
-
-	private function render_fullscreen_migration_steps() {
-		?>
-						<h3><?php esc_html_e( 'Why Lightbox?', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<ul>
-							<li><?php esc_html_e( 'Lightbox is easier to exit and keeps visitors inside the page.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
-							<li><?php esc_html_e( 'Based on broad internet research, roughly 75% of online galleries use Lightbox as the default.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
-							<li><?php esc_html_e( 'That still leaves the final choice to you as the admin, and you can keep Fullscreen if it fits your site better.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
-						</ul>
-		<h3><?php esc_html_e( 'A Safe Way to Decide', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-		<ul>
-			<li><?php echo wp_kses_post( __( 'Review the <strong>Viewer Samples (21-38)</strong> to compare the available experiences.', 'janzeman-shared-albums-for-google-photos' ) ); ?></li>
-			<li><?php esc_html_e( 'Paste one existing shortcode into the Migration Tool below.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
-			<li><?php esc_html_e( 'Preview the generated shortcode in the Playground before changing a live page.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
-			<li><?php esc_html_e( 'Keep Fullscreen if you prefer it. Updating the plugin does not require a viewer change.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
-		</ul>
-		<?php
+		return self::SETTINGS_NOTICE_VERSION !== get_user_meta( get_current_user_id(), self::SETTINGS_ANNOUNCEMENT_META, true );
 	}
 
 	private function render_default_viewer_setting_section() {
@@ -127,6 +104,14 @@ class JZSA_Admin_Pages {
 				<div>
 					<h3><?php esc_html_e( 'Recommended: Set the Viewer Explicitly', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 					<p><?php echo wp_kses_post( __( 'We recommend setting the <code>viewer</code> parameter explicitly in every shortcode. If a shortcode contains this parameter, its viewer choice always wins. If all your shortcodes set it, you can safely ignore the default viewer setting below.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+					<?php if ( '1' === get_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '' ) ) : ?>
+						<p>
+							<?php
+							/* translators: %s: URL of the Shortcode Migration Tool on the Guide page. */
+							echo wp_kses_post( sprintf( __( 'Still have shortcodes in the older syntax? The <a href="%s">Shortcode Migration Tool</a> on the Guide page converts them one at a time, preserving current behavior by default.', 'janzeman-shared-albums-for-google-photos' ), esc_url( self::get_guide_page_url() . '#jzsa-guide-migration' ) ) );
+							?>
+						</p>
+					<?php endif; ?>
 				</div>
 			</div>
 			<p class="jzsa-help-text"><?php echo wp_kses_post( __( 'The default viewer is only a fallback for shortcodes that omit the <code>viewer</code> parameter.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
@@ -178,64 +163,52 @@ class JZSA_Admin_Pages {
 			return;
 		}
 
-		$should_open   = $this->should_open_guide_migration_tutorial();
-		$dismiss_nonce = wp_create_nonce( 'jzsa_dismiss_guide_migration' );
 		$default_viewer = jzsa_get_default_viewer();
 		?>
 		<div id="jzsa-guide-migration" class="jzsa-section jzsa-viewer-migration-guide">
-			<details id="jzsa-guide-migration-details"<?php echo $should_open ? ' open' : ''; ?>>
-			<summary><?php esc_html_e( 'Recommended Update: Try Lightbox', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
-					<p><?php esc_html_e( 'This is not a breaking change. It is only a recommendation. Your existing galleries keep their current behavior.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-				<?php $this->render_fullscreen_migration_steps(); ?>
-					<div class="jzsa-migration-recommendation">
-						<span class="dashicons dashicons-yes-alt" aria-hidden="true"></span>
-						<div>
-							<h3><?php esc_html_e( 'Recommended Migration Path', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php echo wp_kses_post( __( 'Paste your existing shortcode into the <strong>Shortcode Migration Tool</strong> below. It will guide you safely through the process. We recommend migrating even if you want to keep the gallery working exactly as it does now. Select that option to update only the shortcode syntax without changing the viewer experience. Never update a live page until you have verified its shortcode with this tool, the <strong>Playground</strong> below, or both.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
-							<p><?php echo wp_kses_post( __( '<strong>Why migrate if nothing looks broken?</strong> Nothing is broken and nothing will break in this release. Older shortcodes keep working through a compatibility layer that translates them at runtime. That layer is meant to be temporary and will be removed in a future major version, so a shortcode written in the current syntax is the one that keeps working without translation. The migrated shortcode is also explicit: it states which viewer it uses instead of depending on a site-wide default that an administrator can change later.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
-						</div>
-					</div>
-					<div class="jzsa-shortcode-migrator">
-						<h3><?php esc_html_e( 'Shortcode Migration Tool', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Paste one existing shortcode. The tool will analyze it, preserve its behavior by default, and generate a validated modern shortcode without editing your content.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-						<textarea id="jzsa-migration-shortcode" rows="5" maxlength="65536" placeholder="[jzsa-album link=&quot;...&quot;]"></textarea>
-						<div id="jzsa-migration-source-validation" class="jzsa-code-validation" aria-live="polite"></div>
-						<fieldset class="jzsa-migration-goals">
-							<legend><?php esc_html_e( 'Migration goal', 'janzeman-shared-albums-for-google-photos' ); ?></legend>
-							<label><input type="radio" name="jzsa-migration-goal" value="preserve" checked> <?php esc_html_e( 'Keep this gallery working exactly as it does now', 'janzeman-shared-albums-for-google-photos' ); ?> <small class="jzsa-migration-goal-note"><?php esc_html_e( '(update shortcode syntax only)', 'janzeman-shared-albums-for-google-photos' ); ?></small></label>
-							<label><input type="radio" name="jzsa-migration-goal" value="lightbox"> <?php esc_html_e( 'Use Lightbox', 'janzeman-shared-albums-for-google-photos' ); ?> <small class="jzsa-migration-goal-note"><?php esc_html_e( '(recommended)', 'janzeman-shared-albums-for-google-photos' ); ?></small></label>
-							<label><input type="radio" name="jzsa-migration-goal" value="fullscreen"> <?php esc_html_e( 'Use Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?></label>
-							<label><input type="radio" name="jzsa-migration-goal" value="both"> <?php esc_html_e( 'Offer both Lightbox and Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?> <small class="jzsa-migration-goal-note"><?php esc_html_e( '(Will visitors understand both options? Investigate samples 29 & 30.)', 'janzeman-shared-albums-for-google-photos' ); ?></small></label>
-						</fieldset>
-						<p><button type="button" class="button button-primary" id="jzsa-migrate-shortcode"><?php esc_html_e( 'Analyze and Migrate', 'janzeman-shared-albums-for-google-photos' ); ?></button></p>
-						<div id="jzsa-migration-result" aria-live="polite"></div>
-					</div>
-					<h3><?php esc_html_e( 'Set the Viewer Explicitly', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<p>
-						<?php
-						/* translators: 1: default viewer name, 2: settings page URL. */
-						echo wp_kses_post( sprintf( __( 'For the sake of simplicity, we recommend always setting the <code>viewer</code> parameter explicitly in each shortcode. A shortcode that sets it always wins and is unaffected by the site setting, so its behavior cannot change later without you editing it. If it is omitted, the site default is used: <strong>%1$s</strong>. <a href="%2$s">Change it in Settings</a>.', 'janzeman-shared-albums-for-google-photos' ), 'lightbox' === $default_viewer ? __( 'Lightbox', 'janzeman-shared-albums-for-google-photos' ) : __( 'Fullscreen', 'janzeman-shared-albums-for-google-photos' ), esc_url( self::get_settings_page_url() ) ) );
-						?>
-					</p>
-				<?php if ( $should_open ) : ?>
-						<p><button type="button" class="button" id="jzsa-dismiss-guide-migration"><?php esc_html_e( 'Collapse this migration guide', 'janzeman-shared-albums-for-google-photos' ); ?></button></p>
-				<?php endif; ?>
+			<details id="jzsa-guide-migration-details">
+				<summary><?php esc_html_e( 'Shortcode Migration Tool (legacy syntax)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
+				<div class="jzsa-shortcode-migrator">
+					<p><?php esc_html_e( 'Paste one existing shortcode. The tool will analyze it, preserve its behavior by default, and generate a validated modern shortcode without editing your content.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<p><?php echo wp_kses_post( __( '<strong>Why migrate if nothing looks broken?</strong> Nothing is broken. Older shortcodes keep working through a compatibility layer that translates them at runtime, but that layer is temporary and will be removed in a future major version. A shortcode written in the current syntax is the one that keeps working without translation.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+					<textarea id="jzsa-migration-shortcode" rows="5" maxlength="65536" placeholder="[jzsa-album link=&quot;...&quot;]"></textarea>
+					<div id="jzsa-migration-source-validation" class="jzsa-code-validation" aria-live="polite"></div>
+					<fieldset class="jzsa-migration-goals">
+						<legend><?php esc_html_e( 'Migration goal', 'janzeman-shared-albums-for-google-photos' ); ?></legend>
+						<label><input type="radio" name="jzsa-migration-goal" value="preserve" checked> <?php esc_html_e( 'Keep this gallery working exactly as it does now', 'janzeman-shared-albums-for-google-photos' ); ?> <small class="jzsa-migration-goal-note"><?php esc_html_e( '(update shortcode syntax only)', 'janzeman-shared-albums-for-google-photos' ); ?></small></label>
+						<label><input type="radio" name="jzsa-migration-goal" value="lightbox"> <?php esc_html_e( 'Use Lightbox', 'janzeman-shared-albums-for-google-photos' ); ?></label>
+						<label><input type="radio" name="jzsa-migration-goal" value="fullscreen"> <?php esc_html_e( 'Use Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?></label>
+						<label><input type="radio" name="jzsa-migration-goal" value="both"> <?php esc_html_e( 'Offer both Lightbox and Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?> <small class="jzsa-migration-goal-note"><?php esc_html_e( '(Will visitors understand both options? Investigate samples 29 & 30.)', 'janzeman-shared-albums-for-google-photos' ); ?></small></label>
+					</fieldset>
+					<p><button type="button" class="button button-primary" id="jzsa-migrate-shortcode"><?php esc_html_e( 'Analyze and Migrate', 'janzeman-shared-albums-for-google-photos' ); ?></button></p>
+					<div id="jzsa-migration-result" aria-live="polite"></div>
+					<p><?php echo wp_kses_post( __( 'Verify the result in the <strong>Playground</strong> above before changing a live page.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+				</div>
+				<h3><?php esc_html_e( 'Set the Viewer Explicitly', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+				<p>
+					<?php
+					/* translators: 1: default viewer name, 2: settings page URL. */
+					echo wp_kses_post( sprintf( __( 'For the sake of simplicity, we recommend always setting the <code>viewer</code> parameter explicitly in each shortcode. A shortcode that sets it always wins and is unaffected by the site setting, so its behavior cannot change later without you editing it. If it is omitted, the site default is used: <strong>%1$s</strong>. <a href="%2$s">Change it in Settings</a>.', 'janzeman-shared-albums-for-google-photos' ), 'lightbox' === $default_viewer ? __( 'Lightbox', 'janzeman-shared-albums-for-google-photos' ) : __( 'Fullscreen', 'janzeman-shared-albums-for-google-photos' ), esc_url( self::get_settings_page_url() ) ) );
+					?>
+				</p>
 			</details>
 		</div>
 		<script>
 		( function() {
-			var btn = document.getElementById( 'jzsa-dismiss-guide-migration' );
+			// #jzsa-guide-migration is the wrapping <div>, not the <details> itself, so the
+			// browser's native "auto-open an ancestor <details> for a fragment link" behavior
+			// does not apply here (that only fires when the linked element is a descendant of
+			// a closed <details>, not when it is the container the <details> lives inside).
+			// A deep link from Settings would otherwise land on a collapsed section that is
+			// easy to miss, so open it explicitly and re-scroll once it has expanded.
+			if ( window.location.hash !== '#jzsa-guide-migration' ) { return; }
 			var details = document.getElementById( 'jzsa-guide-migration-details' );
-			if ( ! btn || ! details ) { return; }
-				btn.addEventListener( 'click', function() {
-					if ( ! window.confirm( '<?php echo esc_js( __( 'The section will be collapsed. You can expand it anytime or check the Parameters page for the details.', 'janzeman-shared-albums-for-google-photos' ) ); ?>' ) ) { return; }
-				var data = new FormData();
-				data.append( 'action', 'jzsa_dismiss_guide_migration' );
-				data.append( 'nonce', '<?php echo esc_js( $dismiss_nonce ); ?>' );
-				fetch( window.ajaxurl || '/wp-admin/admin-ajax.php', { method: 'POST', body: data } );
-				details.removeAttribute( 'open' );
-				btn.style.display = 'none';
-			} );
+			if ( ! details || details.open ) { return; }
+			details.open = true;
+			var wrapper = document.getElementById( 'jzsa-guide-migration' );
+			if ( wrapper && wrapper.scrollIntoView ) {
+				wrapper.scrollIntoView( { block: 'start' } );
+			}
 		} )();
 		</script>
 		<?php
@@ -633,7 +606,6 @@ class JZSA_Admin_Pages {
 			</h1>
 
 			<div class="jzsa-settings-container">
-				<?php $this->render_guide_migration_tutorial(); ?>
 
 				<!-- Purpose / Scope Section -->
 						<div class="jzsa-section jzsa-section-purpose">
@@ -2325,6 +2297,8 @@ class JZSA_Admin_Pages {
 
 			</div>
 
+
+				<?php $this->render_guide_migration_tutorial(); ?>
 <!-- Troubleshooting -->
 				<div class="jzsa-section">
 					<h2><?php esc_html_e( 'Troubleshooting', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
@@ -2413,11 +2387,13 @@ class JZSA_Admin_Pages {
 		if ( ! $screen || 'dashboard' !== $screen->id ) {
 			return;
 		}
-		if ( ! $this->should_show_viewer_migration_notice( self::DASHBOARD_ANNOUNCEMENT_META ) ) {
+		// Not gated on the viewer-migration option: the Community teaser is for every site,
+		// including fresh installs, unlike the Lightbox announcement it replaced.
+		if ( self::ANNOUNCEMENT_VERSION === get_user_meta( get_current_user_id(), self::DASHBOARD_ANNOUNCEMENT_META, true ) ) {
 			return;
 		}
 		$dismiss_nonce  = wp_create_nonce( 'jzsa_dismiss_announcement' );
-		$guide_url      = self::get_guide_page_url();
+		$community_url  = self::get_community_page_url();
 		$logo_url       = JZSA_PLUGIN_URL . 'assets/icon-256x256.gif';
 		?>
 		<style>
@@ -2502,9 +2478,9 @@ class JZSA_Admin_Pages {
 					<img src="<?php echo esc_url( $logo_url ); ?>" alt="" width="56" height="56">
 				</div>
 				<div class="jzsa-dash-promo-body">
-					<h3><?php esc_html_e( 'Lightbox is now the recommended default viewer', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<p><?php esc_html_e( 'No worries, your existing galleries keep their current behavior. We recommend opening the Guide to learn more, then decide whether you want to migrate.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<a href="<?php echo esc_url( $guide_url ); ?>" class="button"><?php esc_html_e( 'Open Viewer Guide', 'janzeman-shared-albums-for-google-photos' ); ?></a>
+					<h3><?php esc_html_e( 'Shared Albums now has a Community', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<p><?php esc_html_e( 'Browse real album setups shared by other users, and share your own to help newcomers get started.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<a href="<?php echo esc_url( $community_url ); ?>" class="button button-primary"><?php esc_html_e( 'Open Community', 'janzeman-shared-albums-for-google-photos' ); ?></a>
 				</div>
 			</div>
 			<button type="button" class="jzsa-dash-promo-dismiss" aria-label="<?php esc_attr_e( 'Dismiss this notice', 'janzeman-shared-albums-for-google-photos' ); ?>">&times;</button>
@@ -2543,16 +2519,7 @@ class JZSA_Admin_Pages {
 		if ( ! current_user_can( jzsa_get_admin_capability() ) ) {
 			wp_send_json_error( 'Unauthorized', 403 );
 		}
-		update_user_meta( get_current_user_id(), self::SETTINGS_ANNOUNCEMENT_META, self::ANNOUNCEMENT_VERSION );
-		wp_send_json_success();
-	}
-
-	public function handle_dismiss_guide_migration() {
-		check_ajax_referer( 'jzsa_dismiss_guide_migration', 'nonce' );
-		if ( ! current_user_can( jzsa_get_admin_capability() ) ) {
-			wp_send_json_error( 'Unauthorized', 403 );
-		}
-		update_user_meta( get_current_user_id(), self::GUIDE_ANNOUNCEMENT_META, self::ANNOUNCEMENT_VERSION );
+		update_user_meta( get_current_user_id(), self::SETTINGS_ANNOUNCEMENT_META, self::SETTINGS_NOTICE_VERSION );
 		wp_send_json_success();
 	}
 
