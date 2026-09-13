@@ -99,11 +99,17 @@ class JZSA_Admin_Pages {
 		?>
 		<div class="jzsa-section">
 			<h2><?php esc_html_e( 'Default Viewer', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+			<div class="jzsa-default-viewer-setting">
+				<h3><?php esc_html_e( 'Default Viewer for Shortcodes Without an Explicit Viewer', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+				<label><input type="radio" name="jzsa-default-viewer" value="lightbox" <?php checked( 'lightbox', $default_viewer ); ?>> <?php esc_html_e( 'Lightbox, recommended', 'janzeman-shared-albums-for-google-photos' ); ?></label>
+				<label><input type="radio" name="jzsa-default-viewer" value="fullscreen" <?php checked( 'fullscreen', $default_viewer ); ?>> <?php esc_html_e( 'Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?></label>
+				<p><span id="jzsa-default-viewer-status" aria-live="polite"></span></p>
+			</div>
 			<div class="jzsa-viewer-explicit-recommendation" role="note">
 				<span class="dashicons dashicons-lightbulb" aria-hidden="true"></span>
 				<div>
 					<h3><?php esc_html_e( 'Recommended: Set the Viewer Explicitly', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<p><?php echo wp_kses_post( __( 'We recommend setting the <code>viewer</code> parameter explicitly in every shortcode. If a shortcode contains this parameter, its viewer choice always wins. If all your shortcodes set it, you can safely ignore the default viewer setting below.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+					<p><?php echo wp_kses_post( __( 'The setting above is only a fallback for shortcodes that omit the <code>viewer</code> parameter. We recommend setting <code>viewer</code> explicitly in every shortcode instead: if a shortcode contains this parameter, its viewer choice always wins. If all your shortcodes set it, you can safely ignore the setting above.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 					<?php if ( '1' === get_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '' ) ) : ?>
 						<p>
 							<?php
@@ -113,13 +119,6 @@ class JZSA_Admin_Pages {
 						</p>
 					<?php endif; ?>
 				</div>
-			</div>
-			<p class="jzsa-help-text"><?php echo wp_kses_post( __( 'The default viewer is only a fallback for shortcodes that omit the <code>viewer</code> parameter.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
-			<div class="jzsa-default-viewer-setting">
-				<h3><?php esc_html_e( 'Default Viewer for Shortcodes Without an Explicit Viewer', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-				<label><input type="radio" name="jzsa-default-viewer" value="lightbox" <?php checked( 'lightbox', $default_viewer ); ?>> <?php esc_html_e( 'Lightbox, recommended', 'janzeman-shared-albums-for-google-photos' ); ?></label>
-				<label><input type="radio" name="jzsa-default-viewer" value="fullscreen" <?php checked( 'fullscreen', $default_viewer ); ?>> <?php esc_html_e( 'Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?></label>
-				<p><button type="button" class="button" id="jzsa-save-default-viewer"><?php esc_html_e( 'Save Default Viewer', 'janzeman-shared-albums-for-google-photos' ); ?></button> <span id="jzsa-default-viewer-status" aria-live="polite"></span></p>
 			</div>
 		</div>
 		<?php

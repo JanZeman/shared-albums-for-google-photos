@@ -1756,21 +1756,32 @@ function jzsaSetupMigrationTool() {
 		} );
 	}
 
-	var saveDefault = document.getElementById( 'jzsa-save-default-viewer' );
+	// No separate save button: selecting an option takes effect immediately, matching how a
+	// WordPress admin radio setting like this is normally expected to behave.
+	var defaultViewerRadios = document.querySelectorAll( 'input[name="jzsa-default-viewer"]' );
 	var defaultStatus = document.getElementById( 'jzsa-default-viewer-status' );
-	if ( saveDefault && defaultStatus ) {
-		saveDefault.addEventListener( 'click', function () {
-			var selected = document.querySelector( 'input[name="jzsa-default-viewer"]:checked' );
-			if ( ! selected ) { return; }
-			saveDefault.disabled = true;
-			jzsaAdminPost( 'jzsa_set_default_viewer', jzsaAdminAjax.defaultViewerNonce, { viewer: selected.value } )
-				.then( function ( response ) {
-					defaultStatus.textContent = response.success ? 'Saved.' : 'Could not save the setting.';
-				} ).catch( function () {
-					defaultStatus.textContent = 'Could not save the setting.';
-				} ).finally( function () {
-					saveDefault.disabled = false;
-				} );
+	if ( defaultViewerRadios.length && defaultStatus ) {
+		var defaultViewerSaveSequence = 0;
+		Array.prototype.forEach.call( defaultViewerRadios, function ( radio ) {
+			radio.addEventListener( 'change', function () {
+				if ( ! radio.checked ) { return; }
+				// Guards against a stale response overwriting the status if the admin
+				// switches the selection again before the first save round-trip returns.
+				var sequence = ++defaultViewerSaveSequence;
+				defaultStatus.textContent = 'Saving…';
+				Array.prototype.forEach.call( defaultViewerRadios, function ( r ) { r.disabled = true; } );
+				jzsaAdminPost( 'jzsa_set_default_viewer', jzsaAdminAjax.defaultViewerNonce, { viewer: radio.value } )
+					.then( function ( response ) {
+						if ( sequence !== defaultViewerSaveSequence ) { return; }
+						defaultStatus.textContent = response.success ? 'Saved.' : 'Could not save the setting.';
+					} ).catch( function () {
+						if ( sequence !== defaultViewerSaveSequence ) { return; }
+						defaultStatus.textContent = 'Could not save the setting.';
+					} ).finally( function () {
+						if ( sequence !== defaultViewerSaveSequence ) { return; }
+						Array.prototype.forEach.call( defaultViewerRadios, function ( r ) { r.disabled = false; } );
+					} );
+			} );
 		} );
 	}
 }

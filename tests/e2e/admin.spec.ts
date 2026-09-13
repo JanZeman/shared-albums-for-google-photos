@@ -148,6 +148,45 @@ test.describe('Admin - Guide page', () => {
     });
 });
 
+test.describe('Admin - Settings page', () => {
+    test.beforeEach(async ({ page }) => {
+        await loginAsAdmin(page);
+    });
+
+    test('Selecting a default viewer option saves it immediately, with no separate save button', async ({ page }) => {
+        // This setting is a site-wide WordPress option, and this suite runs against the same
+        // local dev site a human may be actively looking at (there is no throwaway instance
+        // per test run here). Read back whatever was selected before this test touched
+        // anything, and restore exactly that in `finally`, regardless of outcome -- never
+        // assume or leave behind an assumed default.
+        await page.goto(SETTINGS_URL);
+
+        const lightbox = page.locator('input[name="jzsa-default-viewer"][value="lightbox"]');
+        const fullscreen = page.locator('input[name="jzsa-default-viewer"][value="fullscreen"]');
+        const status = page.locator('#jzsa-default-viewer-status');
+        await expect(lightbox).toBeAttached({ timeout: 10_000 });
+
+        // The button is gone; a radio change is the only way to trigger a save now.
+        await expect(page.locator('#jzsa-save-default-viewer')).toHaveCount(0);
+
+        const originalValue = (await lightbox.isChecked()) ? 'lightbox' : 'fullscreen';
+        const other = originalValue === 'lightbox' ? fullscreen : lightbox;
+
+        try {
+            // Flip to the other option and confirm the flip persists across a reload,
+            // proving the change was actually saved server-side, not just reflected in the DOM.
+            await other.check();
+            await expect(status).toHaveText('Saved.', { timeout: 10_000 });
+
+            await page.reload();
+            await expect(other).toBeChecked();
+        } finally {
+            await page.locator(`input[name="jzsa-default-viewer"][value="${originalValue}"]`).check();
+            await expect(status).toHaveText('Saved.', { timeout: 10_000 });
+        }
+    });
+});
+
 test.describe('Admin - Parameters page', () => {
     test.beforeEach(async ({ page }) => {
         await loginAsAdmin(page);

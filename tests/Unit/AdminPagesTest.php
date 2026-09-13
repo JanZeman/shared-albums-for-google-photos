@@ -234,15 +234,21 @@ class AdminPagesTest extends TestCase {
 		$this->assertStringContainsString( 'Settings are intentionally limited', $output );
 		$this->assertStringContainsString( 'Most of the plugin is driven by shortcodes, so the global settings stay intentionally small.', $output );
 		$this->assertStringContainsString( 'Recommended: Set the Viewer Explicitly', $output );
-		$this->assertStringContainsString( 'If all your shortcodes set it, you can safely ignore the default viewer setting below.', $output );
-		$this->assertStringContainsString( 'The default viewer is only a fallback for shortcodes that omit the <code>viewer</code> parameter.', $output );
-		$this->assertLessThan( strpos( $output, 'The default viewer is only a fallback' ), strpos( $output, 'Recommended: Set the Viewer Explicitly' ) );
+		$this->assertStringContainsString( 'If all your shortcodes set it, you can safely ignore the setting above.', $output );
+		$this->assertStringContainsString( 'The setting above is only a fallback for shortcodes that omit the <code>viewer</code> parameter.', $output );
 		$this->assertStringNotContainsString( 'Changing it never rewrites your posts or pages.', $output );
 		$this->assertStringContainsString( 'Default Viewer for Shortcodes Without an Explicit Viewer', $output );
 		$this->assertStringContainsString( 'Lightbox, recommended', $output );
 		$this->assertStringContainsString( 'Fullscreen', $output );
 		$this->assertStringNotContainsString( 'One Setting', $output );
 		$this->assertStringNotContainsString( 'Recommended Update: Try Lightbox', $output );
+
+		// The actual control comes first; the explanatory recommendation follows it, its
+		// opening sentence now doing the job the old standalone "only a fallback" line did.
+		$this->assertLessThan(
+			strpos( $output, 'Recommended: Set the Viewer Explicitly' ),
+			strpos( $output, 'Default Viewer for Shortcodes Without an Explicit Viewer' )
+		);
 	}
 
 	public function test_settings_page_links_to_the_migration_tool_on_upgraded_sites(): void {
