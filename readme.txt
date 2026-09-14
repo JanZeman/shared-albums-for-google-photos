@@ -4,7 +4,7 @@ Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.5
 Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 2.4.9
+Stable tag: 2.4.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -107,12 +107,10 @@ No. This plugin is not affiliated with or endorsed by Google LLC. Google Photosâ
 
 == Changelog ==
 
-= 2.4.9 =
+= 2.4.10 =
 * Fixed the Guide page becoming slow.
 * Default Viewer setting now saves instantly; no more Save button.
 * Simplified the Guide page: migration tool tucked away.
-* Photo size for a Lightbox gallery now follows lightbox-source-width and lightbox-source-height, which previously had no effect. A Lightbox-only gallery no longer takes its size from fullscreen-source-width or fullscreen-source-height; switch such a gallery to the lightbox- or viewer- parameter to keep a custom size.
-* Galleries with both viewers switched off no longer download full-resolution photos nobody can open.
 
 = 2.4.6 =
 * Better guard of shortcode typos.
