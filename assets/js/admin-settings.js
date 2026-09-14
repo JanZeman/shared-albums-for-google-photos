@@ -1396,7 +1396,12 @@ function jzsaSetupCodeBlock( block ) {
 	var semanticTimer = null;
 	var semanticSequence = 0;
 	var prettifiedShortcode = null;
-	runValidation = function () {
+	// skipServerCheck: the initial on-load call passes true. An unedited Guide-page example
+	// is already correct, so the semantic round-trip has nothing to add there, and every
+	// sample on the page (70+) requesting it at once - each on its own untied setTimeout -
+	// fires that many concurrent requests within the same tick with no pacing between them.
+	// Editing (the "input" listener below) always runs the full check.
+	runValidation = function ( skipServerCheck ) {
 		semanticSequence++;
 		var shortcode = codeEl.textContent || '';
 		var localResult = jzsaValidateShortcode( shortcode );
@@ -1408,6 +1413,9 @@ function jzsaSetupCodeBlock( block ) {
 		}
 		if ( 'error' === localResult.state || 'empty' === localResult.state || ! window.jzsaAdminAjax ) {
 			prettifyBtn.title = 'Fix shortcode errors before prettifying';
+			return;
+		}
+		if ( skipServerCheck ) {
 			return;
 		}
 		var sequence = semanticSequence;
@@ -1471,9 +1479,10 @@ function jzsaSetupCodeBlock( block ) {
 		runValidation();
 	} );
 
-	// Highlight placeholders and validate on initial load.
+	// Highlight placeholders and validate on initial load. Local validation only (see
+	// runValidation's skipServerCheck note above) - editing the block runs the full check.
 	jzsaHighlightPlaceholders( codeEl );
-	runValidation();
+	runValidation( true );
 
 	// Revert: restore original shortcode, re-highlight placeholders, and re-apply the preview.
 	revertBtn.addEventListener( 'click', function () {
