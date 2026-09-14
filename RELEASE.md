@@ -50,6 +50,10 @@ For a **production release**:
 ./release.sh X.Y.Z --prod
 ```
 
+Prefer releasing around 20:00 local time: publishing at roughly the same hour each time makes
+day-over-day download counts easier to compare, since every release then starts roughly a full
+day before the next one. The script warns (without blocking) if run outside 19:00-21:00.
+
 Every run copies the generated ZIP to `~/Downloads`, overwriting an existing file with the same name.
 
 The production release script will:

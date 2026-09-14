@@ -246,6 +246,15 @@ if [ "$RELEASE_MODE" = "prod" ]; then
     "${SCRIPT_DIR}/test.sh"
     echo -e "${GREEN}✓ Full test suite passed${NC}"
 
+    RELEASE_HOUR=$(date +%H)
+    RELEASE_HOUR=$((10#$RELEASE_HOUR))
+    if [ "$RELEASE_HOUR" -lt 19 ] || [ "$RELEASE_HOUR" -gt 21 ]; then
+        echo ""
+        echo -e "${YELLOW}Note:${NC} it's $(date +%H:%M) locally. Releases published around 20:00 make"
+        echo "day-over-day download counts easier to compare, since every release then starts"
+        echo "roughly a full day before the next. Not a requirement - just a preference."
+    fi
+
     echo ""
     echo -e "${YELLOW}Production release requested.${NC}"
     echo "This will push git changes/tags and publish to WordPress.org SVN if all checks pass."
