@@ -4,7 +4,7 @@ Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.5
 Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 2.4.7
+Stable tag: 2.4.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -107,10 +107,10 @@ No. This plugin is not affiliated with or endorsed by Google LLC. Google Photosâ
 
 == Changelog ==
 
-= 2.4.7 =
-* Fixed the Guide page becoming very slow the longer you used it.
+= 2.4.8 =
+* Fixed the Guide page becoming slow.
 * Default Viewer setting now saves instantly; no more Save button.
-* Simplified the Guide page: migration tool tucked away, Community promoted again.
+* Simplified the Guide page: migration tool tucked away.
 
 = 2.4.6 =
 * Better guard of shortcode typos.
@@ -272,7 +272,7 @@ This plugin has been shaped not only by code, but also by people willing to test
 * **[Naveen Bachwani](https://profiles.wordpress.org/naveenbachwani/) (`@naveenbachwani`)** - An early adopter with a sharp eye and analytical mind. His feedback often improved usability while new features were still being designed, before they reached a public release. His many feature ideas, extensive testing, UX feedback, and detailed design discussions have helped shape photo information and descriptions, mobile and Fullscreen behavior, the Community Directory, and the current Lightbox and Fullscreen experience.
 
 Personal note: It has been a genuine pleasure working with you, Naveen!
-  
+
 = Key Contributors =
 
 * **[Peter Berger](https://profiles.wordpress.org/peterpolow/) (`@peterpolow`)** - Detailed feature requests and patient real-device testing that helped drive video support, Gallery mode, separate inline and Fullscreen controls, and more discoverable button behavior on iPhone and other mobile devices.
