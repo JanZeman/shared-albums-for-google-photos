@@ -266,11 +266,11 @@ function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel, sho
 	}
 	var ajaxConfig = jzsaGetPreviewAjaxConfig();
 	if ( ! shortcode ) {
-		return;
+		return Promise.resolve();
 	}
 	if ( ! ajaxConfig || ! ajaxConfig.ajaxUrl || ! ajaxConfig.previewNonce ) {
 		previewContainer.innerHTML = '<div class="jzsa-playground-error">Preview configuration missing.</div>';
-		return;
+		return Promise.resolve();
 	}
 
 	var savedLabel = triggerBtn ? triggerBtn.textContent : '';
@@ -285,7 +285,10 @@ function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel, sho
 	params.append( 'nonce', ajaxConfig.previewNonce );
 	params.append( 'shortcode', shortcode );
 
-	window.fetch( ajaxConfig.ajaxUrl, {
+	// Returned so callers whose trigger button carries its own enabled/disabled meaning
+	// (Revert, Prettify) can re-assert that state once the generic busy-toggle below has
+	// had its say - it always clears `disabled`, without knowing about that meaning.
+	return window.fetch( ajaxConfig.ajaxUrl, {
 		method: 'POST',
 		credentials: 'same-origin',
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
@@ -1365,6 +1368,12 @@ function jzsaSetupCodeBlock( block ) {
 			revertBtn.textContent = 'Revert';
 		}
 
+		// Nothing to prettify until a semantic check has actually run and found something to
+		// standardize; runValidation() below re-enables it. Matches prettifiedShortcode being
+		// reset to null on every (re-)init of this block.
+		prettifyBtn.disabled = true;
+		prettifyBtn.title = '';
+
 		// Appending existing nodes also repairs the order on repeated initialization.
 		btnCol.appendChild( applyBtn );
 		btnCol.appendChild( prettifyBtn );
@@ -1405,6 +1414,14 @@ function jzsaSetupCodeBlock( block ) {
 		semanticSequence++;
 		var shortcode = codeEl.textContent || '';
 		var localResult = jzsaValidateShortcode( shortcode );
+		// prettifiedShortcode is the actual click-time guard (see prettifyBtn's own click
+		// handler) and is always reset here, on every keystroke. `disabled` is only a visual
+		// hint on top of that guard, so it does NOT need to reset in step: while the check
+		// below is still pending, the button is left showing whatever it last settled to,
+		// deliberately, so continuous typing doesn't flip it disabled-then-enabled on every
+		// keystroke for what is usually the same answer a moment later. It is set explicitly,
+		// synchronously, only where the answer is certain immediately (no wait needed) - the
+		// two early-returns right below, and the debounced result once it actually arrives.
 		prettifiedShortcode = null;
 		prettifyBtn.title = 'Checking shortcode formatting';
 		jzsaRenderValidation( validationEl, localResult );
@@ -1412,17 +1429,27 @@ function jzsaSetupCodeBlock( block ) {
 			clearTimeout( semanticTimer );
 		}
 		if ( 'error' === localResult.state || 'empty' === localResult.state || ! window.jzsaAdminAjax ) {
+			prettifyBtn.disabled = true;
 			prettifyBtn.title = 'Fix shortcode errors before prettifying';
+			updateRevertButtonState();
 			return;
 		}
 		if ( skipServerCheck ) {
+			prettifyBtn.disabled = true;
+			prettifyBtn.title = 'Edit the shortcode to check its formatting';
+			updateRevertButtonState();
 			return;
 		}
 		var sequence = semanticSequence;
 		semanticTimer = setTimeout( function () {
 			jzsaAdminPost( 'jzsa_validate_shortcode', jzsaAdminAjax.validateNonce, { shortcode: shortcode } )
 				.then( function ( response ) {
-					if ( sequence !== semanticSequence || ! response.success ) { return; }
+					if ( sequence !== semanticSequence ) { return; }
+					if ( ! response.success ) {
+						prettifyBtn.disabled = true;
+						updateRevertButtonState();
+						return;
+					}
 					var migration = response.data.migration || null;
 					var format = response.data.format || null;
 					var merged = {
@@ -1445,17 +1472,32 @@ function jzsaSetupCodeBlock( block ) {
 								: 'This shortcode does not set the viewer explicitly. Updating to the current syntax is recommended.'
 						);
 					}
-					if ( format && format.changed && ! merged.errors.length ) {
+					// Compare against the untrimmed text as the user actually left it, not
+					// format.changed: the server trims twice before computing that flag
+					// (sanitize_textarea_field(), then format() itself), so it never sees
+					// leading/trailing whitespace at all. A user who pads the shortcode with
+					// spaces expects Prettify to react to that, even though the shortcode's
+					// own internal formatting (what changed actually measures) is untouched.
+					var rawNormalized = shortcode.replace( / /g, ' ' );
+					if ( format && format.shortcode !== rawNormalized && ! merged.errors.length ) {
 						prettifiedShortcode = format.shortcode;
+						prettifyBtn.disabled = false;
 						prettifyBtn.title = 'Standardize quotes, whitespace, parameter names, and order';
 						merged.warnings.push(
 							'Prettify is recommended. It standardizes quotes, spacing, and parameter order, then applies the shortcode.'
 						);
 					} else {
+						prettifyBtn.disabled = true;
 						prettifyBtn.title = ! format
 							? 'Resolve shortcode issues before prettifying'
 							: 'This shortcode is already prettified';
 					}
+					// Revert's own answer is already known instantly (a plain string
+					// compare), but applying it here instead of from the "input" listener
+					// makes both buttons flip together once the slower, server-checked
+					// Prettify state is also ready, rather than Revert visibly jumping
+					// ahead by however long the semantic round trip takes.
+					updateRevertButtonState();
 					merged.state = merged.errors.length ? 'error' : ( merged.warnings.length ? 'warning' : 'ok' );
 					jzsaRenderValidation( validationEl, merged );
 					var modernizeBtn = validationEl.querySelector( '[data-jzsa-action="modernize-shortcode"]' );
@@ -1464,6 +1506,7 @@ function jzsaSetupCodeBlock( block ) {
 							codeEl.textContent = migration.shortcode;
 							jzsaHighlightPlaceholders( codeEl );
 							runValidation();
+							updateRevertButtonState();
 							if ( hasPreview ) {
 								jzsaApplyPreview( codeEl, null, previewContainer );
 							}
@@ -1473,7 +1516,16 @@ function jzsaSetupCodeBlock( block ) {
 		}, 350 );
 	};
 
-	// Keep placeholder highlighting and validation live while editing.
+	// Nothing to undo until the text actually differs from what was originally rendered - a
+	// plain string comparison, so unlike Prettify's server-checked "needs reformatting" this
+	// reacts to any edit at all, whitespace included.
+	var updateRevertButtonState = function () {
+		revertBtn.disabled = ( codeEl.textContent === originalText );
+	};
+
+	// Keep placeholder highlighting and validation live while editing. Revert's own state is
+	// deliberately not set here: runValidation() applies it once it settles, so both buttons
+	// change state together instead of Revert jumping ahead of the slower Prettify check.
 	codeEl.addEventListener( 'input', function () {
 		jzsaHighlightPlaceholders( codeEl );
 		runValidation();
@@ -1483,22 +1535,31 @@ function jzsaSetupCodeBlock( block ) {
 	// runValidation's skipServerCheck note above) - editing the block runs the full check.
 	jzsaHighlightPlaceholders( codeEl );
 	runValidation( true );
+	updateRevertButtonState();
 
 	// Revert: restore original shortcode, re-highlight placeholders, and re-apply the preview.
 	revertBtn.addEventListener( 'click', function () {
 		codeEl.textContent = originalText;
 		jzsaHighlightPlaceholders( codeEl );
 		runValidation();
+		updateRevertButtonState();
 		var revertOverride = codeEl.dataset.revertShortcode || undefined;
-		jzsaApplyPreview( codeEl, revertBtn, previewContainer, 'Reverted!', revertOverride );
+		// jzsaApplyPreview() always clears `disabled` once it settles (a generic busy-button
+		// reset with no notion of Revert's "is there anything to undo" meaning), so re-assert
+		// the real state after it, not before, or the reset silently wins.
+		jzsaApplyPreview( codeEl, revertBtn, previewContainer, 'Reverted!', revertOverride ).then( function () {
+			updateRevertButtonState();
+		} );
 	} );
 
+	// Returns the settle promise so a caller whose triggerBtn has its own enabled/disabled
+	// meaning (Prettify) can re-assert it once jzsaApplyPreview's generic busy-toggle clears.
 	var applyShortcode = function ( triggerBtn, flashLabel ) {
 		var shortcode = codeEl.textContent || '';
 		var localResult = jzsaValidateShortcode( shortcode );
 		jzsaRenderValidation( validationEl, localResult );
-		if ( 'error' === localResult.state ) { return; }
-		jzsaAdminPost( 'jzsa_validate_shortcode', jzsaAdminAjax.validateNonce, { shortcode: shortcode } )
+		if ( 'error' === localResult.state ) { return Promise.resolve(); }
+		return jzsaAdminPost( 'jzsa_validate_shortcode', jzsaAdminAjax.validateNonce, { shortcode: shortcode } )
 			.then( function ( response ) {
 				var issues = response.success ? ( response.data.issues || [] ) : [];
 				var semanticErrors = issues.filter( function ( issue ) { return 'error' === issue.severity; } );
@@ -1510,7 +1571,7 @@ function jzsaSetupCodeBlock( block ) {
 					} );
 					return;
 				}
-				jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel );
+				return jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel );
 			} );
 	};
 
@@ -1523,7 +1584,17 @@ function jzsaSetupCodeBlock( block ) {
 		codeEl.textContent = prettifiedShortcode;
 		jzsaHighlightPlaceholders( codeEl );
 		runValidation();
-		applyShortcode( prettifyBtn, 'Prettified!' );
+		updateRevertButtonState();
+		// The text is now exactly the canonical form we just fetched, so there is nothing
+		// left to prettify - set this directly rather than waiting on another semantic
+		// round trip. applyShortcode()'s own jzsaApplyPreview() call always clears
+		// `disabled` once it settles (a generic busy-button reset with no notion of
+		// Prettify's "is there anything to do" meaning), so this has to run after it, not
+		// before, or the reset silently wins and leaves the button clickable again.
+		applyShortcode( prettifyBtn, 'Prettified!' ).then( function () {
+			prettifyBtn.disabled = true;
+			prettifyBtn.title = 'This shortcode is already prettified';
+		} );
 	} );
 
 	// Apply: AJAX preview.

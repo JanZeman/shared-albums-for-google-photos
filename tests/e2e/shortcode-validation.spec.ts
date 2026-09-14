@@ -84,9 +84,169 @@ test.describe('Shortcode validation - Playground live feedback', () => {
         await expect(page.locator('#jzsa-playground-shortcode')).toHaveText(
             '[jzsa-album link="https://photos.google.com/share/x" mode="slider" viewer="lightbox" width="600" corner-radius="16"]',
         );
-        await expect(button).toBeEnabled();
+        // Now that Prettify has a real "is there still something to fix" meaning, applying it
+        // leaves nothing left to standardize, so it should end up disabled, not enabled.
+        await expect(button).toBeDisabled();
         await expect(page.locator(VALIDATION)).not.toBeVisible();
         await expect.poll(() => previewRequests).toBe(1);
+    });
+
+    test('Prettify starts disabled on load and only enables once editing finds something to fix', async ({ page }) => {
+        // No server request should fire for the untouched, already-correct prefilled sample -
+        // that is the whole point of not auto-checking on load (see admin-settings.js,
+        // runValidation's skipServerCheck).
+        // jzsaAdminPost() sends a multipart FormData body, not URL-encoded, so match the
+        // action name as a substring of the raw multipart payload.
+        let validateRequests = 0;
+        page.on('request', (request) => {
+            if (request.url().includes('admin-ajax.php') && (request.postData() || '').includes('jzsa_validate_shortcode')) {
+                validateRequests++;
+            }
+        });
+
+        const button = page.locator(PRETTIFY_BTN);
+        await expect(button).toBeDisabled();
+        await page.waitForTimeout(500); // past the 350ms debounce, in case anything auto-fires
+        expect(validateRequests).toBe(0);
+
+        await setShortcode(
+            page,
+            "[jzsa-album   corner-radius='16' viewer='lightbox' width='600' link='https://photos.google.com/share/x' mode='slider']",
+        );
+        await expect(button).toBeEnabled();
+        expect(validateRequests).toBe(1);
+    });
+
+    test('Revert starts disabled and enables on any edit, including whitespace-only ones', async ({ page }) => {
+        const revertButton = page.locator(REVERT_BTN);
+        await expect(revertButton).toBeDisabled();
+
+        const original = await page.locator('#jzsa-playground-shortcode').textContent();
+        await setShortcode(page, `${original}  `); // trailing whitespace only, nothing else changed
+        await expect(revertButton).toBeEnabled();
+
+        await revertButton.click();
+        await expect(revertButton).toBeDisabled();
+        await expect(page.locator('#jzsa-playground-shortcode')).toHaveText(original || '');
+    });
+
+    test('Prettify reacts to a whitespace-only edit even though the shortcode itself is unchanged', async ({ page }) => {
+        // The server trims the posted value twice before comparing (sanitize_textarea_field(),
+        // then format()'s own trim()), so it can never see leading/trailing whitespace by
+        // itself. The enabled state is decided client-side against the untrimmed text instead -
+        // see admin-settings.js, the rawNormalized comparison in runValidation().
+        const prettifyButton = page.locator(PRETTIFY_BTN);
+        await expect(prettifyButton).toBeDisabled();
+
+        const original = await page.locator('#jzsa-playground-shortcode').textContent();
+        await setShortcode(page, `${original}   `);
+        await expect(prettifyButton).toBeEnabled();
+
+        await prettifyButton.click();
+        await expect(page.locator('#jzsa-playground-shortcode')).toHaveText(original || '');
+    });
+
+    test('Revert and Prettify enable together, not staggered by the semantic check delay', async ({ page }) => {
+        // Revert's own answer (does the text differ from the original?) is a plain string
+        // compare, known instantly; Prettify's needs a 350ms-debounced server round trip.
+        // Both must flip from disabled to enabled in the same tick, once Prettify's slower
+        // check is ready - not Revert jumping ahead for the intervening ~350ms+.
+        const revertButton = page.locator(REVERT_BTN);
+        const prettifyButton = page.locator(PRETTIFY_BTN);
+        await expect(revertButton).toBeDisabled();
+        await expect(prettifyButton).toBeDisabled();
+
+        const original = await page.locator('#jzsa-playground-shortcode').textContent();
+        await setShortcode(page, `${original} `);
+
+        // Poll both together immediately after the edit, well before the 350ms debounce
+        // fires; at every sampled instant they must agree, never one enabled and the other not.
+        for (let i = 0; i < 6; i++) {
+            const [revertDisabled, prettifyDisabled] = await Promise.all([
+                revertButton.isDisabled(),
+                prettifyButton.isDisabled(),
+            ]);
+            expect(revertDisabled).toBe(prettifyDisabled);
+            if (!revertDisabled) {
+                break;
+            }
+            await page.waitForTimeout(50);
+        }
+
+        await expect(revertButton).toBeEnabled();
+        await expect(prettifyButton).toBeEnabled();
+    });
+
+    test('both buttons return to disabled after Prettify restores the original text', async ({ page }) => {
+        const revertButton = page.locator(REVERT_BTN);
+        const prettifyButton = page.locator(PRETTIFY_BTN);
+        const original = await page.locator('#jzsa-playground-shortcode').textContent();
+
+        await setShortcode(page, `${original}  `);
+        await expect(prettifyButton).toBeEnabled();
+        await expect(revertButton).toBeEnabled();
+
+        await prettifyButton.click();
+        await expect(page.locator('#jzsa-playground-shortcode')).toHaveText(original || '');
+        // jzsaApplyPreview() unconditionally clears `disabled` once its own request settles,
+        // with no notion of Prettify's "is there anything left to fix" meaning - this must
+        // win over that generic reset, not lose to it.
+        await expect(prettifyButton).toBeDisabled();
+        await expect(revertButton).toBeDisabled();
+    });
+
+    test('both buttons return to disabled after Revert restores the original text', async ({ page }) => {
+        const revertButton = page.locator(REVERT_BTN);
+        const prettifyButton = page.locator(PRETTIFY_BTN);
+        const original = await page.locator('#jzsa-playground-shortcode').textContent();
+
+        await setShortcode(page, `${original}  `);
+        await expect(revertButton).toBeEnabled();
+        await expect(prettifyButton).toBeEnabled();
+
+        await revertButton.click();
+        await expect(page.locator('#jzsa-playground-shortcode')).toHaveText(original || '');
+        // Same generic-reset hazard as Prettify above, on revertBtn instead.
+        await expect(revertButton).toBeDisabled();
+        await expect(prettifyButton).toBeDisabled();
+    });
+
+    test('Prettify does not flicker disabled/enabled while typing continues', async ({ page }) => {
+        // Regression guard for the eager `prettifyBtn.disabled = true` that used to run at
+        // the top of every runValidation() call: typing several characters in quick
+        // succession (faster than the 350ms semantic-check debounce) used to flip the
+        // button disabled, then re-enabled a moment later, on every single keystroke, even
+        // though the final answer rarely changed. It must now settle once, not oscillate.
+        const prettifyButton = page.locator(PRETTIFY_BTN);
+        const original = await page.locator('#jzsa-playground-shortcode').textContent();
+
+        await page.evaluate(() => {
+            const btn = document.querySelector(
+                '.jzsa-playground-code-block [data-jzsa-action="prettify"]',
+            ) as HTMLButtonElement;
+            (window as unknown as { __disabledLog: boolean[] }).__disabledLog = [btn.disabled];
+            new MutationObserver(() => {
+                const log = (window as unknown as { __disabledLog: boolean[] }).__disabledLog;
+                if (btn.disabled !== log[log.length - 1]) {
+                    log.push(btn.disabled);
+                }
+            }).observe(btn, { attributes: true, attributeFilter: ['disabled'] });
+        });
+
+        let current = original || '';
+        for (let i = 0; i < 5; i++) {
+            current += ' ';
+            await setShortcode(page, current);
+            await page.waitForTimeout(150); // faster than the 350ms debounce
+        }
+        await expect(prettifyButton).toBeEnabled(); // let the final debounce settle
+
+        const log = await page.evaluate(
+            () => (window as unknown as { __disabledLog: boolean[] }).__disabledLog,
+        );
+        // Exactly the starting value, then exactly one flip to enabled once settled - no
+        // disabled/enabled oscillation during the five keystrokes in between.
+        expect(log).toEqual([true, false]);
     });
 
     test('all published Guide shortcodes use the canonical leading parameter order', async ({ page }) => {
