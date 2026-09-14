@@ -111,6 +111,8 @@ No. This plugin is not affiliated with or endorsed by Google LLC. Google Photosâ
 * Fixed the Guide page becoming slow.
 * Default Viewer setting now saves instantly; no more Save button.
 * Simplified the Guide page: migration tool tucked away.
+* Photo size for a Lightbox gallery now follows lightbox-source-width and lightbox-source-height, which previously had no effect. A Lightbox-only gallery no longer takes its size from fullscreen-source-width or fullscreen-source-height; switch such a gallery to the lightbox- or viewer- parameter to keep a custom size.
+* Galleries with both viewers switched off no longer download full-resolution photos nobody can open.
 
 = 2.4.6 =
 * Better guard of shortcode typos.

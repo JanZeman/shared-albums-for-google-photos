@@ -380,8 +380,8 @@ class JZSA_Shared_Albums {
 				);
 				$config['photos'] = $this->prepare_photo_urls(
 					$hydrated_cached_items,
-					$config['fullscreen-source-width'],
-					$config['fullscreen-source-height'],
+					$config['full-source-width'],
+					$config['full-source-height'],
 					$config['source-width'],
 					$config['source-height'],
 					$config['limit'],
@@ -418,8 +418,8 @@ class JZSA_Shared_Albums {
 				);
 				$config['photos'] = $this->prepare_photo_urls(
 					$hydrated_backup_items,
-					$config['fullscreen-source-width'],
-					$config['fullscreen-source-height'],
+					$config['full-source-width'],
+					$config['full-source-height'],
 					$config['source-width'],
 					$config['source-height'],
 					$config['limit'],
@@ -460,8 +460,8 @@ class JZSA_Shared_Albums {
 			);
 			$config['photos'] = $this->prepare_photo_urls(
 				$hydrated_fresh_items,
-				$config['fullscreen-source-width'],
-				$config['fullscreen-source-height'],
+				$config['full-source-width'],
+				$config['full-source-height'],
 				$config['source-width'],
 				$config['source-height'],
 				$config['limit'],
@@ -1042,7 +1042,49 @@ class JZSA_Shared_Albums {
 
 		$config['unknown-attributes'] = $unknown_attributes;
 
+		list( $config['full-source-width'], $config['full-source-height'] ) = $this->resolve_full_source_dimensions( $config );
+
 		return $config;
+	}
+
+	/**
+	 * Resolve the dimensions of the single "full" image variant.
+	 *
+	 * Every photo carries one preview URL and one full URL. The full one is what a viewer
+	 * displays and what `data-full-src` warms, so its size must come from the viewer that is
+	 * actually enabled. Reading `fullscreen-source-*` unconditionally, as this used to, let a
+	 * fullscreen parameter decide what a lightbox-only gallery shows and left `lightbox-source-*`
+	 * with no effect at all, which the viewer mode isolation invariant forbids.
+	 *
+	 * This is not sideways inheritance: each mode's own parameter drives its own display. With
+	 * both modes enabled one URL has to serve both, and the larger of the two is the only choice
+	 * that lets neither mode degrade the other. With neither enabled no viewer can ever open, so
+	 * the preview size is used, the two URLs become identical, and the renderer stops emitting
+	 * `data-full-src` for that gallery.
+	 *
+	 * @param array $config Parsed shortcode config with both toggles already resolved.
+	 * @return array Width and height, in that order.
+	 */
+	private function resolve_full_source_dimensions( $config ) {
+		$lightbox_on   = 'disabled' !== $config['lightbox-toggle'];
+		$fullscreen_on = 'disabled' !== $config['fullscreen-toggle'];
+
+		if ( $lightbox_on && $fullscreen_on ) {
+			return array(
+				max( $config['lightbox-source-width'], $config['fullscreen-source-width'] ),
+				max( $config['lightbox-source-height'], $config['fullscreen-source-height'] ),
+			);
+		}
+
+		if ( $lightbox_on ) {
+			return array( $config['lightbox-source-width'], $config['lightbox-source-height'] );
+		}
+
+		if ( $fullscreen_on ) {
+			return array( $config['fullscreen-source-width'], $config['fullscreen-source-height'] );
+		}
+
+		return array( $config['source-width'], $config['source-height'] );
 	}
 
 	/**

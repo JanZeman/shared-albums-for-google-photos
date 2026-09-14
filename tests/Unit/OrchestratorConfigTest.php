@@ -729,6 +729,83 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertSame( 'cover', $config['lightbox-image-fit'], 'lightbox must not see the fullscreen override' );
     }
 
+    public function test_full_source_follows_the_lightbox_when_only_the_lightbox_is_enabled(): void {
+        // Every photo carries one full variant. A lightbox-only gallery must size it from
+        // lightbox-source-*, and must not see fullscreen-source-* at all.
+        $config = $this->config( array(
+            'viewer'                   => 'lightbox',
+            'lightbox-source-width'    => '1000',
+            'lightbox-source-height'   => '750',
+            'fullscreen-source-width'  => '2560',
+            'fullscreen-source-height' => '1700',
+        ) );
+
+        $this->assertSame( 'disabled', $config['fullscreen-toggle'] );
+        $this->assertSame( 1000, $config['full-source-width'], 'lightbox-source-width must size the full variant' );
+        $this->assertSame( 750, $config['full-source-height'], 'lightbox-source-height must size the full variant' );
+    }
+
+    public function test_fullscreen_source_width_does_not_affect_a_lightbox_only_gallery(): void {
+        $config = $this->config( array(
+            'viewer'                   => 'lightbox',
+            'fullscreen-source-width'  => '1000',
+            'fullscreen-source-height' => '750',
+        ) );
+
+        $this->assertSame( 1920, $config['full-source-width'], 'lightbox must not inherit fullscreen-source-width' );
+        $this->assertSame( 1440, $config['full-source-height'], 'lightbox must not inherit fullscreen-source-height' );
+    }
+
+    public function test_lightbox_source_width_does_not_affect_a_fullscreen_only_gallery(): void {
+        $config = $this->config( array(
+            'viewer'                 => 'fullscreen',
+            'lightbox-source-width'  => '400',
+            'lightbox-source-height' => '300',
+        ) );
+
+        $this->assertSame( 'disabled', $config['lightbox-toggle'] );
+        $this->assertSame( 1920, $config['full-source-width'], 'fullscreen must not inherit lightbox-source-width' );
+        $this->assertSame( 1440, $config['full-source-height'], 'fullscreen must not inherit lightbox-source-height' );
+    }
+
+    public function test_full_source_takes_the_larger_side_when_both_viewers_are_enabled(): void {
+        // One URL has to serve both modes here, so neither mode may shrink the other.
+        $config = $this->config( array(
+            'viewer'                   => 'both',
+            'lightbox-source-width'    => '1000',
+            'lightbox-source-height'   => '750',
+            'fullscreen-source-width'  => '2560',
+            'fullscreen-source-height' => '1700',
+        ) );
+
+        $this->assertSame( 2560, $config['full-source-width'] );
+        $this->assertSame( 1700, $config['full-source-height'] );
+    }
+
+    public function test_viewer_source_width_still_sets_the_shared_baseline(): void {
+        $config = $this->config( array(
+            'viewer'               => 'lightbox',
+            'viewer-source-width'  => '1200',
+            'viewer-source-height' => '900',
+        ) );
+
+        $this->assertSame( 1200, $config['full-source-width'] );
+        $this->assertSame( 900, $config['full-source-height'] );
+    }
+
+    public function test_no_enabled_viewer_makes_the_full_variant_match_the_preview(): void {
+        // No viewer can open, so the full variant would never be shown. Matching the preview
+        // size makes the two URLs identical, which drops data-full-src and its speculative fetch.
+        $config = $this->config( array(
+            'mode'              => 'slider',
+            'lightbox-toggle'   => 'disabled',
+            'fullscreen-toggle' => 'disabled',
+        ) );
+
+        $this->assertSame( $config['source-width'], $config['full-source-width'] );
+        $this->assertSame( $config['source-height'], $config['full-source-height'] );
+    }
+
     public function test_parse_optional_bool_returns_null_when_absent_and_correct_bool_when_present(): void {
         $absent = $this->invoke( 'parse_optional_bool', array(), 'show-navigation' );
         $true   = $this->invoke( 'parse_optional_bool', array( 'show-navigation' => 'true' ), 'show-navigation' );

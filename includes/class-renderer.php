@@ -669,8 +669,12 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-progressive-show-videos="%s"', ! empty( $config['show-videos'] ) ? 'true' : 'false' );
 			$attrs[] = sprintf( 'data-progressive-source-width="%d"', intval( $config['source-width'] ) );
 			$attrs[] = sprintf( 'data-progressive-source-height="%d"', intval( $config['source-height'] ) );
-			$attrs[] = sprintf( 'data-progressive-fullscreen-source-width="%d"', intval( $config['fullscreen-source-width'] ) );
-			$attrs[] = sprintf( 'data-progressive-fullscreen-source-height="%d"', intval( $config['fullscreen-source-height'] ) );
+			// Chunks fetched later must size their full variant exactly like the first render
+			// did, so this carries the resolved full-variant size rather than the raw
+			// fullscreen parameter. The attribute keeps its historical name because the chunk
+			// endpoint and swiper-init.js still address it by that name.
+			$attrs[] = sprintf( 'data-progressive-fullscreen-source-width="%d"', intval( $config['full-source-width'] ) );
+			$attrs[] = sprintf( 'data-progressive-fullscreen-source-height="%d"', intval( $config['full-source-height'] ) );
 		}
 		if ( isset( $config['info-font-size'] ) ) {
 			$attrs[] = sprintf( 'data-info-font-size="%d"', intval( $config['info-font-size'] ) );
