@@ -267,6 +267,9 @@ class JZSA_Shortcode_Tools {
 		}
 		$attributes = self::canonicalize_obsolete_aliases( $attributes );
 		$attributes = self::collapse_shared_viewer_attributes( $attributes );
+		if ( 'legacy' === $source_model && 'both' === $target && 'both' === $goal ) {
+			$attributes = self::promote_one_sided_viewer_attributes( $attributes );
+		}
 		if ( 'preserve' !== $goal && in_array( $target, array( 'lightbox', 'fullscreen' ), true ) ) {
 			$attributes = self::select_single_viewer_attributes( $attributes, $target );
 		}
@@ -753,6 +756,28 @@ class JZSA_Shortcode_Tools {
 			}
 
 			unset( $attributes[ $target_key ], $attributes[ $other_key ] );
+		}
+
+		return $attributes;
+	}
+
+	/**
+	 * Give both viewers the same value when legacy syntax supplied only one side.
+	 *
+	 * @param array $attributes Shortcode attributes.
+	 * @return array
+	 */
+	private static function promote_one_sided_viewer_attributes( $attributes ) {
+		foreach ( self::current_viewer_attribute_pairs() as $viewer_key => $pair ) {
+			$has_fullscreen = array_key_exists( $pair[0], $attributes );
+			$has_lightbox   = array_key_exists( $pair[1], $attributes );
+			if ( $has_fullscreen === $has_lightbox || array_key_exists( $viewer_key, $attributes ) ) {
+				continue;
+			}
+
+			$source_key = $has_fullscreen ? $pair[0] : $pair[1];
+			$attributes[ $viewer_key ] = $attributes[ $source_key ];
+			unset( $attributes[ $pair[0] ], $attributes[ $pair[1] ] );
 		}
 
 		return $attributes;

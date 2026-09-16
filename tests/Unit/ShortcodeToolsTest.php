@@ -176,6 +176,10 @@ class ShortcodeToolsTest extends TestCase {
 						$this->assertStringContainsString( $pair[3] . '="' . $expected . '"', $result['shortcode'], $name );
 						$this->assertStringNotContainsString( $pair[1] . '=', $result['shortcode'], $name );
 						$this->assertStringNotContainsString( $pair[2] . '=', $result['shortcode'], $name );
+					} elseif ( 'fullscreen-only' === $state && 'both' === $goal ) {
+						$this->assertStringContainsString( $pair[3] . '="fullscreen-value"', $result['shortcode'], $name );
+						$this->assertStringNotContainsString( $pair[1] . '=', $result['shortcode'], $name );
+						$this->assertStringNotContainsString( $pair[2] . '=', $result['shortcode'], $name );
 					} else {
 						$this->assertStringContainsString( $pair[1] . '="fullscreen-value"', $result['shortcode'], $name );
 						if ( 'different' === $state ) {
@@ -228,6 +232,9 @@ class ShortcodeToolsTest extends TestCase {
 			if ( 'lightbox' === $goal || 'fullscreen' === $goal ) {
 				$this->assertStringContainsString( 'viewer-info-top="Primary"', $result['shortcode'], $goal );
 				$this->assertStringContainsString( 'viewer-info-top-secondary="Secondary"', $result['shortcode'], $goal );
+			} elseif ( 'both' === $goal ) {
+				$this->assertStringContainsString( 'viewer-info-top="Primary"', $result['shortcode'], $goal );
+				$this->assertStringContainsString( 'viewer-info-top-secondary="Secondary"', $result['shortcode'], $goal );
 			} else {
 				$this->assertStringContainsString( 'fullscreen-info-top="Primary"', $result['shortcode'], $goal );
 				$this->assertStringContainsString( 'fullscreen-info-top-secondary="Secondary"', $result['shortcode'], $goal );
@@ -254,7 +261,7 @@ class ShortcodeToolsTest extends TestCase {
 				);
 
 				$this->assertTrue( $result['ok'], $name . ': ' . $goal );
-				$key = 'lightbox' === $goal || 'fullscreen' === $goal ? 'viewer-info-bottom' : 'fullscreen-info-bottom';
+				$key = in_array( $goal, array( 'lightbox', 'fullscreen', 'both' ), true ) ? 'viewer-info-bottom' : 'fullscreen-info-bottom';
 				$this->assertStringContainsString( $key . '="' . $case[2] . '"', $result['shortcode'], $name . ': ' . $goal );
 				$this->assertStringNotContainsString( 'fullscreen-show-title=', $result['shortcode'], $name . ': ' . $goal );
 				$this->assertStringNotContainsString( 'fullscreen-show-counter=', $result['shortcode'], $name . ': ' . $goal );
