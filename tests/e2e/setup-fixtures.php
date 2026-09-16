@@ -202,7 +202,7 @@ $pages = array(
 			array(
 				'[jzsa-album link="' . $album_link . '" mode="gallery" fullscreen-toggle="button-only" gallery-columns="3"]',
 				'[jzsa-album link="' . $album_link . '" mode="gallery" fullscreen-toggle="button-only" gallery-layout="justified"]',
-				'[jzsa-album link="' . $album_link . '" mode="gallery" fullscreen-toggle="button-only" gallery-scrollable="true"]',
+				'[jzsa-album link="' . $album_link . '" mode="gallery" fullscreen-toggle="button-only" gallery-scrollable="true" gallery-rows="2" gallery-info-bottom="Scrollable info"]',
 				'[jzsa-album link="' . $album_link . '" mode="gallery" fullscreen-toggle="button-only" gallery-rows="2"]',
 				'[jzsa-album link="' . $album_link . '" mode="gallery" lightbox-toggle="click" fullscreen-toggle="disabled"]',
 				'[jzsa-album link="' . $album_link . '" mode="gallery" lightbox-toggle="click" fullscreen-toggle="button-only"]',

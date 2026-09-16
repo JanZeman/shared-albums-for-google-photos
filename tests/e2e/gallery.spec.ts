@@ -4,7 +4,7 @@ import { gotoFixture } from './support/navigation';
 // gallery-fixture contains 6 albums in this order:
 //   #0  mode="gallery"  gallery-columns="3"  (grid, default layout)      fullscreen-toggle="button-only"
 //   #1  mode="gallery"  gallery-layout="justified"                        fullscreen-toggle="button-only"
-//   #2  mode="gallery"  gallery-scrollable="true"                         fullscreen-toggle="button-only"
+//   #2  mode="gallery"  gallery-scrollable="true"  gallery-rows="2"      fullscreen-toggle="button-only"
 //   #3  mode="gallery"  gallery-rows="2"                                  fullscreen-toggle="button-only"
 //   #4  mode="gallery"  lightbox-toggle="click"  fullscreen-toggle="disabled"  (gallery player tests)
 //   #5  mode="gallery"  viewer-toggle="lightbox-click, fullscreen-button"  (mixed viewer routing)
@@ -107,6 +107,15 @@ test.describe('Gallery - items and structure', () => {
     test('album 2 (scrollable) renders gallery items', async ({ page }) => {
         const album = await waitForAlbum(page, 2);
         await expect(album.locator('.jzsa-gallery-item').first()).toBeVisible({ timeout: 10_000 });
+    });
+
+    test('album 2 (scrollable) shows its configured bottom information without page controls', async ({ page }) => {
+        const album = await waitForAlbum(page, 2);
+        const controls = album.locator('xpath=..').locator('.jzsa-gallery-controls');
+
+        await expect(controls.locator('.swiper-pagination')).toHaveText('Scrollable info');
+        await expect(controls.locator('.swiper-button-prev')).toBeHidden();
+        await expect(controls.locator('.swiper-button-next')).toBeHidden();
     });
 });
 

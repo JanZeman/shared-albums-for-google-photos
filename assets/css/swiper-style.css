@@ -2398,6 +2398,15 @@ html.jzsa-lightbox-open body {
     opacity: var(--jzsa-controls-visible-opacity);
 }
 
+/* Scrollable galleries have no pages to navigate, but a configured
+   gallery-info-bottom remains a visible status label. */
+.jzsa-gallery-controls.jzsa-gallery-info-only .swiper-button-prev,
+.jzsa-gallery-controls.jzsa-gallery-info-only .swiper-button-next,
+.jzsa-gallery-controls.jzsa-gallery-info-only .swiper-button-play-pause,
+.jzsa-gallery-controls.jzsa-gallery-info-only .swiper-slideshow-progress {
+    display: none;
+}
+
 .jzsa-gallery-controls .swiper-button-fullscreen {
     pointer-events: auto;
 }

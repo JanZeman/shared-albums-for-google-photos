@@ -7872,8 +7872,14 @@
         var $shell = ensureGalleryShell($container);
         var $controls = $('#' + controlsId);
         var infoHaloEffect = readBooleanDataAttr($container, 'data-info-halo-effect', true);
+        var pageBottomFmt = $container.attr('data-gallery-info-bottom');
+        if (pageBottomFmt === undefined) {
+            pageBottomFmt = $container.attr('data-gallery-page-bottom');
+        }
+        var showSinglePageInfo = state.totalPages <= 1 && config.showSinglePageInfo === true &&
+            typeof pageBottomFmt === 'string' && pageBottomFmt !== '';
 
-        if (state.totalPages <= 1) {
+        if (state.totalPages <= 1 && !showSinglePageInfo) {
             $controls.remove();
             return;
         }
@@ -7893,6 +7899,7 @@
         }
 
         $controls.attr('data-info-halo-effect', infoHaloEffect ? 'true' : 'false');
+		$controls.toggleClass('jzsa-gallery-info-only', showSinglePageInfo);
         [
             'data-info-top-halo-effect',
             'data-info-top-secondary-halo-effect',
@@ -7989,10 +7996,6 @@
             $playPause.removeClass('playing');
         }
 
-	        var pageBottomFmt = $container.attr('data-gallery-info-bottom');
-	        if (pageBottomFmt === undefined) {
-	            pageBottomFmt = $container.attr('data-gallery-page-bottom');
-	        }
 	        if (showCounter && typeof pageBottomFmt === 'string') {
             // gallery-info-bottom is the final parser-provided format string (with legacy fallback to gallery-page-bottom).
             var pageText = resolveInfoPlaceholders(pageBottomFmt, {}, {
@@ -9042,7 +9045,10 @@
 
                     paginationState.currentPage = 0;
                     paginationState.totalPages = 1;
-                    removeGalleryPaginationControls($container);
+					setupGalleryPaginationControls($container, paginationState, function() {}, {
+						showCounter: true,
+						showSinglePageInfo: true
+					});
                     setGalleryPaginationHeightState($container, false);
                     setupGalleryMouseInteractions($container, {
                         enabled: !interactionLock && isJustifiedScrollable,
@@ -9227,7 +9233,10 @@
 
                     paginationState.currentPage = 0;
                     paginationState.totalPages = 1;
-                    removeGalleryPaginationControls($container);
+					setupGalleryPaginationControls($container, paginationState, function() {}, {
+						showCounter: true,
+						showSinglePageInfo: true
+					});
                     setGalleryPaginationHeightState($container, false);
                     setupGalleryMouseInteractions($container, {
                         enabled: !interactionLock && isUniformScrollable,
