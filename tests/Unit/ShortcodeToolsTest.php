@@ -105,7 +105,7 @@ class ShortcodeToolsTest extends TestCase {
 		$this->assertSame( array(), $result['changes']['changed'] );
 	}
 
-	public function test_intentional_lightbox_migration_is_reported(): void {
+	public function test_intentional_lightbox_migration_carries_the_only_legacy_gesture(): void {
 		$result = JZSA_Shortcode_Tools::migrate(
 			'[jzsa-album link="https://photos.google.com/share/test" fullscreen-toggle="click"]',
 			'lightbox',
@@ -115,7 +115,7 @@ class ShortcodeToolsTest extends TestCase {
 		$this->assertTrue( $result['ok'] );
 		$this->assertFalse( $result['behaviorPreserved'] );
 		$this->assertStringContainsString( 'viewer="lightbox"', $result['shortcode'] );
-		$this->assertStringNotContainsString( 'viewer-trigger=', $result['shortcode'] );
+		$this->assertStringContainsString( 'viewer-trigger="click"', $result['shortcode'] );
 		$this->assertStringNotContainsString( 'fullscreen-toggle', $result['shortcode'] );
 	}
 

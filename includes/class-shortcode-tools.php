@@ -253,6 +253,10 @@ class JZSA_Shortcode_Tools {
 			$trigger = $current['lightboxTrigger'];
 		} elseif ( 'fullscreen' === $target && self::is_gesture( $current['fullscreenTrigger'] ) ) {
 			$trigger = $current['fullscreenTrigger'];
+		} elseif ( 'lightbox' === $target && self::is_gesture( $current['fullscreenTrigger'] ) ) {
+			$trigger = $current['fullscreenTrigger'];
+		} elseif ( 'fullscreen' === $target && self::is_gesture( $current['lightboxTrigger'] ) ) {
+			$trigger = $current['lightboxTrigger'];
 		} else {
 			$trigger = 'button';
 		}
