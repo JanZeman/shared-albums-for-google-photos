@@ -263,6 +263,7 @@ class JZSA_Shortcode_Tools {
 
 		if ( 'legacy' === $source_model ) {
 			$attributes = self::materialize_legacy_presentation( $attributes );
+			$attributes = self::materialize_legacy_fullscreen_info( $attributes );
 		}
 		$attributes = self::canonicalize_obsolete_aliases( $attributes );
 		$attributes = self::collapse_shared_viewer_attributes( $attributes );
@@ -566,6 +567,65 @@ class JZSA_Shortcode_Tools {
 		}
 
 		return $attributes;
+	}
+
+	/**
+	 * Convert fullscreen-only information aliases into their effective modern values.
+	 *
+	 * @param array $attributes Parsed shortcode attributes.
+	 * @return array
+	 */
+	private static function materialize_legacy_fullscreen_info( $attributes ) {
+		$aliases = array(
+			'fullscreen-info-top-1' => 'fullscreen-info-top',
+			'fullscreen-info-top-2' => 'fullscreen-info-top-secondary',
+		);
+		foreach ( $aliases as $obsolete => $canonical ) {
+			if ( ! isset( $attributes[ $canonical ] ) && isset( $attributes[ $obsolete ] ) ) {
+				$attributes[ $canonical ] = $attributes[ $obsolete ];
+			}
+			unset( $attributes[ $obsolete ] );
+		}
+
+		$has_legacy_flags = isset( $attributes['fullscreen-show-title'] ) || isset( $attributes['fullscreen-show-counter'] );
+		if ( ! isset( $attributes['info-bottom'] ) && ! isset( $attributes['fullscreen-info-bottom'] ) && $has_legacy_flags ) {
+			$show_title = isset( $attributes['fullscreen-show-title'] )
+				? self::legacy_bool( $attributes['fullscreen-show-title'] )
+				: ( isset( $attributes['show-title'] ) ? self::legacy_bool( $attributes['show-title'] ) : false );
+			$show_counter = isset( $attributes['fullscreen-show-counter'] )
+				? self::legacy_bool( $attributes['fullscreen-show-counter'] )
+				: ( isset( $attributes['show-counter'] ) ? self::legacy_bool( $attributes['show-counter'] ) : true );
+			$attributes['fullscreen-info-bottom'] = self::legacy_info_bottom( $show_title, $show_counter );
+		}
+		unset( $attributes['fullscreen-show-title'], $attributes['fullscreen-show-counter'] );
+
+		return $attributes;
+	}
+
+	/**
+	 * @param mixed $value Legacy boolean shortcode value.
+	 * @return bool
+	 */
+	private static function legacy_bool( $value ) {
+		return 'true' === strtolower( (string) $value );
+	}
+
+	/**
+	 * @param bool $show_title Whether to show the album title.
+	 * @param bool $show_counter Whether to show the item counter.
+	 * @return string
+	 */
+	private static function legacy_info_bottom( $show_title, $show_counter ) {
+		if ( $show_title && $show_counter ) {
+			return '{album-title}: {item} / {items}';
+		}
+		if ( $show_title ) {
+			return '{album-title}';
+		}
+		if ( $show_counter ) {
+			return '{item} / {items}';
+		}
+		return '';
 	}
 
 	/**

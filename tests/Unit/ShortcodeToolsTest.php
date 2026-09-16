@@ -216,6 +216,66 @@ class ShortcodeToolsTest extends TestCase {
 		}
 	}
 
+	public function test_migration_preserves_fullscreen_info_aliases_for_every_goal(): void {
+		foreach ( array( 'preserve', 'lightbox', 'fullscreen', 'both' ) as $goal ) {
+			$result = JZSA_Shortcode_Tools::migrate(
+				'[jzsa-album link="https://photos.google.com/share/test" fullscreen-info-top-1="Primary" fullscreen-info-top-2="Secondary"]',
+				$goal,
+				'fullscreen'
+			);
+
+			$this->assertTrue( $result['ok'], $goal );
+			if ( 'lightbox' === $goal || 'fullscreen' === $goal ) {
+				$this->assertStringContainsString( 'viewer-info-top="Primary"', $result['shortcode'], $goal );
+				$this->assertStringContainsString( 'viewer-info-top-secondary="Secondary"', $result['shortcode'], $goal );
+			} else {
+				$this->assertStringContainsString( 'fullscreen-info-top="Primary"', $result['shortcode'], $goal );
+				$this->assertStringContainsString( 'fullscreen-info-top-secondary="Secondary"', $result['shortcode'], $goal );
+			}
+			$this->assertStringNotContainsString( 'fullscreen-info-top-1=', $result['shortcode'], $goal );
+			$this->assertStringNotContainsString( 'fullscreen-info-top-2=', $result['shortcode'], $goal );
+		}
+	}
+
+	public function test_migration_preserves_legacy_fullscreen_info_flags_for_every_goal(): void {
+		$cases = array(
+			'title-and-counter' => array( 'true', 'true', '{album-title}: {item} / {items}' ),
+			'title-only'        => array( 'true', 'false', '{album-title}' ),
+			'counter-only'      => array( 'false', 'true', '{item} / {items}' ),
+			'neither'           => array( 'false', 'false', '' ),
+		);
+
+		foreach ( $cases as $name => $case ) {
+			foreach ( array( 'preserve', 'lightbox', 'fullscreen', 'both' ) as $goal ) {
+				$result = JZSA_Shortcode_Tools::migrate(
+					'[jzsa-album link="https://photos.google.com/share/test" fullscreen-show-title="' . $case[0] . '" fullscreen-show-counter="' . $case[1] . '"]',
+					$goal,
+					'fullscreen'
+				);
+
+				$this->assertTrue( $result['ok'], $name . ': ' . $goal );
+				$key = 'lightbox' === $goal || 'fullscreen' === $goal ? 'viewer-info-bottom' : 'fullscreen-info-bottom';
+				$this->assertStringContainsString( $key . '="' . $case[2] . '"', $result['shortcode'], $name . ': ' . $goal );
+				$this->assertStringNotContainsString( 'fullscreen-show-title=', $result['shortcode'], $name . ': ' . $goal );
+				$this->assertStringNotContainsString( 'fullscreen-show-counter=', $result['shortcode'], $name . ': ' . $goal );
+			}
+		}
+	}
+
+	public function test_modern_info_bottom_takes_priority_over_legacy_fullscreen_info_flags(): void {
+		$result = JZSA_Shortcode_Tools::migrate(
+			'[jzsa-album link="https://photos.google.com/share/test" info-bottom="Modern" fullscreen-show-title="true" fullscreen-show-counter="true"]',
+			'lightbox',
+			'fullscreen'
+		);
+
+		$this->assertTrue( $result['ok'] );
+		$this->assertStringContainsString( 'info-bottom="Modern"', $result['shortcode'] );
+		$this->assertStringNotContainsString( 'fullscreen-info-bottom=', $result['shortcode'] );
+		$this->assertStringNotContainsString( 'fullscreen-show-title=', $result['shortcode'] );
+		$this->assertStringNotContainsString( 'fullscreen-show-counter=', $result['shortcode'] );
+	}
+
 	public function test_same_modern_lightbox_goal_preserves_obsolete_shared_click_trigger(): void {
 		$result = JZSA_Shortcode_Tools::migrate(
 			'[jzsa-album link="https://photos.google.com/share/test" viewer="lightbox" viewer-toggle="click" corner-radius="16" viewer-toggle="click"]',
