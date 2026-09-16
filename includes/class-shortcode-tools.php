@@ -273,7 +273,8 @@ class JZSA_Shortcode_Tools {
 			}
 		}
 		$attributes['viewer'] = $target;
-		if ( 'both' === $target && ( 'preserve' === $goal || $same_viewer_target ) ) {
+		$has_single_gesture = self::is_gesture( $current['lightboxTrigger'] ) !== self::is_gesture( $current['fullscreenTrigger'] );
+		if ( 'both' === $target && ( 'preserve' === $goal || $same_viewer_target || $has_single_gesture ) ) {
 			if ( self::is_gesture( $current['lightboxTrigger'] ) ) {
 				$attributes['lightbox-trigger'] = $current['lightboxTrigger'];
 			} elseif ( self::is_gesture( $current['fullscreenTrigger'] ) ) {

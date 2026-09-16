@@ -105,18 +105,29 @@ class ShortcodeToolsTest extends TestCase {
 		$this->assertSame( array(), $result['changes']['changed'] );
 	}
 
-	public function test_intentional_lightbox_migration_carries_the_only_legacy_gesture(): void {
-		$result = JZSA_Shortcode_Tools::migrate(
-			'[jzsa-album link="https://photos.google.com/share/test" fullscreen-toggle="click"]',
-			'lightbox',
-			'fullscreen'
+	public function test_migration_keeps_a_single_legacy_gesture_for_every_viewer_goal(): void {
+		$cases = array(
+			'fullscreen-to-preserve' => array( 'fullscreen-toggle="click"', 'preserve', 'viewer="fullscreen"', 'viewer-trigger="click"' ),
+			'fullscreen-to-lightbox' => array( 'fullscreen-toggle="click"', 'lightbox', 'viewer="lightbox"', 'viewer-trigger="click"' ),
+			'fullscreen-to-fullscreen' => array( 'fullscreen-toggle="click"', 'fullscreen', 'viewer="fullscreen"', 'viewer-trigger="click"' ),
+			'fullscreen-to-both' => array( 'fullscreen-toggle="click"', 'both', 'viewer="both"', 'fullscreen-trigger="click"' ),
+			'lightbox-to-preserve' => array( 'lightbox-toggle="click" fullscreen-toggle="disabled"', 'preserve', 'viewer="lightbox"', 'viewer-trigger="click"' ),
+			'lightbox-to-lightbox' => array( 'lightbox-toggle="click" fullscreen-toggle="disabled"', 'lightbox', 'viewer="lightbox"', 'viewer-trigger="click"' ),
+			'lightbox-to-fullscreen' => array( 'lightbox-toggle="click" fullscreen-toggle="disabled"', 'fullscreen', 'viewer="fullscreen"', 'viewer-trigger="click"' ),
+			'lightbox-to-both' => array( 'lightbox-toggle="click" fullscreen-toggle="disabled"', 'both', 'viewer="both"', 'lightbox-trigger="click"' ),
 		);
 
-		$this->assertTrue( $result['ok'] );
-		$this->assertFalse( $result['behaviorPreserved'] );
-		$this->assertStringContainsString( 'viewer="lightbox"', $result['shortcode'] );
-		$this->assertStringContainsString( 'viewer-trigger="click"', $result['shortcode'] );
-		$this->assertStringNotContainsString( 'fullscreen-toggle', $result['shortcode'] );
+		foreach ( $cases as $name => $case ) {
+			$result = JZSA_Shortcode_Tools::migrate(
+				'[jzsa-album link="https://photos.google.com/share/test" ' . $case[0] . ']',
+				$case[1],
+				'fullscreen'
+			);
+
+			$this->assertTrue( $result['ok'], $name );
+			$this->assertStringContainsString( $case[2], $result['shortcode'], $name );
+			$this->assertStringContainsString( $case[3], $result['shortcode'], $name );
+		}
 	}
 
 	public function test_same_modern_lightbox_goal_preserves_obsolete_shared_click_trigger(): void {
