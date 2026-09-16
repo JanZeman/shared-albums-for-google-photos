@@ -266,6 +266,9 @@ class JZSA_Shortcode_Tools {
 		}
 		$attributes = self::canonicalize_obsolete_aliases( $attributes );
 		$attributes = self::collapse_shared_viewer_attributes( $attributes );
+		if ( 'preserve' !== $goal && in_array( $target, array( 'lightbox', 'fullscreen' ), true ) ) {
+			$attributes = self::select_single_viewer_attributes( $attributes, $target );
+		}
 
 		foreach ( array_keys( $attributes ) as $name ) {
 			if ( in_array( $name, array( 'viewer', 'viewer-toggle', 'viewer-trigger', 'lightbox-toggle', 'fullscreen-toggle', 'lightbox-trigger', 'fullscreen-trigger' ), true ) ) {
@@ -655,6 +658,41 @@ class JZSA_Shortcode_Tools {
 
 			$attributes[ $viewer_key ] = $attributes[ $pair[0] ];
 			unset( $attributes[ $pair[0] ], $attributes[ $pair[1] ] );
+		}
+
+		return $attributes;
+	}
+
+	/**
+	 * Select the effective legacy presentation for a deliberate single-viewer migration.
+	 *
+	 * @param array  $attributes Shortcode attributes.
+	 * @param string $target Selected viewer.
+	 * @return array
+	 */
+	private static function select_single_viewer_attributes( $attributes, $target ) {
+		$target_index = 'fullscreen' === $target ? 0 : 1;
+		$allows_empty = array( 'viewer-info-bottom', 'viewer-info-top', 'viewer-info-top-secondary' );
+		foreach ( self::current_viewer_attribute_pairs() as $viewer_key => $pair ) {
+			$target_key = $pair[ $target_index ];
+			$other_key  = $pair[ 1 - $target_index ];
+			$is_set = static function ( $key ) use ( $attributes, $viewer_key, $allows_empty ) {
+				return in_array( $viewer_key, $allows_empty, true )
+					? array_key_exists( $key, $attributes )
+					: isset( $attributes[ $key ] ) && '' !== trim( (string) $attributes[ $key ] );
+			};
+
+			if ( $is_set( $target_key ) ) {
+				$attributes[ $viewer_key ] = $attributes[ $target_key ];
+			} elseif ( $is_set( $viewer_key ) ) {
+				// The shared baseline is already the selected viewer's effective value.
+			} elseif ( $is_set( $other_key ) ) {
+				$attributes[ $viewer_key ] = $attributes[ $other_key ];
+			} else {
+				continue;
+			}
+
+			unset( $attributes[ $target_key ], $attributes[ $other_key ] );
 		}
 
 		return $attributes;

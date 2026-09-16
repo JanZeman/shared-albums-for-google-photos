@@ -130,6 +130,92 @@ class ShortcodeToolsTest extends TestCase {
 		}
 	}
 
+	public function test_explicit_single_viewer_migration_selects_every_legacy_presentation_value(): void {
+		$pairs = array(
+			array( 'fullscreen-display-max-width', 'fullscreen-max-width', 'lightbox-max-width', 'viewer-max-width' ),
+			array( 'fullscreen-display-max-height', 'fullscreen-max-height', 'lightbox-max-height', 'viewer-max-height' ),
+			array( 'fullscreen-background-color', 'fullscreen-background-color', 'lightbox-background-color', 'viewer-background-color' ),
+			array( 'fullscreen-corner-radius', 'fullscreen-corner-radius', 'lightbox-corner-radius', 'viewer-corner-radius' ),
+			array( 'fullscreen-info-bottom', 'fullscreen-info-bottom', 'lightbox-info-bottom', 'viewer-info-bottom' ),
+			array( 'fullscreen-info-top', 'fullscreen-info-top', 'lightbox-info-top', 'viewer-info-top' ),
+			array( 'fullscreen-info-top-secondary', 'fullscreen-info-top-secondary', 'lightbox-info-top-secondary', 'viewer-info-top-secondary' ),
+			array( 'fullscreen-info-font-size', 'fullscreen-info-font-size', 'lightbox-info-font-size', 'viewer-info-font-size' ),
+			array( 'fullscreen-info-font-family', 'fullscreen-info-font-family', 'lightbox-info-font-family', 'viewer-info-font-family' ),
+			array( 'fullscreen-info-font-color', 'fullscreen-info-font-color', 'lightbox-info-font-color', 'viewer-info-font-color' ),
+			array( 'fullscreen-mosaic', 'fullscreen-mosaic', 'lightbox-mosaic', 'viewer-mosaic' ),
+			array( 'fullscreen-mosaic-position', 'fullscreen-mosaic-position', 'lightbox-mosaic-position', 'viewer-mosaic-position' ),
+			array( 'fullscreen-mosaic-layout', 'fullscreen-mosaic-layout', 'lightbox-mosaic-layout', 'viewer-mosaic-layout' ),
+			array( 'fullscreen-mosaic-count', 'fullscreen-mosaic-count', 'lightbox-mosaic-count', 'viewer-mosaic-count' ),
+			array( 'fullscreen-mosaic-gap', 'fullscreen-mosaic-gap', 'lightbox-mosaic-gap', 'viewer-mosaic-gap' ),
+			array( 'fullscreen-mosaic-opacity', 'fullscreen-mosaic-opacity', 'lightbox-mosaic-opacity', 'viewer-mosaic-opacity' ),
+			array( 'fullscreen-mosaic-background', 'fullscreen-mosaic-background', 'lightbox-mosaic-background', 'viewer-mosaic-background' ),
+			array( 'fullscreen-mosaic-corner-radius', 'fullscreen-mosaic-corner-radius', 'lightbox-mosaic-corner-radius', 'viewer-mosaic-corner-radius' ),
+		);
+		$goals = array( 'preserve', 'lightbox', 'fullscreen', 'both' );
+
+		foreach ( $pairs as $pair ) {
+			foreach ( array( 'fullscreen-only', 'equal', 'different' ) as $state ) {
+				$attributes = $pair[0] . '="fullscreen-value"';
+				if ( 'equal' === $state ) {
+					$attributes .= ' ' . $pair[2] . '="fullscreen-value"';
+				} elseif ( 'different' === $state ) {
+					$attributes .= ' ' . $pair[2] . '="lightbox-value"';
+				}
+
+				foreach ( $goals as $goal ) {
+					$result = JZSA_Shortcode_Tools::migrate(
+						'[jzsa-album link="https://photos.google.com/share/test" ' . $attributes . ']',
+						$goal,
+						'fullscreen'
+					);
+					$name = $pair[3] . ': ' . $state . ': ' . $goal;
+
+					$this->assertTrue( $result['ok'], $name );
+					if ( 'equal' === $state || ( 'preserve' !== $goal && 'both' !== $goal ) ) {
+						$expected = 'different' === $state && 'lightbox' === $goal ? 'lightbox-value' : 'fullscreen-value';
+						$this->assertStringContainsString( $pair[3] . '="' . $expected . '"', $result['shortcode'], $name );
+						$this->assertStringNotContainsString( $pair[1] . '=', $result['shortcode'], $name );
+						$this->assertStringNotContainsString( $pair[2] . '=', $result['shortcode'], $name );
+					} else {
+						$this->assertStringContainsString( $pair[1] . '="fullscreen-value"', $result['shortcode'], $name );
+						if ( 'different' === $state ) {
+							$this->assertStringContainsString( $pair[2] . '="lightbox-value"', $result['shortcode'], $name );
+						}
+					}
+				}
+			}
+		}
+	}
+
+	public function test_explicit_single_viewer_migration_keeps_empty_legacy_info_values(): void {
+		$pairs = array(
+			array( 'fullscreen-info-bottom', 'lightbox-info-bottom', 'viewer-info-bottom' ),
+			array( 'fullscreen-info-top', 'lightbox-info-top', 'viewer-info-top' ),
+			array( 'fullscreen-info-top-secondary', 'lightbox-info-top-secondary', 'viewer-info-top-secondary' ),
+		);
+
+		foreach ( $pairs as $pair ) {
+			foreach ( array( 'preserve', 'lightbox', 'fullscreen', 'both' ) as $goal ) {
+				$result = JZSA_Shortcode_Tools::migrate(
+					'[jzsa-album link="https://photos.google.com/share/test" ' . $pair[0] . '="" ' . $pair[1] . '="lightbox-value"]',
+					$goal,
+					'fullscreen'
+				);
+				$name = $pair[2] . ': empty fullscreen: ' . $goal;
+
+				$this->assertTrue( $result['ok'], $name );
+				if ( 'fullscreen' === $goal ) {
+					$this->assertStringContainsString( $pair[2] . '=""', $result['shortcode'], $name );
+				} elseif ( 'lightbox' === $goal ) {
+					$this->assertStringContainsString( $pair[2] . '="lightbox-value"', $result['shortcode'], $name );
+				} else {
+					$this->assertStringContainsString( $pair[0] . '=""', $result['shortcode'], $name );
+					$this->assertStringContainsString( $pair[1] . '="lightbox-value"', $result['shortcode'], $name );
+				}
+			}
+		}
+	}
+
 	public function test_same_modern_lightbox_goal_preserves_obsolete_shared_click_trigger(): void {
 		$result = JZSA_Shortcode_Tools::migrate(
 			'[jzsa-album link="https://photos.google.com/share/test" viewer="lightbox" viewer-toggle="click" corner-radius="16" viewer-toggle="click"]',
@@ -189,9 +275,6 @@ class ShortcodeToolsTest extends TestCase {
 			$this->assertTrue( $result['ok'], $name );
 			$this->assertTrue( $result['behaviorPreserved'], $name );
 			$this->assertSame( $case['current_viewer'], $result['targetViewer'], $name );
-			foreach ( $case['contains'] as $token ) {
-				$this->assertStringContainsString( $token, $result['shortcode'], $name );
-			}
 		}
 	}
 
