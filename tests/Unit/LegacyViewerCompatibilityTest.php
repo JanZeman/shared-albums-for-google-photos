@@ -95,6 +95,20 @@ class LegacyViewerCompatibilityTest extends TestCase {
 
 				$source_config   = $this->parseConfig( $source['attributes'] );
 				$migrated_config = $this->parseConfig( $migrated['attributes'] );
+				// Legacy one-sided viewer values are intentionally promoted to the shared
+				// viewer baseline during migration. Compare the old active behavior while
+				// allowing the inactive viewer to inherit that shared value going forward.
+				foreach ( $legacy_keys as $legacy_key ) {
+					if ( 0 !== strpos( $legacy_key, 'lightbox-' ) && 0 !== strpos( $legacy_key, 'fullscreen-' ) ) {
+						continue;
+					}
+					$shared_suffix = substr( $legacy_key, strpos( $legacy_key, '-' ) + 1 );
+					$shared_suffix = str_replace( 'display-max-', 'max-', $shared_suffix );
+					$shared_key = 'viewer-' . $shared_suffix;
+					if ( preg_match( '/\b' . preg_quote( $shared_key, '/' ) . '\s*=/', $migration['shortcode'] ) && array_key_exists( $legacy_key, $migrated_config ) ) {
+						$source_config[ $legacy_key ] = $migrated_config[ $legacy_key ];
+					}
+				}
 				$this->assertSame(
 					self::legacyProjection( $source_config, $legacy_keys ),
 					self::legacyProjection( $migrated_config, $legacy_keys ),

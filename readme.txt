@@ -4,11 +4,11 @@ Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.5
 Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 2.5.0
+Stable tag: 2.5.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Embed shared Google Photos albums directly from the source, without uploading copies to WordPress.
+Embed Google Photos directly from the source, without uploading copies to WordPress.
 
 == Description ==
 
@@ -106,6 +106,10 @@ Yes. The gallery is responsive and supports touch gestures, fullscreen viewing, 
 No. This plugin is not affiliated with or endorsed by Google LLC. Google Photos™ is a trademark of Google LLC.
 
 == Changelog ==
+
+= 2.5.1 =
+* Moved the Shortcode Migration Tool to Settings with an integrated live preview. Improved its output.
+* Fixed gallery information not appearing in scrollable galleries.
 
 = 2.5.0 =
 * Fixed the Guide page becoming slow.

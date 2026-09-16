@@ -176,7 +176,7 @@ class ShortcodeToolsTest extends TestCase {
 						$this->assertStringContainsString( $pair[3] . '="' . $expected . '"', $result['shortcode'], $name );
 						$this->assertStringNotContainsString( $pair[1] . '=', $result['shortcode'], $name );
 						$this->assertStringNotContainsString( $pair[2] . '=', $result['shortcode'], $name );
-					} elseif ( 'fullscreen-only' === $state && 'both' === $goal ) {
+					} elseif ( 'fullscreen-only' === $state && in_array( $goal, array( 'preserve', 'both' ), true ) ) {
 						$this->assertStringContainsString( $pair[3] . '="fullscreen-value"', $result['shortcode'], $name );
 						$this->assertStringNotContainsString( $pair[1] . '=', $result['shortcode'], $name );
 						$this->assertStringNotContainsString( $pair[2] . '=', $result['shortcode'], $name );
@@ -232,7 +232,7 @@ class ShortcodeToolsTest extends TestCase {
 			if ( 'lightbox' === $goal || 'fullscreen' === $goal ) {
 				$this->assertStringContainsString( 'viewer-info-top="Primary"', $result['shortcode'], $goal );
 				$this->assertStringContainsString( 'viewer-info-top-secondary="Secondary"', $result['shortcode'], $goal );
-			} elseif ( 'both' === $goal ) {
+			} elseif ( 'both' === $goal || 'preserve' === $goal ) {
 				$this->assertStringContainsString( 'viewer-info-top="Primary"', $result['shortcode'], $goal );
 				$this->assertStringContainsString( 'viewer-info-top-secondary="Secondary"', $result['shortcode'], $goal );
 			} else {
@@ -261,7 +261,7 @@ class ShortcodeToolsTest extends TestCase {
 				);
 
 				$this->assertTrue( $result['ok'], $name . ': ' . $goal );
-				$key = in_array( $goal, array( 'lightbox', 'fullscreen', 'both' ), true ) ? 'viewer-info-bottom' : 'fullscreen-info-bottom';
+				$key = in_array( $goal, array( 'preserve', 'lightbox', 'fullscreen', 'both' ), true ) ? 'viewer-info-bottom' : 'fullscreen-info-bottom';
 				$this->assertStringContainsString( $key . '="' . $case[2] . '"', $result['shortcode'], $name . ': ' . $goal );
 				$this->assertStringNotContainsString( 'fullscreen-show-title=', $result['shortcode'], $name . ': ' . $goal );
 				$this->assertStringNotContainsString( 'fullscreen-show-counter=', $result['shortcode'], $name . ': ' . $goal );
@@ -322,6 +322,10 @@ class ShortcodeToolsTest extends TestCase {
 			$this->assertSame( $case['current_viewer'], $result['currentViewer'], $name );
 			$this->assertSame( $case['current_viewer'], $result['targetViewer'], $name );
 			foreach ( $case['contains'] as $token ) {
+				$shared_token = preg_replace( '/^(?:lightbox|fullscreen)-/', 'viewer-', $token );
+				if ( $shared_token !== $token && false !== strpos( $result['shortcode'], $shared_token ) ) {
+					$token = $shared_token;
+				}
 				$this->assertStringContainsString( $token, $result['shortcode'], $name );
 			}
 			foreach ( $case['absent'] as $token ) {

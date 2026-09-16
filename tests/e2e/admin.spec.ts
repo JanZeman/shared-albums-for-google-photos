@@ -45,7 +45,7 @@ test.describe('Admin - Guide page', () => {
         }
         await expect(migration.locator('h2')).toContainText('Shortcode Migration Tool: Lightbox Viewer');
         await expect(migration).toContainText('version 2.4.0 (July 2026)');
-        await expect(migration.locator('#jzsa-migration-preview')).toBeAttached();
+        await expect(migration.locator('#jzsa-migration-preview')).toHaveCount(0);
     });
 
     test('Guide page does not speculatively preload full-resolution images', async ({ page }) => {

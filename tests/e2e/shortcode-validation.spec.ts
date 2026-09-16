@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { loginAsAdmin } from './support/auth';
 
 const GUIDE_URL = '/wp-admin/admin.php?page=janzeman-shared-albums-for-google-photos';
+const SETTINGS_URL = '/wp-admin/admin.php?page=janzeman-shared-albums-for-google-photos-settings';
 
 // The live validation area is inserted by admin-settings.js immediately after
 // the Playground code block on the Guide page.
@@ -520,11 +521,11 @@ test.describe('Shortcode Migration Tool', () => {
 
         const output = page.locator('#jzsa-migrated-shortcode');
         await expect(output).toBeVisible();
-        await expect(output).toHaveValue(/viewer="fullscreen"/);
-        await expect(output).toHaveValue(/viewer-trigger="click"/);
-        await expect(output).toHaveValue(/viewer-source-width="800"/);
-        await expect(output).not.toHaveValue(/fullscreen-source-width=/);
-        await expect(output).not.toHaveValue(/lightbox-source-width=/);
+        await expect(output).toContainText(/viewer="fullscreen"/);
+        await expect(output).toContainText(/viewer-trigger="click"/);
+        await expect(output).toContainText(/viewer-source-width="800"/);
+        await expect(output).not.toContainText(/fullscreen-source-width=/);
+        await expect(output).not.toContainText(/lightbox-source-width=/);
         await expect(page.locator('#jzsa-migration-source-validation')).toContainText(
             'Parameter "fullscreen-toggle" is deprecated',
         );
@@ -546,7 +547,7 @@ test.describe('Shortcode Migration Tool', () => {
         await page.getByLabel('Use Lightbox').check();
         await page.locator('#jzsa-migrate-shortcode').click();
 
-        await expect(page.locator('#jzsa-migrated-shortcode')).toHaveValue(
+        await expect(page.locator('#jzsa-migrated-shortcode')).toHaveText(
             '[jzsa-album link="https://photos.google.com/share/test" viewer="lightbox" ' +
                 'viewer-trigger="click" corner-radius="16"]',
         );
@@ -575,7 +576,7 @@ test.describe('Shortcode Migration Tool', () => {
         );
         await page.locator('#jzsa-migrate-shortcode').click();
 
-        await expect(page.locator('#jzsa-migrated-shortcode')).toHaveValue(/sparkle="true"/);
+        await expect(page.locator('#jzsa-migrated-shortcode')).toContainText(/sparkle="true"/);
         await expect(page.locator('#jzsa-migration-result')).toContainText('Migrated shortcode validation:');
         await expect(page.locator('#jzsa-migration-result')).toContainText('Unknown parameter "sparkle"');
     });

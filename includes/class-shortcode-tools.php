@@ -267,7 +267,7 @@ class JZSA_Shortcode_Tools {
 		}
 		$attributes = self::canonicalize_obsolete_aliases( $attributes );
 		$attributes = self::collapse_shared_viewer_attributes( $attributes );
-		if ( 'legacy' === $source_model && 'both' === $target && 'both' === $goal ) {
+		if ( 'legacy' === $source_model && in_array( $target, array( 'lightbox', 'fullscreen', 'both' ), true ) ) {
 			$attributes = self::promote_one_sided_viewer_attributes( $attributes );
 		}
 		if ( 'preserve' !== $goal && in_array( $target, array( 'lightbox', 'fullscreen' ), true ) ) {
