@@ -72,6 +72,13 @@ class OrchestratorAssetsTest extends TestCase {
 		$GLOBALS['jzsa_test_enqueued_styles']   = array();
 		$GLOBALS['jzsa_test_enqueued_scripts']  = array();
 		$GLOBALS['jzsa_test_localized_scripts'] = array();
+		$_GET['page'] = JZSA_Admin_Pages::SETTINGS_SLUG;
+		$this->orchestrator->enqueue_admin_assets( 'ignored-hook' );
+		$this->assertSame( array( 'swiper-css', 'plyr-css', 'jzsa-style' ), array_column( $GLOBALS['jzsa_test_enqueued_styles'], 'handle' ) );
+
+		$GLOBALS['jzsa_test_enqueued_styles']   = array();
+		$GLOBALS['jzsa_test_enqueued_scripts']  = array();
+		$GLOBALS['jzsa_test_localized_scripts'] = array();
 		$_GET['page'] = JZSA_Admin_Pages::SHORTCODE_PARAMETERS_SLUG;
 		$this->orchestrator->enqueue_admin_assets( 'ignored-hook' );
 

@@ -221,7 +221,11 @@ class JZSA_Shared_Albums {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only admin page routing check.
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 
-		$preview_pages = array( JZSA_Admin_Pages::MENU_SLUG, JZSA_Admin_Pages::COMMUNITY_SLUG );
+		$preview_pages = array(
+			JZSA_Admin_Pages::MENU_SLUG,
+			JZSA_Admin_Pages::COMMUNITY_SLUG,
+			JZSA_Admin_Pages::SETTINGS_SLUG,
+		);
 		if ( ! class_exists( 'JZSA_Admin_Pages' ) || ! in_array( $page, $preview_pages, true ) ) {
 			return;
 		}

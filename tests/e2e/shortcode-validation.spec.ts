@@ -507,19 +507,16 @@ test.describe('Shortcode validation - parameter values', () => {
 test.describe('Shortcode Migration Tool', () => {
     test.beforeEach(async ({ page }) => {
         await loginAsAdmin(page);
-        await page.goto(GUIDE_URL);
-        await page.locator('#jzsa-guide-migration-details').evaluate((details: HTMLDetailsElement) => {
-            details.open = true;
-        });
+		await page.goto(SETTINGS_URL);
         await expect(page.locator('#jzsa-migrate-shortcode')).toBeVisible();
     });
 
-    test('preserves legacy behavior and loads the modern shortcode in Playground', async ({ page }) => {
+	test('preserves legacy behavior and renders the migrated shortcode preview', async ({ page }) => {
         await page.locator('#jzsa-migration-shortcode').fill(
             '[jzsa-album link="https://photos.google.com/share/test" ' +
                 'fullscreen-toggle="click" fullscreen-source-width="800"]',
         );
-        await page.locator('#jzsa-migrate-shortcode').click();
+		await page.getByRole('button', { name: 'Migrate' }).click();
 
         const output = page.locator('#jzsa-migrated-shortcode');
         await expect(output).toBeVisible();
@@ -538,8 +535,7 @@ test.describe('Shortcode Migration Tool', () => {
         await expect(page.locator('#jzsa-migration-result')).toContainText('Behavior preserved.');
         await expect(page.locator('#jzsa-migration-result')).not.toContainText('Validation: valid');
 
-        await page.getByRole('button', { name: 'Preview in Playground' }).click();
-        await expect(page.locator('#jzsa-playground-shortcode')).toContainText('viewer="fullscreen"');
+		await expect(page.locator('#jzsa-migration-preview')).toBeVisible();
     });
 
     test('keeps the click trigger when Use Lightbox matches the current viewer', async ({ page }) => {

@@ -251,27 +251,27 @@ class AdminPagesTest extends TestCase {
 		);
 	}
 
-	public function test_settings_page_links_to_the_migration_tool_on_upgraded_sites(): void {
+	public function test_settings_page_renders_the_migration_tool_on_upgraded_sites(): void {
 		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1' );
-		$method = $this->reflection->getMethod( 'render_default_viewer_setting_section' );
+		$method = $this->reflection->getMethod( 'render_settings_page' );
 
 		ob_start();
 		$method->invoke( $this->admin_pages );
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( '#jzsa-guide-migration', $output );
-		$this->assertStringContainsString( 'Shortcode Migration Tool', $output );
+		$this->assertStringContainsString( 'id="jzsa-shortcode-migration"', $output );
+		$this->assertStringContainsString( 'Shortcode Migration Tool: Lightbox Viewer', $output );
 	}
 
-	public function test_settings_page_omits_the_migration_link_without_the_upgrade_flag(): void {
-		$method = $this->reflection->getMethod( 'render_default_viewer_setting_section' );
+	public function test_settings_page_omits_the_migration_tool_without_the_upgrade_flag(): void {
+		$method = $this->reflection->getMethod( 'render_settings_page' );
 
 		ob_start();
 		$method->invoke( $this->admin_pages );
 		$output = ob_get_clean();
 
-		// A site that never ran a pre-2.4.0 version has no migration tool to link to.
-		$this->assertStringNotContainsString( '#jzsa-guide-migration', $output );
+		// A site that never ran a pre-2.4.0 version has no migration tool to show.
+		$this->assertStringNotContainsString( 'id="jzsa-shortcode-migration"', $output );
 	}
 
 	public function test_settings_notice_can_be_dismissed_per_user(): void {
@@ -478,8 +478,8 @@ class AdminPagesTest extends TestCase {
 		$this->assertSame( '', $output );
 	}
 
-	public function test_guide_migration_tutorial_is_hidden_without_viewer_migration_flag(): void {
-		$method = $this->reflection->getMethod( 'render_guide_migration_tutorial' );
+	public function test_shortcode_migration_tool_is_hidden_without_viewer_migration_flag(): void {
+		$method = $this->reflection->getMethod( 'render_shortcode_migration_tool' );
 
 		ob_start();
 		$method->invoke( $this->admin_pages );
@@ -488,23 +488,19 @@ class AdminPagesTest extends TestCase {
 		$this->assertSame( '', $output );
 	}
 
-	public function test_guide_migration_tutorial_is_a_collapsed_tool_not_a_recommendation(): void {
+	public function test_shortcode_migration_tool_is_on_settings_with_lightbox_context_and_preview(): void {
 		update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1' );
 		update_option( JZSA_DEFAULT_VIEWER_OPTION, 'fullscreen' );
-		$method = $this->reflection->getMethod( 'render_guide_migration_tutorial' );
+		$method = $this->reflection->getMethod( 'render_shortcode_migration_tool' );
 
 		ob_start();
 		$method->invoke( $this->admin_pages );
 		$output = ob_get_clean();
 
 		// Presented as a utility, always collapsed, with no campaign framing left.
-		$this->assertStringContainsString( 'Shortcode Migration Tool (legacy syntax)', $output );
-		$this->assertStringNotContainsString( '<details id="jzsa-guide-migration-details" open>', $output );
-		$this->assertStringNotContainsString( 'Recommended Update: Try Lightbox', $output );
-		$this->assertStringNotContainsString( 'Why Lightbox?', $output );
-		$this->assertStringNotContainsString( 'Recommended Migration Path', $output );
-		$this->assertStringNotContainsString( 'A Safe Way to Decide', $output );
-		$this->assertStringNotContainsString( 'Collapse this migration guide', $output );
+		$this->assertStringContainsString( 'Shortcode Migration Tool: Lightbox Viewer', $output );
+		$this->assertStringContainsString( 'version 2.4.0 (July 2026)', $output );
+		$this->assertStringNotContainsString( '<details', $output );
 
 		// The tool itself is unchanged and still fully functional.
 		$this->assertStringContainsString( 'id="jzsa-migration-shortcode"', $output );
@@ -515,29 +511,13 @@ class AdminPagesTest extends TestCase {
 		$this->assertStringContainsString( '(Will visitors understand both options? Investigate samples 29 &amp; 30.)', $output );
 		$this->assertMatchesRegularExpression( '/value="preserve" checked/', $output );
 		$this->assertLessThan( strpos( $output, 'value="lightbox"' ), strpos( $output, 'value="preserve"' ) );
-		$this->assertStringContainsString( 'Analyze and Migrate', $output );
+		$this->assertStringContainsString( 'Migrate', $output );
 
-		// Opens by explaining who this is even for, before anything else in the tool.
-		$this->assertStringContainsString( 'In July 2026, the shortcode syntax partially changed.', $output );
-		$this->assertLessThan(
-			strpos( $output, 'id="jzsa-migration-shortcode"' ),
-			strpos( $output, 'In July 2026, the shortcode syntax partially changed.' )
-		);
-
-		// The one piece of rationale worth keeping: it answers a real question.
+		// The rationale explains why legacy syntax should be updated.
 		$this->assertStringContainsString( '<strong>Why migrate if nothing looks broken?</strong>', $output );
 		$this->assertStringContainsString( 'will be removed in a future major version', $output );
 
-		// Still explains the site default and links to Settings.
-		$this->assertStringContainsString( 'Set the Viewer Explicitly', $output );
-		$this->assertStringContainsString( 'If it is omitted, the site default is used: <strong>Fullscreen</strong>.', $output );
-		$this->assertStringContainsString( '>Change it in Settings</a>', $output );
-
-		// A deep link to the wrapping div would otherwise land on a still-collapsed <details>,
-		// since the browser's native fragment-opens-an-ancestor-<details> behavior only applies
-		// when the linked element is a descendant of the <details>, not its container.
-		$this->assertStringContainsString( "window.location.hash !== '#jzsa-guide-migration'", $output );
-		$this->assertStringContainsString( "details.open = true", $output );
+		$this->assertStringNotContainsString( 'This is a preview only.', $output );
 	}
 
 }

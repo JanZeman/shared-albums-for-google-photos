@@ -110,16 +110,9 @@ class JZSA_Admin_Pages {
 				<div>
 					<h3><?php esc_html_e( 'Recommended: Set the Viewer Explicitly', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 					<p><?php echo wp_kses_post( __( 'The setting above is only a fallback for shortcodes that omit the <code>viewer</code> parameter. We recommend setting <code>viewer</code> explicitly in every shortcode instead: if a shortcode contains this parameter, its viewer choice always wins. If all your shortcodes set it, you can safely ignore the setting above.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
-					<?php if ( '1' === get_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '' ) ) : ?>
-						<p>
-							<?php
-							/* translators: %s: URL of the Shortcode Migration Tool on the Guide page. */
-							echo wp_kses_post( sprintf( __( 'Still have shortcodes in the older syntax? The <a href="%s">Shortcode Migration Tool</a> on the Guide page converts them one at a time, preserving current behavior by default.', 'janzeman-shared-albums-for-google-photos' ), esc_url( self::get_guide_page_url() . '#jzsa-guide-migration' ) ) );
-							?>
-						</p>
-					<?php endif; ?>
 				</div>
 			</div>
+			<?php $this->render_shortcode_migration_tool(); ?>
 		</div>
 		<?php
 	}
@@ -157,17 +150,15 @@ class JZSA_Admin_Pages {
 		<?php
 	}
 
-	private function render_guide_migration_tutorial() {
+	private function render_shortcode_migration_tool() {
 		if ( '1' !== get_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '' ) ) {
 			return;
 		}
 
-		$default_viewer = jzsa_get_default_viewer();
 		?>
-		<div id="jzsa-guide-migration" class="jzsa-section jzsa-viewer-migration-guide">
-			<details id="jzsa-guide-migration-details">
-				<summary><?php esc_html_e( 'Shortcode Migration Tool (legacy syntax)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
-				<p><?php esc_html_e( 'In July 2026, the shortcode syntax partially changed. If you created your shortcodes before then, this tool will help you update them.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+		<div id="jzsa-shortcode-migration" class="jzsa-section jzsa-viewer-migration-guide">
+			<h2><?php esc_html_e( 'Shortcode Migration Tool: Lightbox Viewer', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+			<p><?php esc_html_e( 'Starting with version 2.4.0 (July 2026), Lightbox is the recommended viewer. If you created shortcodes before then, this tool updates their syntax while preserving your chosen behavior.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 				<div class="jzsa-shortcode-migrator">
 					<p><?php esc_html_e( 'Paste one existing shortcode. The tool will analyze it, preserve its behavior by default, and generate a validated modern shortcode without editing your content.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<p><?php echo wp_kses_post( __( '<strong>Why migrate if nothing looks broken?</strong> Nothing is broken. Older shortcodes keep working through a compatibility layer that translates them at runtime, but that layer is temporary and will be removed in a future major version. A shortcode written in the current syntax is the one that keeps working without translation.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
@@ -180,37 +171,10 @@ class JZSA_Admin_Pages {
 						<label><input type="radio" name="jzsa-migration-goal" value="fullscreen"> <?php esc_html_e( 'Use Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?></label>
 						<label><input type="radio" name="jzsa-migration-goal" value="both"> <?php esc_html_e( 'Offer both Lightbox and Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?> <small class="jzsa-migration-goal-note"><?php esc_html_e( '(Will visitors understand both options? Investigate samples 29 & 30.)', 'janzeman-shared-albums-for-google-photos' ); ?></small></label>
 					</fieldset>
-					<p><button type="button" class="button button-primary" id="jzsa-migrate-shortcode"><?php esc_html_e( 'Analyze and Migrate', 'janzeman-shared-albums-for-google-photos' ); ?></button></p>
+					<p><button type="button" class="button button-primary" id="jzsa-migrate-shortcode"><?php esc_html_e( 'Migrate', 'janzeman-shared-albums-for-google-photos' ); ?></button></p>
 					<div id="jzsa-migration-result" aria-live="polite"></div>
-					<p><?php echo wp_kses_post( __( 'Verify the result in the <strong>Playground</strong> above before changing a live page.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 				</div>
-				<h3><?php esc_html_e( 'Set the Viewer Explicitly', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-				<p>
-					<?php
-					/* translators: 1: default viewer name, 2: settings page URL. */
-					echo wp_kses_post( sprintf( __( 'For the sake of simplicity, we recommend always setting the <code>viewer</code> parameter explicitly in each shortcode. A shortcode that sets it always wins and is unaffected by the site setting, so its behavior cannot change later without you editing it. If it is omitted, the site default is used: <strong>%1$s</strong>. <a href="%2$s">Change it in Settings</a>.', 'janzeman-shared-albums-for-google-photos' ), 'lightbox' === $default_viewer ? __( 'Lightbox', 'janzeman-shared-albums-for-google-photos' ) : __( 'Fullscreen', 'janzeman-shared-albums-for-google-photos' ), esc_url( self::get_settings_page_url() ) ) );
-					?>
-				</p>
-			</details>
 		</div>
-		<script>
-		( function() {
-			// #jzsa-guide-migration is the wrapping <div>, not the <details> itself, so the
-			// browser's native "auto-open an ancestor <details> for a fragment link" behavior
-			// does not apply here (that only fires when the linked element is a descendant of
-			// a closed <details>, not when it is the container the <details> lives inside).
-			// A deep link from Settings would otherwise land on a collapsed section that is
-			// easy to miss, so open it explicitly and re-scroll once it has expanded.
-			if ( window.location.hash !== '#jzsa-guide-migration' ) { return; }
-			var details = document.getElementById( 'jzsa-guide-migration-details' );
-			if ( ! details || details.open ) { return; }
-			details.open = true;
-			var wrapper = document.getElementById( 'jzsa-guide-migration' );
-			if ( wrapper && wrapper.scrollIntoView ) {
-				wrapper.scrollIntoView( { block: 'start' } );
-			}
-		} )();
-		</script>
 		<?php
 	}
 
@@ -2374,7 +2338,6 @@ class JZSA_Admin_Pages {
 				</div>
 
 
-				<?php $this->render_guide_migration_tutorial(); ?>
 				<?php $this->render_unhappy_section(); ?>
 				<?php $this->render_happy_section(); ?>
 			</div>

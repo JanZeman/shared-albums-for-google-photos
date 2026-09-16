@@ -37,64 +37,15 @@ test.describe('Admin - Guide page', () => {
         await expect(link).toBeAttached();
     });
 
-    test('Migration tool sits after Troubleshooting, collapsed, not as a recommendation', async ({ page }) => {
-        // Roadmap 016. The Lightbox recommendation was a temporary campaign; the tool it wraps
-        // is not. On a site that upgraded from a pre-2.4.0 version the section still renders,
-        // but as a collapsed utility at the very end of the page rather than as the first thing
-        // on it. On a site that never upgraded it does not render at all, which is why every
-        // assertion below is skipped when the section is absent.
-        await page.goto(GUIDE_URL);
-        await expect(page.locator('.jzsa-settings-wrap')).toBeAttached({ timeout: 10_000 });
-
-        const migration = page.locator('#jzsa-guide-migration');
-        if ((await migration.count()) === 0) {
-            test.skip(true, 'Site was not upgraded from a pre-2.4.0 version, so the tool is absent by design.');
-        }
-
-        // Collapsed, and labelled as a tool.
-        await expect(migration.locator('details')).not.toHaveAttribute('open', /.*/);
-        await expect(migration.locator('summary')).toContainText('Shortcode Migration Tool');
-        await expect(migration).not.toContainText('Recommended Update');
-
-        // Explains, right up front, who this is even for.
-        await expect(migration).toContainText('In July 2026, the shortcode syntax partially changed.');
-
-        // Positioned after the Playground and after Troubleshooting, not before it.
-        const order = await page.evaluate(() => {
-            const all = Array.from(document.querySelectorAll('.jzsa-section'));
-            const indexOf = (predicate: (el: Element) => boolean) => all.findIndex(predicate);
-            return {
-                playground: indexOf((el) => el.classList.contains('jzsa-playground-section')),
-                migration: indexOf((el) => el.id === 'jzsa-guide-migration'),
-                troubleshooting: indexOf((el) => (el.querySelector('h2')?.textContent ?? '').includes('Troubleshooting')),
-            };
-        });
-        expect(order.playground).toBeGreaterThanOrEqual(0);
-        expect(order.troubleshooting).toBeGreaterThanOrEqual(0);
-        expect(order.migration).toBeGreaterThan(order.playground);
-        expect(order.migration).toBeGreaterThan(order.troubleshooting);
-    });
-
-    test('Deep-linking to the migration tool from Settings opens it', async ({ page }) => {
-        // The section id sits on the wrapping <div>, not the <details> itself, so the browser's
-        // native "opening a fragment inside a closed <details> auto-expands it" behavior does
-        // not apply: the linked element is the details' container, not its descendant. Without
-        // the explicit open-on-hash script, following the deep link from Settings would land on
-        // a still-collapsed section that is easy to miss.
-        await page.goto(GUIDE_URL);
-        const migration = page.locator('#jzsa-guide-migration');
-        if ((await migration.count()) === 0) {
-            test.skip(true, 'Site was not upgraded from a pre-2.4.0 version, so the tool is absent by design.');
-        }
-
+    test('Settings contains the migration tool with Lightbox context', async ({ page }) => {
         await page.goto(SETTINGS_URL);
-        const settingsLink = page.locator('a[href*="#jzsa-guide-migration"]');
-        await expect(settingsLink).toBeAttached({ timeout: 10_000 });
-        await settingsLink.click();
-
-        await expect(page.locator('.jzsa-settings-wrap')).toBeAttached({ timeout: 10_000 });
-        await expect(page.locator('#jzsa-guide-migration-details')).toHaveAttribute('open', /.*/);
-        await expect(migration.locator('summary')).toBeInViewport();
+        const migration = page.locator('#jzsa-shortcode-migration');
+        if ((await migration.count()) === 0) {
+            test.skip(true, 'Site was not upgraded from a pre-2.4.0 version, so the tool is absent by design.');
+        }
+        await expect(migration.locator('h2')).toContainText('Shortcode Migration Tool: Lightbox Viewer');
+        await expect(migration).toContainText('version 2.4.0 (July 2026)');
+        await expect(migration.locator('#jzsa-migration-preview')).toBeAttached();
     });
 
     test('Guide page does not speculatively preload full-resolution images', async ({ page }) => {

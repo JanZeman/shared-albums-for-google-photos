@@ -1757,13 +1757,12 @@ function jzsaSetupMigrationTool() {
 					var replacements = payload.replacements || [];
 					var hasChanges = replacements.length || ( changes.added || [] ).length ||
 						( changes.removed || [] ).length || ( changes.changed || [] ).length || changes.orderNormalized;
-					html += '<p><strong>' + ( payload.behaviorPreserved ? 'Behavior preserved.' : 'Viewer behavior intentionally changed.' ) + '</strong></p>';
+					html += '<div class="jzsa-migration-replacements"><p><strong>' + ( payload.behaviorPreserved ? 'Behavior preserved.' : 'Viewer behavior intentionally changed.' ) + '</strong></p>';
 					html += '<p>Detected model: <strong>' + jzsaEscapeHtml( payload.sourceModel || 'unknown' ) +
 						'</strong>. Viewer: <strong>' + jzsaEscapeHtml( payload.currentViewer || 'unknown' ) +
 						'</strong> to <strong>' + jzsaEscapeHtml( payload.targetViewer || 'unknown' ) +
 						'</strong>.</p>';
-					html += '<textarea id="jzsa-migrated-shortcode" rows="5" readonly>' + jzsaEscapeHtml( payload.shortcode ) + '</textarea>';
-					html += '<div class="jzsa-migration-replacements"><strong>What changed:</strong>';
+					html += '<strong>What changed:</strong>';
 					if ( hasChanges ) {
 						html += '<ul>';
 						replacements.forEach( function ( replacement ) {
@@ -1804,34 +1803,23 @@ function jzsaSetupMigrationTool() {
 						} );
 						html += '</ul></div>';
 					}
-					html += '<p><button type="button" class="button" id="jzsa-copy-migrated">Copy Migrated Shortcode</button> ' +
-						'<button type="button" class="button" id="jzsa-preview-migrated">Preview in Playground</button></p>';
+						html += '<div class="jzsa-code-block jzsa-migration-code-block"><code id="jzsa-migrated-shortcode" class="jzsa-editable-code" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Migrated shortcode">' + jzsaEscapeHtml( payload.shortcode ) + '</code><div class="jzsa-code-block-btns"><button type="button" class="jzsa-action-btn" data-jzsa-action="apply">Apply</button><button type="button" class="jzsa-action-btn" data-jzsa-action="prettify">Prettify</button><button type="button" class="jzsa-action-btn" data-jzsa-action="revert">Revert</button><button type="button" class="jzsa-action-btn" data-jzsa-action="copy">Copy</button></div></div><div id="jzsa-migration-preview" class="jzsa-preview-container jzsa-playground-preview" aria-live="polite"></div><p>This is a preview only. Copy the migrated shortcode into your post or page when you are ready.</p>';
 				}
 				if ( ! payload.shortcode && ! issues.length ) {
 					html = '<p>Migration could not be completed.</p>';
 				}
 				result.innerHTML = html;
 				var output = document.getElementById( 'jzsa-migrated-shortcode' );
-				var copy = document.getElementById( 'jzsa-copy-migrated' );
-				var preview = document.getElementById( 'jzsa-preview-migrated' );
-				if ( copy && output ) {
-					copy.addEventListener( 'click', function () {
-						navigator.clipboard.writeText( output.value );
-						copy.textContent = 'Copied!';
-					} );
-				}
-				if ( preview && output ) {
-					preview.addEventListener( 'click', function () {
-						var playground = document.getElementById( 'jzsa-playground-shortcode' );
-						if ( playground ) {
-							playground.textContent = output.value;
-							playground.dispatchEvent( new Event( 'input', { bubbles: true } ) );
-							playground.scrollIntoView( { behavior: 'smooth', block: 'center' } );
-							var block = playground.closest( '.jzsa-code-block' );
-							var apply = block ? block.querySelector( '[data-jzsa-action="apply"]' ) : null;
-							if ( apply ) { apply.click(); }
+				var migrationBlock = output ? output.closest( '.jzsa-code-block' ) : null;
+				var migrationPreview = document.getElementById( 'jzsa-migration-preview' );
+				if ( migrationBlock ) { jzsaSetupCodeBlock( migrationBlock ); }
+				if ( output && migrationPreview ) {
+					jzsaApplyPreview( output, null, migrationPreview, 'Previewed!' );
+					window.setTimeout( function () {
+						if ( window.SharedGooglePhotos ) {
+							jzsaInitializeInjectedPreview( migrationPreview );
 						}
-					} );
+					}, 250 );
 				}
 			} ).catch( function () {
 				sourceValidation.textContent = '';
