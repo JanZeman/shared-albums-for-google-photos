@@ -4879,6 +4879,14 @@
         // the fullscreen handler from also firing when both use the same gesture.
         var lightboxGesture  = params.lightboxToggle  || 'disabled';
         var fullscreenGesture = params.fullscreenToggle || 'button-only';
+		// A click and a double-click cannot be reliably distinguished on the same
+		// gallery surface. Keep both viewers button-only as a defensive fallback
+		// even if malformed data bypasses the server-side semantic validation.
+		if ((lightboxGesture === 'click' || lightboxGesture === 'double-click') &&
+			(fullscreenGesture === 'click' || fullscreenGesture === 'double-click')) {
+			lightboxGesture = 'button-only';
+			fullscreenGesture = 'button-only';
+		}
 
         // ── Lightbox gestures ────────────────────────────────────────────────
         if (lightboxGesture === 'click') {
@@ -9548,7 +9556,16 @@
             fullscreenToggle = 'disabled';
         }
         var lightboxMode = interactionLock ? 'disabled' : ($container.attr('data-lightbox-toggle') || 'disabled');
+        // In both-viewer mode, a button-only Lightbox must not mask an explicit
+        // Fullscreen click/double-click gesture. The legacy migration maps a
+        // single gesture owner to the corresponding mode-specific trigger.
         var expandToggle = (lightboxMode !== 'disabled') ? lightboxMode : fullscreenToggle;
+        var expandMode = 'lightbox';
+        if (lightboxMode !== 'click' && lightboxMode !== 'double-click' &&
+            (fullscreenToggle === 'click' || fullscreenToggle === 'double-click')) {
+            expandToggle = fullscreenToggle;
+            expandMode = 'fullscreen';
+        }
 
         function openGalleryPlayerAtIndex(index, forcedMode) {
             if (interactionLock) {
@@ -9591,7 +9608,7 @@
             return 0;
         }
 
-        function openGalleryPlayerFromThumb(targetEl) {
+        function openGalleryPlayerFromThumb(targetEl, gestureMode) {
             var index = getGalleryPhotoIndexFromElement(targetEl);
             var $btn = $(targetEl).closest('.jzsa-gallery-thumb-fs-btn');
             var forcedMode;
@@ -9600,7 +9617,7 @@
             } else if ($btn.hasClass('swiper-button-fullscreen')) {
                 forcedMode = 'fullscreen';
             }
-            openGalleryPlayerAtIndex(index, forcedMode);
+            openGalleryPlayerAtIndex(index, gestureMode || forcedMode);
         }
 
         function isGalleryVideoInteractionTarget(targetEl) {
@@ -9616,7 +9633,7 @@
                     return;
                 }
                 e.preventDefault();
-                openGalleryPlayerFromThumb(this);
+                openGalleryPlayerFromThumb(this, expandMode);
             });
 
             // Video items: click anywhere except plyr controls opens fullscreen.
@@ -9628,7 +9645,7 @@
                     return;
                 }
                 e.preventDefault();
-                openGalleryPlayerFromThumb(this);
+                openGalleryPlayerFromThumb(this, expandMode);
             });
         } else if (!interactionLock && expandToggle === 'double-click') {
             $container.on('dblclick', '.jzsa-gallery-thumb', function(e) {
@@ -9636,7 +9653,7 @@
                     return;
                 }
                 e.preventDefault();
-                openGalleryPlayerFromThumb(this);
+                openGalleryPlayerFromThumb(this, expandMode);
             });
 
             // Mobile/touch fallback for double-click mode.
@@ -9648,7 +9665,7 @@
                     return;
                 }
                 handleDoubleTap(e, function() {
-                    openGalleryPlayerFromThumb(e.currentTarget || e.target);
+                    openGalleryPlayerFromThumb(e.currentTarget || e.target, expandMode);
                 });
             });
 
@@ -9658,7 +9675,7 @@
                     return;
                 }
                 e.preventDefault();
-                openGalleryPlayerFromThumb(this);
+                openGalleryPlayerFromThumb(this, expandMode);
             });
 
             // Video items: mobile/touch double-tap fallback.
@@ -9670,7 +9687,7 @@
                     return;
                 }
                 handleDoubleTap(e, function() {
-                    openGalleryPlayerFromThumb(e.currentTarget || e.target);
+                    openGalleryPlayerFromThumb(e.currentTarget || e.target, expandMode);
                 });
             });
         }

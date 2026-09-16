@@ -47,14 +47,18 @@ class OrchestratorToggleModeTest extends TestCase {
 	}
 
 	public function test_ambiguous_both_viewer_gestures_fall_back_to_buttons(): void {
-		$config = $this->invoke(
-			'parse_shortcode_config',
-			array( 'viewer' => 'both', 'lightbox-trigger' => 'click', 'fullscreen-trigger' => 'double-click' ),
-			'https://photos.google.com/share/test'
-		);
+		foreach ( array( 'click', 'double-click' ) as $lightbox_trigger ) {
+			foreach ( array( 'click', 'double-click' ) as $fullscreen_trigger ) {
+				$config = $this->invoke(
+					'parse_shortcode_config',
+					array( 'viewer' => 'both', 'lightbox-trigger' => $lightbox_trigger, 'fullscreen-trigger' => $fullscreen_trigger ),
+					'https://photos.google.com/share/test'
+				);
 
-		$this->assertSame( 'button-only', $config['lightbox-toggle'] );
-		$this->assertSame( 'button-only', $config['fullscreen-toggle'] );
+				$this->assertSame( 'button-only', $config['lightbox-toggle'], $lightbox_trigger . '/' . $fullscreen_trigger );
+				$this->assertSame( 'button-only', $config['fullscreen-toggle'], $lightbox_trigger . '/' . $fullscreen_trigger );
+			}
+		}
 	}
 
     /**
