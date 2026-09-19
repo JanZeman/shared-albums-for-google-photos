@@ -102,13 +102,16 @@ fi
 DOWNLOADS_DIR="${HOME}/Downloads"
 mkdir -p "$DOWNLOADS_DIR"
 ARCHIVE_DIR=""
-if [ "$RELEASE_MODE" = "prod" ]; then
-    # The maintainer checkout nests this repository four levels below the private backend.
-    # Standalone checkouts can explicitly supply their private archive directory.
-    ARCHIVE_DIR="${JZSA_RELEASE_ARCHIVE_DIR:-${SCRIPT_DIR}/../../../../releases/plugin}"
+if [ "$RELEASE_MODE" = "prod" ] && { [ -n "${JZSA_RELEASE_ARCHIVE_DIR:-}" ] || [ -f "${SCRIPT_DIR}/.release-archive-dir" ]; }; then
+    # Archive locations belong to the operator's environment, not this repository.
+    ARCHIVE_DIR="${JZSA_RELEASE_ARCHIVE_DIR:-}"
+    if [ -z "$ARCHIVE_DIR" ]; then
+        # Read a plain path, never execute local configuration as shell code.
+        IFS= read -r ARCHIVE_DIR < "${SCRIPT_DIR}/.release-archive-dir" || true
+    fi
     if [ ! -d "$ARCHIVE_DIR" ] || [ ! -w "$ARCHIVE_DIR" ]; then
-        echo -e "${RED}Error:${NC} A writable private release archive is required."
-        echo "Set JZSA_RELEASE_ARCHIVE_DIR to an existing private archive directory."
+        echo -e "${RED}Error:${NC} The configured release archive must be an existing writable directory."
+        echo "Check .release-archive-dir or JZSA_RELEASE_ARCHIVE_DIR."
         exit 1
     fi
     ARCHIVE_DIR="$(cd "$ARCHIVE_DIR" && pwd)"
@@ -661,13 +664,17 @@ if [ "$RELEASE_MODE" = "prod" ]; then
         exit 1
     fi
 
-    # Preserve the published bytes even if a subsequent Git push fails.
-    if ! cp -n "$ZIP_PATH" "$ARCHIVE_ZIP_PATH" || ! cmp -s "$ZIP_PATH" "$ARCHIVE_ZIP_PATH"; then
-        echo -e "${RED}Error:${NC} SVN publication succeeded, but private archiving failed."
-        echo "Preserve the ZIP from ${ZIP_PATH} manually in ${ARCHIVE_DIR}."
-        exit 1
+    if [ -n "$ARCHIVE_DIR" ]; then
+        # Preserve the published bytes even if a subsequent Git push fails.
+        if ! cp -n "$ZIP_PATH" "$ARCHIVE_ZIP_PATH" || ! cmp -s "$ZIP_PATH" "$ARCHIVE_ZIP_PATH"; then
+            echo -e "${RED}Error:${NC} SVN publication succeeded, but private archiving failed."
+            echo "Preserve the ZIP from ${ZIP_PATH} manually in ${ARCHIVE_DIR}."
+            exit 1
+        fi
+        echo -e "${GREEN}✓ Archived published ZIP: ${ARCHIVE_ZIP_PATH}${NC}"
+    else
+        echo -e "${YELLOW}No release archive configured; the ZIP is available in Downloads.${NC}"
     fi
-    echo -e "${GREEN}✓ Archived published ZIP: ${ARCHIVE_ZIP_PATH}${NC}"
 
     echo -e "${YELLOW}Pushing branch ${CURRENT_BRANCH} to origin after successful SVN delivery...${NC}"
     if ! git push origin "${CURRENT_BRANCH}"; then

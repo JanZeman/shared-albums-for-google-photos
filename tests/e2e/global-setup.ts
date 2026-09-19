@@ -117,15 +117,14 @@ function runFixtureSetup(): void {
     try {
         execFileSync('docker', args, {
             cwd: process.cwd(),
-            stdio: 'inherit',
+            // Child output and errors can contain credentials passed in arguments.
+            stdio: ['ignore', 'pipe', 'pipe'],
             env: process.env,
         });
-    } catch (error) {
+    } catch {
         throw new Error(
             'Failed to seed deterministic e2e fixtures with docker compose.\n' +
-            'Start the WordPress Docker stack, or set JZSA_E2E_SKIP_SETUP=1 when targeting an already prepared site.\n' +
-            `Command: docker ${args.join(' ')}\n` +
-            `Original error: ${error instanceof Error ? error.message : String(error)}`
+            'Start the WordPress Docker stack, or set JZSA_E2E_SKIP_SETUP=1 when targeting an already prepared site.'
         );
     }
 }
@@ -155,14 +154,14 @@ function resetCommunityTestEntries(): void {
     try {
         execFileSync('docker', args, {
             cwd: process.cwd(),
-            stdio: 'inherit',
+            // Do not forward database errors or command arguments into test logs.
+            stdio: ['ignore', 'pipe', 'pipe'],
             env: process.env,
         });
-    } catch (error) {
+    } catch {
         throw new Error(
             'Failed to reset community test entries in the local API database.\n' +
-            'Start the WordPress Docker stack, or set JZSA_E2E_SKIP_SETUP=1 when targeting an already prepared site.\n' +
-            `Original error: ${error instanceof Error ? error.message : String(error)}`
+            'Start the WordPress Docker stack, or set JZSA_E2E_SKIP_SETUP=1 when targeting an already prepared site.'
         );
     }
 }
