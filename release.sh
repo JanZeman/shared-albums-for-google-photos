@@ -9,7 +9,7 @@
 # --test:   Same as default; explicit ZIP-only test release.
 #
 # --prod:   Production release. Everything above plus git tag + push and
-#           SVN trunk sync + commit + tag.
+#           SVN trunk sync + commit + tag, then archives the published ZIP.
 #
 # Usage:    ./release.sh <version>          # test release, ZIP only
 #           ./release.sh <version> --test   # test release, ZIP only
@@ -96,6 +96,27 @@ fi
 # Basic sanity check for version format (X.Y or X.Y.Z); do not be too strict
 if ! echo "$REQUESTED_VERSION" | grep -Eq '^[0-9]+\.[0-9]+(\.[0-9]+)?$'; then
     echo -e "${YELLOW}Warning:${NC} Requested version '$REQUESTED_VERSION' does not look like a typical semantic version. Continuing anyway..."
+fi
+
+# Resolve output destinations before changing files or publishing anything.
+DOWNLOADS_DIR="${HOME}/Downloads"
+mkdir -p "$DOWNLOADS_DIR"
+ARCHIVE_DIR=""
+if [ "$RELEASE_MODE" = "prod" ]; then
+    # The maintainer checkout nests this repository four levels below the private backend.
+    # Standalone checkouts can explicitly supply their private archive directory.
+    ARCHIVE_DIR="${JZSA_RELEASE_ARCHIVE_DIR:-${SCRIPT_DIR}/../../../../releases/plugin}"
+    if [ ! -d "$ARCHIVE_DIR" ] || [ ! -w "$ARCHIVE_DIR" ]; then
+        echo -e "${RED}Error:${NC} A writable private release archive is required."
+        echo "Set JZSA_RELEASE_ARCHIVE_DIR to an existing private archive directory."
+        exit 1
+    fi
+    ARCHIVE_DIR="$(cd "$ARCHIVE_DIR" && pwd)"
+    ARCHIVE_ZIP_PATH="${ARCHIVE_DIR}/${PLUGIN_SLUG}-${REQUESTED_VERSION}.zip"
+    if [ -e "$ARCHIVE_ZIP_PATH" ] || [ -L "$ARCHIVE_ZIP_PATH" ]; then
+        echo -e "${RED}Error:${NC} This version is already archived: ${ARCHIVE_ZIP_PATH}"
+        exit 1
+    fi
 fi
 
 # ---------------------------------------------------------------------------
@@ -414,7 +435,7 @@ fi
 
 # Create ZIP archive
 ZIP_NAME="${PLUGIN_SLUG}-${VERSION}.zip"
-ZIP_PATH="${RELEASE_DIR_ROOT}/${ZIP_NAME}"
+ZIP_PATH="${BUILD_DIR}/${ZIP_NAME}"
 
 echo -e "${YELLOW}Creating release archive...${NC}"
 cd "$BUILD_DIR"
@@ -430,14 +451,9 @@ else
     exit 1
 fi
 
-DOWNLOADS_DIR="${HOME}/Downloads"
 DOWNLOADS_ZIP_PATH="${DOWNLOADS_DIR}/${ZIP_NAME}"
-if [ -d "$DOWNLOADS_DIR" ]; then
-    cp -f "$ZIP_PATH" "$DOWNLOADS_ZIP_PATH"
-    echo -e "${GREEN}✓ Copied archive to: ${DOWNLOADS_ZIP_PATH}${NC}"
-else
-    echo -e "${YELLOW}Warning:${NC} Downloads directory not found at ${DOWNLOADS_DIR}; skipping copy."
-fi
+cp -f "$ZIP_PATH" "$DOWNLOADS_ZIP_PATH"
+echo -e "${GREEN}✓ Copied archive to: ${DOWNLOADS_ZIP_PATH}${NC}"
 
 # Generate checksums
 echo -e "${YELLOW}Generating checksums...${NC}"
@@ -473,6 +489,7 @@ assert_svn_clean() {
 }
 
 SYNCED_TO_SVN=0
+PUBLISHED_TO_SVN=0
 
 if [ "$RELEASE_MODE" = "test" ]; then
     echo -e "${YELLOW}Skipping SVN sync (use --prod for production release).${NC}"
@@ -551,7 +568,7 @@ if [ "$RELEASE_MODE" = "test" ]; then
     echo -e "${GREEN}✓ Test release package created successfully!${NC}"
     echo -e "${BLUE}========================================${NC}"
     echo ""
-    echo -e "${GREEN}Package:${NC}     ${ZIP_PATH}"
+    echo -e "${GREEN}Package:${NC}     ${DOWNLOADS_ZIP_PATH}"
     if [ -n "${DOWNLOADS_ZIP_PATH:-}" ] && [ -f "$DOWNLOADS_ZIP_PATH" ]; then
         echo -e "${GREEN}Downloads:${NC}   ${DOWNLOADS_ZIP_PATH}"
     fi
@@ -630,6 +647,7 @@ if [ "$RELEASE_MODE" = "prod" ] && [ "$SYNCED_TO_SVN" -eq 1 ] && command -v svn 
                     exit 1
                 fi
 
+                PUBLISHED_TO_SVN=1
                 echo -e "${GREEN}✓ SVN tag ${VERSION} created and committed successfully.${NC}"
             fi
         fi
@@ -637,6 +655,20 @@ if [ "$RELEASE_MODE" = "prod" ] && [ "$SYNCED_TO_SVN" -eq 1 ] && command -v svn 
 fi
 
 if [ "$RELEASE_MODE" = "prod" ]; then
+    if [ "$PUBLISHED_TO_SVN" -ne 1 ]; then
+        echo -e "${RED}Error:${NC} Publication of this version's SVN tag was not confirmed."
+        echo "The ZIP was not archived. Resolve the SVN release state before continuing."
+        exit 1
+    fi
+
+    # Preserve the published bytes even if a subsequent Git push fails.
+    if ! cp -n "$ZIP_PATH" "$ARCHIVE_ZIP_PATH" || ! cmp -s "$ZIP_PATH" "$ARCHIVE_ZIP_PATH"; then
+        echo -e "${RED}Error:${NC} SVN publication succeeded, but private archiving failed."
+        echo "Preserve the ZIP from ${ZIP_PATH} manually in ${ARCHIVE_DIR}."
+        exit 1
+    fi
+    echo -e "${GREEN}✓ Archived published ZIP: ${ARCHIVE_ZIP_PATH}${NC}"
+
     echo -e "${YELLOW}Pushing branch ${CURRENT_BRANCH} to origin after successful SVN delivery...${NC}"
     if ! git push origin "${CURRENT_BRANCH}"; then
         echo -e "${RED}Error:${NC} Failed to push branch '${CURRENT_BRANCH}' to origin."
@@ -663,7 +695,7 @@ if [ "$RELEASE_MODE" = "prod" ]; then
     echo -e "${GREEN}✓ Production release completed successfully!${NC}"
     echo -e "${BLUE}========================================${NC}"
     echo ""
-    echo -e "${GREEN}Package:${NC}     ${ZIP_PATH}"
+    echo -e "${GREEN}Package:${NC}     ${DOWNLOADS_ZIP_PATH}"
     if [ -n "${DOWNLOADS_ZIP_PATH:-}" ] && [ -f "$DOWNLOADS_ZIP_PATH" ]; then
         echo -e "${GREEN}Downloads:${NC}   ${DOWNLOADS_ZIP_PATH}"
     fi

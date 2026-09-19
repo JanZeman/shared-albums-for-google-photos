@@ -5,6 +5,9 @@
 - Clean git working tree on `main` branch
 - `svn` CLI installed (for WordPress.org publishing)
 - SVN working copy checked out at `release/wp-svn/janzeman-shared-albums-for-google-photos/` (one-time setup, see below). Production releases fail if this checkout is missing.
+- Production requires an existing writable private archive directory. In the maintainer's
+  nested checkout this is `releases/plugin/` in the backend repository. For other layouts,
+  set `JZSA_RELEASE_ARCHIVE_DIR` to an existing private archive directory.
 
 ## Steps
 
@@ -55,18 +58,23 @@ day-over-day download counts easier to compare, since every release then starts 
 day before the next one. The script warns (without blocking) if run outside 19:00-21:00.
 
 Every run copies the generated ZIP to `~/Downloads`, overwriting an existing file with the same name.
+Test builds leave the ZIP only there after successful cleanup. Production also archives the
+exact ZIP after successful SVN tag publication, before Git push. An existing archived version
+blocks production before publishing; archived ZIPs are never overwritten. Commit the private
+archive separately. Failed runs may retain temporary build files for recovery.
 
 The production release script will:
 
 1. **Validate** that the requested version matches all versioned files
 2. **Check git state** - must be on `main` with a clean working tree, and the requested git tag must not already exist locally or on origin
 3. **Run the full test suite** with `./test.sh` and stop immediately on any failure
-4. **Build a ZIP** at `release/janzeman-shared-albums-for-google-photos-X.Y.Z.zip`
+4. **Build a temporary ZIP** at `release/build/janzeman-shared-albums-for-google-photos-X.Y.Z.zip`
 5. **Copy the ZIP** to `~/Downloads/janzeman-shared-albums-for-google-photos-X.Y.Z.zip`
 6. **Sync to SVN trunk** (fails if the SVN working copy is missing)
 7. **Commit to SVN** and create an SVN tag under `tags/X.Y.Z`
-8. **Push the git branch, create the git tag, and push the git tag** only after successful SVN delivery
-9. **Clean up** temporary build files
+8. **Archive the published ZIP** in the private archive without overwriting an existing file
+9. **Push the git branch, create the git tag, and push the git tag** only after successful SVN delivery
+10. **Clean up** temporary build files
 
 ## One-time SVN setup
 
