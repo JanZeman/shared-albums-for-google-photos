@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/JanZeman/shared-albums-for-google-photos#readme",
   "devDependencies": {
-    "@playwright/test": "^1.60.0",
+    "@playwright/test": "^1.64.1",
     "acorn": "^8.16.0",
     "acorn-walk": "^8.3.5",
     "jquery": "^3.7.1",
