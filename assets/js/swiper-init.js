@@ -4979,30 +4979,58 @@
             });
         }
 
-		// TOUCH BUTTON REVEAL: show link/download on tap; ignore scroll/swipe gestures.
+		// TAP BUTTON REVEAL: show controls on tap; ignore scroll/swipe gestures.
+		// The CSS hides controls until revealed whenever the browser reports a touch-first
+		// device (hover: none or pointer: coarse). That media state can differ from what the
+		// page saw at load (touch-screen laptops, DevTools device emulation), and the visitor
+		// may still be using a mouse, so listen unconditionally and accept any pointer type.
+		// Outside that media state the class has no CSS effect, so this is harmless.
 		// Passive listeners so iOS never has to wait for JS before committing a scroll frame.
-		if (hasTouchInput()) {
-			var touchRevealTimer = null;
-			var sliderEl = $container[0];
-			sliderEl.addEventListener('touchstart', function(e) {
+		var tapRevealTimer = null;
+		var tapRevealEl = $container[0];
+		var tapRevealStart = null;
+		function revealControlsBriefly() {
+			$container.addClass('jzsa-touch-active');
+			clearTimeout(tapRevealTimer);
+			tapRevealTimer = setTimeout(function() {
+				$container.removeClass('jzsa-touch-active');
+			}, 3000);
+		}
+		function tapRevealEnd(x, y) {
+			var start = tapRevealStart;
+			tapRevealStart = null;
+			if (!start) return;
+			if (Math.abs(x - start.x) > 8 || Math.abs(y - start.y) > 8) return;
+			revealControlsBriefly();
+		}
+		if (window.PointerEvent) {
+			tapRevealEl.addEventListener('pointerdown', function(e) {
+				tapRevealStart = { x: e.clientX, y: e.clientY };
+			}, { passive: true });
+			tapRevealEl.addEventListener('pointerup', function(e) {
+				tapRevealEnd(e.clientX, e.clientY);
+			}, { passive: true });
+			tapRevealEl.addEventListener('pointercancel', function() {
+				tapRevealStart = null;
+			}, { passive: true });
+			// A real mouse in a touch-reported browser cannot hover the CSS way; treat
+			// movement as a hover so the controls stay discoverable.
+			tapRevealEl.addEventListener('pointermove', function(e) {
+				if (e.pointerType === 'mouse') {
+					revealControlsBriefly();
+				}
+			}, { passive: true });
+		} else {
+			tapRevealEl.addEventListener('touchstart', function(e) {
 				var t = e.touches[0];
-				$container.data('jzsaRevealTouchX', t.clientX).data('jzsaRevealTouchY', t.clientY);
+				tapRevealStart = { x: t.clientX, y: t.clientY };
 			}, { passive: true });
-			sliderEl.addEventListener('touchend', function(e) {
-				var startX = $container.data('jzsaRevealTouchX');
-				var startY = $container.data('jzsaRevealTouchY');
-				$container.removeData('jzsaRevealTouchX jzsaRevealTouchY');
-				if (startX == null) return;
+			tapRevealEl.addEventListener('touchend', function(e) {
 				var t = e.changedTouches[0];
-				if (Math.abs(t.clientX - startX) > 8 || Math.abs(t.clientY - startY) > 8) return;
-				$container.addClass('jzsa-touch-active');
-				clearTimeout(touchRevealTimer);
-				touchRevealTimer = setTimeout(function() {
-					$container.removeClass('jzsa-touch-active');
-				}, 3000);
+				tapRevealEnd(t.clientX, t.clientY);
 			}, { passive: true });
-			sliderEl.addEventListener('touchcancel', function() {
-				$container.removeData('jzsaRevealTouchX jzsaRevealTouchY');
+			tapRevealEl.addEventListener('touchcancel', function() {
+				tapRevealStart = null;
 			}, { passive: true });
 		}
 
