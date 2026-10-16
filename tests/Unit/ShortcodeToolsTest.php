@@ -45,6 +45,48 @@ class ShortcodeToolsTest extends TestCase {
 		$this->assertSame( 'viewer_gesture_conflict', $invalid[0]['code'] );
 	}
 
+	public function test_settings_of_the_inactive_viewer_are_reported(): void {
+		$issues = JZSA_Shortcode_Tools::validate_semantics(
+			array(
+				'viewer'                          => 'lightbox',
+				'fullscreen-show-download-button' => 'true',
+				'fullscreen-background-color'     => '#000',
+				'lightbox-show-link-button'       => 'true',
+				'viewer-show-download-button'     => 'true',
+			)
+		);
+
+		$this->assertCount( 1, $issues );
+		$this->assertSame( 'inactive_viewer_setting', $issues[0]['code'] );
+		$this->assertSame( 'warning', $issues[0]['severity'] );
+		$this->assertSame( array( 'fullscreen-show-download-button', 'fullscreen-background-color' ), $issues[0]['parameters'] );
+	}
+
+	public function test_inactive_lightbox_settings_are_reported_for_fullscreen_viewer(): void {
+		$issues = JZSA_Shortcode_Tools::validate_semantics(
+			array( 'viewer' => 'fullscreen', 'lightbox-show-download-button' => 'true' )
+		);
+
+		$this->assertSame( 'inactive_viewer_setting', $issues[0]['code'] );
+		$this->assertSame( array( 'lightbox-show-download-button' ), $issues[0]['parameters'] );
+	}
+
+	public function test_mode_specific_settings_are_not_reported_when_both_viewers_or_default_viewer(): void {
+		$attributes = array( 'fullscreen-show-download-button' => 'true', 'lightbox-show-link-button' => 'true' );
+
+		$this->assertSame( array(), JZSA_Shortcode_Tools::validate_semantics( $attributes + array( 'viewer' => 'both' ) ) );
+		$this->assertSame( array(), JZSA_Shortcode_Tools::validate_semantics( $attributes ) );
+	}
+
+	public function test_inactive_trigger_is_reported_once(): void {
+		$issues = JZSA_Shortcode_Tools::validate_semantics(
+			array( 'viewer' => 'lightbox', 'fullscreen-trigger' => 'click' )
+		);
+
+		$this->assertCount( 1, $issues );
+		$this->assertSame( 'inactive_viewer_trigger', $issues[0]['code'] );
+	}
+
 	public function test_preserve_migration_materializes_implicit_fullscreen(): void {
 		$result = JZSA_Shortcode_Tools::migrate(
 			'[jzsa-album link="https://photos.google.com/share/test" mode="slider"]',
