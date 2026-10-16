@@ -192,6 +192,39 @@ class JZSA_Shortcode_Tools {
 		if ( 'fullscreen' === $viewer && isset( $attributes['lightbox-trigger'] ) ) {
 			$issues[] = self::issue( 'inactive_viewer_trigger', 'warning', array( 'lightbox-trigger' ), __( 'The Lightbox trigger has no effect because only Fullscreen is active.', 'janzeman-shared-albums-for-google-photos' ) );
 		}
+		$inactive_prefix = '';
+		if ( 'lightbox' === $viewer ) {
+			$inactive_prefix = 'fullscreen-';
+		} elseif ( 'fullscreen' === $viewer ) {
+			$inactive_prefix = 'lightbox-';
+		}
+		if ( '' !== $inactive_prefix ) {
+			// Triggers are reported above; legacy toggles belong to the migration tool.
+			$skipped  = array( $inactive_prefix . 'trigger', $inactive_prefix . 'toggle' );
+			$inactive = array();
+			foreach ( array_keys( $attributes ) as $name ) {
+				if ( 0 === strpos( $name, $inactive_prefix ) && ! in_array( $name, $skipped, true ) ) {
+					$inactive[] = $name;
+				}
+			}
+			if ( ! empty( $inactive ) ) {
+				$active_label   = 'lightbox' === $viewer ? 'Lightbox' : 'Fullscreen';
+				$inactive_label = 'lightbox' === $viewer ? 'Fullscreen' : 'Lightbox';
+				$issues[]       = self::issue(
+					'inactive_viewer_setting',
+					'warning',
+					$inactive,
+					sprintf(
+						/* translators: 1: comma-separated parameter names, 2: inactive viewer name, 3: active viewer name, 4: active viewer parameter prefix. */
+						__( 'These %2$s settings have no effect because only %3$s is active: %1$s. Where a viewer-* or %4$s* version of a parameter exists, use that instead.', 'janzeman-shared-albums-for-google-photos' ),
+						implode( ', ', $inactive ),
+						$inactive_label,
+						$active_label,
+						strtolower( $active_label ) . '-'
+					)
+				);
+			}
+		}
 		if ( 'disabled' === $viewer && ( isset( $attributes['viewer-trigger'] ) || isset( $attributes['lightbox-trigger'] ) || isset( $attributes['fullscreen-trigger'] ) ) ) {
 			$issues[] = self::issue( 'disabled_viewer_trigger', 'warning', array( 'viewer' ), __( 'Viewer triggers have no effect when the viewer is disabled.', 'janzeman-shared-albums-for-google-photos' ) );
 		}
