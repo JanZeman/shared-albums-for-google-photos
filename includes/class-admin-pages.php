@@ -1178,9 +1178,9 @@ class JZSA_Admin_Pages {
 
 					<div class="jzsa-sample-card">
 						<h3><?php echo 'Sample 19: ' . esc_html__( 'Manual Slideshow', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'The play/pause button is shown but the slideshow does not start automatically. The user must press play to begin auto-advancing.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<p><?php esc_html_e( 'The play/pause button is shown inline and in the lightbox, but the slideshow does not start automatically. The user must press play to begin auto-advancing.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" slideshow="manual" slideshow-delay="10" corner-radius="16"]';
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" slideshow="manual" slideshow-delay="10" corner-radius="16" viewer-slideshow="manual" viewer-slideshow-delay="10"]';
 					?>
 					<div class="jzsa-code-block">
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
