@@ -551,6 +551,7 @@ if ( ! function_exists( 'get_bloginfo' ) ) {
 // Load plugin classes (orchestrator depends on the others being present).
 $includes = dirname( __DIR__ ) . '/includes/';
 require_once $includes . 'class-data-provider.php';
+require_once $includes . 'class-icloud-provider.php';
 require_once $includes . 'class-renderer.php';
 require_once $includes . 'class-shortcode-tools.php';
 require_once $includes . 'class-community.php';

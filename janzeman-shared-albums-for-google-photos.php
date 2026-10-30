@@ -103,6 +103,7 @@ function jzsa_get_frontend_i18n_strings() {
  * Load plugin classes
  */
 require_once JZSA_PLUGIN_DIR . 'includes/class-data-provider.php';
+require_once JZSA_PLUGIN_DIR . 'includes/class-icloud-provider.php';
 require_once JZSA_PLUGIN_DIR . 'includes/class-renderer.php';
 require_once JZSA_PLUGIN_DIR . 'includes/class-shortcode-tools.php';
 require_once JZSA_PLUGIN_DIR . 'includes/class-orchestrator.php';

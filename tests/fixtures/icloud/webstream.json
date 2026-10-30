@@ -1,0 +1,46 @@
+{
+  "streamName": "Spike Album",
+  "userFirstName": "Test",
+  "userLastName": "User",
+  "streamCtag": "FT;1",
+  "itemsReturned": "3",
+  "photos": [
+    {
+      "photoGuid": "GUID-IMAGE-1",
+      "batchGuid": "BATCH-1",
+      "caption": "  Sunset at the lake  ",
+      "dateCreated": "2026-06-01T18:30:00Z",
+      "width": "4032",
+      "height": "3024",
+      "derivatives": {
+        "342": { "checksum": "CHK-IMG1-SMALL", "fileSize": "30000", "width": "342", "height": "256" },
+        "2049": { "checksum": "CHK-IMG1-LARGE", "fileSize": "900000", "width": "2049", "height": "1537" }
+      }
+    },
+    {
+      "photoGuid": "GUID-IMAGE-2",
+      "batchGuid": "BATCH-1",
+      "caption": "",
+      "dateCreated": "2026-06-02T09:00:00Z",
+      "width": "3024",
+      "height": "4032",
+      "derivatives": {
+        "342": { "checksum": "CHK-IMG2-SMALL", "fileSize": "28000", "width": "256", "height": "342" }
+      }
+    },
+    {
+      "photoGuid": "GUID-VIDEO-1",
+      "batchGuid": "BATCH-2",
+      "caption": "Boat ride",
+      "mediaAssetType": "video",
+      "dateCreated": "2026-06-03T12:00:00Z",
+      "width": "1920",
+      "height": "1080",
+      "derivatives": {
+        "PosterFrame": { "checksum": "CHK-VID1-POSTER", "fileSize": "120000", "width": "1920", "height": "1080" },
+        "360p": { "checksum": "CHK-VID1-360", "fileSize": "2000000", "width": "640", "height": "360" },
+        "720p": { "checksum": "CHK-VID1-720", "fileSize": "8000000", "width": "1280", "height": "720" }
+      }
+    }
+  ]
+}

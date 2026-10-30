@@ -1,0 +1,13 @@
+{
+  "items": {
+    "CHK-IMG1-SMALL": { "url_location": "cvws.icloud-content.com", "url_path": "/S/img1-small.jpg?e=1" },
+    "CHK-IMG1-LARGE": { "url_location": "cvws.icloud-content.com", "url_path": "/S/img1-large.jpg?e=1" },
+    "CHK-IMG2-SMALL": { "url_location": "cvws.icloud-content.com", "url_path": "/S/img2-small.jpg?e=1" },
+    "CHK-VID1-POSTER": { "url_location": "cvws.icloud-content.com", "url_path": "/S/vid1-poster.jpg?e=1" },
+    "CHK-VID1-360": { "url_location": "cvws.icloud-content.com", "url_path": "/S/vid1-360.mp4?e=1" },
+    "CHK-VID1-720": { "url_location": "cvws.icloud-content.com", "url_path": "/S/vid1-720.mp4?e=1" }
+  },
+  "locations": {
+    "cvws.icloud-content.com": { "scheme": "https", "hosts": ["cvws.icloud-content.com"] }
+  }
+}

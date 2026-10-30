@@ -166,6 +166,13 @@ class JZSA_Shared_Albums {
 	private $provider;
 
 	/**
+	 * iCloud Shared Albums provider instance (SPIKE)
+	 *
+	 * @var JZSA_ICloud_Provider
+	 */
+	private $icloud_provider;
+
+	/**
 	 * Renderer instance
 	 *
 	 * @var JZSA_Renderer
@@ -186,8 +193,9 @@ class JZSA_Shared_Albums {
 	 */
 	public function __construct( $plugin_file ) {
 		$this->plugin_file = $plugin_file;
-		$this->provider    = new JZSA_Data_Provider();
-		$this->renderer    = new JZSA_Renderer();
+		$this->provider        = new JZSA_Data_Provider();
+		$this->icloud_provider = new JZSA_ICloud_Provider();
+		$this->renderer        = new JZSA_Renderer();
 
 		add_shortcode( 'jzsa-album', array( $this, 'handle_shortcode' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
@@ -399,7 +407,7 @@ class JZSA_Shared_Albums {
 		}
 
 		// Fetch fresh data from provider (INPUT PHASE)
-		$result = $this->provider->fetch_album( $album_url );
+		$result = $this->get_provider_for_url( $album_url )->fetch_album( $album_url );
 
 		if ( ! $result['success'] ) {
 			// Before surfacing an error, try the long-lived stale backup so a
@@ -2134,6 +2142,42 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
+	 * Pick the data provider that understands an album URL.
+	 *
+	 * @param string $album_url Album URL.
+	 * @return JZSA_Data_Provider|JZSA_ICloud_Provider
+	 */
+	private function get_provider_for_url( $album_url ) {
+		if ( $this->icloud_provider && JZSA_ICloud_Provider::is_icloud_url( $album_url ) ) {
+			return $this->icloud_provider;
+		}
+
+		return $this->provider;
+	}
+
+	/**
+	 * Pick the smallest fixed-size rendition that covers the requested box.
+	 *
+	 * Used for sources that cannot resize on the fly (iCloud). Falls back to
+	 * the largest rendition when none is big enough.
+	 *
+	 * @param array $sources Renditions sorted by width ascending: url, width, height.
+	 * @param int   $width   Requested width.
+	 * @param int   $height  Requested height.
+	 * @return string URL.
+	 */
+	private function pick_fixed_source( $sources, $width, $height ) {
+		foreach ( $sources as $source ) {
+			if ( (int) $source['width'] >= (int) $width || (int) $source['height'] >= (int) $height ) {
+				return $source['url'];
+			}
+		}
+
+		$largest = end( $sources );
+		return $largest['url'];
+	}
+
+	/**
 	 * Prepare photo URLs with dimensions (including preview and full sizes).
 	 *
 	 * Accepts media items as either plain URL strings (images) or associative
@@ -2176,18 +2220,33 @@ class JZSA_Shared_Albums {
 				continue;
 			}
 
-			$photo = array(
-				'full'  => sprintf( '%s=w%d-h%d', $base, $full_width, $full_height ),
-				'thumb' => sprintf( '%s=w%d-h%d-c', $base, self::DEFAULT_THUMB_WIDTH, self::DEFAULT_THUMB_HEIGHT ),
-			);
+			if ( is_array( $item ) && ! empty( $item['sources'] ) && is_array( $item['sources'] ) ) {
+				// Fixed renditions (iCloud): choose sizes instead of building Google suffixes.
+				$photo = array(
+					'full'  => $this->pick_fixed_source( $item['sources'], $full_width, $full_height ),
+					'thumb' => $this->pick_fixed_source( $item['sources'], self::DEFAULT_THUMB_WIDTH, self::DEFAULT_THUMB_HEIGHT ),
+				);
+				if ( $preview_width && $preview_height ) {
+					$photo['preview'] = $this->pick_fixed_source( $item['sources'], $preview_width, $preview_height );
+				}
+				if ( 'video' === $type && ! empty( $item['video'] ) ) {
+					$photo['type']  = 'video';
+					$photo['video'] = $item['video'];
+				}
+			} else {
+				$photo = array(
+					'full'  => sprintf( '%s=w%d-h%d', $base, $full_width, $full_height ),
+					'thumb' => sprintf( '%s=w%d-h%d-c', $base, self::DEFAULT_THUMB_WIDTH, self::DEFAULT_THUMB_HEIGHT ),
+				);
 
-			// Add preview URL if dimensions provided.
-			if ( $preview_width && $preview_height ) {
-				$photo['preview'] = sprintf( '%s=w%d-h%d', $base, $preview_width, $preview_height );
+				// Add preview URL if dimensions provided.
+				if ( $preview_width && $preview_height ) {
+					$photo['preview'] = sprintf( '%s=w%d-h%d', $base, $preview_width, $preview_height );
+				}
 			}
 
 			// Add video-specific fields.
-			if ( 'video' === $type ) {
+			if ( 'video' === $type && ! isset( $photo['video'] ) && empty( $item['sources'] ) ) {
 				$photo['type']  = 'video';
 				$photo['video'] = $base . '=dv';
 				// Append -no to preview/full URLs for videos to suppress
@@ -2288,7 +2347,7 @@ class JZSA_Shared_Albums {
 			);
 		}
 
-		$result = $this->provider->fetch_album( $album_url );
+		$result = $this->get_provider_for_url( $album_url )->fetch_album( $album_url );
 		if ( ! $result['success'] ) {
 			return $result;
 		}
@@ -2510,7 +2569,7 @@ class JZSA_Shared_Albums {
 		if ( is_array( $cached ) && ! empty( $cached['photos'] ) && is_array( $cached['photos'] ) ) {
 			$photos = $cached['photos'];
 		} else {
-			$result = $this->provider->fetch_album( $album_url );
+			$result = $this->get_provider_for_url( $album_url )->fetch_album( $album_url );
 			if ( ! empty( $result['success'] ) && ! empty( $result['data']['photos'] ) && is_array( $result['data']['photos'] ) ) {
 				$photos = $result['data']['photos'];
 			}
@@ -3185,7 +3244,7 @@ class JZSA_Shared_Albums {
 		}
 
 		// Force fresh fetch (bypass cache).
-		$result = $this->provider->fetch_album( $album_url );
+		$result = $this->get_provider_for_url( $album_url )->fetch_album( $album_url );
 
 		if ( ! $result['success'] ) {
 			wp_send_json_error( $result['error'] );
