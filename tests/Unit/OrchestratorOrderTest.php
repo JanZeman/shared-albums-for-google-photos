@@ -47,6 +47,7 @@ class OrchestratorOrderTest extends TestCase {
     public function test_order_accepts_shuffle_case_insensitively(): void {
         $this->assertSame( 'shuffle', $this->config( array( 'order' => 'shuffle' ) )['order'] );
         $this->assertSame( 'shuffle', $this->config( array( 'order' => ' Shuffle ' ) )['order'] );
+        $this->assertSame( 'shuffle', $this->config( array( 'order' => 'shuffled' ) )['order'] );
     }
 
     public function test_unknown_order_falls_back_to_album(): void {

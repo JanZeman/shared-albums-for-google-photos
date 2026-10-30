@@ -1529,7 +1529,7 @@ class JZSA_Shared_Albums {
 	 * @return string "album" or "shuffle"
 	 */
 	private function parse_order( $atts ) {
-		if ( isset( $atts['order'] ) && 'shuffle' === strtolower( trim( (string) $atts['order'] ) ) ) {
+		if ( isset( $atts['order'] ) && in_array( strtolower( trim( (string) $atts['order'] ) ), array( 'shuffle', 'shuffled' ), true ) ) {
 			return 'shuffle';
 		}
 
