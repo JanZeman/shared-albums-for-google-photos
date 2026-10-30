@@ -15,6 +15,7 @@ run_js() {
 }
 
 require_docker_stack() {
+    local wp_service="${JZSA_E2E_WP_SERVICE:-wordpress}"
     if [ "${JZSA_E2E_SKIP_SETUP:-}" = "1" ] || [ "${JZSA_E2E_SKIP_SETUP:-}" = "true" ]; then
         return 0
     fi
@@ -23,8 +24,8 @@ require_docker_stack() {
         echo "Start Docker Desktop, then run docker-start.sh at the backend repo root." >&2
         exit 1
     fi
-    if ! docker compose ps --status running --services 2>/dev/null | grep -qx wordpress; then
-        echo "ERROR: The 'wordpress' service is not running. E2E tests need the WordPress stack." >&2
+    if ! docker compose ps --status running --services 2>/dev/null | grep -qx "$wp_service"; then
+        echo "ERROR: The '$wp_service' service is not running. E2E tests need the WordPress stack." >&2
         echo "Run docker-start.sh at the backend repo root, wait until it is up, then retry." >&2
         exit 1
     fi

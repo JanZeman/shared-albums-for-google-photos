@@ -4,6 +4,7 @@ import { execFileSync } from 'child_process';
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:8080';
 const SKIP_SETUP = process.env.JZSA_E2E_SKIP_SETUP === '1' || process.env.JZSA_E2E_SKIP_SETUP === 'true';
 const SETUP_SCRIPT = '/var/www/html/wp-content/plugins/janzeman-shared-albums-for-google-photos/tests/e2e/setup-fixtures.php';
+const WP_SERVICE = process.env.JZSA_E2E_WP_SERVICE ?? 'wordpress';
 
 const E2E_SETUP_ENV_KEYS = [
     'JZSA_E2E_ALBUM_URL',
@@ -20,6 +21,7 @@ const E2E_SETUP_ENV_KEYS = [
     'JZSA_E2E_DISCONNECTED_USER',
     'JZSA_E2E_DISCONNECTED_PASS',
     'WP_ROOT',
+    'PLAYWRIGHT_BASE_URL',
 ];
 
 const ADMIN_USER = process.env.JZSA_E2E_ADMIN_USER ?? 'dev';
@@ -112,7 +114,7 @@ function runFixtureSetup(): void {
             args.push('-e', `${key}=${value}`);
         }
     }
-    args.push('wordpress', 'php', SETUP_SCRIPT);
+    args.push(WP_SERVICE, 'php', SETUP_SCRIPT);
 
     try {
         execFileSync('docker', args, {
