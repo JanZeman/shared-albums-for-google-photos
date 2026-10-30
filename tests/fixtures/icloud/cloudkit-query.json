@@ -1,0 +1,283 @@
+{
+ "records": [
+  {
+   "recordName": "M1",
+   "recordType": "CPLMaster",
+   "fields": {
+    "filenameEnc": {
+     "value": "SU1HIDEuanBn",
+     "type": "ENCRYPTED_BYTES"
+    },
+    "resJPEGThumbRes": {
+     "value": {
+      "fileChecksum": "thumb1",
+      "size": 1,
+      "downloadURL": "https://cvws.icloud-content.com/B/thumb1/${f}?o=1"
+     },
+     "type": "ASSETID"
+    },
+    "resJPEGThumbFileType": {
+     "value": "public.jpeg",
+     "type": "STRING"
+    },
+    "resJPEGThumbWidth": {
+     "value": 480,
+     "type": "INT64"
+    },
+    "resJPEGThumbHeight": {
+     "value": 360,
+     "type": "INT64"
+    },
+    "resOriginalRes": {
+     "value": {
+      "fileChecksum": "orig1",
+      "size": 1,
+      "downloadURL": "https://cvws.icloud-content.com/B/orig1/${f}?o=1"
+     },
+     "type": "ASSETID"
+    },
+    "resOriginalFileType": {
+     "value": "public.jpeg",
+     "type": "STRING"
+    },
+    "resOriginalWidth": {
+     "value": 1920,
+     "type": "INT64"
+    },
+    "resOriginalHeight": {
+     "value": 1440,
+     "type": "INT64"
+    }
+   }
+  },
+  {
+   "recordName": "A1",
+   "recordType": "CPLAsset",
+   "fields": {
+    "masterRef": {
+     "value": {
+      "recordName": "M1",
+      "action": "DELETE_SELF",
+      "zoneID": {
+       "zoneName": "SharedCollection-TEST"
+      }
+     },
+     "type": "REFERENCE"
+    },
+    "assetDate": {
+     "value": 1657907163000,
+     "type": "TIMESTAMP"
+    },
+    "extendedDescEnc": {
+     "value": "U3Vuc2V0IGF0IHRoZSBsYWtl",
+     "type": "ENCRYPTED_BYTES"
+    }
+   }
+  },
+  {
+   "recordName": "M2",
+   "recordType": "CPLMaster",
+   "fields": {
+    "filenameEnc": {
+     "value": "SU1HXzIuSEVJQw==",
+     "type": "ENCRYPTED_BYTES"
+    },
+    "resJPEGThumbRes": {
+     "value": {
+      "fileChecksum": "thumb2",
+      "size": 1,
+      "downloadURL": "https://cvws.icloud-content.com/B/thumb2/${f}?o=1"
+     },
+     "type": "ASSETID"
+    },
+    "resJPEGThumbFileType": {
+     "value": "public.jpeg",
+     "type": "STRING"
+    },
+    "resJPEGThumbWidth": {
+     "value": 360,
+     "type": "INT64"
+    },
+    "resJPEGThumbHeight": {
+     "value": 480,
+     "type": "INT64"
+    },
+    "resJPEGFullRes": {
+     "value": {
+      "fileChecksum": "full2",
+      "size": 1,
+      "downloadURL": "https://cvws.icloud-content.com/B/full2/${f}?o=1"
+     },
+     "type": "ASSETID"
+    },
+    "resJPEGFullFileType": {
+     "value": "public.jpeg",
+     "type": "STRING"
+    },
+    "resJPEGFullWidth": {
+     "value": 3024,
+     "type": "INT64"
+    },
+    "resJPEGFullHeight": {
+     "value": 4032,
+     "type": "INT64"
+    },
+    "resOriginalRes": {
+     "value": {
+      "fileChecksum": "orig2",
+      "size": 1,
+      "downloadURL": "https://cvws.icloud-content.com/B/orig2/${f}?o=1"
+     },
+     "type": "ASSETID"
+    },
+    "resOriginalFileType": {
+     "value": "public.heic",
+     "type": "STRING"
+    },
+    "resOriginalWidth": {
+     "value": 3024,
+     "type": "INT64"
+    },
+    "resOriginalHeight": {
+     "value": 4032,
+     "type": "INT64"
+    }
+   }
+  },
+  {
+   "recordName": "A2",
+   "recordType": "CPLAsset",
+   "fields": {
+    "masterRef": {
+     "value": {
+      "recordName": "M2",
+      "action": "DELETE_SELF",
+      "zoneID": {
+       "zoneName": "SharedCollection-TEST"
+      }
+     },
+     "type": "REFERENCE"
+    },
+    "assetDate": {
+     "value": 1641471376000,
+     "type": "TIMESTAMP"
+    },
+    "captionEnc": {
+     "value": "VGl0bGUgb25seQ==",
+     "type": "ENCRYPTED_BYTES"
+    }
+   }
+  },
+  {
+   "recordName": "M3",
+   "recordType": "CPLMaster",
+   "fields": {
+    "filenameEnc": {
+     "value": "SU1HXzMuTU9W",
+     "type": "ENCRYPTED_BYTES"
+    },
+    "resJPEGThumbRes": {
+     "value": {
+      "fileChecksum": "poster3",
+      "size": 1,
+      "downloadURL": "https://cvws.icloud-content.com/B/poster3/${f}?o=1"
+     },
+     "type": "ASSETID"
+    },
+    "resJPEGThumbFileType": {
+     "value": "public.jpeg",
+     "type": "STRING"
+    },
+    "resJPEGThumbWidth": {
+     "value": 480,
+     "type": "INT64"
+    },
+    "resJPEGThumbHeight": {
+     "value": 270,
+     "type": "INT64"
+    },
+    "resVidSmallRes": {
+     "value": {
+      "fileChecksum": "vsmall3",
+      "size": 1,
+      "downloadURL": "https://cvws.icloud-content.com/B/vsmall3/${f}?o=1"
+     },
+     "type": "ASSETID"
+    },
+    "resVidSmallFileType": {
+     "value": "com.apple.quicktime-movie",
+     "type": "STRING"
+    },
+    "resVidSmallWidth": {
+     "value": 640,
+     "type": "INT64"
+    },
+    "resVidSmallHeight": {
+     "value": 360,
+     "type": "INT64"
+    },
+    "resVidMedRes": {
+     "value": {
+      "fileChecksum": "vmed3",
+      "size": 1,
+      "downloadURL": "https://cvws.icloud-content.com/B/vmed3/${f}?o=1"
+     },
+     "type": "ASSETID"
+    },
+    "resVidMedFileType": {
+     "value": "com.apple.quicktime-movie",
+     "type": "STRING"
+    },
+    "resVidMedWidth": {
+     "value": 1280,
+     "type": "INT64"
+    },
+    "resVidMedHeight": {
+     "value": 720,
+     "type": "INT64"
+    }
+   }
+  },
+  {
+   "recordName": "A3",
+   "recordType": "CPLAsset",
+   "fields": {
+    "masterRef": {
+     "value": {
+      "recordName": "M3",
+      "action": "DELETE_SELF",
+      "zoneID": {
+       "zoneName": "SharedCollection-TEST"
+      }
+     },
+     "type": "REFERENCE"
+    },
+    "assetDate": {
+     "value": 1641471377000,
+     "type": "TIMESTAMP"
+    }
+   }
+  },
+  {
+   "recordName": "A4",
+   "recordType": "CPLAsset",
+   "fields": {
+    "masterRef": {
+     "value": {
+      "recordName": "MISSING",
+      "action": "DELETE_SELF",
+      "zoneID": {
+       "zoneName": "SharedCollection-TEST"
+      }
+     },
+     "type": "REFERENCE"
+    },
+    "assetDate": {
+     "value": 1641471378000,
+     "type": "TIMESTAMP"
+    }
+   }
+  }
+ ],
+ "syncToken": "x"
+}

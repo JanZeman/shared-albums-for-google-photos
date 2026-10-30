@@ -1,0 +1,40 @@
+{
+ "results": [
+  {
+   "shortGUID": {
+    "value": "00TestAlbumGuid",
+    "shouldFetchRootRecord": true
+   },
+   "containerIdentifier": "com.apple.photos.cloud",
+   "environment": "production",
+   "databaseScope": "SHARED",
+   "zoneID": {
+    "zoneName": "SharedCollection-TEST",
+    "ownerRecordName": "_owner",
+    "zoneType": "REGULAR_CUSTOM_ZONE"
+   },
+   "share": {
+    "recordName": "cloudkit.zoneshare",
+    "recordType": "cloudkit.share",
+    "fields": {
+     "cloudkit.type": {
+      "value": "photos_sharedcollections",
+      "type": "STRING"
+     },
+     "cloudkit.title": {
+      "value": "CloudKit Album",
+      "type": "STRING"
+     }
+    }
+   },
+   "anonymousPublicAccess": {
+    "token": "anon+token/1",
+    "tokenTTL": 1200000,
+    "databasePartition": "https://p65-ckdatabasews.icloud.com:443",
+    "resolvedPartitionNumber": 65
+   },
+   "minimallyResolved": false,
+   "requireAppleLogin": false
+  }
+ ]
+}

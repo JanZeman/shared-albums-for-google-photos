@@ -3,7 +3,8 @@
  * Tests for JZSA_ICloud_Provider (SPIKE): URL parsing, partition host,
  * webstream + webasseturls parsing, and the orchestrator's fixed-rendition
  * size picking. Fixtures in tests/fixtures/icloud/ follow the shape of the
- * public sharedstreams endpoints, so these tests never call live iCloud.
+ * public sharedstreams and CloudKit endpoints, so these tests never call
+ * live iCloud.
  */
 
 use PHPUnit\Framework\TestCase;
@@ -12,6 +13,10 @@ class ICloudProviderTest extends TestCase {
 
 	private const ALBUM_URL = 'https://www.icloud.com/sharedalbum/#B0aGWZuqDGtB9r';
 	private const BASE_URL  = 'https://p23-sharedstreams.icloud.com/B0aGWZuqDGtB9r/sharedstreams/';
+
+	private const CLOUDKIT_ALBUM_URL = 'https://photos.icloud.com/shared/album/00TestAlbumGuid/';
+	private const CLOUDKIT_RESOLVE   = 'https://ckdatabasews.icloud.com/database/1/com.apple.photos.cloud/production/public/records/resolve?remapEnums=true';
+	private const CLOUDKIT_QUERY     = 'https://p65-ckdatabasews.icloud.com:443/database/1/com.apple.photos.cloud/production/shared/records/query?remapEnums=true&publicAccessAuthToken=anon%2Btoken%2F1';
 
 	private const FIXTURE_DIR = __DIR__ . '/../fixtures/icloud';
 
@@ -43,6 +48,7 @@ class ICloudProviderTest extends TestCase {
 	public function test_recognizes_icloud_shared_album_urls(): void {
 		$this->assertTrue( JZSA_ICloud_Provider::is_icloud_url( self::ALBUM_URL ) );
 		$this->assertTrue( JZSA_ICloud_Provider::is_icloud_url( 'https://icloud.com/sharedalbum/en-us/#B0aGWZuqDGtB9r' ) );
+		$this->assertTrue( JZSA_ICloud_Provider::is_icloud_url( self::CLOUDKIT_ALBUM_URL ) );
 		$this->assertFalse( JZSA_ICloud_Provider::is_icloud_url( 'https://photos.google.com/share/AF1Qip?key=abc' ) );
 	}
 
@@ -136,5 +142,68 @@ class ICloudProviderTest extends TestCase {
 		$this->assertSame( 'video', $photos[2]['type'] );
 		$this->assertSame( 'https://cvws.icloud-content.com/S/vid1-720.mp4?e=1', $photos[2]['video'] );
 		$this->assertStringNotContainsString( '=w', $photos[2]['full'] );
+	}
+
+	private function stubCloudKitAlbum(): void {
+		$GLOBALS['jzsa_test_http_responses'] = array(
+			self::CLOUDKIT_RESOLVE => array(
+				'response' => array( 'code' => 200 ),
+				'body'     => $this->fixture( 'cloudkit-resolve.json' ),
+			),
+			self::CLOUDKIT_QUERY   => array(
+				'response' => array( 'code' => 200 ),
+				'body'     => $this->fixture( 'cloudkit-query.json' ),
+			),
+		);
+	}
+
+	public function test_extracts_short_guid_from_ios27_album_link(): void {
+		$this->assertSame( '00TestAlbumGuid', $this->provider->extract_short_guid( self::CLOUDKIT_ALBUM_URL ) );
+		$this->assertSame( '', $this->provider->extract_short_guid( self::ALBUM_URL ) );
+	}
+
+	public function test_parses_cloudkit_album(): void {
+		$this->stubCloudKitAlbum();
+
+		$result = $this->provider->fetch_album( self::CLOUDKIT_ALBUM_URL );
+
+		$this->assertTrue( $result['success'], (string) $result['error'] );
+		$this->assertSame( 'CloudKit Album', $result['data']['title'] );
+		// The asset whose master is missing is skipped.
+		$this->assertSame( 3, $result['data']['count'] );
+		$this->assertSame(
+			array( 'shortGUIDs' => array( array( 'value' => '00TestAlbumGuid' ) ) ),
+			json_decode( $GLOBALS['jzsa_test_http_requests'][0]['args']['body'], true )
+		);
+
+		$photos = $result['data']['photos'];
+		$this->assertSame( 'image', $photos[0]['type'] );
+		$this->assertSame( 'A1', $photos[0]['id'] );
+		$this->assertSame( 'Sunset at the lake', $photos[0]['description'] );
+		$this->assertSame( 'https://cvws.icloud-content.com/B/orig1/IMG%201.jpg?o=1', $photos[0]['url'] );
+		$this->assertSame( array( 480, 1920 ), array_column( $photos[0]['sources'], 'width' ) );
+		$this->assertSame( 1657907163000, $photos[0]['timestamp'] );
+
+		// HEIC originals cannot be shown in browsers, so the JPEG renditions are used.
+		$this->assertSame( array( 360, 3024 ), array_column( $photos[1]['sources'], 'width' ) );
+		$this->assertSame( 'https://cvws.icloud-content.com/B/full2/IMG_2.HEIC?o=1', $photos[1]['url'] );
+		$this->assertSame( 'Title only', $photos[1]['description'] );
+
+		$this->assertSame( 'video', $photos[2]['type'] );
+		$this->assertSame( 'https://cvws.icloud-content.com/B/vmed3/IMG_3.MOV?o=1', $photos[2]['video'] );
+		$this->assertSame( 'https://cvws.icloud-content.com/B/poster3/IMG_3.MOV?o=1', $photos[2]['url'] );
+		$this->assertArrayNotHasKey( 'description', $photos[2] );
+	}
+
+	public function test_cloudkit_album_without_anonymous_access_fails(): void {
+		$GLOBALS['jzsa_test_http_responses'][ self::CLOUDKIT_RESOLVE ] = array(
+			'response' => array( 'code' => 200 ),
+			'body'     => '{"results":[{"zoneID":{"zoneName":"SharedCollection-TEST"},"requireAppleLogin":true}]}',
+		);
+
+		$result = $this->provider->fetch_album( self::CLOUDKIT_ALBUM_URL );
+
+		$this->assertFalse( $result['success'] );
+		$this->assertCount( 1, $GLOBALS['jzsa_test_http_requests'] );
 	}
 }

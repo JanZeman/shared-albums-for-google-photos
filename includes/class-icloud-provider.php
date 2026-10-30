@@ -5,9 +5,12 @@
  * Input Phase - same result shape as JZSA_Data_Provider, so the orchestrator
  * and renderer stay source-agnostic.
  *
- * SPIKE: uses the undocumented sharedstreams endpoints that the iCloud web
- * viewer itself calls (webstream + webasseturls). Apple may change them
- * without notice, the same way Google may change its album HTML.
+ * SPIKE: uses the undocumented endpoints that the iCloud web viewers
+ * themselves call. Old public website links (icloud.com/sharedalbum/#B0...)
+ * go through sharedstreams (webstream + webasseturls). iOS 27 album links
+ * (photos.icloud.com/shared/album/<id>) go through CloudKit (records/resolve
+ * + records/query). Apple may change them without notice, the same way
+ * Google may change its album HTML.
  *
  * @package JZSA_Shared_Albums
  */
@@ -43,13 +46,51 @@ class JZSA_ICloud_Provider {
 	const ASSET_URL_BATCH = 25;
 
 	/**
+	 * CloudKit database of the Photos app.
+	 *
+	 * @var string
+	 */
+	const CLOUDKIT_DATABASE = '/database/1/com.apple.photos.cloud/production/';
+
+	/**
+	 * CloudKit host that resolves album link IDs.
+	 *
+	 * @var string
+	 */
+	const CLOUDKIT_RESOLVE_HOST = 'https://ckdatabasews.icloud.com';
+
+	/**
+	 * Records per records/query page (one photo is two records).
+	 *
+	 * @var int
+	 */
+	const CLOUDKIT_PAGE_SIZE = 200;
+
+	/**
+	 * Safety cap on records/query pages per album.
+	 *
+	 * @var int
+	 */
+	const CLOUDKIT_MAX_PAGES = 50;
+
+	/**
 	 * Whether a URL is a public iCloud Shared Album link.
 	 *
 	 * @param string $url Album URL.
 	 * @return bool
 	 */
 	public static function is_icloud_url( $url ) {
-		return is_string( $url ) && (bool) preg_match( '#^https?://(?:www\.)?icloud\.com/sharedalbum/#i', $url );
+		return is_string( $url ) && (bool) preg_match( '#^https?://(?:www\.|photos\.)?icloud\.com/(?:sharedalbum/|shared/album/)#i', $url );
+	}
+
+	/**
+	 * Extract the album ID from an iOS 27 album link.
+	 *
+	 * @param string $url Album URL, e.g. https://photos.icloud.com/shared/album/00cEia2cjYMKOziKR1LDIzXIA
+	 * @return string Album ID or empty string.
+	 */
+	public function extract_short_guid( $url ) {
+		return preg_match( '#^https?://(?:www\.|photos\.)?icloud\.com/shared/album/([A-Za-z0-9_-]+)#i', (string) $url, $m ) ? $m[1] : '';
 	}
 
 	/**
@@ -92,7 +133,7 @@ class JZSA_ICloud_Provider {
 	 * @return array Validation result [valid, is_deprecated, error_message]
 	 */
 	public function validate_url( $url ) {
-		if ( '' === $this->extract_token( $url ) ) {
+		if ( '' === $this->extract_token( $url ) && '' === $this->extract_short_guid( $url ) ) {
 			return array(
 				'valid'         => false,
 				'is_deprecated' => false,
@@ -117,6 +158,11 @@ class JZSA_ICloud_Provider {
 		$validation = $this->validate_url( $url );
 		if ( ! $validation['valid'] ) {
 			return $this->error( $validation['error'] );
+		}
+
+		$short_guid = $this->extract_short_guid( $url );
+		if ( '' !== $short_guid ) {
+			return $this->fetch_cloudkit_album( $short_guid );
 		}
 
 		$token  = $this->extract_token( $url );
@@ -277,20 +323,226 @@ class JZSA_ICloud_Provider {
 	}
 
 	/**
+	 * Fetch an iOS 27 album link through CloudKit.
+	 *
+	 * records/resolve turns the link ID into the album zone plus a short-lived
+	 * anonymous token; records/query then lists the zone's assets.
+	 *
+	 * @param string $short_guid Album ID from the link.
+	 * @return array Result [success, data, error]
+	 */
+	public function fetch_cloudkit_album( $short_guid ) {
+		$resolved = $this->post_json(
+			self::CLOUDKIT_RESOLVE_HOST . self::CLOUDKIT_DATABASE . 'public/records/resolve?remapEnums=true',
+			array( 'shortGUIDs' => array( array( 'value' => $short_guid ) ) ),
+			'https://photos.icloud.com'
+		);
+		if ( is_string( $resolved ) ) {
+			return $this->error( $resolved );
+		}
+
+		$album = isset( $resolved['results'][0] ) && is_array( $resolved['results'][0] ) ? $resolved['results'][0] : array();
+		if ( empty( $album['zoneID'] ) || empty( $album['anonymousPublicAccess']['token'] ) || empty( $album['anonymousPublicAccess']['databasePartition'] ) ) {
+			return $this->error( __( 'This iCloud album is not shared with "Anyone with the link"', 'janzeman-shared-albums-for-google-photos' ) );
+		}
+
+		$query_url = rtrim( $album['anonymousPublicAccess']['databasePartition'], '/' ) . self::CLOUDKIT_DATABASE
+			. 'shared/records/query?remapEnums=true&publicAccessAuthToken=' . rawurlencode( $album['anonymousPublicAccess']['token'] );
+		$query     = array(
+			'query'        => array(
+				'recordType' => 'CPLAssetAndMasterByAssetDateWithoutHiddenOrDeleted',
+				'filterBy'   => array(
+					array(
+						'fieldName'  => 'direction',
+						'comparator' => 'EQUALS',
+						'fieldValue' => array(
+							'value' => 'ASCENDING',
+							'type'  => 'STRING',
+						),
+					),
+				),
+			),
+			'zoneID'       => $album['zoneID'],
+			'resultsLimit' => self::CLOUDKIT_PAGE_SIZE,
+		);
+
+		$records = array();
+		for ( $page = 0; $page < self::CLOUDKIT_MAX_PAGES; $page++ ) {
+			$response = $this->post_json( $query_url, $query, 'https://photos.icloud.com' );
+			if ( is_string( $response ) ) {
+				return $this->error( $response );
+			}
+			if ( ! empty( $response['records'] ) && is_array( $response['records'] ) ) {
+				$records = array_merge( $records, $response['records'] );
+			}
+			if ( empty( $response['continuationMarker'] ) ) {
+				break;
+			}
+			$query['continuationMarker'] = $response['continuationMarker'];
+		}
+
+		$photos = $this->build_cloudkit_items( $records );
+		if ( empty( $photos ) ) {
+			return $this->error( __( 'No photos found in album', 'janzeman-shared-albums-for-google-photos' ) );
+		}
+
+		return array(
+			'success'       => true,
+			'is_deprecated' => false,
+			'data'          => array(
+				'title'  => isset( $album['share']['fields']['cloudkit.title']['value'] ) ? (string) $album['share']['fields']['cloudkit.title']['value'] : null,
+				'photos' => $photos,
+				'count'  => count( $photos ),
+			),
+			'error'         => null,
+		);
+	}
+
+	/**
+	 * Turn CloudKit CPLAsset + CPLMaster records into media items.
+	 *
+	 * Renditions are the master's res<Name>Res fields (resJPEGThumbRes,
+	 * resJPEGMedRes, resOriginalRes, resVidMedRes, ...). Image renditions the
+	 * browser can show go to 'sources'; the widest video rendition is the video.
+	 *
+	 * @param array $records Records from records/query, in album order.
+	 * @return array Media items.
+	 */
+	public function build_cloudkit_items( $records ) {
+		$masters = array();
+		foreach ( $records as $record ) {
+			if ( isset( $record['recordType'], $record['recordName'] ) && 'CPLMaster' === $record['recordType'] ) {
+				$masters[ $record['recordName'] ] = isset( $record['fields'] ) ? $record['fields'] : array();
+			}
+		}
+
+		$items = array();
+		foreach ( $records as $record ) {
+			if ( ! isset( $record['recordType'] ) || 'CPLAsset' !== $record['recordType'] ) {
+				continue;
+			}
+
+			$fields     = isset( $record['fields'] ) ? $record['fields'] : array();
+			$master_ref = isset( $fields['masterRef']['value']['recordName'] ) ? $fields['masterRef']['value']['recordName'] : '';
+			if ( '' === $master_ref || ! isset( $masters[ $master_ref ] ) ) {
+				continue;
+			}
+
+			$master   = $masters[ $master_ref ];
+			$filename = $this->decode_cloudkit_string( $master, 'filenameEnc' );
+			$sources  = array();
+			$video    = '';
+			$video_w  = 0;
+
+			foreach ( $master as $key => $field ) {
+				if ( ! preg_match( '/^res(.+)Res$/', $key, $m ) || empty( $field['value']['downloadURL'] ) ) {
+					continue;
+				}
+
+				$name   = $m[1];
+				$type   = isset( $master[ 'res' . $name . 'FileType' ]['value'] ) ? (string) $master[ 'res' . $name . 'FileType' ]['value'] : '';
+				$width  = isset( $master[ 'res' . $name . 'Width' ]['value'] ) ? (int) $master[ 'res' . $name . 'Width' ]['value'] : 0;
+				$height = isset( $master[ 'res' . $name . 'Height' ]['value'] ) ? (int) $master[ 'res' . $name . 'Height' ]['value'] : 0;
+				$url    = str_replace( '${f}', rawurlencode( '' !== $filename ? $filename : 'media' ), $field['value']['downloadURL'] );
+
+				if ( in_array( $type, array( 'com.apple.quicktime-movie', 'public.mpeg-4' ), true ) ) {
+					if ( $width >= $video_w ) {
+						$video   = $url;
+						$video_w = $width;
+					}
+					continue;
+				}
+
+				if ( ! in_array( $type, array( 'public.jpeg', 'public.png', 'com.compuserve.gif' ), true ) ) {
+					continue;
+				}
+
+				$sources[] = array(
+					'url'    => $url,
+					'width'  => $width,
+					'height' => $height,
+				);
+			}
+
+			if ( empty( $sources ) ) {
+				continue;
+			}
+
+			usort(
+				$sources,
+				static function ( $a, $b ) {
+					return $a['width'] - $b['width'];
+				}
+			);
+
+			$largest = end( $sources );
+			$item    = array(
+				'url'     => $largest['url'],
+				'type'    => '' !== $video ? 'video' : 'image',
+				'id'      => isset( $record['recordName'] ) ? (string) $record['recordName'] : '',
+				'width'   => $largest['width'],
+				'height'  => $largest['height'],
+				'sources' => $sources,
+			);
+
+			if ( '' !== $video ) {
+				$item['video'] = $video;
+			}
+
+			// Which of the two Photos text fields carries the caption is not confirmed yet.
+			$caption = $this->decode_cloudkit_string( $fields, 'extendedDescEnc' );
+			if ( '' === $caption ) {
+				$caption = $this->decode_cloudkit_string( $fields, 'captionEnc' );
+			}
+			if ( '' !== $caption ) {
+				$item['description'] = $caption;
+			}
+			if ( ! empty( $fields['assetDate']['value'] ) ) {
+				$item['timestamp'] = (int) $fields['assetDate']['value'];
+			}
+
+			$items[] = $item;
+		}
+
+		return $items;
+	}
+
+	/**
+	 * Read a CloudKit text field; *Enc fields are base64 (ENCRYPTED_BYTES).
+	 *
+	 * @param array  $fields Record fields.
+	 * @param string $key    Field name.
+	 * @return string
+	 */
+	private function decode_cloudkit_string( $fields, $key ) {
+		if ( empty( $fields[ $key ]['value'] ) || ! is_string( $fields[ $key ]['value'] ) ) {
+			return '';
+		}
+
+		$value = $fields[ $key ]['value'];
+		if ( isset( $fields[ $key ]['type'] ) && 'ENCRYPTED_BYTES' === $fields[ $key ]['type'] ) {
+			$value = (string) base64_decode( $value, true );
+		}
+
+		return trim( $value );
+	}
+
+	/**
 	 * POST a JSON body and decode the JSON answer.
 	 *
-	 * @param string $url  Endpoint.
-	 * @param array  $body Request body.
+	 * @param string $url    Endpoint.
+	 * @param array  $body   Request body.
+	 * @param string $origin Origin the endpoint expects.
 	 * @return array|string Decoded body, or an error message.
 	 */
-	private function post_json( $url, $body ) {
+	private function post_json( $url, $body, $origin = 'https://www.icloud.com' ) {
 		$response = wp_remote_post(
 			$url,
 			array(
 				'timeout' => 10,
 				'headers' => array(
 					'Content-Type' => 'text/plain',
-					'Origin'       => 'https://www.icloud.com',
+					'Origin'       => $origin,
 				),
 				'body'    => wp_json_encode( $body ),
 			)
