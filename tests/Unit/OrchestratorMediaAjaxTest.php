@@ -437,6 +437,44 @@ class OrchestratorMediaAjaxTest extends TestCase {
 	        $this->assertSame( 0, $this->provider->fetch_calls );
 	    }
 
+	    public function test_fetch_album_chunk_with_shuffle_seed_continues_one_order_across_chunks(): void {
+	        $album_url = 'https://photos.google.com/share/AF1QipAlbum?key=abc';
+	        $cache_key = $this->invoke( 'get_cache_key', $album_url );
+	        $photos    = array();
+	        for ( $i = 0; $i < 30; $i++ ) {
+	            $photos[] = array( 'url' => 'https://lh3.googleusercontent.com/p' . $i, 'id' => 'ID' . $i );
+	        }
+	        $GLOBALS['jzsa_test_transients'][ $cache_key ] = array(
+	            'title'         => 'Cached',
+	            'is_deprecated' => false,
+	            'photos'        => $photos,
+	        );
+
+	        $ids = array();
+	        foreach ( array( 0, 10, 20 ) as $offset ) {
+	            $_POST = array(
+	                'nonce'        => 'ok',
+	                'album_url'    => $album_url,
+	                'offset'       => (string) $offset,
+	                'count'        => '10',
+	                'limit'        => '30',
+	                'show_videos'  => 'true',
+	                'shuffle_seed' => '424242',
+	            );
+	            $response = $this->callAjax( 'handle_fetch_album_chunk' );
+	            $this->assertTrue( $response->success );
+	            foreach ( $response->data['photos'] as $index => $photo ) {
+	                $this->assertSame( $offset + $index, $photo['globalIndex'] );
+	                $ids[] = $photo['id'];
+	            }
+	        }
+
+	        $expected = array_column( \JZSA_Shared_Albums::seeded_shuffle( $photos, 424242 ), 'id' );
+	        $this->assertSame( $expected, $ids );
+	        $this->assertCount( 30, array_unique( $ids ) );
+	        $this->assertNotSame( array_column( $photos, 'id' ), $ids );
+	    }
+
 	    public function test_fetch_album_chunk_fetches_cache_miss_and_clamps_negative_offset(): void {
 	        $album_url = 'https://photos.google.com/share/AF1QipAlbum?key=abc';
 	        $_POST = array(

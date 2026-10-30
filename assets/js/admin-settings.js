@@ -576,7 +576,7 @@ var JZSA_KNOWN_PARAMS = [
 	'lightbox-source-height', 'lightbox-source-width', 'lightbox-toggle',
 	'lightbox-video-controls-autohide', 'lightbox-video-controls-color', 'limit',
 	'link', 'mode', 'mosaic', 'mosaic-background', 'mosaic-corner-radius',
-	'mosaic-count', 'mosaic-gap', 'mosaic-opacity', 'mosaic-position',
+	'mosaic-count', 'mosaic-gap', 'mosaic-opacity', 'mosaic-position', 'order',
 	'show-download-button', 'show-link-button', 'show-navigation', 'show-videos',
 	'slideshow', 'slideshow-autoresume', 'slideshow-delay', 'source-height',
 	'source-width', 'start-at', 'video-controls-autohide', 'video-controls-color',
@@ -681,6 +681,7 @@ var JZSA_VALUE_RULES = ( function () {
 	], { type: 'bool' } );
 
 	add( [ 'mode' ], { type: 'enum', values: [ 'gallery', 'slider', 'carousel' ] } );
+	add( [ 'order' ], { type: 'enum', values: [ 'album', 'shuffle' ] } );
 	add( [ 'image-fit', 'fullscreen-image-fit', 'lightbox-image-fit', 'viewer-image-fit' ],
 		{ type: 'enum', values: [ 'cover', 'contain' ] } );
 	add( [ 'gallery-layout' ], { type: 'enum', values: [ 'grid', 'justified' ] } );

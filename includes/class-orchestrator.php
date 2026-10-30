@@ -377,7 +377,7 @@ class JZSA_Shared_Albums {
 		if ( ! $should_refresh && false !== $cached_data ) {
 			// Use cached data - merge with current config
 				$hydrated_cached_items = $this->hydrate_cached_photo_meta(
-					$cached_data['photos'],
+					$this->apply_photo_order( $cached_data['photos'], $config ),
 					$album_url,
 					$config['limit'],
 					$config['show-videos']
@@ -415,7 +415,7 @@ class JZSA_Shared_Albums {
 				update_option( $expiry_key, $cache_duration, false );
 
 				$hydrated_backup_items = $this->hydrate_cached_photo_meta(
-					$backup_data['photos'],
+					$this->apply_photo_order( $backup_data['photos'], $config ),
 					$album_url,
 					$config['limit'],
 					$config['show-videos']
@@ -457,7 +457,7 @@ class JZSA_Shared_Albums {
 
 		// Prepare photos with dimensions and max count
 			$hydrated_fresh_items = $this->hydrate_cached_photo_meta(
-				$result['data']['photos'],
+				$this->apply_photo_order( $result['data']['photos'], $config ),
 				$album_url,
 				$config['limit'],
 				$config['show-videos']
@@ -911,6 +911,7 @@ class JZSA_Shared_Albums {
 			'slideshow'       => $this->parse_slideshow_mode( $atts, 'slideshow' ),
 			'slideshow-delay' => $this->parse_delay_range( isset( $atts['slideshow-delay'] ) ? $atts['slideshow-delay'] : self::DEFAULT_SLIDESHOW_DELAY_RANGE ),
 			'start-at'       => $this->parse_start_at( $atts ),
+			'order'          => $this->parse_order( $atts ),
 
 			'fullscreen-slideshow'       => $this->has_non_empty_attribute( $atts, 'fullscreen-slideshow' ) ? $this->parse_slideshow_mode_val( $atts['fullscreen-slideshow'] ) : 'disabled',
 			'fullscreen-slideshow-delay' => $this->parse_delay_range( $this->has_non_empty_attribute( $atts, 'fullscreen-slideshow-delay' ) ? $atts['fullscreen-slideshow-delay'] : self::DEFAULT_FULLSCREEN_SLIDESHOW_DELAY ),
@@ -1517,6 +1518,74 @@ class JZSA_Shared_Albums {
 
 		// Default.
 		return '1';
+	}
+
+	/**
+	 * Parse photo order.
+	 *
+	 * Parameter: order="album" (default, the album's own order) or "shuffle".
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string "album" or "shuffle"
+	 */
+	private function parse_order( $atts ) {
+		if ( isset( $atts['order'] ) && 'shuffle' === strtolower( trim( (string) $atts['order'] ) ) ) {
+			return 'shuffle';
+		}
+
+		return 'album';
+	}
+
+	/**
+	 * Apply the configured photo order to cached base album items.
+	 *
+	 * Runs before the max-entries limit, so a shuffled album with a limit shows a
+	 * random selection, not a shuffled copy of its first photos. The browser
+	 * shuffles the rendered list again on every page load, so a cached page still
+	 * gets a new order per visit.
+	 *
+	 * @param array $base_items Cached base album items.
+	 * @param array $config     Shortcode render config.
+	 * @return array
+	 */
+	private function apply_photo_order( $base_items, $config ) {
+		if ( ! isset( $config['order'] ) || 'shuffle' !== $config['order'] || ! is_array( $base_items ) ) {
+			return $base_items;
+		}
+
+		return self::seeded_shuffle( $base_items, wp_rand( 1, 2147483647 ) );
+	}
+
+	/**
+	 * Shuffle items deterministically for one seed.
+	 *
+	 * Progressive slider chunks are requested one by one, so every request of
+	 * one page visit must see the same shuffled order. A xorshift32 generator
+	 * keeps that independent of PHP's global random state and PHP version.
+	 *
+	 * @param array $items Items to shuffle.
+	 * @param int   $seed  Positive seed chosen by the browser for one visit.
+	 * @return array
+	 */
+	public static function seeded_shuffle( $items, $seed ) {
+		$items = array_values( $items );
+		$state = intval( $seed ) & 0xFFFFFFFF;
+		if ( 0 === $state ) {
+			$state = 0x9E3779B9;
+		}
+
+		for ( $i = count( $items ) - 1; $i > 0; $i-- ) {
+			$state ^= ( $state << 13 ) & 0xFFFFFFFF;
+			$state ^= $state >> 17;
+			$state ^= ( $state << 5 ) & 0xFFFFFFFF;
+
+			$j           = $state % ( $i + 1 );
+			$swap        = $items[ $i ];
+			$items[ $i ] = $items[ $j ];
+			$items[ $j ] = $swap;
+		}
+
+		return $items;
 	}
 
 	/**
@@ -3060,6 +3129,7 @@ class JZSA_Shared_Albums {
 		$preview_height             = isset( $_POST['source_height'] ) ? intval( wp_unslash( $_POST['source_height'] ) ) : self::DEFAULT_SOURCE_HEIGHT;
 		$fullscreen_width           = isset( $_POST['fullscreen_source_width'] ) ? intval( wp_unslash( $_POST['fullscreen_source_width'] ) ) : self::DEFAULT_FULLSCREEN_SOURCE_WIDTH;
 		$fullscreen_height          = isset( $_POST['fullscreen_source_height'] ) ? intval( wp_unslash( $_POST['fullscreen_source_height'] ) ) : self::DEFAULT_FULLSCREEN_SOURCE_HEIGHT;
+		$shuffle_seed               = isset( $_POST['shuffle_seed'] ) ? intval( wp_unslash( $_POST['shuffle_seed'] ) ) : 0;
 
 		$album_result = $this->get_cached_or_fresh_album_data( $album_url );
 		if ( ! $album_result['success'] || empty( $album_result['data']['photos'] ) ) {
@@ -3067,8 +3137,14 @@ class JZSA_Shared_Albums {
 			return;
 		}
 
+		$base_items = $album_result['data']['photos'];
+		if ( $shuffle_seed > 0 ) {
+			// Same seed for every chunk of one visit, so chunks continue one shuffled order.
+			$base_items = self::seeded_shuffle( $base_items, $shuffle_seed );
+		}
+
 		$chunk = $this->prepare_photo_chunk(
-			$album_result['data']['photos'],
+			$base_items,
 			$album_url,
 			$offset,
 			$count,

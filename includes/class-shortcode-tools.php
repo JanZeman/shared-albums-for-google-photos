@@ -1008,6 +1008,7 @@ class JZSA_Shortcode_Tools {
 
 			// Content selection and initial state.
 			'limit',
+			'order',
 			'start-at',
 			'show-videos',
 

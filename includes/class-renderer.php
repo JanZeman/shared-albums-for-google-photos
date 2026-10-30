@@ -615,6 +615,10 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-start-at="%s"', esc_attr( $config['start-at'] ) );
 		}
 
+		if ( isset( $config['order'] ) && 'shuffle' === $config['order'] ) {
+			$attrs[] = 'data-order="shuffle"';
+		}
+
 		if ( isset( $config['fullscreen-slideshow-delay'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-slideshow-delay="%s"', esc_attr( $config['fullscreen-slideshow-delay'] ) );
 		}
@@ -797,6 +801,10 @@ class JZSA_Renderer {
 
 		if ( isset( $config['start-at'] ) && '' !== $config['start-at'] ) {
 			$attrs[] = sprintf( 'data-start-at="%s"', esc_attr( $config['start-at'] ) );
+		}
+
+		if ( isset( $config['order'] ) && 'shuffle' === $config['order'] ) {
+			$attrs[] = 'data-order="shuffle"';
 		}
 
 		if ( ! empty( $config['album-url'] ) ) {

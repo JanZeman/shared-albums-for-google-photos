@@ -1250,6 +1250,7 @@
         var triggerVideoEl = opts.triggerVideoEl || null;
         var reason = opts.reason || 'unknown';
         var forceTriggerReload = !!opts.forceTriggerReload;
+        freshPhotos = alignFreshPhotosToShuffledOrder($albumContainer, freshPhotos);
         var freshVideos = freshPhotos.filter(function(p) { return p.type === 'video'; });
         var fallbackVideoCursor = 0;
         var triggerUpdated = false;
@@ -1438,6 +1439,59 @@
         return (typeof fallbackIndex === 'number' && fallbackIndex >= 0) ? fallbackIndex : 0;
     }
 
+    function isShuffledContainer($container) {
+        return $container.attr('data-order') === 'shuffle';
+    }
+
+    // Fisher-Yates shuffle into a new array.
+    function shufflePhotos(photos) {
+        var shuffled = photos.slice();
+        for (var i = shuffled.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var swap = shuffled[i];
+            shuffled[i] = shuffled[j];
+            shuffled[j] = swap;
+        }
+        return shuffled;
+    }
+
+    // order="shuffle": give every page load its own order before anything reads
+    // the photos. Progressive sliders cannot shuffle in the browser because they
+    // fetch chunks by position, so they get one random seed per visit instead,
+    // which the server uses to shuffle the same way for every chunk.
+    function applyShuffleOrder($container) {
+        if (!isShuffledContainer($container) || $container.attr('data-shuffle-applied') === 'true') {
+            return;
+        }
+        $container.attr('data-shuffle-applied', 'true');
+
+        if ($container.attr('data-progressive-loading') === 'true') {
+            $container.attr('data-shuffle-seed', String(1 + Math.floor(Math.random() * 2147483646)));
+            return;
+        }
+
+        var photos = getContainerPhotos($container);
+        if (photos.length > 1) {
+            setContainerPhotos($container, shufflePhotos(photos));
+        }
+    }
+
+    // Refreshed media arrives in album order; put it back into this visit's order.
+    function alignFreshPhotosToShuffledOrder($container, freshPhotos) {
+        if (!isShuffledContainer($container)) {
+            return freshPhotos;
+        }
+        var freshById = {};
+        freshPhotos.forEach(function(photo) {
+            if (photo && photo.id) {
+                freshById[photo.id] = photo;
+            }
+        });
+        return getContainerPhotos($container).map(function(photo) {
+            return (photo && photo.id && freshById[photo.id]) ? freshById[photo.id] : photo;
+        });
+    }
+
     function getContainerPhotos($container) {
         var photosJson = $container.attr('data-all-photos');
         if (!photosJson) {
@@ -1550,7 +1604,8 @@
                 source_width: settings.sourceWidth,
                 source_height: settings.sourceHeight,
                 fullscreen_source_width: settings.fullscreenSourceWidth,
-                fullscreen_source_height: settings.fullscreenSourceHeight
+                fullscreen_source_height: settings.fullscreenSourceHeight,
+                shuffle_seed: parseInt($container.attr('data-shuffle-seed'), 10) || 0
             }
         }).then(function(response) {
             if (!response || !response.success || !response.data || !Array.isArray(response.data.photos)) {
@@ -5770,6 +5825,7 @@
             return swipers[$container.attr('id')] || null;
         }
         markGalleryInitialized($container);
+        applyShuffleOrder($container);
         var galleryId = $container.attr('id');
         var progressiveSettings = getProgressiveSliderSettings($container);
         var progressiveSliderEnabled = mode === 'slider' && progressiveSettings.enabled;
@@ -8787,6 +8843,7 @@
             return;
         }
         markGalleryInitialized($container);
+        applyShuffleOrder($container);
         var $shell = ensureGalleryShell($container);
         var layout     = readGalleryAttr($container, 'layout') || 'grid';
 

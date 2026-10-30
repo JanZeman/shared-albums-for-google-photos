@@ -1063,6 +1063,24 @@ class JZSA_Admin_Pages {
 					</div>
 
 					<div class="jzsa-sample-card">
+						<h3><?php echo 'Sample 73: ' . esc_html__( 'Shuffled Order', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Shows the photos in a new random order on every page load, while each photo still appears exactly once per round. Unlike start-at="random", the whole order changes, not only the first photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<?php
+						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" order="shuffle" corner-radius="16"]';
+					?>
+					<div class="jzsa-code-block">
+						<code><?php echo esc_html( $sample_shortcode ); ?></code>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
+					</div>
+					<div class="jzsa-preview-container">
+						<?php
+							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo do_shortcode( $sample_shortcode );
+						?>
+					</div>
+					</div>
+
+					<div class="jzsa-sample-card">
 						<h3><?php echo 'Sample 14: ' . esc_html__( 'Disable Cropping and Set Custom Background', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Shows photos fully without cropping by using image-fit="contain". This exposes the background color. Here we set it to yellow to make it very visible.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php

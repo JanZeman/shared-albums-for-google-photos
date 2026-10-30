@@ -45,6 +45,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 								<td>300</td>
 							</tr>
 							<tr>
+								<td><code>order</code></td>
+								<td>Photo order: "album" keeps the album's own order, "shuffle" shows the photos in a new random order on every page load. With <code>limit</code>, "shuffle" also picks which photos are shown at random.</td>
+								<td>album</td>
+							</tr>
+							<tr>
 								<td><code>source-width</code></td>
 								<td>Photo width to fetch from Google for inline mode. Directly affects photo quality: higher values load sharper images.</td>
 								<td>800</td>
