@@ -508,7 +508,7 @@ class AdminPagesTest extends TestCase {
 		$this->assertStringContainsString( '(update shortcode syntax only)', $output );
 		$this->assertStringContainsString( 'Use Lightbox', $output );
 		$this->assertStringContainsString( 'Offer both Lightbox and Fullscreen', $output );
-		$this->assertStringContainsString( '(Will visitors understand both options? Investigate samples 29 &amp; 30.)', $output );
+		$this->assertStringContainsString( '(Will visitors understand both options? Investigate samples 30 &amp; 31.)', $output );
 		$this->assertMatchesRegularExpression( '/value="preserve" checked/', $output );
 		$this->assertLessThan( strpos( $output, 'value="lightbox"' ), strpos( $output, 'value="preserve"' ) );
 		$this->assertStringContainsString( 'Migrate', $output );

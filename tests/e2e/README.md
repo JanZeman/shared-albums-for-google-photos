@@ -166,7 +166,7 @@ shortcode parser currently defaults that value to `bottom`.
 
 ### `viewer-fixture`
 
-Eight sliders that mirror Guide samples 31 through 38. Keep this
+Eight sliders that mirror Guide samples 32 through 39. Keep this
 page and the guide-sample tests in the same order so the sample numbers stay
 stable over time.
 
