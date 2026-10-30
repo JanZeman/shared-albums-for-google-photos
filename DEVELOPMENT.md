@@ -24,58 +24,14 @@ plugin outside it. Fixture setup resets test passwords and data, preserves exist
 details, enables the legacy migration UI, and suppresses WordPress notification emails.
 Use a disposable test installation to preserve working-site accounts.
 
-## WordPress.org SVN Setup
+## Building the plugin ZIP
 
-Production plugin releases publish to WordPress.org SVN. The release script
-expects a normal full SVN checkout at:
-
-```text
-release/wp-svn/janzeman-shared-albums-for-google-photos/
-```
-
-Set it up once per clone:
+The public ZIP builder packages the plugin source without release orchestration:
 
 ```bash
-./setup-wporg-svn.sh
+./build-release.sh VERSION OUTPUT_DIRECTORY
 ```
 
-The helper uses the same plain checkout approach that earlier releases used:
-
-```bash
-mkdir -p release/wp-svn
-svn checkout https://plugins.svn.wordpress.org/janzeman-shared-albums-for-google-photos/ \
-  release/wp-svn/janzeman-shared-albums-for-google-photos
-```
-
-It also updates an existing clean checkout. If you keep the SVN checkout
-elsewhere, pass the trunk path when releasing:
-
-```bash
-SVN_TRUNK_PATH=/path/to/janzeman-shared-albums-for-google-photos/trunk ./release.sh X.Y.Z --prod
-```
-
-If a production release fails midway and leaves many `A`, `M`, or `!` entries in
-`release/wp-svn/...`, reset that release-only checkout and recreate it:
-
-```bash
-rm -rf release/wp-svn/janzeman-shared-albums-for-google-photos
-./setup-wporg-svn.sh
-```
-
-## Release Commands
-
-Test release, ZIP only:
-
-```bash
-./release.sh X.Y.Z
-./release.sh X.Y.Z --test
-```
-
-Production release:
-
-```bash
-./release.sh X.Y.Z --prod
-```
-
-The production command runs the complete `./test.sh` suite after Git preflight
-and before building or publishing any release artifacts.
+The version must already match the plugin header, `JZSA_VERSION`, the readme stable tag,
+and a changelog section. Release preparation, tests, WordPress.org SVN operations, and
+publishing are managed by the private venture repository.

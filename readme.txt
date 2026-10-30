@@ -105,6 +105,10 @@ Yes. The gallery is responsive and supports touch gestures, fullscreen viewing, 
 
 No. This plugin is not affiliated with or endorsed by Google LLC. Google Photos™ is a trademark of Google LLC.
 
+= Where can I find the source code? =
+
+The plugin source code and generic ZIP build tool are maintained on [GitHub](https://github.com/JanZeman/shared-albums-for-google-photos).
+
 == Changelog ==
 
 = 2.5.3 =
