@@ -338,6 +338,19 @@ class AdminPagesTest extends TestCase {
 		}
 	}
 
+	public function test_every_guide_sample_has_a_unique_number_independent_anchor(): void {
+		$source = file_get_contents( dirname( __DIR__, 2 ) . '/includes/class-admin-pages.php' );
+		preg_match_all( '/<h3[^>]*>\s*<\?php echo \'Sample \d+: /', $source, $headings );
+		preg_match_all( '/<h3 data-jzsa-anchor="([a-z0-9-]+)">/', $source, $anchors );
+
+		$this->assertNotEmpty( $headings[0] );
+		$this->assertCount( count( $headings[0] ), $anchors[1] );
+		$this->assertSame( $anchors[1], array_values( array_unique( $anchors[1] ) ) );
+		foreach ( $anchors[1] as $anchor ) {
+			$this->assertDoesNotMatchRegularExpression( '/^\d+$/', $anchor );
+		}
+	}
+
 	public function test_shortcode_validation_offers_safe_legacy_migration(): void {
 		$GLOBALS['jzsa_test_current_user_can'] = true;
 		$_POST = array(

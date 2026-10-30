@@ -51,12 +51,12 @@ function jzsaEnsureSampleAnchors() {
 			return;
 		}
 
-		var match = title.textContent && title.textContent.match( /Sample\s+(\d+):/i );
-		if ( ! match ) {
+		var anchor = title.getAttribute( 'data-jzsa-anchor' );
+		if ( ! anchor ) {
 			return;
 		}
 
-		var sampleId = 'jzsa-sample-' + match[ 1 ];
+		var sampleId = 'jzsa-sample-' + anchor;
 		card.id = sampleId;
 		card.setAttribute( 'tabindex', '-1' );
 
