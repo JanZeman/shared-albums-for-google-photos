@@ -14,7 +14,12 @@ $wp_root = getenv( 'WP_ROOT' ) ?: dirname( __DIR__, 5 );
 $wp_load = rtrim( $wp_root, '/\\' ) . '/wp-load.php';
 
 $_SERVER['REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-$_SERVER['HTTP_HOST']      = $_SERVER['HTTP_HOST'] ?? '127.0.0.1:8080';
+$fixture_base_url = getenv( 'PLAYWRIGHT_BASE_URL' );
+$fixture_host     = $fixture_base_url ? parse_url( $fixture_base_url, PHP_URL_HOST ) : null;
+$fixture_port     = $fixture_base_url ? parse_url( $fixture_base_url, PHP_URL_PORT ) : null;
+$_SERVER['HTTP_HOST'] = $_SERVER['HTTP_HOST'] ?? ( $fixture_host
+	? $fixture_host . ( $fixture_port ? ':' . $fixture_port : '' )
+	: '127.0.0.1:8080' );
 $_SERVER['REQUEST_URI']    = $_SERVER['REQUEST_URI'] ?? '/';
 
 if ( ! file_exists( $wp_load ) ) {
@@ -23,6 +28,12 @@ if ( ! file_exists( $wp_load ) ) {
 }
 
 require_once $wp_load;
+
+// Fixture accounts must not send password-change or account-creation emails.
+add_filter( 'pre_wp_mail', '__return_true' );
+
+// Exercise the legacy migration UI on fresh test installations as well.
+update_option( JZSA_VIEWER_MIGRATION_NOTICE_OPTION, '1' );
 
 if ( ! function_exists( 'wp_insert_post' ) ) {
 	fwrite( STDERR, "WordPress did not load correctly.\n" );
@@ -75,14 +86,7 @@ function jzsa_e2e_ensure_admin_user( string $username, string $password, string 
 			throw new RuntimeException( "Failed to create user {$username}: " . $user_id->get_error_message() );
 		}
 	} else {
-		wp_update_user(
-			array(
-				'ID'           => $user_id,
-				'user_email'   => $email,
-				'display_name' => $display_name,
-				'role'         => 'administrator',
-			)
-		);
+		// Preserve existing profile details when resetting a fixture password.
 		wp_set_password( $password, (int) $user_id );
 	}
 

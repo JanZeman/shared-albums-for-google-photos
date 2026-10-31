@@ -195,9 +195,3 @@ composer.lock
 # Playwright
 /playwright-report/
 /test-results/
-
-# Release directory and zip files
-/release/
-
-# Operator-local archive destination; never publish machine paths.
-/.release-archive-dir

@@ -4,7 +4,7 @@ Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.5
 Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 2.5.2
+Stable tag: 2.5.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -105,7 +105,15 @@ Yes. The gallery is responsive and supports touch gestures, fullscreen viewing, 
 
 No. This plugin is not affiliated with or endorsed by Google LLC. Google Photos™ is a trademark of Google LLC.
 
+= Where can I find the source code? =
+
+The plugin source code and generic ZIP build tool are maintained on [GitHub](https://github.com/JanZeman/shared-albums-for-google-photos).
+
 == Changelog ==
+
+= 2.5.3 =
+* Added shuffled photo order with order="shuffle".
+* Improved Guide examples and kept sample links stable when examples are renumbered.
 
 = 2.5.2 =
 * Fixed slider controls visibility for mouse users in touch-reported browsers.

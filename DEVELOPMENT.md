@@ -16,58 +16,22 @@ For focused E2E runs against the local Docker WordPress instance:
 JZSA_E2E_SKIP_SETUP=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:8080 npx playwright test
 ```
 
-## WordPress.org SVN Setup
+Use `COMPOSE_FILE` and `COMPOSE_PROJECT_NAME` when the stack is outside this repository or
+has a different project name. Set `JZSA_E2E_WP_SERVICE` if its WordPress service is not named
+`wordpress`, and set `PLAYWRIGHT_BASE_URL` to the corresponding local URL. Set `WP_ROOT` to
+the in-container WordPress root (for example `/var/www/html`) when a symlink places the
+plugin outside it. Fixture setup resets test passwords and data, preserves existing profile
+details, enables the legacy migration UI, and suppresses WordPress notification emails.
+Use a disposable test installation to preserve working-site accounts.
 
-Production plugin releases publish to WordPress.org SVN. The release script
-expects a normal full SVN checkout at:
+## Building the plugin ZIP
 
-```text
-release/wp-svn/janzeman-shared-albums-for-google-photos/
-```
-
-Set it up once per clone:
-
-```bash
-./setup-wporg-svn.sh
-```
-
-The helper uses the same plain checkout approach that earlier releases used:
+The public ZIP builder packages the plugin source without release orchestration:
 
 ```bash
-mkdir -p release/wp-svn
-svn checkout https://plugins.svn.wordpress.org/janzeman-shared-albums-for-google-photos/ \
-  release/wp-svn/janzeman-shared-albums-for-google-photos
+./build-release.sh VERSION OUTPUT_DIRECTORY
 ```
 
-It also updates an existing clean checkout. If you keep the SVN checkout
-elsewhere, pass the trunk path when releasing:
-
-```bash
-SVN_TRUNK_PATH=/path/to/janzeman-shared-albums-for-google-photos/trunk ./release.sh X.Y.Z --prod
-```
-
-If a production release fails midway and leaves many `A`, `M`, or `!` entries in
-`release/wp-svn/...`, reset that release-only checkout and recreate it:
-
-```bash
-rm -rf release/wp-svn/janzeman-shared-albums-for-google-photos
-./setup-wporg-svn.sh
-```
-
-## Release Commands
-
-Test release, ZIP only:
-
-```bash
-./release.sh X.Y.Z
-./release.sh X.Y.Z --test
-```
-
-Production release:
-
-```bash
-./release.sh X.Y.Z --prod
-```
-
-The production command runs the complete `./test.sh` suite after Git preflight
-and before building or publishing any release artifacts.
+The version must already match the plugin header, `JZSA_VERSION`, the readme stable tag,
+and a changelog section. Release preparation, tests, WordPress.org SVN operations, and
+publishing are managed by the private venture repository.

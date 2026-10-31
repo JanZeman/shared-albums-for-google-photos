@@ -477,7 +477,7 @@ test.describe('Shortcode validation - parameter values', () => {
             '?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R';
         await setShortcode(
             page,
-            `[jzsa-album link="${link.replace('?key=', '?\n  key=')}" mode="slider" corner-radius="16"]`,
+            `[jzsa-album link="${link.replace('?key=', '?\n  key=')}" mode="slider" fullscreen-toggle="button-only" corner-radius="16"]`,
         );
         const area = page.locator(VALIDATION);
         await expect(area).toContainText(
