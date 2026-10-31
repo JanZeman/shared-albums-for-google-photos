@@ -80,6 +80,13 @@ class JZSA_Shared_Albums {
 	const MEDIA_FETCH_WAIT = 10;
 
 	/**
+	 * How the last resolve_media_url() call got its URL: hit, wait or fetch.
+	 *
+	 * @var string
+	 */
+	private $media_status = '';
+
+	/**
 	 * Default gallery dimensions
 	 *
 	 * @var int
@@ -2258,18 +2265,28 @@ class JZSA_Shared_Albums {
 		$lock_key = $map_key . '_lock';
 		$map      = get_transient( $map_key );
 
-		if ( false === $map && false !== get_transient( $lock_key ) ) {
-			$deadline = microtime( true ) + self::MEDIA_FETCH_WAIT;
+		$this->media_status = false === $map ? 'fetch' : 'hit';
+
+		// add_option() is atomic: only one request wins the lock and re-fetches the
+		// album; the others wait for its map instead of all calling iCloud at once.
+		if ( false === $map && ! add_option( $lock_key, time(), '', false ) ) {
+			if ( (int) get_option( $lock_key, 0 ) < time() - self::MEDIA_FETCH_WAIT - 5 ) {
+				delete_option( $lock_key ); // Stale lock left by a request that died mid-fetch.
+			}
+			$this->media_status = 'wait';
+			$deadline           = microtime( true ) + self::MEDIA_FETCH_WAIT;
 			while ( false === $map && microtime( true ) < $deadline ) {
 				usleep( 250000 );
 				$map = get_transient( $map_key );
 			}
+			if ( false === $map ) {
+				return '';
+			}
 		}
 
 		if ( false === $map ) {
-			set_transient( $lock_key, 1, self::MEDIA_FETCH_WAIT + 5 );
 			$result = $this->icloud_provider->fetch_album( $album_url );
-			delete_transient( $lock_key );
+			delete_option( $lock_key );
 			if ( empty( $result['success'] ) ) {
 				return '';
 			}
@@ -2379,7 +2396,10 @@ class JZSA_Shared_Albums {
 		$rendition = isset( $_GET['r'] ) ? preg_replace( '/[^A-Za-z0-9]/', '', sanitize_text_field( wp_unslash( $_GET['r'] ) ) ) : '';
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
-		$url = $this->resolve_media_url( $album_url, $id, $rendition );
+		$started = microtime( true );
+		$url     = $this->resolve_media_url( $album_url, $id, $rendition );
+		// Visible in the browser's DevTools (Network > Timing): hit, wait or fetch, and the time spent.
+		header( sprintf( 'Server-Timing: jzsa;desc="%s";dur=%.1f', $this->media_status, ( microtime( true ) - $started ) * 1000 ) );
 		if ( '' === $url ) {
 			status_header( 404 );
 			nocache_headers();
