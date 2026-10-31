@@ -162,7 +162,7 @@ class JZSA_ICloud_Provider {
 
 		$short_guid = $this->extract_short_guid( $url );
 		if ( '' !== $short_guid ) {
-			return $this->fetch_cloudkit_album( $short_guid );
+			return $this->with_media_refs( $this->fetch_cloudkit_album( $short_guid ), $url );
 		}
 
 		$token  = $this->extract_token( $url );
@@ -197,7 +197,7 @@ class JZSA_ICloud_Provider {
 			return $this->error( __( 'No photos found in album', 'janzeman-shared-albums-for-google-photos' ) );
 		}
 
-		return array(
+		$result = array(
 			'success'       => true,
 			'is_deprecated' => false,
 			'data'          => array(
@@ -207,6 +207,8 @@ class JZSA_ICloud_Provider {
 			),
 			'error'         => null,
 		);
+
+		return $this->with_media_refs( $result, $url );
 	}
 
 	/**
@@ -257,6 +259,8 @@ class JZSA_ICloud_Provider {
 			$video    = '';
 			$video_w  = 0;
 
+			$video_rendition = '';
+
 			foreach ( $photo['derivatives'] as $key => $derivative ) {
 				$checksum = isset( $derivative['checksum'] ) ? $derivative['checksum'] : '';
 				if ( '' === $checksum || empty( $assets[ $checksum ] ) ) {
@@ -269,16 +273,18 @@ class JZSA_ICloud_Provider {
 				// Video derivatives are keyed by quality ("720p", "360p"); the poster frame is an image.
 				if ( $is_video && 'PosterFrame' !== $key ) {
 					if ( $width >= $video_w ) {
-						$video   = $assets[ $checksum ];
-						$video_w = $width;
+						$video           = $assets[ $checksum ];
+						$video_w         = $width;
+						$video_rendition = (string) $key;
 					}
 					continue;
 				}
 
 				$sources[] = array(
-					'url'    => $assets[ $checksum ],
-					'width'  => $width,
-					'height' => $height,
+					'url'       => $assets[ $checksum ],
+					'width'     => $width,
+					'height'    => $height,
+					'rendition' => (string) $key,
 				);
 			}
 
@@ -304,7 +310,8 @@ class JZSA_ICloud_Provider {
 			);
 
 			if ( 'video' === $item['type'] ) {
-				$item['video'] = $video;
+				$item['video']           = $video;
+				$item['video_rendition'] = $video_rendition;
 			}
 			if ( isset( $photo['caption'] ) && '' !== trim( (string) $photo['caption'] ) ) {
 				$item['description'] = trim( (string) $photo['caption'] );
@@ -469,6 +476,8 @@ class JZSA_ICloud_Provider {
 			$video    = '';
 			$video_w  = -1;
 
+			$video_rendition = '';
+
 			foreach ( $master as $key => $field ) {
 				if ( ! preg_match( '/^res(.+)Res$/', $key, $m ) || empty( $field['value']['downloadURL'] ) ) {
 					continue;
@@ -478,13 +487,14 @@ class JZSA_ICloud_Provider {
 				$type   = isset( $master[ 'res' . $name . 'FileType' ]['value'] ) ? (string) $master[ 'res' . $name . 'FileType' ]['value'] : '';
 				$width  = isset( $master[ 'res' . $name . 'Width' ]['value'] ) ? (int) $master[ 'res' . $name . 'Width' ]['value'] : 0;
 				$height = isset( $master[ 'res' . $name . 'Height' ]['value'] ) ? (int) $master[ 'res' . $name . 'Height' ]['value'] : 0;
-				$url    = str_replace( '${f}', rawurlencode( '' !== $filename ? $filename : 'media' ), $field['value']['downloadURL'] );
+				$url    = str_replace( '${f}', rawurlencode( $this->rendition_filename( $filename, $type ) ), $field['value']['downloadURL'] );
 
 				if ( in_array( $type, array( 'com.apple.quicktime-movie', 'public.mpeg-4' ), true ) ) {
 					$rank = 'Original' === $name ? 0 : $width;
 					if ( $rank > $video_w ) {
-						$video   = $url;
-						$video_w = $rank;
+						$video           = $url;
+						$video_w         = $rank;
+						$video_rendition = $name;
 					}
 					continue;
 				}
@@ -494,9 +504,10 @@ class JZSA_ICloud_Provider {
 				}
 
 				$sources[] = array(
-					'url'    => $url,
-					'width'  => $width,
-					'height' => $height,
+					'url'       => $url,
+					'width'     => $width,
+					'height'    => $height,
+					'rendition' => $name,
 				);
 			}
 
@@ -522,7 +533,8 @@ class JZSA_ICloud_Provider {
 			);
 
 			if ( '' !== $video ) {
-				$item['video'] = $video;
+				$item['video']           = $video;
+				$item['video_rendition'] = $video_rendition;
 			}
 
 			$batch_id = isset( $fields['assetBatchId']['value'] ) ? (string) $fields['assetBatchId']['value'] : '';
@@ -538,6 +550,53 @@ class JZSA_ICloud_Provider {
 		}
 
 		return $items;
+	}
+
+	/**
+	 * Tag every item with the album it came from.
+	 *
+	 * iCloud media URLs expire after about 15 minutes, so the orchestrator
+	 * renders stable redirect URLs built from this reference plus the
+	 * rendition name instead of the URLs themselves.
+	 *
+	 * @param array  $result    Fetch result.
+	 * @param string $album_url Album URL as given in the shortcode.
+	 * @return array
+	 */
+	private function with_media_refs( $result, $album_url ) {
+		if ( empty( $result['success'] ) ) {
+			return $result;
+		}
+
+		foreach ( $result['data']['photos'] as &$item ) {
+			$item['media_album'] = $album_url;
+		}
+		unset( $item );
+
+		return $result;
+	}
+
+	/**
+	 * File name to put into a CloudKit download URL.
+	 *
+	 * Apple derives the response Content-Type from this name, so a video's
+	 * JPEG poster must not keep the ".mp4" of the original file name.
+	 *
+	 * @param string $filename Original file name ('' when unknown).
+	 * @param string $type     Rendition file type (UTI).
+	 * @return string
+	 */
+	private function rendition_filename( $filename, $type ) {
+		$extensions = array(
+			'public.jpeg'               => 'jpg',
+			'public.png'                => 'png',
+			'com.compuserve.gif'        => 'gif',
+			'public.mpeg-4'             => 'mp4',
+			'com.apple.quicktime-movie' => 'mov',
+		);
+		$base       = '' !== $filename ? pathinfo( $filename, PATHINFO_FILENAME ) : 'media';
+
+		return isset( $extensions[ $type ] ) ? $base . '.' . $extensions[ $type ] : ( '' !== $filename ? $filename : 'media' );
 	}
 
 	/**

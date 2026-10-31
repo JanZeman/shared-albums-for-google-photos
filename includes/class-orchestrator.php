@@ -56,6 +56,32 @@ class JZSA_Shared_Albums {
 	const BACKUP_CACHE_TTL = 7 * DAY_IN_SECONDS;
 
 	/**
+	 * TTL in seconds for the fresh media URL map behind iCloud redirect URLs.
+	 *
+	 * iCloud media URLs expire about 15 minutes after the album was fetched.
+	 * The map plus the browser's cached redirect (MEDIA_REDIRECT_MAX_AGE) must
+	 * stay below that.
+	 *
+	 * @var int
+	 */
+	const MEDIA_URL_TTL = 480;
+
+	/**
+	 * Seconds a browser may reuse a media redirect.
+	 *
+	 * @var int
+	 */
+	const MEDIA_REDIRECT_MAX_AGE = 300;
+
+	/**
+	 * Seconds a media redirect waits for another request that is already
+	 * re-fetching the same album.
+	 *
+	 * @var int
+	 */
+	const MEDIA_FETCH_WAIT = 10;
+
+	/**
 	 * Default gallery dimensions
 	 *
 	 * @var int
@@ -202,6 +228,7 @@ class JZSA_Shared_Albums {
 		add_action( 'save_post', array( $this, 'clear_cache' ) );
 		add_action( 'wp_ajax_jzsa_download_image', array( $this, 'handle_download_image' ) );
 		add_action( 'wp_ajax_nopriv_jzsa_download_image', array( $this, 'handle_download_image' ) );
+		add_action( 'init', array( $this, 'handle_media_redirect' ), 1 );
 		add_action( 'wp_ajax_jzsa_refresh_urls', array( $this, 'handle_refresh_urls' ) );
 		add_action( 'wp_ajax_nopriv_jzsa_refresh_urls', array( $this, 'handle_refresh_urls' ) );
 		add_action( 'wp_ajax_jzsa_shortcode_preview', array( $this, 'handle_shortcode_preview' ) );
@@ -2161,20 +2188,146 @@ class JZSA_Shared_Albums {
 	 * Used for sources that cannot resize on the fly (iCloud). Falls back to
 	 * the largest rendition when none is big enough.
 	 *
-	 * @param array $sources Renditions sorted by width ascending: url, width, height.
-	 * @param int   $width   Requested width.
-	 * @param int   $height  Requested height.
+	 * @param array $item   Media item with 'sources' sorted by width ascending: url, width, height, rendition.
+	 * @param int   $width  Requested width.
+	 * @param int   $height Requested height.
 	 * @return string URL.
 	 */
-	private function pick_fixed_source( $sources, $width, $height ) {
-		foreach ( $sources as $source ) {
+	private function pick_fixed_source( $item, $width, $height ) {
+		$picked = end( $item['sources'] );
+		foreach ( $item['sources'] as $source ) {
 			if ( (int) $source['width'] >= (int) $width || (int) $source['height'] >= (int) $height ) {
-				return $source['url'];
+				$picked = $source;
+				break;
 			}
 		}
 
-		$largest = end( $sources );
-		return $largest['url'];
+		return $this->stable_media_url( $item, isset( $picked['rendition'] ) ? $picked['rendition'] : '', $picked['url'] );
+	}
+
+	/**
+	 * Stable redirect URL for an expiring media URL (iCloud).
+	 *
+	 * Items without an album reference or rendition name keep their own URL.
+	 *
+	 * @param array  $item      Media item.
+	 * @param string $rendition Rendition name from the provider.
+	 * @param string $fallback  Direct media URL.
+	 * @return string
+	 */
+	private function stable_media_url( $item, $rendition, $fallback ) {
+		if ( empty( $item['media_album'] ) || empty( $item['id'] ) || '' === (string) $rendition ) {
+			return $fallback;
+		}
+
+		return home_url( '/' ) . '?' . http_build_query(
+			array(
+				'jzsa_media' => '1',
+				'album'      => $item['media_album'],
+				'id'         => $item['id'],
+				'r'          => $rendition,
+			),
+			'',
+			'&',
+			PHP_QUERY_RFC3986
+		);
+	}
+
+	/**
+	 * Find the current direct URL for one rendition of one album item.
+	 *
+	 * Only albums the plugin has rendered (album cache or its backup present)
+	 * are served, and only to iCloud media hosts, so the endpoint cannot be
+	 * used as an open redirect. Fresh URLs are kept for MEDIA_URL_TTL; when
+	 * they are gone the album is fetched again, once for all waiting requests.
+	 *
+	 * @param string $album_url Album URL.
+	 * @param string $id        Item ID.
+	 * @param string $rendition Rendition name.
+	 * @return string Direct URL, or '' when unknown.
+	 */
+	public function resolve_media_url( $album_url, $id, $rendition ) {
+		if ( '' === $album_url || '' === $id || '' === $rendition || ! JZSA_ICloud_Provider::is_icloud_url( $album_url ) ) {
+			return '';
+		}
+		if ( false === get_transient( $this->get_cache_key( $album_url ) ) && false === get_transient( $this->get_backup_cache_key( $album_url ) ) ) {
+			return '';
+		}
+
+		$map_key  = 'jzsa_media_' . md5( $album_url );
+		$lock_key = $map_key . '_lock';
+		$map      = get_transient( $map_key );
+
+		if ( false === $map && false !== get_transient( $lock_key ) ) {
+			$deadline = microtime( true ) + self::MEDIA_FETCH_WAIT;
+			while ( false === $map && microtime( true ) < $deadline ) {
+				usleep( 250000 );
+				$map = get_transient( $map_key );
+			}
+		}
+
+		if ( false === $map ) {
+			set_transient( $lock_key, 1, self::MEDIA_FETCH_WAIT + 5 );
+			$result = $this->icloud_provider->fetch_album( $album_url );
+			delete_transient( $lock_key );
+			if ( empty( $result['success'] ) ) {
+				return '';
+			}
+
+			$map = array();
+			foreach ( $result['data']['photos'] as $item ) {
+				if ( empty( $item['id'] ) ) {
+					continue;
+				}
+				foreach ( $item['sources'] ?? array() as $source ) {
+					if ( isset( $source['rendition'] ) ) {
+						$map[ $item['id'] ][ $source['rendition'] ] = $source['url'];
+					}
+				}
+				if ( ! empty( $item['video_rendition'] ) && ! empty( $item['video'] ) ) {
+					$map[ $item['id'] ][ $item['video_rendition'] ] = $item['video'];
+				}
+			}
+			set_transient( $map_key, $map, self::MEDIA_URL_TTL );
+		}
+
+		$url  = isset( $map[ $id ][ $rendition ] ) ? (string) $map[ $id ][ $rendition ] : '';
+		$host = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+		if ( 'https' !== wp_parse_url( $url, PHP_URL_SCHEME ) || '.icloud-content.com' !== substr( $host, -strlen( '.icloud-content.com' ) ) ) {
+			return '';
+		}
+
+		return $url;
+	}
+
+	/**
+	 * Answer a stable media URL (?jzsa_media=1) with a redirect to the current
+	 * direct URL. Runs early on init to keep the per-image cost low.
+	 *
+	 * @return void
+	 */
+	public function handle_media_redirect() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- public, read-only media redirect; cached by browsers.
+		if ( ! isset( $_GET['jzsa_media'] ) ) {
+			return;
+		}
+
+		$album_url = isset( $_GET['album'] ) ? esc_url_raw( wp_unslash( $_GET['album'] ) ) : '';
+		$id        = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '';
+		$rendition = isset( $_GET['r'] ) ? preg_replace( '/[^A-Za-z0-9]/', '', sanitize_text_field( wp_unslash( $_GET['r'] ) ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		$url = $this->resolve_media_url( $album_url, $id, $rendition );
+		if ( '' === $url ) {
+			status_header( 404 );
+			nocache_headers();
+			exit;
+		}
+
+		header( 'Cache-Control: public, max-age=' . self::MEDIA_REDIRECT_MAX_AGE );
+		// phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- host checked in resolve_media_url().
+		wp_redirect( $url, 302, 'Shared Albums' );
+		exit;
 	}
 
 	/**
@@ -2223,15 +2376,15 @@ class JZSA_Shared_Albums {
 			if ( is_array( $item ) && ! empty( $item['sources'] ) && is_array( $item['sources'] ) ) {
 				// Fixed renditions (iCloud): choose sizes instead of building Google suffixes.
 				$photo = array(
-					'full'  => $this->pick_fixed_source( $item['sources'], $full_width, $full_height ),
-					'thumb' => $this->pick_fixed_source( $item['sources'], self::DEFAULT_THUMB_WIDTH, self::DEFAULT_THUMB_HEIGHT ),
+					'full'  => $this->pick_fixed_source( $item, $full_width, $full_height ),
+					'thumb' => $this->pick_fixed_source( $item, self::DEFAULT_THUMB_WIDTH, self::DEFAULT_THUMB_HEIGHT ),
 				);
 				if ( $preview_width && $preview_height ) {
-					$photo['preview'] = $this->pick_fixed_source( $item['sources'], $preview_width, $preview_height );
+					$photo['preview'] = $this->pick_fixed_source( $item, $preview_width, $preview_height );
 				}
 				if ( 'video' === $type && ! empty( $item['video'] ) ) {
 					$photo['type']  = 'video';
-					$photo['video'] = $item['video'];
+					$photo['video'] = $this->stable_media_url( $item, $item['video_rendition'] ?? '', $item['video'] );
 				}
 			} else {
 				$photo = array(

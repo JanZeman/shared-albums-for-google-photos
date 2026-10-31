@@ -27,6 +27,7 @@ class ICloudProviderTest extends TestCase {
 		$this->provider                       = new JZSA_ICloud_Provider();
 		$GLOBALS['jzsa_test_http_responses'] = array();
 		$GLOBALS['jzsa_test_http_requests']  = array();
+		$GLOBALS['jzsa_test_transients']     = array();
 	}
 
 	private function fixture( string $name ): string {
@@ -133,15 +134,16 @@ class ICloudProviderTest extends TestCase {
 
 		$photos = $method->invoke( $orchestrator, $items, 1920, 1080, 300, 200 );
 
+		// Expiring iCloud URLs are replaced by stable redirect URLs naming the picked rendition.
 		// 400x400 thumbs do not fit the 342px rendition, so the next one up is used.
-		$this->assertSame( 'https://cvws.icloud-content.com/S/img1-large.jpg?e=1', $photos[0]['thumb'] );
-		$this->assertSame( 'https://cvws.icloud-content.com/S/img1-small.jpg?e=1', $photos[0]['preview'] );
-		$this->assertSame( 'https://cvws.icloud-content.com/S/img1-large.jpg?e=1', $photos[0]['full'] );
+		$this->assertSame( $this->mediaUrl( 'GUID-IMAGE-1', '2049' ), $photos[0]['thumb'] );
+		$this->assertSame( $this->mediaUrl( 'GUID-IMAGE-1', '342' ), $photos[0]['preview'] );
+		$this->assertSame( $this->mediaUrl( 'GUID-IMAGE-1', '2049' ), $photos[0]['full'] );
 		$this->assertSame( 'Sunset at the lake', $photos[0]['description'] );
 		// Only a small rendition exists: it is used for every size.
-		$this->assertSame( 'https://cvws.icloud-content.com/S/img2-small.jpg?e=1', $photos[1]['full'] );
+		$this->assertSame( $this->mediaUrl( 'GUID-IMAGE-2', '342' ), $photos[1]['full'] );
 		$this->assertSame( 'video', $photos[2]['type'] );
-		$this->assertSame( 'https://cvws.icloud-content.com/S/vid1-720.mp4?e=1', $photos[2]['video'] );
+		$this->assertSame( $this->mediaUrl( 'GUID-VIDEO-1', '720p' ), $photos[2]['video'] );
 		$this->assertStringNotContainsString( '=w', $photos[2]['full'] );
 	}
 
@@ -196,14 +198,14 @@ class ICloudProviderTest extends TestCase {
 
 		// HEIC originals cannot be shown in browsers, so the JPEG renditions are used.
 		$this->assertSame( array( 360, 3024 ), array_column( $photos[1]['sources'], 'width' ) );
-		$this->assertSame( 'https://cvws.icloud-content.com/B/full2/IMG_2.HEIC?o=1', $photos[1]['url'] );
+		$this->assertSame( 'https://cvws.icloud-content.com/B/full2/IMG_2.jpg?o=1', $photos[1]['url'] );
 		// Captions come from the upload post whose name is the asset's batch ID.
 		$this->assertSame( 'Dog', $photos[1]['description'] );
 
 		$this->assertSame( 'video', $photos[2]['type'] );
 		// The transcoded rendition wins over the larger original.
-		$this->assertSame( 'https://cvws.icloud-content.com/B/vmed3/IMG_3.MOV?o=1', $photos[2]['video'] );
-		$this->assertSame( 'https://cvws.icloud-content.com/B/poster3/IMG_3.MOV?o=1', $photos[2]['url'] );
+		$this->assertSame( 'https://cvws.icloud-content.com/B/vmed3/IMG_3.mov?o=1', $photos[2]['video'] );
+		$this->assertSame( 'https://cvws.icloud-content.com/B/poster3/IMG_3.jpg?o=1', $photos[2]['url'] );
 		$this->assertArrayNotHasKey( 'description', $photos[2] );
 	}
 
@@ -217,5 +219,51 @@ class ICloudProviderTest extends TestCase {
 
 		$this->assertFalse( $result['success'] );
 		$this->assertCount( 1, $GLOBALS['jzsa_test_http_requests'] );
+	}
+
+	private function mediaUrl( string $id, string $rendition ): string {
+		return 'https://site.example/?jzsa_media=1&album=' . rawurlencode( self::ALBUM_URL ) . '&id=' . $id . '&r=' . $rendition;
+	}
+
+	private function cacheCloudKitAlbum(): void {
+		$GLOBALS['jzsa_test_transients'][ 'jzsa_album_' . md5( self::CLOUDKIT_ALBUM_URL ) ] = array( 'photos' => array() );
+	}
+
+	public function test_media_redirect_resolves_fresh_url_and_reuses_it(): void {
+		$orchestrator = new JZSA_Shared_Albums( JZSA_PLUGIN_FILE );
+		$this->stubCloudKitAlbum();
+		$this->cacheCloudKitAlbum();
+
+		$url = $orchestrator->resolve_media_url( self::CLOUDKIT_ALBUM_URL, 'A1', 'JPEGThumb' );
+		$this->assertSame( 'https://cvws.icloud-content.com/B/thumb1/IMG%201.jpg?o=1', $url );
+		$requests = count( $GLOBALS['jzsa_test_http_requests'] );
+
+		$this->assertSame(
+			'https://cvws.icloud-content.com/B/vmed3/IMG_3.mov?o=1',
+			$orchestrator->resolve_media_url( self::CLOUDKIT_ALBUM_URL, 'A3', 'VidMed' )
+		);
+		// The second lookup is served from the fresh URL map.
+		$this->assertCount( $requests, $GLOBALS['jzsa_test_http_requests'] );
+
+		$this->assertSame( '', $orchestrator->resolve_media_url( self::CLOUDKIT_ALBUM_URL, 'A1', 'Missing' ) );
+	}
+
+	public function test_media_redirect_refuses_albums_the_plugin_has_not_rendered(): void {
+		$orchestrator = new JZSA_Shared_Albums( JZSA_PLUGIN_FILE );
+		$this->stubCloudKitAlbum();
+
+		$this->assertSame( '', $orchestrator->resolve_media_url( self::CLOUDKIT_ALBUM_URL, 'A1', 'JPEGThumb' ) );
+		$this->assertSame( '', $orchestrator->resolve_media_url( 'https://photos.google.com/share/AF1Qip?key=abc', 'A1', 'JPEGThumb' ) );
+		$this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
+	}
+
+	public function test_media_redirect_only_targets_icloud_media_hosts(): void {
+		$orchestrator = new JZSA_Shared_Albums( JZSA_PLUGIN_FILE );
+		$this->cacheCloudKitAlbum();
+		$GLOBALS['jzsa_test_transients'][ 'jzsa_media_' . md5( self::CLOUDKIT_ALBUM_URL ) ] = array(
+			'A1' => array( 'JPEGThumb' => 'https://evil.example/x.jpg' ),
+		);
+
+		$this->assertSame( '', $orchestrator->resolve_media_url( self::CLOUDKIT_ALBUM_URL, 'A1', 'JPEGThumb' ) );
 	}
 }
