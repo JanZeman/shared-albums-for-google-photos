@@ -470,7 +470,7 @@ class JZSA_Shared_Albums {
 				return $this->renderer->render( $config );
 			}
 
-			return $this->render_fetch_error( $result['error'] );
+			return $this->render_fetch_error( $result['error'], $album_url );
 		}
 
 		$fresh_cache_data = array(
@@ -2676,10 +2676,11 @@ class JZSA_Shared_Albums {
 	/**
 	 * Render error message for fetch failures
 	 *
-	 * @param string $error Error message
+	 * @param string $error     Error message
+	 * @param string $album_url Album URL, used to word the message for its source
 	 * @return string HTML
 	 */
-	private function render_fetch_error( $error ) {
+	private function render_fetch_error( $error, $album_url = '' ) {
 		// Signal to page-caching plugins that they must not store this transient
 		// failure response. The next visitor should always get a fresh attempt.
 		if ( ! headers_sent() && ! wp_doing_ajax() ) {
@@ -2688,6 +2689,10 @@ class JZSA_Shared_Albums {
 				// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Standard cache-plugin interoperability constant.
 				define( 'DONOTCACHEPAGE', true );
 			}
+		}
+
+		if ( JZSA_ICloud_Provider::is_icloud_url( $album_url ) ) {
+			return $this->render_icloud_fetch_error( $error );
 		}
 
 		if ( strpos( $error, 'Invalid' ) !== false ) {
@@ -2714,6 +2719,36 @@ class JZSA_Shared_Albums {
 			__( 'The album might be private or the link might be incorrect. Make sure the album is publicly shared. ', 'janzeman-shared-albums-for-google-photos' ) .
 				' <a href="https://support.google.com/photos/answer/6131416" target="_blank" rel="noopener">' .
 					esc_html__( 'Check album sharing settings', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
+		);
+	}
+
+	/**
+	 * Render error message for iCloud fetch failures.
+	 *
+	 * @param string $error Error message from JZSA_ICloud_Provider.
+	 * @return string HTML
+	 */
+	private function render_icloud_fetch_error( $error ) {
+		if ( strpos( $error, 'Invalid' ) !== false ) {
+			return $this->renderer->render_error(
+				__( 'Invalid iCloud Album URL', 'janzeman-shared-albums-for-google-photos' ),
+				__( 'The URL provided is not a valid iCloud shared album link.', 'janzeman-shared-albums-for-google-photos' ),
+				__( 'In the Photos app, open the shared album, turn on sharing for anyone with the link, and copy the album link: https://photos.icloud.com/shared/album/...', 'janzeman-shared-albums-for-google-photos' )
+			);
+		}
+
+		if ( strpos( $error, 'No photos' ) !== false ) {
+			return $this->renderer->render_error(
+				__( 'No Photos Found', 'janzeman-shared-albums-for-google-photos' ),
+				__( 'No photos were found in this album.', 'janzeman-shared-albums-for-google-photos' ),
+				__( 'The album might be empty or the sharing link might have been turned off. Please check the album and try again.', 'janzeman-shared-albums-for-google-photos' )
+			);
+		}
+
+		return $this->renderer->render_error(
+			__( 'Unable to Load Album', 'janzeman-shared-albums-for-google-photos' ),
+			__( 'Could not fetch the iCloud shared album.', 'janzeman-shared-albums-for-google-photos' ),
+			__( 'Make sure the shared album can be viewed by anyone with the link, and that the link is correct.', 'janzeman-shared-albums-for-google-photos' )
 		);
 	}
 

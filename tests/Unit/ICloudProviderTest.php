@@ -322,4 +322,13 @@ class ICloudProviderTest extends TestCase {
 		$this->assertSame( 0, $method->invoke( $orchestrator, 'https://cvws.icloud-content.com/B/x/a.jpg?e=' . ( time() + 60 ) ) );
 		$this->assertSame( 480, $method->invoke( $orchestrator, 'https://cvws.icloud-content.com/B/x/a.jpg?o=1' ) );
 	}
+
+	public function test_icloud_fetch_errors_do_not_mention_google(): void {
+		$orchestrator = new JZSA_Shared_Albums( JZSA_PLUGIN_FILE );
+
+		$html = $orchestrator->handle_shortcode( array( 'link' => 'https://photos.icloud.com/shared/album/' ) );
+
+		$this->assertStringContainsString( 'Invalid iCloud Album URL', $html );
+		$this->assertStringNotContainsString( 'Google', $html );
+	}
 }

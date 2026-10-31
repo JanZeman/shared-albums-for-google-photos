@@ -235,7 +235,7 @@ class JZSA_Renderer {
 			$html .= sprintf(
 				'<a href="%s" target="_blank" rel="noopener noreferrer" class="swiper-button-external-link" title="%s"></a>',
 				esc_url( $config['album-url'] ),
-				esc_attr( $i18n['openInGooglePhotos'] )
+				esc_attr( JZSA_ICloud_Provider::is_icloud_url( $config['album-url'] ) ? $i18n['openInICloudPhotos'] : $i18n['openInGooglePhotos'] )
 			);
 		}
 

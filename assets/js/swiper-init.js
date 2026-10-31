@@ -30,6 +30,21 @@
 		return jzsaI18n(key).replace('%d', String(value));
 	}
 
+	/**
+	 * Label for the "open album" link button, naming the album's source.
+	 *
+	 * @param {string} albumUrl Album URL.
+	 * @param {boolean} long    true for "Open album in ...", false for "Open in ...".
+	 * @return {string}
+	 */
+	function albumLinkLabel(albumUrl, long) {
+		var isICloud = /^https?:\/\/(?:www\.|photos\.)?icloud\.com\//i.test(albumUrl || '');
+		if (isICloud) {
+			return jzsaI18n(long ? 'openAlbumICloudPhotos' : 'openInICloudPhotos');
+		}
+		return jzsaI18n(long ? 'openAlbumGooglePhotos' : 'openInGooglePhotos');
+	}
+
 	// Whether to speculatively warm the browser cache with full-resolution images before any
 	// viewer is opened. PHP turns this off in the admin, where no viewer is ever opened.
 	// wp_localize_script casts booleans to strings ("1" and ""), hence the truthiness check
@@ -3408,7 +3423,7 @@
                 }
                 if (showTileLink) {
                     tileOverlayButtons +=
-                        '<a href="' + carouselAlbumUrl + '" target="_blank" rel="noopener noreferrer" class="swiper-button-external-link jzsa-carousel-slide-overlay-btn jzsa-carousel-slide-link-btn jzsa-carousel-slide-left-primary" title="' + jzsaEscapeAttr(jzsaI18n('openInGooglePhotos')) + '" aria-label="' + jzsaEscapeAttr(jzsaI18n('openAlbumGooglePhotos')) + '"></a>';
+                        '<a href="' + carouselAlbumUrl + '" target="_blank" rel="noopener noreferrer" class="swiper-button-external-link jzsa-carousel-slide-overlay-btn jzsa-carousel-slide-link-btn jzsa-carousel-slide-left-primary" title="' + jzsaEscapeAttr(albumLinkLabel(carouselAlbumUrl, false)) + '" aria-label="' + jzsaEscapeAttr(albumLinkLabel(carouselAlbumUrl, true)) + '"></a>';
                 }
                 if (showTileDownload) {
                     var downloadUrl = isVideo
@@ -4483,7 +4498,9 @@
             var normalized = String(url).split('?')[0].toLowerCase();
             if (
                 normalized.indexOf('video-downloads.googleusercontent.com') !== -1 ||
-                /\.(mp4|mov|m4v|webm|3gp)$/i.test(normalized)
+                /\.(mp4|mov|m4v|webm|3gp)$/i.test(normalized) ||
+                // Stable iCloud media URLs name a video rendition ("VidMed", or "720p" for old links).
+                /[?&]jzsa_media=1(&|$)/.test(String(url)) && /[?&]r=(Vid[A-Za-z]*|\d+p)(&|$)/.test(String(url))
             ) {
                 return 'video';
             }
@@ -7321,7 +7338,7 @@
         var albumUrl = $galleryContainer.attr('data-album-url') || '';
         if ((showLink || showFullscreenLink || showLightboxLink) && albumUrl) {
             html += '<a href="' + albumUrl + '" target="_blank" rel="noopener noreferrer" ' +
-                'class="swiper-button-external-link" title="' + jzsaEscapeAttr(jzsaI18n('openInGooglePhotos')) + '"></a>';
+                'class="swiper-button-external-link" title="' + jzsaEscapeAttr(albumLinkLabel(albumUrl, false)) + '"></a>';
         }
 
         // Download button (same visibility split logic as link button).
@@ -7682,7 +7699,7 @@
 
             var thumbOverlayBtns = '';
             if (showThumbLink && thumbAlbumUrl) {
-                thumbOverlayBtns += '<a href="' + thumbAlbumUrl + '" target="_blank" rel="noopener noreferrer" class="jzsa-gallery-thumb-link-btn swiper-button-external-link" tabindex="0" aria-label="' + jzsaEscapeAttr(jzsaI18n('openAlbumGooglePhotos')) + '"></a>';
+                thumbOverlayBtns += '<a href="' + thumbAlbumUrl + '" target="_blank" rel="noopener noreferrer" class="jzsa-gallery-thumb-link-btn swiper-button-external-link" tabindex="0" aria-label="' + jzsaEscapeAttr(albumLinkLabel(thumbAlbumUrl, true)) + '"></a>';
             }
             if (showThumbDownload) {
                 thumbOverlayBtns += '<div class="jzsa-gallery-thumb-download-btn swiper-button-download" role="button" tabindex="0" data-index="' + globalIndex + '" data-media-type="' + mediaLabel + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n('downloadMedia', globalIndex + 1)) + '"></div>';
@@ -7811,7 +7828,7 @@
 
                 var thumbOverlayBtns = '';
                 if (showThumbLink && thumbAlbumUrl) {
-                    thumbOverlayBtns += '<a href="' + thumbAlbumUrl + '" target="_blank" rel="noopener noreferrer" class="jzsa-gallery-thumb-link-btn swiper-button-external-link" tabindex="0" aria-label="' + jzsaEscapeAttr(jzsaI18n('openAlbumGooglePhotos')) + '"></a>';
+                    thumbOverlayBtns += '<a href="' + thumbAlbumUrl + '" target="_blank" rel="noopener noreferrer" class="jzsa-gallery-thumb-link-btn swiper-button-external-link" tabindex="0" aria-label="' + jzsaEscapeAttr(albumLinkLabel(thumbAlbumUrl, true)) + '"></a>';
                 }
                 if (showThumbDownload) {
                     thumbOverlayBtns += '<div class="jzsa-gallery-thumb-download-btn swiper-button-download" role="button" tabindex="0" data-index="' + item.index + '" data-media-type="' + mediaLabel + '" aria-label="' + jzsaEscapeAttr(jzsaFormatI18n('downloadMedia', item.index + 1)) + '"></div>';

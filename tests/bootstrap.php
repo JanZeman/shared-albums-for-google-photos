@@ -416,6 +416,8 @@ if ( ! function_exists( 'jzsa_get_frontend_i18n_strings' ) ) {
             'playPause'             => 'Play/Pause',
             'openInGooglePhotos'    => 'Open in Google Photos',
             'openAlbumGooglePhotos' => 'Open album in Google Photos',
+            'openInICloudPhotos'    => 'Open in iCloud Photos',
+            'openAlbumICloudPhotos' => 'Open album in iCloud Photos',
             'openMediaFullscreen'   => 'Open media %d in fullscreen',
             'downloadCurrentMedia'  => 'Download current media',
             'downloadMedia'         => 'Download media %d',
