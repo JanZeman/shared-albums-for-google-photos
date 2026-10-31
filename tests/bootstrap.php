@@ -267,6 +267,12 @@ if ( ! function_exists( 'delete_user_meta' ) ) {
         return true;
     }
 }
+if ( ! function_exists( 'wp_using_ext_object_cache' ) ) {
+    function wp_using_ext_object_cache( $using = null ) { return false; }
+}
+if ( ! function_exists( 'wp_cache_delete' ) ) {
+    function wp_cache_delete( $key, $group = '' ) { return true; }
+}
 if ( ! function_exists( 'set_transient' ) ) {
     function set_transient( $transient, $value, $expiration = 0 ) {
         $GLOBALS['jzsa_test_transients'][ $transient ] = $value;

@@ -2293,6 +2293,7 @@ class JZSA_Shared_Albums {
 			$deadline           = microtime( true ) + self::MEDIA_FETCH_WAIT;
 			while ( false === $stored && microtime( true ) < $deadline ) {
 				usleep( 250000 );
+				$this->forget_cached_option( '_transient_' . $map_key );
 				$stored = get_transient( $map_key );
 				if ( ! is_array( $stored ) || ! isset( $stored['urls'] ) ) {
 					$stored = false;
@@ -2315,6 +2316,26 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
+	 * Drop WordPress's in-request copy of an option so the next read hits the
+	 * database. Without a persistent object cache, WordPress remembers within
+	 * one request that an option was missing, so a request polling for a value
+	 * written by another request would never see it.
+	 *
+	 * @param string $option Option name (for a transient: "_transient_<name>").
+	 * @return void
+	 */
+	private function forget_cached_option( $option ) {
+		if ( wp_using_ext_object_cache() ) {
+			return;
+		}
+		wp_cache_delete( $option, 'options' );
+		if ( 0 === strpos( $option, '_transient_' ) ) {
+			wp_cache_delete( '_transient_timeout_' . substr( $option, strlen( '_transient_' ) ), 'options' );
+		}
+		wp_cache_delete( 'notoptions', 'options' );
+	}
+
+	/**
 	 * Take the album's media refresh lock; add_option() is atomic, so only one
 	 * request gets it. A lock older than any fetch can take is left by a
 	 * request that died mid-fetch and is cleared.
@@ -2326,6 +2347,7 @@ class JZSA_Shared_Albums {
 		if ( add_option( $lock_key, time(), '', false ) ) {
 			return true;
 		}
+		$this->forget_cached_option( $lock_key );
 		if ( (int) get_option( $lock_key, 0 ) < time() - self::MEDIA_FETCH_WAIT - 5 ) {
 			delete_option( $lock_key );
 		}
