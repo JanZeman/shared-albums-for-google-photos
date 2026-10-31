@@ -56,22 +56,20 @@ class JZSA_Shared_Albums {
 	const BACKUP_CACHE_TTL = 7 * DAY_IN_SECONDS;
 
 	/**
-	 * TTL in seconds for the fresh media URL map behind iCloud redirect URLs.
-	 *
-	 * iCloud media URLs expire about 15 minutes after the album was fetched.
-	 * The map plus the browser's cached redirect (MEDIA_REDIRECT_MAX_AGE) must
-	 * stay below that.
+	 * Seconds before an iCloud media URL's own expiry (its "e" parameter, about
+	 * 15 minutes after the album was fetched) at which the plugin stops using it.
+	 * Covers clock skew and slow page loads.
 	 *
 	 * @var int
 	 */
-	const MEDIA_URL_TTL = 480;
+	const MEDIA_URL_EXPIRY_BUFFER = 180;
 
 	/**
-	 * Seconds a browser may reuse a media redirect.
+	 * Lifetime in seconds of a media URL that carries no expiry.
 	 *
 	 * @var int
 	 */
-	const MEDIA_REDIRECT_MAX_AGE = 300;
+	const MEDIA_URL_FALLBACK_TTL = 480;
 
 	/**
 	 * Seconds a media redirect waits for another request that is already
@@ -2239,8 +2237,9 @@ class JZSA_Shared_Albums {
 	 *
 	 * Only albums the plugin has rendered (album cache or its backup present)
 	 * are served, and only to iCloud media hosts, so the endpoint cannot be
-	 * used as an open redirect. Fresh URLs are kept for MEDIA_URL_TTL; when
-	 * they are gone the album is fetched again, once for all waiting requests.
+	 * used as an open redirect. Fresh URLs are kept until the earliest of them
+	 * comes within MEDIA_URL_EXPIRY_BUFFER of expiring; then the album is
+	 * fetched again, once for all waiting requests.
 	 *
 	 * @param string $album_url Album URL.
 	 * @param string $id        Item ID.
@@ -2275,7 +2274,8 @@ class JZSA_Shared_Albums {
 				return '';
 			}
 
-			$map = array();
+			$map     = array();
+			$map_ttl = PHP_INT_MAX;
 			foreach ( $result['data']['photos'] as $item ) {
 				if ( empty( $item['id'] ) ) {
 					continue;
@@ -2283,13 +2283,15 @@ class JZSA_Shared_Albums {
 				foreach ( $item['sources'] ?? array() as $source ) {
 					if ( isset( $source['rendition'] ) ) {
 						$map[ $item['id'] ][ $source['rendition'] ] = $source['url'];
+						$map_ttl = min( $map_ttl, $this->media_url_lifetime( $source['url'] ) );
 					}
 				}
 				if ( ! empty( $item['video_rendition'] ) && ! empty( $item['video'] ) ) {
 					$map[ $item['id'] ][ $item['video_rendition'] ] = $item['video'];
+					$map_ttl = min( $map_ttl, $this->media_url_lifetime( $item['video'] ) );
 				}
 			}
-			set_transient( $map_key, $map, self::MEDIA_URL_TTL );
+			set_transient( $map_key, $map, PHP_INT_MAX === $map_ttl ? self::MEDIA_URL_FALLBACK_TTL : max( 60, $map_ttl ) );
 		}
 
 		$url  = isset( $map[ $id ][ $rendition ] ) ? (string) $map[ $id ][ $rendition ] : '';
@@ -2299,6 +2301,21 @@ class JZSA_Shared_Albums {
 		}
 
 		return $url;
+	}
+
+	/**
+	 * Seconds an iCloud media URL may still be used, keeping the safety buffer.
+	 *
+	 * @param string $url Media URL; its "e" parameter is the Unix expiry time.
+	 * @return int
+	 */
+	private function media_url_lifetime( $url ) {
+		parse_str( (string) wp_parse_url( $url, PHP_URL_QUERY ), $args );
+		if ( empty( $args['e'] ) || ! ctype_digit( (string) $args['e'] ) ) {
+			return self::MEDIA_URL_FALLBACK_TTL;
+		}
+
+		return max( 0, (int) $args['e'] - time() - self::MEDIA_URL_EXPIRY_BUFFER );
 	}
 
 	/**
@@ -2369,7 +2386,8 @@ class JZSA_Shared_Albums {
 			exit;
 		}
 
-		header( 'Cache-Control: public, max-age=' . self::MEDIA_REDIRECT_MAX_AGE );
+		// The browser may reuse the redirect only as long as the target stays valid.
+		header( 'Cache-Control: public, max-age=' . $this->media_url_lifetime( $url ) );
 		// phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- host checked in resolve_media_url().
 		wp_redirect( $url, 302, 'Shared Albums' );
 		exit;

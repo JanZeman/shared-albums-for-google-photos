@@ -312,4 +312,14 @@ class ICloudProviderTest extends TestCase {
 		$foreign = 'https://evil.example/?jzsa_media=1&album=x&id=A1&r=Original';
 		$this->assertSame( $foreign, $orchestrator->resolve_stable_media_url( $foreign ) );
 	}
+
+	public function test_media_url_lifetime_keeps_a_buffer_before_apple_expiry(): void {
+		$orchestrator = new JZSA_Shared_Albums( JZSA_PLUGIN_FILE );
+		$method       = ( new ReflectionClass( $orchestrator ) )->getMethod( 'media_url_lifetime' );
+
+		$lifetime = $method->invoke( $orchestrator, 'https://cvws.icloud-content.com/B/x/a.jpg?o=1&e=' . ( time() + 900 ) );
+		$this->assertEqualsWithDelta( 720, $lifetime, 2 );
+		$this->assertSame( 0, $method->invoke( $orchestrator, 'https://cvws.icloud-content.com/B/x/a.jpg?e=' . ( time() + 60 ) ) );
+		$this->assertSame( 480, $method->invoke( $orchestrator, 'https://cvws.icloud-content.com/B/x/a.jpg?o=1' ) );
+	}
 }
