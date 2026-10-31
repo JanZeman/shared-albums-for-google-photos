@@ -522,8 +522,19 @@ class JZSA_ICloud_Provider {
 				}
 			);
 
-			$largest = end( $sources );
-			$item    = array(
+			// Originals keep the camera's EXIF rotation; 5 to 8 mean the picture is shown turned by 90 degrees.
+			$largest     = end( $sources );
+			$orientation = isset( $fields['orientation']['value'] ) ? (int) $fields['orientation']['value'] : 1;
+			if ( 'Original' === $largest['rendition'] && $orientation >= 5 && $orientation <= 8 ) {
+				$largest = array_merge(
+					$largest,
+					array(
+						'width'  => $largest['height'],
+						'height' => $largest['width'],
+					)
+				);
+			}
+			$item = array(
 				'url'     => $largest['url'],
 				'type'    => '' !== $video ? 'video' : 'image',
 				'id'      => isset( $record['recordName'] ) ? (string) $record['recordName'] : '',

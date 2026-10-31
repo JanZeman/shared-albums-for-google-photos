@@ -7558,6 +7558,25 @@
     }
 
     /**
+     * Aspect ratio of a photo for the justified layout.
+     *
+     * Google URLs carry the size as "=w800-h600". Sources with fixed renditions
+     * (iCloud) have no size in the URL, so their own width and height are used.
+     *
+     * @param  {Object} photo Photo object.
+     * @return {number} Aspect ratio (width / height).
+     */
+    function photoAspectRatio(photo) {
+        var url = photo.preview || photo.full || '';
+        var w = parseInt(photo.width, 10);
+        var h = parseInt(photo.height, 10);
+        if (!/=w\d+-h\d+/.test(url) && w > 0 && h > 0) {
+            return w / h;
+        }
+        return parseAspectRatio(url);
+    }
+
+    /**
      * Group photos into rows for a justified gallery.
      * Each row fills approximately `containerWidth` when photos are scaled to `targetHeight`.
      *
@@ -8800,7 +8819,7 @@
         var photosWithRatios = allPhotos.map(function(photo, index) {
             return {
                 photo: photo,
-                ratio: parseAspectRatio(photo.preview || photo.full),
+                ratio: photoAspectRatio(photo),
                 index: index
             };
         });

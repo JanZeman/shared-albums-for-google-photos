@@ -266,4 +266,31 @@ class ICloudProviderTest extends TestCase {
 
 		$this->assertSame( '', $orchestrator->resolve_media_url( self::CLOUDKIT_ALBUM_URL, 'A1', 'JPEGThumb' ) );
 	}
+
+	public function test_rotated_original_reports_displayed_dimensions(): void {
+		$records = array(
+			array(
+				'recordName' => 'M1',
+				'recordType' => 'CPLMaster',
+				'fields'     => array(
+					'resOriginalRes'      => array( 'value' => array( 'downloadURL' => 'https://cvws.icloud-content.com/B/orig/${f}' ) ),
+					'resOriginalFileType' => array( 'value' => 'public.jpeg' ),
+					'resOriginalWidth'    => array( 'value' => 4032 ),
+					'resOriginalHeight'   => array( 'value' => 3024 ),
+				),
+			),
+			array(
+				'recordName' => 'A1',
+				'recordType' => 'CPLAsset',
+				'fields'     => array(
+					'masterRef'   => array( 'value' => array( 'recordName' => 'M1' ) ),
+					'orientation' => array( 'value' => 6 ),
+				),
+			),
+		);
+
+		$photos = $this->provider->build_cloudkit_items( $records );
+
+		$this->assertSame( array( 3024, 4032 ), array( $photos[0]['width'], $photos[0]['height'] ) );
+	}
 }
