@@ -77,10 +77,10 @@ class JZSA_Shared_Albums {
 	 *
 	 * @var int
 	 */
-	const MEDIA_FETCH_WAIT = 10;
+	const MEDIA_FETCH_WAIT = 20;
 
 	/**
-	 * How the last resolve_media_url() call got its URL: hit, wait or fetch.
+	 * How the last resolve_media_url() call got its URL: hit, stale, refresh, wait or fetch.
 	 *
 	 * @var string
 	 */
@@ -2244,9 +2244,9 @@ class JZSA_Shared_Albums {
 	 *
 	 * Only albums the plugin has rendered (album cache or its backup present)
 	 * are served, and only to iCloud media hosts, so the endpoint cannot be
-	 * used as an open redirect. Fresh URLs are kept until the earliest of them
-	 * comes within MEDIA_URL_EXPIRY_BUFFER of expiring; then the album is
-	 * fetched again, once for all waiting requests.
+	 * used as an open redirect. See refresh_media_map() for how long URLs are
+	 * kept; when nothing usable is stored the album is fetched again, once for
+	 * all waiting requests.
 	 *
 	 * @param string $album_url Album URL.
 	 * @param string $id        Item ID.
@@ -2263,53 +2263,47 @@ class JZSA_Shared_Albums {
 
 		$map_key  = 'jzsa_media_' . md5( $album_url );
 		$lock_key = $map_key . '_lock';
-		$map      = get_transient( $map_key );
+		$stored   = get_transient( $map_key );
+		if ( ! is_array( $stored ) || ! isset( $stored['urls'], $stored['fresh_until'] ) ) {
+			$stored = false;
+		}
 
-		$this->media_status = false === $map ? 'fetch' : 'hit';
-
-		// add_option() is atomic: only one request wins the lock and re-fetches the
-		// album; the others wait for its map instead of all calling iCloud at once.
-		if ( false === $map && ! add_option( $lock_key, time(), '', false ) ) {
-			if ( (int) get_option( $lock_key, 0 ) < time() - self::MEDIA_FETCH_WAIT - 5 ) {
-				delete_option( $lock_key ); // Stale lock left by a request that died mid-fetch.
+		if ( false !== $stored && time() < $stored['fresh_until'] ) {
+			$this->media_status = 'hit';
+		} elseif ( false !== $stored ) {
+			// Past the safety buffer but Apple still serves these URLs: one request
+			// refreshes the map while all others keep using the old URLs, so nobody waits.
+			if ( $this->acquire_media_lock( $lock_key ) ) {
+				$this->media_status = 'refresh';
+				$fresh              = $this->refresh_media_map( $album_url, $map_key );
+				delete_option( $lock_key );
+				if ( false !== $fresh ) {
+					$stored = $fresh;
+				}
+			} else {
+				$this->media_status = 'stale';
 			}
+		} elseif ( $this->acquire_media_lock( $lock_key ) ) {
+			// Nothing usable: this request fetches the album, the others wait for it.
+			$this->media_status = 'fetch';
+			$stored             = $this->refresh_media_map( $album_url, $map_key );
+			delete_option( $lock_key );
+		} else {
 			$this->media_status = 'wait';
 			$deadline           = microtime( true ) + self::MEDIA_FETCH_WAIT;
-			while ( false === $map && microtime( true ) < $deadline ) {
+			while ( false === $stored && microtime( true ) < $deadline ) {
 				usleep( 250000 );
-				$map = get_transient( $map_key );
-			}
-			if ( false === $map ) {
-				return '';
+				$stored = get_transient( $map_key );
+				if ( ! is_array( $stored ) || ! isset( $stored['urls'] ) ) {
+					$stored = false;
+				}
 			}
 		}
 
-		if ( false === $map ) {
-			$result = $this->icloud_provider->fetch_album( $album_url );
-			delete_option( $lock_key );
-			if ( empty( $result['success'] ) ) {
-				return '';
-			}
-
-			$map     = array();
-			$map_ttl = PHP_INT_MAX;
-			foreach ( $result['data']['photos'] as $item ) {
-				if ( empty( $item['id'] ) ) {
-					continue;
-				}
-				foreach ( $item['sources'] ?? array() as $source ) {
-					if ( isset( $source['rendition'] ) ) {
-						$map[ $item['id'] ][ $source['rendition'] ] = $source['url'];
-						$map_ttl = min( $map_ttl, $this->media_url_lifetime( $source['url'] ) );
-					}
-				}
-				if ( ! empty( $item['video_rendition'] ) && ! empty( $item['video'] ) ) {
-					$map[ $item['id'] ][ $item['video_rendition'] ] = $item['video'];
-					$map_ttl = min( $map_ttl, $this->media_url_lifetime( $item['video'] ) );
-				}
-			}
-			set_transient( $map_key, $map, PHP_INT_MAX === $map_ttl ? self::MEDIA_URL_FALLBACK_TTL : max( 60, $map_ttl ) );
+		if ( false === $stored ) {
+			return '';
 		}
+		$map = $stored['urls'];
 
 		$url  = isset( $map[ $id ][ $rendition ] ) ? (string) $map[ $id ][ $rendition ] : '';
 		$host = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
@@ -2318,6 +2312,73 @@ class JZSA_Shared_Albums {
 		}
 
 		return $url;
+	}
+
+	/**
+	 * Take the album's media refresh lock; add_option() is atomic, so only one
+	 * request gets it. A lock older than any fetch can take is left by a
+	 * request that died mid-fetch and is cleared.
+	 *
+	 * @param string $lock_key Option name.
+	 * @return bool
+	 */
+	private function acquire_media_lock( $lock_key ) {
+		if ( add_option( $lock_key, time(), '', false ) ) {
+			return true;
+		}
+		if ( (int) get_option( $lock_key, 0 ) < time() - self::MEDIA_FETCH_WAIT - 5 ) {
+			delete_option( $lock_key );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Fetch fresh media URLs for an album and store them.
+	 *
+	 * The map counts as fresh until its earliest URL comes within
+	 * MEDIA_URL_EXPIRY_BUFFER of Apple's expiry, and is kept (as a stale
+	 * fallback) until shortly before that expiry itself.
+	 *
+	 * @param string $album_url Album URL.
+	 * @param string $map_key   Transient name.
+	 * @return array|false Stored map: urls, fresh_until; false when the fetch failed.
+	 */
+	private function refresh_media_map( $album_url, $map_key ) {
+		$result = $this->icloud_provider->fetch_album( $album_url, false );
+		if ( empty( $result['success'] ) ) {
+			return false;
+		}
+
+		$map      = array();
+		$lifetime = PHP_INT_MAX;
+		foreach ( $result['data']['photos'] as $item ) {
+			if ( empty( $item['id'] ) ) {
+				continue;
+			}
+			foreach ( $item['sources'] ?? array() as $source ) {
+				if ( isset( $source['rendition'] ) ) {
+					$map[ $item['id'] ][ $source['rendition'] ] = $source['url'];
+					$lifetime = min( $lifetime, $this->media_url_lifetime( $source['url'] ) );
+				}
+			}
+			if ( ! empty( $item['video_rendition'] ) && ! empty( $item['video'] ) ) {
+				$map[ $item['id'] ][ $item['video_rendition'] ] = $item['video'];
+				$lifetime = min( $lifetime, $this->media_url_lifetime( $item['video'] ) );
+			}
+		}
+		if ( PHP_INT_MAX === $lifetime ) {
+			$lifetime = self::MEDIA_URL_FALLBACK_TTL;
+		}
+
+		$stored = array(
+			'urls'        => $map,
+			'fresh_until' => time() + $lifetime,
+		);
+		// Keep stale URLs for most of the buffer, while Apple still accepts them.
+		set_transient( $map_key, $stored, max( 60, $lifetime + self::MEDIA_URL_EXPIRY_BUFFER - 30 ) );
+
+		return $stored;
 	}
 
 	/**
@@ -2398,7 +2459,7 @@ class JZSA_Shared_Albums {
 
 		$started = microtime( true );
 		$url     = $this->resolve_media_url( $album_url, $id, $rendition );
-		// Visible in the browser's DevTools (Network > Timing): hit, wait or fetch, and the time spent.
+		// Visible in the browser's DevTools (Network > Timing): hit, stale, refresh, wait or fetch, and the time spent.
 		header( sprintf( 'Server-Timing: jzsa;desc="%s";dur=%.1f', $this->media_status, ( microtime( true ) - $started ) * 1000 ) );
 		if ( '' === $url ) {
 			status_header( 404 );

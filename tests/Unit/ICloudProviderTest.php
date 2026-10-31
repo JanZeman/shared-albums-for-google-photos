@@ -265,7 +265,8 @@ class ICloudProviderTest extends TestCase {
 		$orchestrator = new JZSA_Shared_Albums( JZSA_PLUGIN_FILE );
 		$this->cacheCloudKitAlbum();
 		$GLOBALS['jzsa_test_transients'][ 'jzsa_media_' . md5( self::CLOUDKIT_ALBUM_URL ) ] = array(
-			'A1' => array( 'JPEGThumb' => 'https://evil.example/x.jpg' ),
+			'urls'        => array( 'A1' => array( 'JPEGThumb' => 'https://evil.example/x.jpg' ) ),
+			'fresh_until' => time() + 600,
 		);
 
 		$this->assertSame( '', $orchestrator->resolve_media_url( self::CLOUDKIT_ALBUM_URL, 'A1', 'JPEGThumb' ) );
@@ -330,5 +331,39 @@ class ICloudProviderTest extends TestCase {
 
 		$this->assertStringContainsString( 'Invalid iCloud Album URL', $html );
 		$this->assertStringNotContainsString( 'Google', $html );
+	}
+
+	public function test_stale_media_urls_are_served_while_another_request_refreshes(): void {
+		$orchestrator = new JZSA_Shared_Albums( JZSA_PLUGIN_FILE );
+		$this->cacheCloudKitAlbum();
+		$map_key = 'jzsa_media_' . md5( self::CLOUDKIT_ALBUM_URL );
+		$GLOBALS['jzsa_test_transients'][ $map_key ] = array(
+			'urls'        => array( 'A1' => array( 'JPEGThumb' => 'https://cvws.icloud-content.com/B/old/a.jpg' ) ),
+			'fresh_until' => time() - 10,
+		);
+		add_option( $map_key . '_lock', time() );
+
+		$this->assertSame( 'https://cvws.icloud-content.com/B/old/a.jpg', $orchestrator->resolve_media_url( self::CLOUDKIT_ALBUM_URL, 'A1', 'JPEGThumb' ) );
+		$this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
+		delete_option( $map_key . '_lock' );
+	}
+
+	public function test_stale_media_map_refresh_skips_captions_and_reuses_the_resolved_token(): void {
+		$orchestrator = new JZSA_Shared_Albums( JZSA_PLUGIN_FILE );
+		$this->stubCloudKitAlbum();
+		$this->cacheCloudKitAlbum();
+		$this->provider->fetch_album( self::CLOUDKIT_ALBUM_URL );
+		$GLOBALS['jzsa_test_http_requests'] = array();
+		$GLOBALS['jzsa_test_transients'][ 'jzsa_media_' . md5( self::CLOUDKIT_ALBUM_URL ) ] = array(
+			'urls'        => array(),
+			'fresh_until' => time() - 10,
+		);
+
+		$url = $orchestrator->resolve_media_url( self::CLOUDKIT_ALBUM_URL, 'A1', 'JPEGThumb' );
+
+		$this->assertSame( 'https://cvws.icloud-content.com/B/thumb1/IMG%201.jpg?o=1', $url );
+		// One asset query: no resolve (token reused), no caption query.
+		$this->assertCount( 1, $GLOBALS['jzsa_test_http_requests'] );
+		$this->assertSame( self::CLOUDKIT_QUERY, $GLOBALS['jzsa_test_http_requests'][0]['url'] );
 	}
 }

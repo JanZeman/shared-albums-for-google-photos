@@ -151,10 +151,11 @@ class JZSA_ICloud_Provider {
 	/**
 	 * Fetch album data from iCloud
 	 *
-	 * @param string $url Album URL
+	 * @param string $url           Album URL
+	 * @param bool   $with_captions Also load captions; media URL refreshes skip them to save a request.
 	 * @return array Result [success, data, error]
 	 */
-	public function fetch_album( $url ) {
+	public function fetch_album( $url, $with_captions = true ) {
 		$validation = $this->validate_url( $url );
 		if ( ! $validation['valid'] ) {
 			return $this->error( $validation['error'] );
@@ -162,7 +163,7 @@ class JZSA_ICloud_Provider {
 
 		$short_guid = $this->extract_short_guid( $url );
 		if ( '' !== $short_guid ) {
-			return $this->with_media_refs( $this->fetch_cloudkit_album( $short_guid ), $url );
+			return $this->with_media_refs( $this->fetch_cloudkit_album( $short_guid, $with_captions ), $url );
 		}
 
 		$token  = $this->extract_token( $url );
@@ -335,33 +336,58 @@ class JZSA_ICloud_Provider {
 	 * records/resolve turns the link ID into the album zone plus a short-lived
 	 * anonymous token; records/query then lists the zone's assets.
 	 *
-	 * @param string $short_guid Album ID from the link.
+	 * The resolved zone and token are reused while the token is valid, so a
+	 * refresh within that time costs one request instead of two.
+	 *
+	 * @param string $short_guid    Album ID from the link.
+	 * @param bool   $with_captions Also query the upload posts that carry captions.
 	 * @return array Result [success, data, error]
 	 */
-	public function fetch_cloudkit_album( $short_guid ) {
-		$resolved = $this->post_json(
-			self::CLOUDKIT_RESOLVE_HOST . self::CLOUDKIT_DATABASE . 'public/records/resolve?remapEnums=true',
-			array( 'shortGUIDs' => array( array( 'value' => $short_guid ) ) ),
-			'https://photos.icloud.com'
-		);
-		if ( is_string( $resolved ) ) {
-			return $this->error( $resolved );
-		}
+	public function fetch_cloudkit_album( $short_guid, $with_captions = true ) {
+		$resolve_key = 'jzsa_icloud_resolve_' . md5( $short_guid );
+		$album       = get_transient( $resolve_key );
+		$from_cache  = is_array( $album );
+		if ( ! $from_cache ) {
+			$resolved = $this->post_json(
+				self::CLOUDKIT_RESOLVE_HOST . self::CLOUDKIT_DATABASE . 'public/records/resolve?remapEnums=true',
+				array( 'shortGUIDs' => array( array( 'value' => $short_guid ) ) ),
+				'https://photos.icloud.com'
+			);
+			if ( is_string( $resolved ) ) {
+				return $this->error( $resolved );
+			}
 
-		$album = isset( $resolved['results'][0] ) && is_array( $resolved['results'][0] ) ? $resolved['results'][0] : array();
-		if ( empty( $album['zoneID'] ) || empty( $album['anonymousPublicAccess']['token'] ) || empty( $album['anonymousPublicAccess']['databasePartition'] ) ) {
-			return $this->error( __( 'This iCloud album is not shared with "Anyone with the link"', 'janzeman-shared-albums-for-google-photos' ) );
+			$album = isset( $resolved['results'][0] ) && is_array( $resolved['results'][0] ) ? $resolved['results'][0] : array();
+			if ( empty( $album['zoneID'] ) || empty( $album['anonymousPublicAccess']['token'] ) || empty( $album['anonymousPublicAccess']['databasePartition'] ) ) {
+				return $this->error( __( 'This iCloud album is not shared with "Anyone with the link"', 'janzeman-shared-albums-for-google-photos' ) );
+			}
+
+			// Keep only what later requests need; the full answer also names the owner.
+			$album      = array(
+				'zoneID'                => $album['zoneID'],
+				'anonymousPublicAccess' => $album['anonymousPublicAccess'],
+				'share'                 => array( 'fields' => array( 'cloudkit.title' => $album['share']['fields']['cloudkit.title'] ?? null ) ),
+			);
+			$token_life = isset( $album['anonymousPublicAccess']['tokenTTL'] ) ? (int) ( $album['anonymousPublicAccess']['tokenTTL'] / 1000 ) : 0;
+			if ( $token_life > 300 ) {
+				set_transient( $resolve_key, $album, $token_life - 120 );
+			}
 		}
 
 		$query_url = rtrim( $album['anonymousPublicAccess']['databasePartition'], '/' ) . self::CLOUDKIT_DATABASE
 			. 'shared/records/query?remapEnums=true&publicAccessAuthToken=' . rawurlencode( $album['anonymousPublicAccess']['token'] );
 		$records = $this->query_cloudkit_zone( $query_url, $album['zoneID'], 'CPLAssetAndMasterByAssetDateWithoutHiddenOrDeleted' );
+		if ( is_string( $records ) && $from_cache ) {
+			// The stored token may have been revoked early: resolve once more.
+			delete_transient( $resolve_key );
+			return $this->fetch_cloudkit_album( $short_guid, $with_captions );
+		}
 		if ( is_string( $records ) ) {
 			return $this->error( $records );
 		}
 
 		// Upload comments ("posts") carry the captions; without them the album still shows.
-		$posts = $this->query_cloudkit_zone( $query_url, $album['zoneID'], 'CPLPostByPostTimestamp' );
+		$posts = $with_captions ? $this->query_cloudkit_zone( $query_url, $album['zoneID'], 'CPLPostByPostTimestamp' ) : array();
 		if ( is_array( $posts ) ) {
 			foreach ( $posts as $post ) {
 				if ( isset( $post['recordType'] ) && 'CPLPost' === $post['recordType'] ) {
