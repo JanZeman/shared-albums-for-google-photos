@@ -40,7 +40,8 @@ if [[ ! -d "$OUTPUT_DIR" ]]; then
 fi
 OUTPUT_DIR="$(cd "$OUTPUT_DIR" && pwd)"
 PACKAGE_DIR="${OUTPUT_DIR}/${PLUGIN_SLUG}"
-ZIP_PATH="${OUTPUT_DIR}/${PLUGIN_SLUG}-${VERSION}.zip"
+# The ZIP file name is free; WordPress installs by the folder inside, which must stay the slug.
+ZIP_PATH="${OUTPUT_DIR}/shared-albums-${VERSION}.zip"
 
 if [[ -e "$PACKAGE_DIR" || -e "$ZIP_PATH" ]]; then
     printf 'Refusing to overwrite an existing build artifact in %s.\n' "$OUTPUT_DIR" >&2
