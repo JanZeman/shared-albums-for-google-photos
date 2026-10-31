@@ -43,7 +43,7 @@ The `readme.txt` file contains the official WordPress.org plugin documentation w
 
 ```bash
 cd wp-content/plugins/
-git clone https://github.com/JanZeman/shared-albums-for-google-photos.git
+git clone git@github.com:JanZeman/shared-albums-wp-plugin.git
 ```
 
 ### Basic Usage
@@ -144,7 +144,7 @@ Contributions are welcome! Please:
 2. Create a feature branch
 3. Submit a pull request
 
-For bug reports and feature requests, use [GitHub Issues](https://github.com/JanZeman/shared-albums-for-google-photos/issues).
+For bug reports and feature requests, use [GitHub Issues](https://github.com/JanZeman/shared-albums-wp-plugin/issues).
 
 ---
 
@@ -152,7 +152,7 @@ For bug reports and feature requests, use [GitHub Issues](https://github.com/Jan
 
 - **Documentation**: [readme.txt](readme.txt)
 - **WordPress.org Forum**: <https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/>
-- **GitHub Issues**: <https://github.com/JanZeman/shared-albums-for-google-photos/issues>
+- **GitHub Issues**: <https://github.com/JanZeman/shared-albums-wp-plugin/issues>
 
 ---
 
