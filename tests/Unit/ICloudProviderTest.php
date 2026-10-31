@@ -199,6 +199,10 @@ class ICloudProviderTest extends TestCase {
 		// HEIC originals cannot be shown in browsers, so the JPEG renditions are used.
 		$this->assertSame( array( 360, 3024 ), array_column( $photos[1]['sources'], 'width' ) );
 		$this->assertSame( 'https://cvws.icloud-content.com/B/full2/IMG_2.jpg?o=1', $photos[1]['url'] );
+		$this->assertSame( 'IMG 1.jpg', $photos[0]['filename'] );
+		// The HEIC original is not offered, so the name follows the JPEG rendition.
+		$this->assertSame( 'IMG_2.jpg', $photos[1]['filename'] );
+		$this->assertSame( 'IMG_3.mov', $photos[2]['filename'] );
 		// Captions come from the upload post whose name is the asset's batch ID.
 		$this->assertSame( 'Dog', $photos[1]['description'] );
 
@@ -292,5 +296,20 @@ class ICloudProviderTest extends TestCase {
 		$photos = $this->provider->build_cloudkit_items( $records );
 
 		$this->assertSame( array( 3024, 4032 ), array( $photos[0]['width'], $photos[0]['height'] ) );
+	}
+
+	public function test_download_proxy_resolves_stable_media_urls(): void {
+		$orchestrator = new JZSA_Shared_Albums( JZSA_PLUGIN_FILE );
+		$this->stubCloudKitAlbum();
+		$this->cacheCloudKitAlbum();
+
+		$stable = 'https://site.example/?jzsa_media=1&album=' . rawurlencode( self::CLOUDKIT_ALBUM_URL ) . '&id=A1&r=Original';
+		$this->assertSame( 'https://cvws.icloud-content.com/B/orig1/IMG%201.jpg?o=1', $orchestrator->resolve_stable_media_url( $stable ) );
+
+		// Other URLs, including look-alikes on other hosts, pass through unchanged.
+		$google = 'https://lh3.googleusercontent.com/abc=d';
+		$this->assertSame( $google, $orchestrator->resolve_stable_media_url( $google ) );
+		$foreign = 'https://evil.example/?jzsa_media=1&album=x&id=A1&r=Original';
+		$this->assertSame( $foreign, $orchestrator->resolve_stable_media_url( $foreign ) );
 	}
 }

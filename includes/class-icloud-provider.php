@@ -477,6 +477,7 @@ class JZSA_ICloud_Provider {
 			$video_w  = -1;
 
 			$video_rendition = '';
+			$video_type      = '';
 
 			foreach ( $master as $key => $field ) {
 				if ( ! preg_match( '/^res(.+)Res$/', $key, $m ) || empty( $field['value']['downloadURL'] ) ) {
@@ -495,6 +496,7 @@ class JZSA_ICloud_Provider {
 						$video           = $url;
 						$video_w         = $rank;
 						$video_rendition = $name;
+						$video_type      = $type;
 					}
 					continue;
 				}
@@ -508,6 +510,7 @@ class JZSA_ICloud_Provider {
 					'width'     => $width,
 					'height'    => $height,
 					'rendition' => $name,
+					'type'      => $type,
 				);
 			}
 
@@ -546,6 +549,10 @@ class JZSA_ICloud_Provider {
 			if ( '' !== $video ) {
 				$item['video']           = $video;
 				$item['video_rendition'] = $video_rendition;
+			}
+			if ( '' !== $filename ) {
+				// Name the file after what a download gets: the video, or the largest image rendition.
+				$item['filename'] = '' !== $video ? $this->rendition_filename( $filename, $video_type ) : $this->rendition_filename( $filename, $largest['type'] );
 			}
 
 			$batch_id = isset( $fields['assetBatchId']['value'] ) ? (string) $fields['assetBatchId']['value'] : '';

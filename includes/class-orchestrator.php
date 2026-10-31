@@ -2302,6 +2302,49 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
+	 * Turn this site's stable media URL back into the current direct URL.
+	 *
+	 * Downloads are proxied server-side, so they need the iCloud URL itself,
+	 * not the redirect. Any other URL is returned unchanged.
+	 *
+	 * @param string $url Media URL posted by the browser.
+	 * @return string
+	 */
+	public function resolve_stable_media_url( $url ) {
+		$query = (string) wp_parse_url( $url, PHP_URL_QUERY );
+		if ( '' === $query || strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) ) !== strtolower( (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST ) ) ) {
+			return $url;
+		}
+
+		parse_str( $query, $args );
+		if ( empty( $args['jzsa_media'] ) ) {
+			return $url;
+		}
+
+		return $this->resolve_media_url(
+			isset( $args['album'] ) ? (string) $args['album'] : '',
+			isset( $args['id'] ) ? (string) $args['id'] : '',
+			isset( $args['r'] ) ? preg_replace( '/[^A-Za-z0-9]/', '', (string) $args['r'] ) : ''
+		);
+	}
+
+	/**
+	 * Whether the download proxy may fetch from a host (Google Photos or iCloud media).
+	 *
+	 * @param string $host Lowercase host name.
+	 * @return bool
+	 */
+	private function is_downloadable_media_host( $host ) {
+		foreach ( array( 'googleusercontent.com', 'icloud-content.com' ) as $domain ) {
+			if ( $domain === $host || substr( $host, -strlen( '.' . $domain ) ) === '.' . $domain ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Answer a stable media URL (?jzsa_media=1) with a redirect to the current
 	 * direct URL. Runs on wp_loaded, before WordPress routes the request, to
 	 * keep the per-image cost low.
@@ -3485,10 +3528,10 @@ class JZSA_Shared_Albums {
 			return;
 		}
 
-		$media_url = esc_url_raw( $raw_media_url );
+		$media_url = $this->resolve_stable_media_url( esc_url_raw( $raw_media_url ) );
 		$filename  = isset( $_POST['filename'] ) ? sanitize_file_name( wp_unslash( $_POST['filename'] ) ) : 'media.bin';
 
-		// Verify it's a Google Photos media URL.
+		// Verify it's a Google Photos or iCloud media URL.
 		$parsed_url = wp_parse_url( $media_url );
 		if ( empty( $parsed_url['scheme'] ) || 'https' !== $parsed_url['scheme'] || empty( $parsed_url['host'] ) ) {
 			wp_send_json_error(
@@ -3501,7 +3544,7 @@ class JZSA_Shared_Albums {
 		}
 
 		$host = strtolower( $parsed_url['host'] );
-		if ( 'googleusercontent.com' !== $host && substr( $host, -strlen( '.googleusercontent.com' ) ) !== '.googleusercontent.com' ) {
+		if ( ! $this->is_downloadable_media_host( $host ) ) {
 			wp_send_json_error(
 				array(
 					'message' => __( 'Invalid media URL', 'janzeman-shared-albums-for-google-photos' ),
