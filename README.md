@@ -43,7 +43,7 @@ The `readme.txt` file contains the official WordPress.org plugin documentation w
 
 ```bash
 cd wp-content/plugins/
-git clone git@github.com:JanZeman/shared-albums-wp-plugin.git
+git clone https://github.com/JanZeman/shared-albums-wp-plugin.git
 ```
 
 ### Basic Usage
