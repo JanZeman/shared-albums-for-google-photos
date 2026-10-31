@@ -9833,7 +9833,8 @@
                     return;
                 }
 
-                var filename = (mediaType === 'video' ? 'video-' : 'photo-') + (index + 1) + (mediaType === 'video' ? '.mp4' : '.jpg');
+                // Original filename when the source provides it (iCloud, hydrated Google metadata).
+                var filename = photo.filename || ((mediaType === 'video' ? 'video-' : 'photo-') + (index + 1) + (mediaType === 'video' ? '.mp4' : '.jpg'));
                 var $btn = $(this);
 
                 function restoreThumbButtonState() {
