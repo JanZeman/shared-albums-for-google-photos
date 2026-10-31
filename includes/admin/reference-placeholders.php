@@ -71,7 +71,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 							</tr>
 							<tr>
 								<td><code>{filename}</code></td>
-								<td><?php esc_html_e( 'Original filename as stored in Google Photos', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Original filename as stored in Google Photos or iCloud', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>IMG_4095.JPG</td>
 								<td>⏳ <?php esc_html_e( 'May appear with delay', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
@@ -83,7 +83,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 							</tr>
 							<tr>
 								<td><code>{description}</code></td>
-								<td><?php esc_html_e( 'Photo description/caption from Google Photos, when present', 'janzeman-shared-albums-for-google-photos' ); ?><br><br><strong style="color: #d32f2f; font-size: 1.1em;">⚠️ IMPORTANT LIMITATION: Google Photos limits descriptions to 100 characters. Longer descriptions are truncated. Use info-wrap="true" to allow wrapping if you have longer descriptions, but be aware of this hard limit from Google.</strong></td>
+								<td><?php esc_html_e( 'Photo description/caption from Google Photos or iCloud, when present. In iCloud the caption belongs to the upload, so photos added together share it.', 'janzeman-shared-albums-for-google-photos' ); ?><br><br><strong style="color: #d32f2f; font-size: 1.1em;">⚠️ IMPORTANT LIMITATION: Google Photos limits descriptions to 100 characters. Longer descriptions are truncated. Use info-wrap="true" to allow wrapping if you have longer descriptions, but be aware of this hard limit from Google.</strong></td>
 								<td>Tūī bird, New Zealand</td>
 								<td>⏳ <?php esc_html_e( 'May appear with delay', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
@@ -95,13 +95,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 							</tr>
 							<tr>
 								<td><code>{camera-make}</code></td>
-								<td><?php esc_html_e( 'Raw EXIF camera make as provided by Google Photos', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Raw EXIF camera make as provided by Google Photos (not available for iCloud albums)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>Canon</td>
 								<td>⏳ <?php esc_html_e( 'May appear with delay', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
 							<tr>
 								<td><code>{camera-model}</code></td>
-								<td><?php esc_html_e( 'Raw EXIF camera model as provided by Google Photos', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Raw EXIF camera model as provided by Google Photos (not available for iCloud albums)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>Canon EOS 5D Mark II</td>
 								<td>⏳ <?php esc_html_e( 'May appear with delay', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
@@ -134,11 +134,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 					<div class="jzsa-attention-box" style="margin-top: 16px;">
 						<strong><?php esc_html_e( 'Note on delayed photo metadata', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-						<p style="margin: 8px 0 0 0;"><?php esc_html_e( 'Some per-photo placeholders (description, camera, aperture, shutter, focal, ISO) are not available in the album listing. When you use any of them, the plugin automatically fetches each photo\'s individual page from Google Photos in the background to retrieve it. This means:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<p style="margin: 8px 0 0 0;"><?php esc_html_e( 'Some per-photo placeholders (description, camera, aperture, shutter, focal, ISO) are not available in the album listing. When you use any of them, the plugin automatically fetches each photo\'s individual page from Google Photos in the background to retrieve it. iCloud albums include descriptions in the album listing but provide no camera information. For Google Photos this means:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<ul style="margin: 10px 0 0 0; padding-left: 22px; list-style: disc;">
 							<li><?php esc_html_e( 'EXIF information is not perfectly reliable. Google decides what survives in a shared album, so availability depends a lot on the quality and origin of your album content.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'It will appear with a brief delay the first time it is fetched (not instantly like date or dimensions). After that it is cached on your web server and appears immediately for later visitors.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
-							<li><?php esc_html_e( 'The heavier load happens mainly during the first cache warm-up. For large albums, avoid clearing the plugin cache unless you actually need fresh Google Photos data.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
+							<li><?php esc_html_e( 'The heavier load happens mainly during the first cache warm-up. For large albums, avoid clearing the plugin cache unless you actually need fresh album data.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'Photos that were uploaded without EXIF (e.g. screenshots, edited exports) will show nothing for these placeholders.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'If you don\'t use any EXIF placeholder, no background fetching occurs - zero overhead.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 						</ul>

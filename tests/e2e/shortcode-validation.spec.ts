@@ -481,14 +481,14 @@ test.describe('Shortcode validation - parameter values', () => {
         );
         const area = page.locator(VALIDATION);
         await expect(area).toContainText(
-            'The Google Photos link contains invalid whitespace. The generated shortcode removes it because URLs cannot contain spaces or line breaks.',
+            'The album link contains invalid whitespace. The generated shortcode removes it because URLs cannot contain spaces or line breaks.',
         );
         await area.getByRole('button', { name: 'Update to Current Syntax' }).click();
 
         await expect(page.locator('#jzsa-playground-shortcode')).toHaveText(
             `[jzsa-album link="${link}" mode="slider" viewer="fullscreen" corner-radius="16"]`,
         );
-        await expect(area).not.toContainText('The Google Photos link contains invalid whitespace.');
+        await expect(area).not.toContainText('The album link contains invalid whitespace.');
     });
 
     test('validation limits the number of visible issues', async ({ page }) => {

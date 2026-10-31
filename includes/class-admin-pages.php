@@ -492,7 +492,7 @@ class JZSA_Admin_Pages {
 			</p>
 			<p style="margin: 6px 0 0; display: flex; align-items: center; gap: 8px;">
 				<span class="dashicons dashicons-share" style="font-size: 26px; width: 36px; height: 36px; line-height: 36px; text-align: center; color: #1d9bf0; flex-shrink: 0;"></span>
-				<span><?php esc_html_e( 'Spread the word and share on', 'janzeman-shared-albums-for-google-photos' ); ?> <strong><a href="https://twitter.com/intent/tweet?text=My%20website%20now%20shares%20beautiful%20Google%20Photos%20galleries%20thanks%20to%20the%20Shared%20Albums%20for%20Google%20Photos%20plugin%20for%20WordPress!%20%F0%9F%93%B8&url=https%3A%2F%2Fwordpress.org%2Fplugins%2Fjanzeman-shared-albums-for-google-photos%2F" target="_blank" rel="noopener"><?php esc_html_e( 'Twitter/X', 'janzeman-shared-albums-for-google-photos' ); ?></a></strong> <?php esc_html_e( 'or', 'janzeman-shared-albums-for-google-photos' ); ?> <strong><a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwordpress.org%2Fplugins%2Fjanzeman-shared-albums-for-google-photos%2F" target="_blank" rel="noopener"><?php esc_html_e( 'Facebook', 'janzeman-shared-albums-for-google-photos' ); ?></a></strong>.</span>
+				<span><?php esc_html_e( 'Spread the word and share on', 'janzeman-shared-albums-for-google-photos' ); ?> <strong><a href="https://twitter.com/intent/tweet?text=My%20website%20now%20shares%20beautiful%20Google%20Photos%20and%20iCloud%20galleries%20thanks%20to%20the%20Shared%20Albums%20plugin%20for%20WordPress!%20%F0%9F%93%B8&url=https%3A%2F%2Fwordpress.org%2Fplugins%2Fjanzeman-shared-albums-for-google-photos%2F" target="_blank" rel="noopener"><?php esc_html_e( 'Twitter/X', 'janzeman-shared-albums-for-google-photos' ); ?></a></strong> <?php esc_html_e( 'or', 'janzeman-shared-albums-for-google-photos' ); ?> <strong><a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwordpress.org%2Fplugins%2Fjanzeman-shared-albums-for-google-photos%2F" target="_blank" rel="noopener"><?php esc_html_e( 'Facebook', 'janzeman-shared-albums-for-google-photos' ); ?></a></strong>.</span>
 			</p>
 			<p style="margin: 6px 0 0; display: flex; align-items: center; gap: 8px;">
 				<img src="<?php echo esc_url( plugins_url( 'assets/BuyMeACoffee_128x128.png', dirname( __FILE__ ) ) ); ?>" alt="" style="width: 36px; height: 36px; flex-shrink: 0;">
@@ -578,7 +578,7 @@ class JZSA_Admin_Pages {
 									<?php esc_html_e( 'What This Plugin Does - and What It Doesn\'t', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</strong>
 						<p style="margin: 16px 0 0 0;">
-							<?php esc_html_e( 'This plugin renders one Google Photos album per shortcode. It does not provide any layout mechanism for multiple albums. One [jzsa-album] shortcode will always render only one given album. To display many albums together, build your own layout with one shortcode per album - for example using columns, the Query Loop block, or any page builder of your choice.', 'janzeman-shared-albums-for-google-photos' ); ?>
+							<?php esc_html_e( 'This plugin renders one album per shortcode. It does not provide any layout mechanism for multiple albums. One [jzsa-album] shortcode will always render only one given album. To display many albums together, build your own layout with one shortcode per album - for example using columns, the Query Loop block, or any page builder of your choice.', 'janzeman-shared-albums-for-google-photos' ); ?>
 						</p>
 						<div class="jzsa-purpose-diagram-wrapper">
 							<svg class="jzsa-purpose-diagram" viewBox="0 0 360 121" role="img" aria-labelledby="jzsa-purpose-diagram-title jzsa-purpose-diagram-desc">
@@ -680,7 +680,7 @@ class JZSA_Admin_Pages {
 						<div class="jzsa-step-number">5</div>
 						<div class="jzsa-step-content">
 							<h3><?php esc_html_e( 'Switch to Your Own Albums', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php esc_html_e( 'Finally, replace the sample link in the shortcode with share links from your own Google Photos albums so your visitors see your real content.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'Finally, replace the sample link in the shortcode with share links from your own Google Photos or iCloud albums so your visitors see your real content.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
 				</div>
@@ -729,7 +729,7 @@ class JZSA_Admin_Pages {
 
 					<div class="jzsa-cache-row">
 							<div class="jzsa-cache-info">
-								<?php esc_html_e( 'Server-side caching is important because it significantly reduces requests to Google Photos and speeds up page loads. Only clear the cache when you need fresh data from Google Photos.', 'janzeman-shared-albums-for-google-photos' ); ?>
+								<?php esc_html_e( 'Server-side caching is important because it significantly reduces requests to Google Photos and iCloud and speeds up page loads. Only clear the cache when you need fresh album data.', 'janzeman-shared-albums-for-google-photos' ); ?>
 							</div>
 							<div class="jzsa-cache-action">
 								<div class="jzsa-cache-actions-row">
@@ -754,7 +754,7 @@ class JZSA_Admin_Pages {
 						<div class="jzsa-cache-explainer__body">
 							<p>
 								<strong><?php esc_html_e( 'Album cache', 'janzeman-shared-albums-for-google-photos' ); ?></strong> - <?php esc_html_e( 'Stores the album\'s photo list and title. Lifetime is controlled by the album-cache-refresh shortcode attribute (default: 7 days) and refreshes automatically when it expires.', 'janzeman-shared-albums-for-google-photos' ); ?><br>
-								<strong><?php esc_html_e( 'If cleared:', 'janzeman-shared-albums-for-google-photos' ); ?></strong> <?php esc_html_e( 'The plugin re-fetches the full photo list from Google Photos on the next page load, picking up any added or removed photos. Per-photo metadata is not affected.', 'janzeman-shared-albums-for-google-photos' ); ?>
+								<strong><?php esc_html_e( 'If cleared:', 'janzeman-shared-albums-for-google-photos' ); ?></strong> <?php esc_html_e( 'The plugin re-fetches the full photo list from Google Photos or iCloud on the next page load, picking up any added or removed photos. Per-photo metadata is not affected.', 'janzeman-shared-albums-for-google-photos' ); ?>
 							</p>
 							<p>
 								<strong><?php esc_html_e( 'Metadata cache', 'janzeman-shared-albums-for-google-photos' ); ?></strong> - <?php esc_html_e( 'Stores per-photo data, filename, description, camera, and EXIF (aperture, shutter, ISO, focal length). Fixed 30-day lifetime, fully independent of the album cache. Populated lazily - metadata is fetched the first time a photo is viewed, then served from cache on all later visits.', 'janzeman-shared-albums-for-google-photos' ); ?><br>
@@ -2288,7 +2288,7 @@ class JZSA_Admin_Pages {
 						<h3><?php esc_html_e( 'Plugin Shows "Unable to Load Album"', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<ul>
 							<li><?php esc_html_e( 'Use straight quotes in shortcode attributes: [jzsa-album link="..."] - not [jzsa-album link="…"]. The block editor (Gutenberg) may auto-convert quotes, which breaks shortcode parsing.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
-							<li><?php esc_html_e( 'Make sure the album is shared publicly via link in Google Photos.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
+							<li><?php esc_html_e( 'Make sure the album is shared publicly: via link in Google Photos, or with Public Website turned on in iCloud Photos.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'Verify you are using the full link format (starts with https://photos.google.com/share/).', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'Check that the album contains at least one photo.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 						</ul>

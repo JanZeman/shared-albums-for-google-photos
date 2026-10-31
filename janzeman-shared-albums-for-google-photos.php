@@ -206,7 +206,7 @@ function jzsa_add_privacy_policy_content() {
 	}
 
 	$content  = '<h3>' . esc_html__( 'Core gallery feature', 'janzeman-shared-albums-for-google-photos' ) . '</h3>';
-	$content .= '<p>' . esc_html__( 'The core gallery feature does not collect, store, or transmit any visitor data. It fetches publicly shared Google Photos albums from photos.google.com and image files from *.googleusercontent.com and caches the result locally in WordPress transients. No personal information is involved.', 'janzeman-shared-albums-for-google-photos' ) . '</p>';
+	$content .= '<p>' . esc_html__( 'The core gallery feature does not collect, store, or transmit any visitor data. It fetches publicly shared Google Photos albums from photos.google.com and image files from *.googleusercontent.com, or publicly shared iCloud albums from icloud.com and media files from *.icloud-content.com, and caches the result locally in WordPress transients. No personal information is involved.', 'janzeman-shared-albums-for-google-photos' ) . '</p>';
 
 	$content .= '<h3>' . esc_html__( 'Community Directory (optional, opt-in)', 'janzeman-shared-albums-for-google-photos' ) . '</h3>';
 	$content .= '<p>' . esc_html__( 'The Community Directory is entirely optional. Browsing community examples makes read-only requests to sa.janzeman.com. Account, publishing, and rating features are active only when an authorized WordPress user explicitly connects to the community.', 'janzeman-shared-albums-for-google-photos' ) . '</p>';

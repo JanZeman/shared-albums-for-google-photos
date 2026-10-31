@@ -114,10 +114,10 @@ class JZSA_Shortcode_Tools {
 		}
 
 		if ( ! isset( $attributes['link'] ) ) {
-			$errors[] = self::issue( 'missing_link', 'error', array( 'link' ), __( 'The shortcode is missing its Google Photos link.', 'janzeman-shared-albums-for-google-photos' ) );
+			$errors[] = self::issue( 'missing_link', 'error', array( 'link' ), __( 'The shortcode is missing its album link.', 'janzeman-shared-albums-for-google-photos' ) );
 		}
 		if ( $link_whitespace_removed ) {
-			$warnings[] = self::issue( 'link_whitespace_removed', 'warning', array( 'link' ), __( 'The Google Photos link contains invalid whitespace. The generated shortcode removes it because URLs cannot contain spaces or line breaks.', 'janzeman-shared-albums-for-google-photos' ) );
+			$warnings[] = self::issue( 'link_whitespace_removed', 'warning', array( 'link' ), __( 'The album link contains invalid whitespace. The generated shortcode removes it because URLs cannot contain spaces or line breaks.', 'janzeman-shared-albums-for-google-photos' ) );
 		}
 		foreach ( array_unique( $duplicates ) as $name ) {
 			$warnings[] = self::issue(

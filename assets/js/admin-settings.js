@@ -925,7 +925,7 @@ function jzsaValidateValue( name, rawValue ) {
 			return null;
 		}
 		if ( ! /^https?:\/\//i.test( value ) ) {
-			return 'The "link" value should be a full Google Photos album share URL ' +
+			return 'The "link" value should be a full Google Photos or iCloud album share URL ' +
 				'starting with "https://".';
 		}
 		return null;
@@ -1096,7 +1096,7 @@ function jzsaValidateShortcode( raw ) {
 			if ( name === 'link' ) {
 				hasLink = true;
 				if ( ! rawValue.trim() ) {
-					errors.push( 'The "link" parameter is empty - paste a Google Photos album share URL.' );
+					errors.push( 'The "link" parameter is empty - paste a Google Photos or iCloud album share URL.' );
 					continue;
 				}
 			} else if ( ! JZSA_PARAM_SET[ name ] ) {

@@ -232,9 +232,9 @@ class OrchestratorShortcodeTest extends TestCase {
 
         $html = $this->orchestrator->handle_shortcode( array( 'link' => self::ALBUM_URL ) );
 
-        $this->assertSame( 'error:Invalid Google Photos URL', $html );
+        $this->assertSame( 'error:Invalid Album URL', $html );
         $this->assertSame( 1, $this->provider->calls );
-        $this->assertSame( 'Invalid Google Photos URL', $this->renderer->errors[0]['title'] );
+        $this->assertSame( 'Invalid Album URL', $this->renderer->errors[0]['title'] );
         $this->assertTrue( $GLOBALS['jzsa_test_nocache_headers_sent'] );
         $this->assertArrayNotHasKey( $this->cacheKey(), $GLOBALS['jzsa_test_transients'] );
     }

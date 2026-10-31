@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<tbody>
 							<tr>
 								<td><code>link</code></td>
-								<td><?php esc_html_e( 'Google Photos share URL (supports both full and short link formats)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Shared album URL from Google Photos (full or short link format) or Apple iCloud', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td><em><?php esc_html_e( 'Required', 'janzeman-shared-albums-for-google-photos' ); ?></em></td>
 							</tr>
 						</tbody>
@@ -51,12 +51,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 							</tr>
 							<tr>
 								<td><code>source-width</code></td>
-								<td>Photo width to fetch from Google for inline mode. Directly affects photo quality: higher values load sharper images.</td>
+								<td>Photo width to request for inline mode. Directly affects photo quality: higher values load sharper images. Google Photos resizes to this size; iCloud albums use the closest available size.</td>
 								<td>800</td>
 							</tr>
 							<tr>
 								<td><code>source-height</code></td>
-								<td>Photo height to fetch from Google for inline mode. Directly affects photo quality: higher values load sharper images.</td>
+								<td>Photo height to request for inline mode. Directly affects photo quality: higher values load sharper images. Google Photos resizes to this size; iCloud albums use the closest available size.</td>
 								<td>600</td>
 							</tr>
 						</tbody>
@@ -218,7 +218,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 							</tr>
 							<tr>
 								<td><code>show-link-button</code></td>
-								<td>Show the external Google Photos link button in the inline album: "false" or "true"</td>
+								<td>Show the button that opens the album in Google Photos or iCloud Photos in the inline album: "false" or "true"</td>
 								<td>false</td>
 							</tr>
 							<tr>
@@ -281,8 +281,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 							<tr><td><code>fullscreen-trigger</code></td><td><?php echo wp_kses_post( __( 'Fullscreen-specific trigger for <code>viewer="both"</code>: <code>button</code>, <code>click</code>, or <code>double-click</code>. A click or double-click gesture can belong to only one viewer mode.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><em>button</em></td></tr>
 							<tr><td><code>viewer-max-width</code></td><td><?php esc_html_e( 'Maximum displayed width for either viewer mode, in pixels.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'not applied', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 							<tr><td><code>viewer-max-height</code></td><td><?php esc_html_e( 'Maximum displayed height for either viewer mode, in pixels.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'not applied', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
-							<tr><td><code>viewer-source-width</code></td><td><?php esc_html_e( 'Photo width fetched from Google for either viewer mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>1920</td></tr>
-							<tr><td><code>viewer-source-height</code></td><td><?php esc_html_e( 'Photo height fetched from Google for either viewer mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>1440</td></tr>
+							<tr><td><code>viewer-source-width</code></td><td><?php esc_html_e( 'Photo width requested for either viewer mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>1920</td></tr>
+							<tr><td><code>viewer-source-height</code></td><td><?php esc_html_e( 'Photo height requested for either viewer mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>1440</td></tr>
 							<tr><td><code>viewer-image-fit</code></td><td><?php esc_html_e( 'Photo fitting for either viewer mode: "contain" or "cover".', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>contain</td></tr>
 							<tr><td><code>viewer-background-color</code></td><td><?php esc_html_e( 'Background or backdrop color for either viewer mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'mode default', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 							<tr><td><code>viewer-corner-radius</code></td><td><?php esc_html_e( 'Corner radius of the displayed viewer frame, in pixels.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>0</td></tr>
@@ -290,7 +290,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 							<tr><td><code>viewer-video-controls-color</code></td><td><?php esc_html_e( 'Video control color for either viewer mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits video-controls-color', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 							<tr><td><code>viewer-video-controls-autohide</code></td><td><?php esc_html_e( 'Whether video controls auto-hide in either viewer mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits video-controls-autohide', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 							<tr><td><code>viewer-show-navigation</code></td><td><?php esc_html_e( 'Whether previous and next controls are shown in either viewer mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits show-navigation', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
-							<tr><td><code>viewer-show-link-button</code></td><td><?php esc_html_e( 'Whether the Google Photos link button is shown in either viewer mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits show-link-button', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
+							<tr><td><code>viewer-show-link-button</code></td><td><?php esc_html_e( 'Whether the button that opens the album in Google Photos or iCloud Photos is shown in either viewer mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits show-link-button', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 							<tr><td><code>viewer-show-download-button</code></td><td><?php esc_html_e( 'Whether the download button is shown in either viewer mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'inherits show-download-button', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 							<tr><td><code>viewer-slideshow</code></td><td><?php esc_html_e( 'Slideshow behavior for either viewer mode: "auto", "manual", or "disabled".', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>disabled</td></tr>
 							<tr><td><code>viewer-slideshow-delay</code></td><td><?php esc_html_e( 'Slideshow delay for either viewer mode, in seconds.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>5</td></tr>
@@ -426,7 +426,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<tbody>
 							<tr>
 								<td><code>album-cache-refresh</code></td>
-								<td>How often the album's photo list is re-fetched from Google Photos, in hours. Only the album listing is affected; per-photo metadata (EXIF, description, etc.) is cached separately and is not cleared by this setting. Useful for albums that are updated frequently (e.g. live event albums). Example: album-cache-refresh="1" to refresh every hour. The old name <code>cache-refresh</code> still works for backward compatibility.</td>
+								<td>How often the album's photo list is re-fetched from Google Photos or iCloud, in hours. Only the album listing is affected; per-photo metadata (EXIF, description, etc.) is cached separately and is not cleared by this setting. Useful for albums that are updated frequently (e.g. live event albums). Example: album-cache-refresh="1" to refresh every hour. The old name <code>cache-refresh</code> still works for backward compatibility.</td>
 								<td>168 (7 days)</td>
 							</tr>
 							<tr>
