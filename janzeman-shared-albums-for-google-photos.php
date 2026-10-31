@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Shared Albums for Google Photos
+ * Plugin Name: Shared Albums (Google Photos / Apple iCloud)
  * Plugin URI: https://github.com/JanZeman/shared-albums-for-google-photos
  * Author URI: https://github.com/JanZeman
- * Description: Display publicly shared Google Photos albums with a modern Swiper-based gallery viewer. Not affiliated with or endorsed by Google LLC.
+ * Description: Display publicly shared Google Photos and Apple iCloud albums with a modern Swiper-based gallery viewer. Not affiliated with or endorsed by Google LLC or Apple Inc.
  * Version: 2.5.3
  * Requires at least: 5.5
  * Requires PHP: 7.0
@@ -217,7 +217,7 @@ function jzsa_add_privacy_policy_content() {
 	$content .= '</ul>';
 
 	wp_add_privacy_policy_content(
-		__( 'Shared Albums for Google Photos', 'janzeman-shared-albums-for-google-photos' ),
+		__( 'Shared Albums (Google Photos / Apple iCloud)', 'janzeman-shared-albums-for-google-photos' ),
 		wp_kses_post( $content )
 	);
 }

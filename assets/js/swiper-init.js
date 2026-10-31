@@ -1,5 +1,5 @@
 /**
- * Swiper Gallery Initialization for Shared Albums for Google Photos (by JanZeman)
+ * Swiper Gallery Initialization for Shared Albums (Google Photos / Apple iCloud)
  */
 /* global Swiper */
 (function($) {
@@ -20,7 +20,7 @@
 		console.log.apply(console, arguments);
 	}
 
-	jzsaDebug('✅ Shared Albums for Google Photos (by JanZeman) loaded');
+	jzsaDebug('✅ Shared Albums (Google Photos / Apple iCloud) loaded');
 
 	function jzsaI18n(key) {
 		return (typeof jzsaAjax !== 'undefined' && jzsaAjax.i18n && jzsaAjax.i18n[key]) || '';

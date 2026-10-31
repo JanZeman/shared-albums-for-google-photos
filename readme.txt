@@ -1,4 +1,4 @@
-=== Shared Albums for Google Photos ===
+=== Shared Albums (Google Photos / Apple iCloud) ===
 Contributors: janzeman
 Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.5
@@ -59,7 +59,7 @@ Community features are optional. You can use the gallery plugin without joining 
 == Installation ==
 
 1. Install and activate the plugin.
-2. Open the new `Shared Albums for Google Photos` menu in WordPress admin.
+2. Open the new `Shared Albums` menu in WordPress admin.
 3. Start with the Guide page and its live examples.
 
 == Screenshots ==
@@ -101,9 +101,9 @@ You can also add your own CSS when you want full visual control.
 
 Yes. The gallery is responsive and supports touch gestures, fullscreen viewing, and mobile-friendly navigation.
 
-= Is this an official Google plugin? =
+= Is this an official Google or Apple plugin? =
 
-No. This plugin is not affiliated with or endorsed by Google LLC. Google Photos™ is a trademark of Google LLC.
+No. This plugin is not affiliated with or endorsed by Google LLC or Apple Inc. Google Photos™ is a trademark of Google LLC. Apple® and iCloud® are trademarks of Apple Inc.
 
 = Where can I find the source code? =
 
