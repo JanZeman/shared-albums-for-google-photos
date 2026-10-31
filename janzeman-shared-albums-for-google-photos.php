@@ -16,6 +16,16 @@
  * @package JZSA_Shared_Albums
  */
 
+/*
+ * Compatibility: this main file must remain named
+ * `janzeman-shared-albums-for-google-photos.php`. WordPress.org identifies the plugin by its
+ * approved slug, which also determines its directory, directory page, SVN repository, and
+ * text domain; WordPress.org expects the main file to match that slug. Renaming this file
+ * would make the installed plugin filename diverge from its established directory identity.
+ * This remains true if the plugin later supports photo sources beyond Google Photos: adding a
+ * source does not change the approved WordPress.org slug or the filename required to match it.
+ */
+
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
