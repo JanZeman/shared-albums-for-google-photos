@@ -107,7 +107,7 @@ No. This plugin is not affiliated with or endorsed by Google LLC or Apple Inc. G
 
 = Where can I find the source code? =
 
-The plugin source code and generic ZIP build tool are maintained on [GitHub](https://github.com/JanZeman/shared-albums-for-google-photos).
+The plugin source code and generic ZIP build tool are maintained on [GitHub](https://github.com/JanZeman/shared-albums-wp-plugin).
 
 == Changelog ==
 
@@ -329,7 +329,7 @@ The community backend does not use cookies, analytics, advertising, or newslette
 
 == Support ==
 
-* **Bug reports:** [Open an issue on GitHub](https://github.com/JanZeman/shared-albums-for-google-photos/issues/new)
+* **Bug reports:** [Open an issue on GitHub](https://github.com/JanZeman/shared-albums-wp-plugin/issues/new)
 * **Feature requests:** [Post on the support forum](https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/)
 * **Privacy, account, or sensitive questions:** email [support@janzeman.com](mailto:support@janzeman.com)
 * **Leave a rating:** [Review on WordPress.org](https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/reviews/#new-post)
