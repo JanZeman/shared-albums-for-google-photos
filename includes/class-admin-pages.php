@@ -1984,22 +1984,23 @@ class JZSA_Admin_Pages {
 <!-- Start Tutorial -->
 				<div class="jzsa-section jzsa-tutorial-section">
 					<h2><?php esc_html_e( 'Now Use Your Own Albums', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
-					<p class="jzsa-intro"><?php esc_html_e( 'After experimenting with the sample album above, follow these simple steps to embed your own Google Photos albums in your posts or pages:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<p class="jzsa-intro"><?php esc_html_e( 'After experimenting with the sample albums above, follow these simple steps to embed your own Google Photos or iCloud albums in your posts or pages:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
 					<!-- Step 1 -->
 					<div class="jzsa-step">
 						<div class="jzsa-step-number">1</div>
 						<div class="jzsa-step-content">
-						<h3><?php esc_html_e( 'Open Your Google Photos Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<h3><?php esc_html_e( 'Open Your Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p>
 								<?php
 								printf(
 									/* translators: %s: Google Photos albums URL. */
-									esc_html__( 'Go to %s to see the collection of your albums.', 'janzeman-shared-albums-for-google-photos' ),
+									esc_html__( 'Google Photos: go to %s to see the collection of your albums.', 'janzeman-shared-albums-for-google-photos' ),
 									'<a href="https://photos.google.com/albums" target="_blank" rel="noopener">' . esc_html__( 'Google Photos', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
 								);
 								?>
 							</p>
+							<p><?php esc_html_e( 'iCloud: open the Photos app on your iPhone, iPad or Mac, or go to icloud.com/photos in a browser, and find the album under Shared Albums.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
 
@@ -2008,6 +2009,7 @@ class JZSA_Admin_Pages {
 						<div class="jzsa-step-number">2</div>
 						<div class="jzsa-step-content">
 							<h3><?php esc_html_e( 'Get the Share Link', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<h4><?php esc_html_e( 'Google Photos', 'janzeman-shared-albums-for-google-photos' ); ?></h4>
 							<ol class="jzsa-substeps">
 								<li><?php esc_html_e( 'Select the album you want to share', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 								<li><?php esc_html_e( 'Click the Share button (or three-dot menu → Share)', 'janzeman-shared-albums-for-google-photos' ); ?></li>
@@ -2024,6 +2026,16 @@ class JZSA_Admin_Pages {
 									<?php esc_html_e( 'Short photos.app.goo.gl links are deprecated; for best reliability always use the full https://photos.google.com/share/... link from your browser\'s address bar.', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</p>
 							</div>
+							<h4><?php esc_html_e( 'iCloud', 'janzeman-shared-albums-for-google-photos' ); ?></h4>
+							<ol class="jzsa-substeps">
+								<li><?php esc_html_e( 'Open the shared album and tap the People button (on a Mac, click it in the toolbar)', 'janzeman-shared-albums-for-google-photos' ); ?></li>
+								<li><?php esc_html_e( 'Turn on Public Website', 'janzeman-shared-albums-for-google-photos' ); ?></li>
+								<li><?php esc_html_e( 'Tap Share Link and copy the link', 'janzeman-shared-albums-for-google-photos' ); ?></li>
+							</ol>
+							<p><?php esc_html_e( 'On icloud.com/photos, open the album\'s sharing settings, turn on Public Website and click Copy.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'Only you, as the owner of the shared album, can turn on Public Website. The link looks like one of these:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<code class="jzsa-code-good">https://photos.icloud.com/shared/album/...</code><br>
+							<code class="jzsa-code-good">https://www.icloud.com/sharedalbum/#B0...</code>
 						</div>
 					</div>
 
@@ -2040,7 +2052,7 @@ class JZSA_Admin_Pages {
 						<code><?php echo esc_html( $sample_shortcode ); ?></code>
 						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 					</div>
-							<p class="jzsa-help-text"><?php esc_html_e( 'Replace YOUR_LINK_HERE with the full link you copied from Google Photos.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p class="jzsa-help-text"><?php esc_html_e( 'Replace YOUR_LINK_HERE with the full link you copied from Google Photos or iCloud.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
 

@@ -589,6 +589,7 @@ class JZSA_ICloud_Provider {
 			if ( ! empty( $fields['assetDate']['value'] ) ) {
 				$item['timestamp'] = (int) $fields['assetDate']['value'];
 			}
+			$item = array_merge( $item, $this->exif_fields( $master ) );
 
 			$items[] = $item;
 		}
@@ -641,6 +642,187 @@ class JZSA_ICloud_Provider {
 		$base       = '' !== $filename ? pathinfo( $filename, PATHINFO_FILENAME ) : 'media';
 
 		return isset( $extensions[ $type ] ) ? $base . '.' . $extensions[ $type ] : ( '' !== $filename ? $filename : 'media' );
+	}
+
+	/**
+	 * Camera placeholders from the master's image properties.
+	 *
+	 * CloudKit sends the original's EXIF as a binary plist in mediaMetaDataEnc,
+	 * so no extra request is needed. Only camera values are kept; GPS and the
+	 * rest never leave the server.
+	 *
+	 * @param array $master Master record fields.
+	 * @return array
+	 */
+	private function exif_fields( $master ) {
+		if ( isset( $master['mediaMetaDataType']['value'] ) && 'CGImageProperties' !== $master['mediaMetaDataType']['value'] ) {
+			return array();
+		}
+		if ( empty( $master['mediaMetaDataEnc']['value'] ) || ! is_string( $master['mediaMetaDataEnc']['value'] ) ) {
+			return array();
+		}
+
+		$properties = self::parse_binary_plist( (string) base64_decode( $master['mediaMetaDataEnc']['value'], true ) );
+		if ( ! is_array( $properties ) ) {
+			return array();
+		}
+
+		$tiff = isset( $properties['{TIFF}'] ) && is_array( $properties['{TIFF}'] ) ? $properties['{TIFF}'] : array();
+		$exif = isset( $properties['{Exif}'] ) && is_array( $properties['{Exif}'] ) ? $properties['{Exif}'] : array();
+		$iso  = isset( $exif['ISOSpeedRatings'] ) ? $exif['ISOSpeedRatings'] : null;
+		if ( is_array( $iso ) ) {
+			$iso = isset( $iso[0] ) ? $iso[0] : null;
+		}
+
+		$number = static function ( $value ) {
+			return is_int( $value ) || is_float( $value ) ? (float) $value : null;
+		};
+
+		$provider = new JZSA_Data_Provider();
+
+		return $provider->format_exif_fields(
+			isset( $tiff['Make'] ) && is_string( $tiff['Make'] ) ? $tiff['Make'] : '',
+			isset( $tiff['Model'] ) && is_string( $tiff['Model'] ) ? $tiff['Model'] : '',
+			$number( isset( $exif['FNumber'] ) ? $exif['FNumber'] : null ),
+			$number( isset( $exif['ExposureTime'] ) ? $exif['ExposureTime'] : null ),
+			$number( isset( $exif['FocalLength'] ) ? $exif['FocalLength'] : null ),
+			null === $number( $iso ) ? null : (int) $iso
+		);
+	}
+
+	/**
+	 * Decode an Apple binary property list (bplist00).
+	 *
+	 * Supports what image properties use: dictionaries, arrays, strings,
+	 * integers, reals, booleans and data. Returns null for anything malformed.
+	 *
+	 * @param string $data Raw plist bytes.
+	 * @return mixed|null
+	 */
+	public static function parse_binary_plist( $data ) {
+		$length = strlen( $data );
+		if ( $length < 40 || 0 !== strpos( $data, 'bplist00' ) ) {
+			return null;
+		}
+
+		$trailer     = substr( $data, -32 );
+		$offset_size = ord( $trailer[6] );
+		$ref_size    = ord( $trailer[7] );
+		$count       = self::read_plist_int( substr( $trailer, 8, 8 ) );
+		$top         = self::read_plist_int( substr( $trailer, 16, 8 ) );
+		$table       = self::read_plist_int( substr( $trailer, 24, 8 ) );
+		if ( $offset_size < 1 || $ref_size < 1 || $count < 1 || $top >= $count || $table + $count * $offset_size > $length - 32 ) {
+			return null;
+		}
+
+		$offsets = array();
+		for ( $i = 0; $i < $count; $i++ ) {
+			$offsets[] = self::read_plist_int( substr( $data, $table + $i * $offset_size, $offset_size ) );
+		}
+
+		return self::read_plist_object( $data, $offsets, $ref_size, $top, 0 );
+	}
+
+	/**
+	 * Read one object of a binary plist.
+	 *
+	 * @param string $data     Raw plist bytes.
+	 * @param array  $offsets  Object offsets.
+	 * @param int    $ref_size Object reference size in bytes.
+	 * @param int    $index    Object index.
+	 * @param int    $depth    Nesting depth, to stop on cycles.
+	 * @return mixed|null
+	 */
+	private static function read_plist_object( $data, $offsets, $ref_size, $index, $depth ) {
+		if ( $depth > 16 || ! isset( $offsets[ $index ] ) || $offsets[ $index ] >= strlen( $data ) ) {
+			return null;
+		}
+
+		$pos    = $offsets[ $index ];
+		$marker = ord( $data[ $pos ] );
+		$type   = $marker >> 4;
+		$info   = $marker & 0x0F;
+
+		if ( 0x0 === $type ) {
+			return 0x9 === $info ? true : ( 0x8 === $info ? false : null );
+		}
+		if ( 0x1 === $type ) {
+			$bytes = 1 << $info;
+			$value = self::read_plist_int( substr( $data, $pos + 1, $bytes ) );
+			// 8-byte integers are signed.
+			return ( 8 === $bytes && $value > PHP_INT_MAX ) ? null : $value;
+		}
+		if ( 0x2 === $type ) {
+			$bytes = 1 << $info;
+			$raw   = substr( $data, $pos + 1, $bytes );
+			if ( ( 4 !== $bytes && 8 !== $bytes ) || strlen( $raw ) !== $bytes ) {
+				return null;
+			}
+			// Plists are big-endian; unpack's 'f'/'d' use machine order (PHP 7.0 has no 'G'/'E').
+			if ( "\x01\x00" === pack( 'S', 1 ) ) {
+				$raw = strrev( $raw );
+			}
+			$value = unpack( 4 === $bytes ? 'f' : 'd', $raw );
+			return (float) $value[1];
+		}
+
+		$size  = $info;
+		$start = $pos + 1;
+		if ( 0xF === $info && in_array( $type, array( 0x4, 0x5, 0x6, 0xA, 0xD ), true ) ) {
+			$size_marker = ord( $data[ $start ] );
+			if ( 0x1 !== ( $size_marker >> 4 ) ) {
+				return null;
+			}
+			$bytes = 1 << ( $size_marker & 0x0F );
+			$size  = self::read_plist_int( substr( $data, $start + 1, $bytes ) );
+			$start = $start + 1 + $bytes;
+		}
+
+		switch ( $type ) {
+			case 0x4:
+				return substr( $data, $start, $size );
+			case 0x5:
+				return substr( $data, $start, $size );
+			case 0x6:
+				$raw = substr( $data, $start, $size * 2 );
+				return function_exists( 'mb_convert_encoding' ) ? mb_convert_encoding( $raw, 'UTF-8', 'UTF-16BE' ) : '';
+			case 0xA:
+				$list = array();
+				for ( $i = 0; $i < $size; $i++ ) {
+					$ref    = self::read_plist_int( substr( $data, $start + $i * $ref_size, $ref_size ) );
+					$list[] = self::read_plist_object( $data, $offsets, $ref_size, $ref, $depth + 1 );
+				}
+				return $list;
+			case 0xD:
+				$dict = array();
+				for ( $i = 0; $i < $size; $i++ ) {
+					$key_ref   = self::read_plist_int( substr( $data, $start + $i * $ref_size, $ref_size ) );
+					$value_ref = self::read_plist_int( substr( $data, $start + ( $size + $i ) * $ref_size, $ref_size ) );
+					$key       = self::read_plist_object( $data, $offsets, $ref_size, $key_ref, $depth + 1 );
+					if ( is_string( $key ) ) {
+						$dict[ $key ] = self::read_plist_object( $data, $offsets, $ref_size, $value_ref, $depth + 1 );
+					}
+				}
+				return $dict;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Read a big-endian unsigned integer.
+	 *
+	 * @param string $bytes Raw bytes.
+	 * @return int
+	 */
+	private static function read_plist_int( $bytes ) {
+		$value = 0;
+		$len   = strlen( $bytes );
+		for ( $i = 0; $i < $len; $i++ ) {
+			$value = $value * 256 + ord( $bytes[ $i ] );
+		}
+
+		return (int) $value;
 	}
 
 	/**

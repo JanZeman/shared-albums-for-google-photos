@@ -213,6 +213,30 @@ class ICloudProviderTest extends TestCase {
 		$this->assertArrayNotHasKey( 'description', $photos[2] );
 	}
 
+	public function test_camera_info_comes_from_the_original_image_properties(): void {
+		$this->stubCloudKitAlbum();
+
+		$photos = $this->provider->fetch_album( self::CLOUDKIT_ALBUM_URL )['data']['photos'];
+
+		$this->assertSame( 'Canon EOS 5D Mark II', $photos[0]['camera'] );
+		$this->assertSame( 'Canon', $photos[0]['camera_make'] );
+		$this->assertSame( "\xC6\x92/5.6", $photos[0]['aperture'] );
+		$this->assertSame( '1/320', $photos[0]['shutter'] );
+		$this->assertSame( '400mm', $photos[0]['focal'] );
+		$this->assertSame( 'ISO250', $photos[0]['iso'] );
+		$this->assertSame( "\xC6\x92/5.6 \xC2\xB7 1/320 \xC2\xB7 400mm \xC2\xB7 ISO250", $photos[0]['exif'] );
+		// Location and the other image properties never reach the page.
+		$this->assertStringNotContainsString( '55.6761', wp_json_encode( $photos ) );
+		// Without image properties there is no camera info.
+		$this->assertArrayNotHasKey( 'camera', $photos[1] );
+	}
+
+	public function test_binary_plist_parser_rejects_malformed_data(): void {
+		$this->assertNull( JZSA_ICloud_Provider::parse_binary_plist( '' ) );
+		$this->assertNull( JZSA_ICloud_Provider::parse_binary_plist( 'bplist00' . str_repeat( "\xFF", 40 ) ) );
+		$this->assertNull( JZSA_ICloud_Provider::parse_binary_plist( str_repeat( 'x', 64 ) ) );
+	}
+
 	public function test_cloudkit_album_without_anonymous_access_fails(): void {
 		$GLOBALS['jzsa_test_http_responses'][ self::CLOUDKIT_RESOLVE ] = array(
 			'response' => array( 'code' => 200 ),

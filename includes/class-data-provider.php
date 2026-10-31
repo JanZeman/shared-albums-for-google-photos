@@ -693,6 +693,53 @@ class JZSA_Data_Provider {
 	}
 
 	/**
+	 * Build the EXIF placeholder fields from raw camera values.
+	 *
+	 * Used by sources that deliver EXIF as plain values (iCloud), so they
+	 * render exactly like the values scraped from Google Photos.
+	 *
+	 * @param string     $make     EXIF make.
+	 * @param string     $model    EXIF model.
+	 * @param float|null $aperture F-number.
+	 * @param float|null $shutter  Exposure time in seconds.
+	 * @param float|null $focal    Focal length in mm.
+	 * @param int|null   $iso      ISO speed.
+	 * @return array Placeholder fields; missing values are left out.
+	 */
+	public function format_exif_fields( $make, $model, $aperture, $shutter, $focal, $iso ) {
+		$fields = array();
+		$camera = $this->build_camera_display_name( $make, $model );
+		if ( '' !== $camera ) {
+			$fields['camera']       = $camera;
+			$fields['camera_make']  = $this->normalize_camera_make_for_display( trim( (string) $make ) );
+			$fields['camera_model'] = $this->normalize_camera_make_for_display( trim( (string) $model ) );
+		}
+		if ( null === $aperture || null === $shutter || null === $focal || null === $iso ) {
+			return $fields;
+		}
+		if ( $aperture <= 0 || $shutter <= 0 || $focal <= 0 || $iso <= 0 ) {
+			return $fields;
+		}
+
+		$number = static function ( $value ) {
+			return rtrim( rtrim( number_format( (float) $value, 1, '.', '' ), '0' ), '.' );
+		};
+
+		$aperture_display = $number( $aperture );
+		$shutter_display  = $shutter < 1 ? '1/' . round( 1 / $shutter ) : $number( $shutter ) . 's';
+		$focal_display    = $number( $focal );
+		$iso              = (int) $iso;
+
+		$fields['exif']     = sprintf( "\xC6\x92/%s \xC2\xB7 %s \xC2\xB7 %smm \xC2\xB7 ISO%d", $aperture_display, $shutter_display, $focal_display, $iso );
+		$fields['aperture'] = "\xC6\x92/" . $aperture_display;
+		$fields['shutter']  = $shutter_display;
+		$fields['focal']    = $focal_display . 'mm';
+		$fields['iso']      = 'ISO' . $iso;
+
+		return $fields;
+	}
+
+	/**
 	 * Build a clean display string for camera make/model.
 	 *
 	 * Some cameras store the brand twice across EXIF make + model

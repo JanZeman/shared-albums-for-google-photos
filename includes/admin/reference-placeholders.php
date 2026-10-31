@@ -95,13 +95,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 							</tr>
 							<tr>
 								<td><code>{camera-make}</code></td>
-								<td><?php esc_html_e( 'Raw EXIF camera make as provided by Google Photos (not available for iCloud albums)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Raw EXIF camera make as provided by Google Photos or iCloud', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>Canon</td>
 								<td>⏳ <?php esc_html_e( 'May appear with delay', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
 							<tr>
 								<td><code>{camera-model}</code></td>
-								<td><?php esc_html_e( 'Raw EXIF camera model as provided by Google Photos (not available for iCloud albums)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Raw EXIF camera model as provided by Google Photos or iCloud', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>Canon EOS 5D Mark II</td>
 								<td>⏳ <?php esc_html_e( 'May appear with delay', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
@@ -134,7 +134,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 					<div class="jzsa-attention-box" style="margin-top: 16px;">
 						<strong><?php esc_html_e( 'Note on delayed photo metadata', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-						<p style="margin: 8px 0 0 0;"><?php esc_html_e( 'Some per-photo placeholders (description, camera, aperture, shutter, focal, ISO) are not available in the album listing. When you use any of them, the plugin automatically fetches each photo\'s individual page from Google Photos in the background to retrieve it. iCloud albums include descriptions in the album listing but provide no camera information. For Google Photos this means:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<p style="margin: 8px 0 0 0;"><?php esc_html_e( 'Some per-photo placeholders (description, camera, aperture, shutter, focal, ISO) are not available in the album listing. When you use any of them, the plugin automatically fetches each photo\'s individual page from Google Photos in the background to retrieve it. iCloud albums include descriptions and camera information directly in the album listing, so none of this applies to them. For Google Photos this means:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<ul style="margin: 10px 0 0 0; padding-left: 22px; list-style: disc;">
 							<li><?php esc_html_e( 'EXIF information is not perfectly reliable. Google decides what survives in a shared album, so availability depends a lot on the quality and origin of your album content.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'It will appear with a brief delay the first time it is fetched (not instantly like date or dimensions). After that it is cached on your web server and appears immediately for later visitors.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
