@@ -348,37 +348,19 @@ class JZSA_ICloud_Provider {
 
 		$query_url = rtrim( $album['anonymousPublicAccess']['databasePartition'], '/' ) . self::CLOUDKIT_DATABASE
 			. 'shared/records/query?remapEnums=true&publicAccessAuthToken=' . rawurlencode( $album['anonymousPublicAccess']['token'] );
-		$query     = array(
-			'query'        => array(
-				'recordType' => 'CPLAssetAndMasterByAssetDateWithoutHiddenOrDeleted',
-				'filterBy'   => array(
-					array(
-						'fieldName'  => 'direction',
-						'comparator' => 'EQUALS',
-						'fieldValue' => array(
-							'value' => 'ASCENDING',
-							'type'  => 'STRING',
-						),
-					),
-				),
-			),
-			'zoneID'       => $album['zoneID'],
-			'resultsLimit' => self::CLOUDKIT_PAGE_SIZE,
-		);
+		$records = $this->query_cloudkit_zone( $query_url, $album['zoneID'], 'CPLAssetAndMasterByAssetDateWithoutHiddenOrDeleted' );
+		if ( is_string( $records ) ) {
+			return $this->error( $records );
+		}
 
-		$records = array();
-		for ( $page = 0; $page < self::CLOUDKIT_MAX_PAGES; $page++ ) {
-			$response = $this->post_json( $query_url, $query, 'https://photos.icloud.com' );
-			if ( is_string( $response ) ) {
-				return $this->error( $response );
+		// Upload comments ("posts") carry the captions; without them the album still shows.
+		$posts = $this->query_cloudkit_zone( $query_url, $album['zoneID'], 'CPLPostByPostTimestamp' );
+		if ( is_array( $posts ) ) {
+			foreach ( $posts as $post ) {
+				if ( isset( $post['recordType'] ) && 'CPLPost' === $post['recordType'] ) {
+					$records[] = $post;
+				}
 			}
-			if ( ! empty( $response['records'] ) && is_array( $response['records'] ) ) {
-				$records = array_merge( $records, $response['records'] );
-			}
-			if ( empty( $response['continuationMarker'] ) ) {
-				break;
-			}
-			$query['continuationMarker'] = $response['continuationMarker'];
 		}
 
 		$photos = $this->build_cloudkit_items( $records );
@@ -399,20 +381,73 @@ class JZSA_ICloud_Provider {
 	}
 
 	/**
+	 * Run a CloudKit records/query over the album zone, following continuation markers.
+	 *
+	 * @param string $query_url   records/query endpoint including the anonymous token.
+	 * @param array  $zone_id     Album zone from records/resolve.
+	 * @param string $record_type Query record type.
+	 * @return array|string Records, or an error message.
+	 */
+	private function query_cloudkit_zone( $query_url, $zone_id, $record_type ) {
+		$query = array(
+			'query'        => array(
+				'recordType' => $record_type,
+				'filterBy'   => array(
+					array(
+						'fieldName'  => 'direction',
+						'comparator' => 'EQUALS',
+						'fieldValue' => array(
+							'value' => 'ASCENDING',
+							'type'  => 'STRING',
+						),
+					),
+				),
+			),
+			'zoneID'       => $zone_id,
+			'resultsLimit' => self::CLOUDKIT_PAGE_SIZE,
+		);
+
+		$records = array();
+		for ( $page = 0; $page < self::CLOUDKIT_MAX_PAGES; $page++ ) {
+			$response = $this->post_json( $query_url, $query, 'https://photos.icloud.com' );
+			if ( is_string( $response ) ) {
+				return $response;
+			}
+			if ( ! empty( $response['records'] ) && is_array( $response['records'] ) ) {
+				$records = array_merge( $records, $response['records'] );
+			}
+			if ( empty( $response['continuationMarker'] ) ) {
+				break;
+			}
+			$query['continuationMarker'] = $response['continuationMarker'];
+		}
+
+		return $records;
+	}
+
+	/**
 	 * Turn CloudKit CPLAsset + CPLMaster records into media items.
 	 *
 	 * Renditions are the master's res<Name>Res fields (resJPEGThumbRes,
 	 * resJPEGMedRes, resOriginalRes, resVidMedRes, ...). Image renditions the
-	 * browser can show go to 'sources'; the widest video rendition is the video.
+	 * browser can show go to 'sources'; the widest video rendition is the video,
+	 * preferring the transcoded ones over a possibly huge original. The caption
+	 * is the comment of the upload (CPLPost) the asset was added with.
 	 *
-	 * @param array $records Records from records/query, in album order.
+	 * @param array $records CPLAsset, CPLMaster and CPLPost records, assets in album order.
 	 * @return array Media items.
 	 */
 	public function build_cloudkit_items( $records ) {
 		$masters = array();
+		$posts   = array();
 		foreach ( $records as $record ) {
-			if ( isset( $record['recordType'], $record['recordName'] ) && 'CPLMaster' === $record['recordType'] ) {
+			if ( ! isset( $record['recordType'], $record['recordName'] ) ) {
+				continue;
+			}
+			if ( 'CPLMaster' === $record['recordType'] ) {
 				$masters[ $record['recordName'] ] = isset( $record['fields'] ) ? $record['fields'] : array();
+			} elseif ( 'CPLPost' === $record['recordType'] && isset( $record['fields'] ) ) {
+				$posts[ $record['recordName'] ] = $this->decode_cloudkit_string( $record['fields'], 'caption' );
 			}
 		}
 
@@ -432,7 +467,7 @@ class JZSA_ICloud_Provider {
 			$filename = $this->decode_cloudkit_string( $master, 'filenameEnc' );
 			$sources  = array();
 			$video    = '';
-			$video_w  = 0;
+			$video_w  = -1;
 
 			foreach ( $master as $key => $field ) {
 				if ( ! preg_match( '/^res(.+)Res$/', $key, $m ) || empty( $field['value']['downloadURL'] ) ) {
@@ -446,9 +481,10 @@ class JZSA_ICloud_Provider {
 				$url    = str_replace( '${f}', rawurlencode( '' !== $filename ? $filename : 'media' ), $field['value']['downloadURL'] );
 
 				if ( in_array( $type, array( 'com.apple.quicktime-movie', 'public.mpeg-4' ), true ) ) {
-					if ( $width >= $video_w ) {
+					$rank = 'Original' === $name ? 0 : $width;
+					if ( $rank > $video_w ) {
 						$video   = $url;
-						$video_w = $width;
+						$video_w = $rank;
 					}
 					continue;
 				}
@@ -489,11 +525,8 @@ class JZSA_ICloud_Provider {
 				$item['video'] = $video;
 			}
 
-			// Which of the two Photos text fields carries the caption is not confirmed yet.
-			$caption = $this->decode_cloudkit_string( $fields, 'extendedDescEnc' );
-			if ( '' === $caption ) {
-				$caption = $this->decode_cloudkit_string( $fields, 'captionEnc' );
-			}
+			$batch_id = isset( $fields['assetBatchId']['value'] ) ? (string) $fields['assetBatchId']['value'] : '';
+			$caption  = isset( $posts[ $batch_id ] ) ? $posts[ $batch_id ] : '';
 			if ( '' !== $caption ) {
 				$item['description'] = $caption;
 			}

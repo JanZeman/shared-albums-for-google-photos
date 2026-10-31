@@ -68,9 +68,9 @@
      "value": 1657907163000,
      "type": "TIMESTAMP"
     },
-    "extendedDescEnc": {
-     "value": "U3Vuc2V0IGF0IHRoZSBsYWtl",
-     "type": "ENCRYPTED_BYTES"
+    "assetBatchId": {
+     "value": "BATCH-A1",
+     "type": "STRING"
     }
    }
   },
@@ -162,9 +162,9 @@
      "value": 1641471376000,
      "type": "TIMESTAMP"
     },
-    "captionEnc": {
-     "value": "VGl0bGUgb25seQ==",
-     "type": "ENCRYPTED_BYTES"
+    "assetBatchId": {
+     "value": "BATCH-A2",
+     "type": "STRING"
     }
    }
   },
@@ -235,6 +235,26 @@
     "resVidMedHeight": {
      "value": 720,
      "type": "INT64"
+    },
+    "resOriginalRes": {
+     "value": {
+      "fileChecksum": "orig3",
+      "size": 1,
+      "downloadURL": "https://cvws.icloud-content.com/B/orig3/${f}?o=1"
+     },
+     "type": "ASSETID"
+    },
+    "resOriginalFileType": {
+     "value": "public.mpeg-4",
+     "type": "STRING"
+    },
+    "resOriginalWidth": {
+     "value": 3840,
+     "type": "INT64"
+    },
+    "resOriginalHeight": {
+     "value": 2160,
+     "type": "INT64"
     }
    }
   },
@@ -255,6 +275,10 @@
     "assetDate": {
      "value": 1641471377000,
      "type": "TIMESTAMP"
+    },
+    "assetBatchId": {
+     "value": "BATCH-A3",
+     "type": "STRING"
     }
    }
   },
@@ -274,6 +298,40 @@
     },
     "assetDate": {
      "value": 1641471378000,
+     "type": "TIMESTAMP"
+    },
+    "assetBatchId": {
+     "value": "BATCH-A4",
+     "type": "STRING"
+    }
+   }
+  },
+  {
+   "recordName": "BATCH-A1",
+   "recordType": "CPLPost",
+   "fields": {
+    "caption": {
+     "value": "Sunset at the lake",
+     "type": "STRING",
+     "isEncrypted": true
+    },
+    "postTimestamp": {
+     "value": 1,
+     "type": "TIMESTAMP"
+    }
+   }
+  },
+  {
+   "recordName": "BATCH-A2",
+   "recordType": "CPLPost",
+   "fields": {
+    "caption": {
+     "value": "Dog",
+     "type": "STRING",
+     "isEncrypted": true
+    },
+    "postTimestamp": {
+     "value": 2,
      "type": "TIMESTAMP"
     }
    }

@@ -4,7 +4,8 @@
  * webstream + webasseturls parsing, and the orchestrator's fixed-rendition
  * size picking. Fixtures in tests/fixtures/icloud/ follow the shape of the
  * public sharedstreams and CloudKit endpoints, so these tests never call
- * live iCloud.
+ * live iCloud. The HTTP stub answers by URL, so both CloudKit queries (assets
+ * and posts) get the same fixture, which holds every record type.
  */
 
 use PHPUnit\Framework\TestCase;
@@ -175,6 +176,15 @@ class ICloudProviderTest extends TestCase {
 			array( 'shortGUIDs' => array( array( 'value' => '00TestAlbumGuid' ) ) ),
 			json_decode( $GLOBALS['jzsa_test_http_requests'][0]['args']['body'], true )
 		);
+		$this->assertSame(
+			array( 'CPLAssetAndMasterByAssetDateWithoutHiddenOrDeleted', 'CPLPostByPostTimestamp' ),
+			array_map(
+				static function ( $request ) {
+					return json_decode( $request['args']['body'], true )['query']['recordType'];
+				},
+				array_slice( $GLOBALS['jzsa_test_http_requests'], 1 )
+			)
+		);
 
 		$photos = $result['data']['photos'];
 		$this->assertSame( 'image', $photos[0]['type'] );
@@ -187,9 +197,11 @@ class ICloudProviderTest extends TestCase {
 		// HEIC originals cannot be shown in browsers, so the JPEG renditions are used.
 		$this->assertSame( array( 360, 3024 ), array_column( $photos[1]['sources'], 'width' ) );
 		$this->assertSame( 'https://cvws.icloud-content.com/B/full2/IMG_2.HEIC?o=1', $photos[1]['url'] );
-		$this->assertSame( 'Title only', $photos[1]['description'] );
+		// Captions come from the upload post whose name is the asset's batch ID.
+		$this->assertSame( 'Dog', $photos[1]['description'] );
 
 		$this->assertSame( 'video', $photos[2]['type'] );
+		// The transcoded rendition wins over the larger original.
 		$this->assertSame( 'https://cvws.icloud-content.com/B/vmed3/IMG_3.MOV?o=1', $photos[2]['video'] );
 		$this->assertSame( 'https://cvws.icloud-content.com/B/poster3/IMG_3.MOV?o=1', $photos[2]['url'] );
 		$this->assertArrayNotHasKey( 'description', $photos[2] );
