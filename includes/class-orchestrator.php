@@ -228,7 +228,8 @@ class JZSA_Shared_Albums {
 		add_action( 'save_post', array( $this, 'clear_cache' ) );
 		add_action( 'wp_ajax_jzsa_download_image', array( $this, 'handle_download_image' ) );
 		add_action( 'wp_ajax_nopriv_jzsa_download_image', array( $this, 'handle_download_image' ) );
-		add_action( 'init', array( $this, 'handle_media_redirect' ), 1 );
+		// The plugin itself is created on init, so the earliest hook still ahead is wp_loaded.
+		add_action( 'wp_loaded', array( $this, 'handle_media_redirect' ) );
 		add_action( 'wp_ajax_jzsa_refresh_urls', array( $this, 'handle_refresh_urls' ) );
 		add_action( 'wp_ajax_nopriv_jzsa_refresh_urls', array( $this, 'handle_refresh_urls' ) );
 		add_action( 'wp_ajax_jzsa_shortcode_preview', array( $this, 'handle_shortcode_preview' ) );
@@ -2302,7 +2303,8 @@ class JZSA_Shared_Albums {
 
 	/**
 	 * Answer a stable media URL (?jzsa_media=1) with a redirect to the current
-	 * direct URL. Runs early on init to keep the per-image cost low.
+	 * direct URL. Runs on wp_loaded, before WordPress routes the request, to
+	 * keep the per-image cost low.
 	 *
 	 * @return void
 	 */
