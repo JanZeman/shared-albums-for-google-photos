@@ -22,6 +22,8 @@ class JZSA_Admin_Pages {
 	const PLACEHOLDERS_SLUG         = 'janzeman-shared-albums-for-google-photos-placeholders';
 	const COMMUNITY_SLUG            = 'janzeman-shared-albums-for-google-photos-community';
 	const SETTINGS_SLUG             = 'janzeman-shared-albums-for-google-photos-settings';
+	const GOOGLE_SOURCE_SLUG        = 'janzeman-shared-albums-for-google-photos-source-google';
+	const ICLOUD_SOURCE_SLUG        = 'janzeman-shared-albums-for-google-photos-source-icloud';
 	const ANNOUNCEMENT_VERSION      = 'community-2';
 	/**
 	 * Dismissal version for the Settings page explainer.
@@ -122,7 +124,15 @@ class JZSA_Admin_Pages {
 			return $html;
 		}
 
-		return strtr( $html, self::SAMPLE_ALBUM_LINKS );
+		// The source comparison shows both sources on purpose, so it is left as written.
+		$parts = preg_split( '/(<!-- jzsa-source-compare -->.*?<!-- \/jzsa-source-compare -->)/s', $html, -1, PREG_SPLIT_DELIM_CAPTURE );
+		foreach ( $parts as $index => $part ) {
+			if ( 0 !== strpos( $part, '<!-- jzsa-source-compare -->' ) ) {
+				$parts[ $index ] = strtr( $part, self::SAMPLE_ALBUM_LINKS );
+			}
+		}
+
+		return implode( '', $parts );
 	}
 
 	private function render_primary_source_setting_section() {
@@ -245,6 +255,24 @@ class JZSA_Admin_Pages {
 			jzsa_get_admin_capability(),
 			self::MENU_SLUG,
 			array( $this, 'render_guide_page' )
+		);
+
+		add_submenu_page(
+			self::MENU_SLUG,
+			'Shared Albums: Google Photos',
+			'Google Photos',
+			jzsa_get_admin_capability(),
+			self::GOOGLE_SOURCE_SLUG,
+			array( $this, 'render_google_source_page' )
+		);
+
+		add_submenu_page(
+			self::MENU_SLUG,
+			'Shared Albums: Apple iCloud',
+			'Apple iCloud',
+			jzsa_get_admin_capability(),
+			self::ICLOUD_SOURCE_SLUG,
+			array( $this, 'render_icloud_source_page' )
 		);
 
 		add_submenu_page(
@@ -422,6 +450,8 @@ class JZSA_Admin_Pages {
 			$page,
 			array(
 				self::MENU_SLUG,
+				self::GOOGLE_SOURCE_SLUG,
+				self::ICLOUD_SOURCE_SLUG,
 				self::SHORTCODE_PARAMETERS_SLUG,
 				self::PLACEHOLDERS_SLUG,
 				self::COMMUNITY_SLUG,
@@ -572,6 +602,158 @@ class JZSA_Admin_Pages {
 		$this->render_primary_source_setting_section();
 		$this->render_default_viewer_setting_section();
 		$this->render_page_shell_end();
+	}
+
+	/**
+	 * Render the Google Photos source page.
+	 */
+	public function render_google_source_page() {
+		$this->render_source_page( $this->get_source_profile( 'google' ) );
+	}
+
+	/**
+	 * Render the Apple iCloud source page.
+	 */
+	public function render_icloud_source_page() {
+		$this->render_source_page( $this->get_source_profile( 'icloud' ) );
+	}
+
+	/**
+	 * Everything a source page shows, per source.
+	 *
+	 * Source pages share one template; a new source only needs a new profile.
+	 *
+	 * @param string $source Source key.
+	 * @return array
+	 */
+	private function get_source_profile( $source ) {
+		$links = array_keys( self::SAMPLE_ALBUM_LINKS );
+		if ( 'icloud' === $source ) {
+			$links = array_values( self::SAMPLE_ALBUM_LINKS );
+		}
+
+		$samples = array(
+			array(
+				'title'     => __( 'Photos in a Gallery', 'janzeman-shared-albums-for-google-photos' ),
+				'shortcode' => '[jzsa-album link="' . $links[0] . '" viewer="lightbox" limit="9" width="800" gallery-gap="8" corner-radius="16"]',
+				'preview'   => 'jzsa-preview-container-gallery-grid',
+			),
+			array(
+				'title'     => __( 'Videos', 'janzeman-shared-albums-for-google-photos' ),
+				'shortcode' => '[jzsa-album link="' . $links[1] . '" mode="slider" viewer="lightbox" width="800" corner-radius="16"]',
+				'preview'   => '',
+			),
+			array(
+				'title'     => __( 'Description and Camera Info', 'janzeman-shared-albums-for-google-photos' ),
+				'shortcode' => '[jzsa-album link="' . $links[2] . '" mode="slider" viewer="lightbox" width="800" corner-radius="16" info-top="{description}" info-top-secondary="{camera}" info-bottom="{aperture} · {shutter} · {focal} · {iso}"]',
+				'preview'   => '',
+			),
+		);
+
+		if ( 'icloud' === $source ) {
+			return array(
+				'title'    => __( 'Apple iCloud', 'janzeman-shared-albums-for-google-photos' ),
+				'intro'    => __( 'Show iCloud shared albums that have Public Website turned on. Visitors do not need an Apple Account, and the photos stay in iCloud.', 'janzeman-shared-albums-for-google-photos' ),
+				'steps'    => array(
+					__( 'Open the Photos app on your iPhone, iPad or Mac, or go to icloud.com/photos, and open the album under Shared Albums.', 'janzeman-shared-albums-for-google-photos' ),
+					__( 'Open the album\'s sharing settings (the People button on iPhone, iPad and Mac).', 'janzeman-shared-albums-for-google-photos' ),
+					__( 'Turn on Public Website. Only the owner of the shared album can do this.', 'janzeman-shared-albums-for-google-photos' ),
+					__( 'Copy the link (Share Link on iPhone, iPad and Mac, Copy on icloud.com) and use it in the shortcode.', 'janzeman-shared-albums-for-google-photos' ),
+				),
+				'links'    => array( 'https://photos.icloud.com/shared/album/...', 'https://www.icloud.com/sharedalbum/#B0...' ),
+				'features' => array(
+					__( 'Photos', 'janzeman-shared-albums-for-google-photos' )            => __( 'Yes, in sizes chosen by Apple; the plugin picks the closest one.', 'janzeman-shared-albums-for-google-photos' ),
+					__( 'Videos', 'janzeman-shared-albums-for-google-photos' )            => __( 'Yes, up to 15 minutes, played at up to 720p.', 'janzeman-shared-albums-for-google-photos' ),
+					__( 'Descriptions', 'janzeman-shared-albums-for-google-photos' )      => __( 'Yes. A caption belongs to an upload, so photos added together share it.', 'janzeman-shared-albums-for-google-photos' ),
+					__( 'Camera info (EXIF)', 'janzeman-shared-albums-for-google-photos' ) => __( 'Yes, delivered with the album, without extra requests.', 'janzeman-shared-albums-for-google-photos' ),
+					__( 'Original file names', 'janzeman-shared-albums-for-google-photos' ) => __( 'Yes.', 'janzeman-shared-albums-for-google-photos' ),
+					__( 'Downloads', 'janzeman-shared-albums-for-google-photos' )         => __( 'Yes, with the original file name.', 'janzeman-shared-albums-for-google-photos' ),
+					__( 'Album size', 'janzeman-shared-albums-for-google-photos' )        => __( 'Up to 5,000 photos and videos per shared album.', 'janzeman-shared-albums-for-google-photos' ),
+					__( 'Order', 'janzeman-shared-albums-for-google-photos' )             => __( 'Newest photo first, by the date it was taken.', 'janzeman-shared-albums-for-google-photos' ),
+				),
+				'samples'  => $samples,
+			);
+		}
+
+		return array(
+			'title'    => __( 'Google Photos', 'janzeman-shared-albums-for-google-photos' ),
+			'intro'    => __( 'Show Google Photos albums that are shared by link. Visitors do not need a Google account, and the photos stay in Google Photos.', 'janzeman-shared-albums-for-google-photos' ),
+			'steps'    => array(
+				__( 'Go to photos.google.com and open the album you want to show.', 'janzeman-shared-albums-for-google-photos' ),
+				__( 'Click Share, then Create link, and confirm.', 'janzeman-shared-albums-for-google-photos' ),
+				__( 'Copy the full album link from the browser address bar and use it in the shortcode.', 'janzeman-shared-albums-for-google-photos' ),
+			),
+			'links'    => array( 'https://photos.google.com/share/AF1QipN...?key=...', 'https://photos.app.goo.gl/... (deprecated)' ),
+			'features' => array(
+				__( 'Photos', 'janzeman-shared-albums-for-google-photos' )            => __( 'Yes, resized by Google to the requested size.', 'janzeman-shared-albums-for-google-photos' ),
+				__( 'Videos', 'janzeman-shared-albums-for-google-photos' )            => __( 'Yes.', 'janzeman-shared-albums-for-google-photos' ),
+				__( 'Descriptions', 'janzeman-shared-albums-for-google-photos' )      => __( 'Yes, per photo, up to 100 characters.', 'janzeman-shared-albums-for-google-photos' ),
+				__( 'Camera info (EXIF)', 'janzeman-shared-albums-for-google-photos' ) => __( 'Yes, loaded per photo in the background and then cached.', 'janzeman-shared-albums-for-google-photos' ),
+				__( 'Original file names', 'janzeman-shared-albums-for-google-photos' ) => __( 'Yes, loaded per photo in the background.', 'janzeman-shared-albums-for-google-photos' ),
+				__( 'Downloads', 'janzeman-shared-albums-for-google-photos' )         => __( 'Yes.', 'janzeman-shared-albums-for-google-photos' ),
+				__( 'Album size', 'janzeman-shared-albums-for-google-photos' )        => __( 'Usually up to 300 entries per album.', 'janzeman-shared-albums-for-google-photos' ),
+				__( 'Order', 'janzeman-shared-albums-for-google-photos' )             => __( 'The album\'s own order.', 'janzeman-shared-albums-for-google-photos' ),
+			),
+			'samples'  => $samples,
+		);
+	}
+
+	/**
+	 * Render a source page from its profile.
+	 *
+	 * @param array $profile Source profile from get_source_profile().
+	 */
+	private function render_source_page( $profile ) {
+		$s_copy                     = __( 'Copy', 'janzeman-shared-albums-for-google-photos' );
+		$this->lazy_sample_previews = true;
+		$this->render_page_shell_start();
+		?>
+		<div class="jzsa-section jzsa-source-section">
+			<h2><?php echo esc_html( $profile['title'] ); ?></h2>
+			<p class="jzsa-intro"><?php echo esc_html( $profile['intro'] ); ?></p>
+
+			<h3><?php esc_html_e( 'Get the Album Link', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+			<ol class="jzsa-substeps">
+				<?php foreach ( $profile['steps'] as $step ) : ?>
+					<li><?php echo esc_html( $step ); ?></li>
+				<?php endforeach; ?>
+			</ol>
+			<p><?php esc_html_e( 'Supported link formats:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+			<?php foreach ( $profile['links'] as $link_format ) : ?>
+				<code class="jzsa-code-good"><?php echo esc_html( $link_format ); ?></code><br>
+			<?php endforeach; ?>
+
+			<h3><?php esc_html_e( 'What It Supports', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+			<table class="widefat striped jzsa-source-features">
+				<tbody>
+					<?php foreach ( $profile['features'] as $feature => $support ) : ?>
+						<tr><th scope="row"><?php echo esc_html( $feature ); ?></th><td><?php echo esc_html( $support ); ?></td></tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="jzsa-section jzsa-samples-section">
+			<h2><?php esc_html_e( 'Samples', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+			<?php foreach ( $profile['samples'] as $sample ) : ?>
+				<div class="jzsa-sample-card">
+					<h3><?php echo esc_html( $sample['title'] ); ?></h3>
+					<div class="jzsa-code-block">
+						<code><?php echo esc_html( $sample['shortcode'] ); ?></code>
+						<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
+					</div>
+					<div class="jzsa-preview-container <?php echo esc_attr( $sample['preview'] ); ?>" style="height:auto;">
+						<?php
+							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo do_shortcode( $sample['shortcode'] );
+						?>
+					</div>
+				</div>
+			<?php endforeach; ?>
+		</div>
+		<?php
+		$this->render_page_shell_end();
+		$this->lazy_sample_previews = false;
 	}
 
 	/**
@@ -829,6 +1011,37 @@ class JZSA_Admin_Pages {
 						</div>
 					</details>
 			</div>
+
+				<!-- jzsa-source-compare -->
+				<div class="jzsa-section jzsa-source-compare-section">
+					<h2><?php esc_html_e( 'Same Shortcode, Different Source', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+					<p class="jzsa-intro"><?php esc_html_e( 'The plugin does not care where your photos live. These two shortcodes are identical except for the link: the left one shows a Google Photos album, the right one an iCloud shared album with the same photos. Every parameter and sample below works the same way for both.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<div class="jzsa-source-compare">
+					<?php
+					$compare_sources = array(
+						__( 'Google Photos', 'janzeman-shared-albums-for-google-photos' ) => 'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R',
+						__( 'Apple iCloud', 'janzeman-shared-albums-for-google-photos' )  => 'https://photos.icloud.com/shared/album/0c63FLTi0WVdod42GljS2Mmgg',
+					);
+					foreach ( $compare_sources as $compare_label => $compare_link ) :
+						$sample_shortcode = '[jzsa-album link="' . $compare_link . '" viewer="lightbox" limit="6" width="560" gallery-gap="8" corner-radius="16"]';
+						?>
+						<div class="jzsa-source-compare__column">
+							<h3><?php echo esc_html( $compare_label ); ?></h3>
+							<div class="jzsa-code-block">
+								<code><?php echo esc_html( $sample_shortcode ); ?></code>
+								<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
+							</div>
+							<div class="jzsa-preview-container jzsa-preview-container-gallery-grid" style="height:auto;">
+								<?php
+									// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+									echo do_shortcode( $sample_shortcode );
+								?>
+							</div>
+						</div>
+					<?php endforeach; ?>
+					</div>
+				</div>
+				<!-- /jzsa-source-compare -->
 
 				<!-- Samples Section -->
 				<div class="jzsa-section jzsa-samples-section">

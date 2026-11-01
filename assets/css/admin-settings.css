@@ -1076,3 +1076,27 @@
         padding: 8px;
     }
 }
+
+.jzsa-source-compare {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+.jzsa-source-compare__column {
+    min-width: 0;
+}
+
+.jzsa-source-compare__column h3 {
+    margin-top: 0;
+}
+
+.jzsa-source-features {
+    max-width: 900px;
+    margin: 8px 0 0;
+}
+
+.jzsa-source-features th {
+    width: 200px;
+    font-weight: 600;
+}

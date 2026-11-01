@@ -171,6 +171,11 @@ class AdminPagesTest extends TestCase {
 		}
 		// Google-only samples keep their own links.
 		$this->assertStringContainsString( 'https://photos.app.goo.gl/', $swapped );
+		// The side-by-side comparison keeps showing both sources.
+		preg_match( '/<!-- jzsa-source-compare -->.*?<!-- \/jzsa-source-compare -->/s', $swapped, $compare );
+		$this->assertNotEmpty( $compare );
+		$this->assertStringContainsString( 'https://photos.google.com/share/', $compare[0] );
+		$this->assertStringContainsString( 'https://photos.icloud.com/shared/album/', $compare[0] );
 		$this->assertStringContainsString( 'https://photos.google.com/share/INVALID-EXAMPLE-LINK', $swapped );
 	}
 
@@ -221,16 +226,18 @@ class AdminPagesTest extends TestCase {
 		);
 	}
 
-	public function test_add_admin_pages_registers_main_menu_and_five_submenus(): void {
+	public function test_add_admin_pages_registers_main_menu_and_seven_submenus(): void {
 		$this->admin_pages->add_admin_pages();
 
 		$this->assertCount( 1, $GLOBALS['jzsa_test_admin_menu_pages'] );
 		$this->assertSame( JZSA_Admin_Pages::MENU_SLUG, $GLOBALS['jzsa_test_admin_menu_pages'][0]['menu_slug'] );
 		$this->assertSame( 'edit_pages', $GLOBALS['jzsa_test_admin_menu_pages'][0]['capability'] );
-		$this->assertCount( 5, $GLOBALS['jzsa_test_admin_submenu_pages'] );
+		$this->assertCount( 7, $GLOBALS['jzsa_test_admin_submenu_pages'] );
 		$this->assertSame(
 			array(
 				JZSA_Admin_Pages::MENU_SLUG,
+				JZSA_Admin_Pages::GOOGLE_SOURCE_SLUG,
+				JZSA_Admin_Pages::ICLOUD_SOURCE_SLUG,
 				JZSA_Admin_Pages::SHORTCODE_PARAMETERS_SLUG,
 				JZSA_Admin_Pages::PLACEHOLDERS_SLUG,
 				JZSA_Admin_Pages::COMMUNITY_SLUG,
@@ -238,6 +245,25 @@ class AdminPagesTest extends TestCase {
 			),
 			array_column( $GLOBALS['jzsa_test_admin_submenu_pages'], 'menu_slug' )
 		);
+	}
+
+	public function test_source_pages_share_one_template_with_their_own_albums(): void {
+		$method = $this->reflection->getMethod( 'get_source_profile' );
+
+		$google = $method->invoke( $this->admin_pages, 'google' );
+		$icloud = $method->invoke( $this->admin_pages, 'icloud' );
+
+		$this->assertSame( array_keys( $google ), array_keys( $icloud ) );
+		$this->assertSame( array_keys( $google['features'] ), array_keys( $icloud['features'] ) );
+		foreach ( $google['samples'] as $index => $sample ) {
+			$this->assertStringContainsString( 'https://photos.google.com/share/', $sample['shortcode'] );
+			$this->assertStringContainsString( 'https://photos.icloud.com/shared/album/', $icloud['samples'][ $index ]['shortcode'] );
+			// The samples differ only in their link.
+			$this->assertSame(
+				preg_replace( '/link="[^"]*"/', '', $sample['shortcode'] ),
+				preg_replace( '/link="[^"]*"/', '', $icloud['samples'][ $index ]['shortcode'] )
+			);
+		}
 	}
 
 	public function test_menu_icon_stylesheet_is_enqueued_on_all_admin_pages(): void {
