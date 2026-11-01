@@ -803,19 +803,6 @@ class JZSA_Admin_Pages {
 				<code class="jzsa-code-good"><?php echo esc_html( $link_format ); ?></code><br>
 			<?php endforeach; ?>
 
-			<div class="jzsa-warning-box">
-				<strong><?php esc_html_e( 'No Guarantee', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-				<p>
-					<?php
-					printf(
-						/* translators: %s: source name, for example Google Photos or Apple iCloud. */
-						esc_html__( 'The plugin reads shared albums the same way a web browser does. %s does not offer an official interface for this and can change the format of its shared albums at any time, which may stop the plugin from working until it is updated. The plugin author cannot guarantee that it will keep working forever.', 'janzeman-shared-albums-for-google-photos' ),
-						esc_html( $profile['title'] )
-					);
-					?>
-				</p>
-			</div>
-
 			<h3><?php esc_html_e( 'What It Supports', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 			<table class="widefat striped jzsa-source-features">
 				<tbody>
@@ -843,6 +830,21 @@ class JZSA_Admin_Pages {
 					</div>
 				</div>
 			<?php endforeach; ?>
+		</div>
+
+		<div class="jzsa-section">
+			<div class="jzsa-warning-box">
+				<strong><?php esc_html_e( 'No Guarantee', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+				<p>
+					<?php
+					printf(
+						/* translators: %s: source name, for example Google Photos or Apple iCloud. */
+						esc_html__( 'The plugin reads shared albums the same way a web browser does. %s does not offer an official interface for this and can change the format of its shared albums at any time, which may stop the plugin from working until it is updated. The plugin author cannot guarantee that it will keep working forever.', 'janzeman-shared-albums-for-google-photos' ),
+						esc_html( $profile['title'] )
+					);
+					?>
+				</p>
+			</div>
 		</div>
 		<?php
 		$this->render_page_shell_end();
