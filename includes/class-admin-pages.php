@@ -1105,7 +1105,7 @@ class JZSA_Admin_Pages {
 						__( 'Apple iCloud', 'janzeman-shared-albums-for-google-photos' )  => $compare_icloud['photo'],
 					);
 					foreach ( $compare_sources as $compare_label => $compare_link ) :
-						$sample_shortcode = '[jzsa-album link="' . $compare_link . '" viewer="lightbox" limit="6" width="560" gallery-gap="8" corner-radius="16"]';
+						$sample_shortcode = '[jzsa-album link="' . $compare_link . '" viewer="lightbox" limit="6" order="newest" width="560" gallery-gap="8" corner-radius="16"]';
 						?>
 						<div class="jzsa-source-compare__column">
 							<h3><?php echo esc_html( $compare_label ); ?></h3>
