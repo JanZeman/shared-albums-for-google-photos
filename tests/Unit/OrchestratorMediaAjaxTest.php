@@ -475,6 +475,50 @@ class OrchestratorMediaAjaxTest extends TestCase {
 	        $this->assertNotSame( array_column( $photos, 'id' ), $ids );
 	    }
 
+	    public function test_fetch_album_chunk_with_date_order_continues_one_order_across_chunks(): void {
+	        $album_url = 'https://photos.google.com/share/AF1QipAlbum?key=abc';
+	        $cache_key = $this->invoke( 'get_cache_key', $album_url );
+	        // Album order is newest first; three photos have no date.
+	        $photos = array();
+	        for ( $i = 0; $i < 12; $i++ ) {
+	            $photo = array( 'url' => 'https://lh3.googleusercontent.com/p' . $i, 'id' => 'ID' . $i );
+	            if ( $i < 9 ) {
+	                $photo['timestamp'] = 1700000000000 - $i * 1000;
+	            }
+	            $photos[] = $photo;
+	        }
+	        $GLOBALS['jzsa_test_transients'][ $cache_key ] = array(
+	            'title'         => 'Cached',
+	            'is_deprecated' => false,
+	            'photos'        => $photos,
+	        );
+
+	        foreach ( array( 'oldest', 'newest' ) as $order ) {
+	            $ids = array();
+	            foreach ( array( 0, 5, 10 ) as $offset ) {
+	                $_POST = array(
+	                    'nonce'       => 'ok',
+	                    'album_url'   => $album_url,
+	                    'offset'      => (string) $offset,
+	                    'count'       => '5',
+	                    'limit'       => '12',
+	                    'show_videos' => 'true',
+	                    'order'       => $order,
+	                );
+	                $response = $this->callAjax( 'handle_fetch_album_chunk' );
+	                $this->assertTrue( $response->success );
+	                foreach ( $response->data['photos'] as $index => $photo ) {
+	                    $this->assertSame( $offset + $index, $photo['globalIndex'] );
+	                    $ids[] = $photo['id'];
+	                }
+	            }
+	            $expected = array_column( \JZSA_Shared_Albums::sort_by_date( $photos, $order ), 'id' );
+	            $this->assertSame( $expected, $ids, $order );
+	            $this->assertSame( 'oldest' === $order ? 'ID8' : 'ID0', $ids[0], $order );
+	            $this->assertSame( array( 'ID9', 'ID10', 'ID11' ), array_slice( $ids, -3 ), 'Photos without a date come last' );
+	        }
+	    }
+
 	    public function test_fetch_album_chunk_fetches_cache_miss_and_clamps_negative_offset(): void {
 	        $album_url = 'https://photos.google.com/share/AF1QipAlbum?key=abc';
 	        $_POST = array(

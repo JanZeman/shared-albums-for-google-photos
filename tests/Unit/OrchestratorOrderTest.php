@@ -104,6 +104,15 @@ class OrchestratorOrderTest extends TestCase {
         $this->assertStringNotContainsString( 'data-order=', $renderer->render( array( 'mode' => 'gallery' ) ) );
     }
 
+    public function test_renderer_marks_date_order_for_progressive_chunks(): void {
+        $renderer = new JZSA_Renderer();
+
+        foreach ( array( 'oldest', 'newest' ) as $order ) {
+            $this->assertStringContainsString( 'data-order="' . $order . '"', $renderer->render( array( 'mode' => 'slider', 'order' => $order ) ) );
+            $this->assertStringContainsString( 'data-order="' . $order . '"', $renderer->render( array( 'mode' => 'gallery', 'order' => $order ) ) );
+        }
+    }
+
     public function test_order_accepts_oldest_and_newest(): void {
         $this->assertSame( 'oldest', $this->config( array( 'order' => 'oldest' ) )['order'] );
         $this->assertSame( 'newest', $this->config( array( 'order' => ' Newest ' ) )['order'] );

@@ -481,6 +481,10 @@ if ( ! function_exists( 'wp_remote_get' ) ) {
             'url'    => $url,
             'args'   => $args,
         );
+        // Live tests can route requests to the real network.
+        if ( isset( $GLOBALS['jzsa_test_http_handler'] ) && is_callable( $GLOBALS['jzsa_test_http_handler'] ) ) {
+            return call_user_func( $GLOBALS['jzsa_test_http_handler'], 'GET', $url, $args );
+        }
         $responses = $GLOBALS['jzsa_test_http_responses'] ?? array();
         if ( isset( $responses[ $url ] ) ) {
             return $responses[ $url ];
@@ -498,7 +502,15 @@ if ( ! function_exists( 'wp_remote_post' ) ) {
             'url'    => $url,
             'args'   => $args,
         );
+        // Live tests can route requests to the real network.
+        if ( isset( $GLOBALS['jzsa_test_http_handler'] ) && is_callable( $GLOBALS['jzsa_test_http_handler'] ) ) {
+            return call_user_func( $GLOBALS['jzsa_test_http_handler'], 'POST', $url, $args );
+        }
         $responses = $GLOBALS['jzsa_test_http_responses'] ?? array();
+        // A 'sequence' entry answers successive requests to one URL in turn.
+        if ( isset( $responses[ $url ] ) && is_array( $responses[ $url ] ) && isset( $responses[ $url ]['sequence'] ) ) {
+            return array_shift( $GLOBALS['jzsa_test_http_responses'][ $url ]['sequence'] );
+        }
         if ( isset( $responses[ $url ] ) ) {
             return $responses[ $url ];
         }

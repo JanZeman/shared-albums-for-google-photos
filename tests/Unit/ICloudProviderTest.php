@@ -213,6 +213,50 @@ class ICloudProviderTest extends TestCase {
 		$this->assertArrayNotHasKey( 'description', $photos[2] );
 	}
 
+	public function test_cloudkit_album_is_read_across_result_pages(): void {
+		$full    = json_decode( $this->fixture( 'cloudkit-query.json' ), true );
+		$records = $full['records'];
+		$page    = static function ( array $records, string $marker = '' ): array {
+			$body = array( 'records' => $records );
+			if ( '' !== $marker ) {
+				$body['continuationMarker'] = $marker;
+			}
+			return array(
+				'response' => array( 'code' => 200 ),
+				'body'     => wp_json_encode( $body ),
+			);
+		};
+		$GLOBALS['jzsa_test_http_responses'] = array(
+			self::CLOUDKIT_RESOLVE => array(
+				'response' => array( 'code' => 200 ),
+				'body'     => $this->fixture( 'cloudkit-resolve.json' ),
+			),
+			// Assets in two pages, then the caption posts in one.
+			self::CLOUDKIT_QUERY   => array(
+				'sequence' => array(
+					$page( array_slice( $records, 0, 2 ), 'PAGE-2' ),
+					$page( array_slice( $records, 2 ) ),
+					$page( $records ),
+				),
+			),
+		);
+
+		$result = $this->provider->fetch_album( self::CLOUDKIT_ALBUM_URL );
+
+		$this->assertTrue( $result['success'], (string) $result['error'] );
+		$this->assertSame( array( 'A1', 'A2', 'A3' ), array_column( $result['data']['photos'], 'id' ) );
+		$queries = array_map(
+			static function ( $request ) {
+				return json_decode( $request['args']['body'], true );
+			},
+			array_slice( $GLOBALS['jzsa_test_http_requests'], 1 )
+		);
+		$this->assertCount( 3, $queries );
+		$this->assertArrayNotHasKey( 'continuationMarker', $queries[0] );
+		$this->assertSame( 'PAGE-2', $queries[1]['continuationMarker'] );
+		$this->assertSame( 'CPLPostByPostTimestamp', $queries[2]['query']['recordType'] );
+	}
+
 	public function test_camera_info_comes_from_the_original_image_properties(): void {
 		$this->stubCloudKitAlbum();
 
