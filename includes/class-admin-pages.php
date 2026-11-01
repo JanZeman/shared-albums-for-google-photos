@@ -720,7 +720,7 @@ class JZSA_Admin_Pages {
 			),
 			array(
 				'title'     => __( 'Videos', 'janzeman-shared-albums-for-google-photos' ),
-				'shortcode' => '[jzsa-album link="' . $links[1] . '" mode="slider" viewer="lightbox" width="800" corner-radius="16"]',
+				'shortcode' => '[jzsa-album link="' . $links[1] . '" mode="slider" viewer="lightbox" show-videos="true" width="800" corner-radius="16"]',
 				'preview'   => '',
 			),
 			array(
@@ -802,6 +802,19 @@ class JZSA_Admin_Pages {
 			<?php foreach ( $profile['links'] as $link_format ) : ?>
 				<code class="jzsa-code-good"><?php echo esc_html( $link_format ); ?></code><br>
 			<?php endforeach; ?>
+
+			<div class="jzsa-warning-box">
+				<strong><?php esc_html_e( 'No Guarantee', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+				<p>
+					<?php
+					printf(
+						/* translators: %s: source name, for example Google Photos or Apple iCloud. */
+						esc_html__( 'The plugin reads shared albums the same way a web browser does. %s does not offer an official interface for this and can change the format of its shared albums at any time, which may stop the plugin from working until it is updated. The plugin author cannot guarantee that it will keep working forever.', 'janzeman-shared-albums-for-google-photos' ),
+						esc_html( $profile['title'] )
+					);
+					?>
+				</p>
+			</div>
 
 			<h3><?php esc_html_e( 'What It Supports', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 			<table class="widefat striped jzsa-source-features">
@@ -1105,7 +1118,7 @@ class JZSA_Admin_Pages {
 						__( 'Apple iCloud', 'janzeman-shared-albums-for-google-photos' )  => $compare_icloud['photo'],
 					);
 					foreach ( $compare_sources as $compare_label => $compare_link ) :
-						$sample_shortcode = '[jzsa-album link="' . $compare_link . '" viewer="lightbox" limit="6" order="newest" width="560" gallery-gap="8" corner-radius="16"]';
+						$sample_shortcode = '[jzsa-album link="' . $compare_link . '" viewer="lightbox" limit="6" order="newest" width="560" gallery-gap="8" show-link-button="true" corner-radius="16"]';
 						?>
 						<div class="jzsa-source-compare__column">
 							<h3><?php echo esc_html( $compare_label ); ?></h3>

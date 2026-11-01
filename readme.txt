@@ -105,9 +105,34 @@ Yes. The gallery is responsive and supports touch gestures, fullscreen viewing, 
 
 No. This plugin is not affiliated with or endorsed by Google LLC or Apple Inc. Google Photos™ is a trademark of Google LLC. Apple® and iCloud® are trademarks of Apple Inc.
 
+= Will it keep working forever? =
+
+There is no guarantee. Google Photos and Apple iCloud do not offer an official interface for embedding shared albums, so the plugin reads them the same way a web browser does. Either service can change the format of its shared albums at any time, which may stop the plugin from working until it is updated. The plugin is provided "as is", without warranty of any kind, as stated in the GPL license.
+
 = Where can I find the source code? =
 
 The plugin source code and generic ZIP build tool are maintained on [GitHub](https://github.com/JanZeman/shared-albums-wp-plugin).
+
+== External services ==
+
+This plugin connects to the following external services. No visitor data is sent to them by the plugin itself; visitors' browsers load the photos directly from the services below.
+
+= Google Photos =
+
+Used to show publicly shared Google Photos albums. When a page with a Google Photos album is rendered, the WordPress server requests the public album page from photos.google.com, and visitors' browsers load the images and videos from *.googleusercontent.com. Only the shared album link is sent.
+Terms of Service: https://policies.google.com/terms
+Privacy Policy: https://policies.google.com/privacy
+
+= Apple iCloud =
+
+Used to show publicly shared iCloud albums. When a page with an iCloud album is rendered, the WordPress server requests the public album data from icloud.com, and visitors' browsers load the images and videos from *.icloud-content.com. Only the shared album link is sent.
+Terms of Service: https://www.apple.com/legal/internet-services/icloud/
+Privacy Policy: https://www.apple.com/legal/privacy/
+
+= Shared Albums Community =
+
+Optional. Used only when a WordPress administrator opens the Community page or connects to the community. Browsing sends read-only requests to sa.janzeman.com; connecting, publishing and rating send the data described in the plugin's privacy policy text (Settings > Privacy > Policy Guide in wp-admin).
+Contact: support@janzeman.com
 
 == Changelog ==
 

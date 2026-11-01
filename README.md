@@ -160,6 +160,8 @@ For bug reports and feature requests, use [GitHub Issues](https://github.com/Jan
 
 GPL v2 or later - see [LICENSE](LICENSE) file.
 
+This plugin reads shared albums the same way a web browser does. Google Photos and Apple iCloud do not offer an official interface for this and can change the format of their shared albums at any time, which may stop the plugin from working until it is updated. The plugin is provided "as is", without warranty of any kind; there is no guarantee that it will keep working forever.
+
 This plugin is not affiliated with, endorsed by, or in any way officially connected with Google LLC, Google Photos, Apple Inc. or iCloud. Google Photos™ is a trademark of Google LLC. Apple® and iCloud® are trademarks of Apple Inc.
 
 ---
