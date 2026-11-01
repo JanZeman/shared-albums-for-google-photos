@@ -1831,6 +1831,9 @@ function jzsaSetupMigrationTool() {
 		} );
 	}
 
+	jzsaBindRadioSetting( 'jzsa-primary-source', 'jzsa-primary-source-status', 'jzsa_set_primary_source',
+		jzsaAdminAjax.primarySourceNonce, 'source' );
+
 	// No separate save button: selecting an option takes effect immediately, matching how a
 	// WordPress admin radio setting like this is normally expected to behave.
 	var defaultViewerRadios = document.querySelectorAll( 'input[name="jzsa-default-viewer"]' );
@@ -1859,6 +1862,45 @@ function jzsaSetupMigrationTool() {
 			} );
 		} );
 	}
+}
+
+/**
+ * Save a radio-button setting as soon as the admin picks an option.
+ *
+ * @param {string} name     Radio input name.
+ * @param {string} statusId Element that shows the save status.
+ * @param {string} action   AJAX action.
+ * @param {string} nonce    AJAX nonce.
+ * @param {string} field    POST field that carries the value.
+ */
+function jzsaBindRadioSetting( name, statusId, action, nonce, field ) {
+	var radios = document.querySelectorAll( 'input[name="' + name + '"]' );
+	var status = document.getElementById( statusId );
+	if ( ! radios.length || ! status ) {
+		return;
+	}
+	var sequence = 0;
+	Array.prototype.forEach.call( radios, function ( radio ) {
+		radio.addEventListener( 'change', function () {
+			if ( ! radio.checked ) { return; }
+			var current = ++sequence;
+			var data = {};
+			data[ field ] = radio.value;
+			status.textContent = 'Saving…';
+			Array.prototype.forEach.call( radios, function ( r ) { r.disabled = true; } );
+			jzsaAdminPost( action, nonce, data )
+				.then( function ( response ) {
+					if ( current !== sequence ) { return; }
+					status.textContent = response.success ? 'Saved.' : 'Could not save the setting.';
+				} ).catch( function () {
+					if ( current !== sequence ) { return; }
+					status.textContent = 'Could not save the setting.';
+				} ).finally( function () {
+					if ( current !== sequence ) { return; }
+					Array.prototype.forEach.call( radios, function ( r ) { r.disabled = false; } );
+				} );
+		} );
+	} );
 }
 
 // Run on DOMContentLoaded, or immediately if the document already finished

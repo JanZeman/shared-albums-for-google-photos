@@ -53,6 +53,7 @@ define( 'JZSA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'JZSA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'JZSA_VERSION_OPTION', 'jzsa_plugin_version' );
 define( 'JZSA_DEFAULT_VIEWER_OPTION', 'jzsa_default_viewer' );
+define( 'JZSA_PRIMARY_SOURCE_OPTION', 'jzsa_primary_source' );
 define( 'JZSA_VIEWER_MIGRATION_NOTICE_OPTION', 'jzsa_viewer_migration_notice' );
 define( 'JZSA_VIEWER_MIGRATION_CUTOFF_VERSION', '2.4.0' );
 
@@ -77,6 +78,20 @@ function jzsa_get_default_viewer() {
 	$value = get_option( JZSA_DEFAULT_VIEWER_OPTION, 'lightbox' );
 
 	return in_array( $value, array( 'lightbox', 'fullscreen' ), true ) ? $value : 'lightbox';
+}
+
+/**
+ * Return the photo source the Guide samples use: "google" or "icloud".
+ *
+ * Shortcodes always use the album their own link points to; this only picks
+ * which sample albums the admin pages show.
+ *
+ * @return string
+ */
+function jzsa_get_primary_source() {
+	$value = get_option( JZSA_PRIMARY_SOURCE_OPTION, 'google' );
+
+	return in_array( $value, array( 'google', 'icloud' ), true ) ? $value : 'google';
 }
 
 /**

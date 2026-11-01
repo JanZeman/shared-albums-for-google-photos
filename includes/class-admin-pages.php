@@ -58,6 +58,7 @@ class JZSA_Admin_Pages {
 		add_action( 'wp_ajax_jzsa_validate_shortcode', array( $this, 'handle_validate_shortcode' ) );
 		add_action( 'wp_ajax_jzsa_migrate_shortcode', array( $this, 'handle_migrate_shortcode' ) );
 		add_action( 'wp_ajax_jzsa_set_default_viewer', array( $this, 'handle_set_default_viewer' ) );
+		add_action( 'wp_ajax_jzsa_set_primary_source', array( $this, 'handle_set_primary_source' ) );
 	}
 
 	/**
@@ -92,6 +93,52 @@ class JZSA_Admin_Pages {
 
 	private function should_show_settings_notice() {
 		return self::SETTINGS_NOTICE_VERSION !== get_user_meta( get_current_user_id(), self::SETTINGS_ANNOUNCEMENT_META, true );
+	}
+
+	/**
+	 * Google sample album links and their iCloud copies, used by the Guide.
+	 *
+	 * The iCloud albums hold the same photos, so every sample built on one of
+	 * these links works with either source.
+	 */
+	const SAMPLE_ALBUM_LINKS = array(
+		'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R' => 'https://photos.icloud.com/shared/album/0c63FLTi0WVdod42GljS2Mmgg',
+		'https://photos.google.com/share/AF1QipM-v19vtjd5NEiD6w40U7XqZoqwMUX4FyPr6p9U-9Ixjw2jy7oYFs7m7vgvvpm3PA?key=ZjhXZDNkc1ZrNmFvZ2tIOW16QXlGal94Y2g2cGJB' => 'https://photos.icloud.com/shared/album/0e7wlLKC7IuNKrCWXiTJgCAyQ',
+		'https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR' => 'https://photos.icloud.com/shared/album/0c7OcXdjceb4X2lbpETJkDVrw',
+	);
+
+	/**
+	 * Point the Guide's sample albums at the primary source.
+	 *
+	 * Samples are written with the Google links; for iCloud they are swapped
+	 * for the matching iCloud albums. Samples that exist only for Google
+	 * (deprecated short links, the error sample) use other links and stay.
+	 *
+	 * @param string $html Rendered Guide markup.
+	 * @return string
+	 */
+	public static function use_primary_source_samples( $html ) {
+		if ( 'icloud' !== jzsa_get_primary_source() ) {
+			return $html;
+		}
+
+		return strtr( $html, self::SAMPLE_ALBUM_LINKS );
+	}
+
+	private function render_primary_source_setting_section() {
+		$primary_source = jzsa_get_primary_source();
+		?>
+		<div class="jzsa-section">
+			<h2><?php esc_html_e( 'Primary Source', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+			<div class="jzsa-primary-source-setting">
+				<h3><?php esc_html_e( 'Albums Used by the Samples on the Guide Page', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+				<label><input type="radio" name="jzsa-primary-source" value="google" <?php checked( 'google', $primary_source ); ?>> <?php esc_html_e( 'Google Photos', 'janzeman-shared-albums-for-google-photos' ); ?></label>
+				<label><input type="radio" name="jzsa-primary-source" value="icloud" <?php checked( 'icloud', $primary_source ); ?>> <?php esc_html_e( 'Apple iCloud', 'janzeman-shared-albums-for-google-photos' ); ?></label>
+				<p><span id="jzsa-primary-source-status" aria-live="polite"></span></p>
+				<p><?php esc_html_e( 'Choose the source you use, and the Guide samples show albums from it. Your own shortcodes are not affected: each one always shows the album its link points to, from Google Photos or iCloud.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+			</div>
+		</div>
+		<?php
 	}
 
 	private function render_default_viewer_setting_section() {
@@ -357,6 +404,7 @@ class JZSA_Admin_Pages {
 				'validateNonce'   => wp_create_nonce( 'jzsa_validate_shortcode' ),
 				'migrateNonce'    => wp_create_nonce( 'jzsa_migrate_shortcode' ),
 				'defaultViewerNonce' => wp_create_nonce( 'jzsa_set_default_viewer' ),
+				'primarySourceNonce' => wp_create_nonce( 'jzsa_set_primary_source' ),
 			)
 		);
 	}
@@ -521,6 +569,7 @@ class JZSA_Admin_Pages {
 	public function render_settings_page() {
 		$this->render_page_shell_start();
 		$this->render_settings_notice();
+		$this->render_primary_source_setting_section();
 		$this->render_default_viewer_setting_section();
 		$this->render_page_shell_end();
 	}
@@ -551,6 +600,16 @@ class JZSA_Admin_Pages {
 	 * Render the Guide page.
 	 */
 	public function render_guide_page() {
+		ob_start();
+		$this->render_guide_page_content();
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Markup escaped while rendering; only sample links are swapped.
+		echo self::use_primary_source_samples( (string) ob_get_clean() );
+	}
+
+	/**
+	 * Render the Guide page content with the Google sample links.
+	 */
+	private function render_guide_page_content() {
 		$album_sample_link = 'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R';
 		$video_sample_link = 'https://photos.google.com/share/AF1QipM-v19vtjd5NEiD6w40U7XqZoqwMUX4FyPr6p9U-9Ixjw2jy7oYFs7m7vgvvpm3PA?key=ZjhXZDNkc1ZrNmFvZ2tIOW16QXlGal94Y2g2cGJB';
 		$info_sample_link  = 'https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR';
@@ -1618,7 +1677,7 @@ class JZSA_Admin_Pages {
 							<p class="jzsa-sample-group__description"><?php esc_html_e( 'Use these samples for button visibility, color accents, and the carousel layout.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
 					<div class="jzsa-sample-card">
-						<h3 data-jzsa-anchor="show-open-in-google-photos-button"><?php echo 'Sample 40: ' . esc_html__( 'Show "Open in Google Photos" Button', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<h3 data-jzsa-anchor="show-open-album-link-button"><?php echo 'Sample 40: ' . esc_html__( 'Show "Open Album" Link Button', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Enables the show-link-button parameter to display an external link button to the original album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<?php
 						$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" viewer="lightbox" show-link-button="true" corner-radius="16"]';
@@ -2559,6 +2618,17 @@ class JZSA_Admin_Pages {
 		$goal      = isset( $_POST['goal'] ) ? sanitize_key( wp_unslash( $_POST['goal'] ) ) : '';
 		$result    = JZSA_Shortcode_Tools::migrate( $shortcode, $goal, jzsa_get_default_viewer() );
 		wp_send_json_success( $result );
+	}
+
+	public function handle_set_primary_source() {
+		$this->verify_shortcode_tool_request( 'jzsa_set_primary_source' );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by verify_shortcode_tool_request() above.
+		$source = isset( $_POST['source'] ) ? sanitize_key( wp_unslash( $_POST['source'] ) ) : '';
+		if ( ! in_array( $source, array( 'google', 'icloud' ), true ) ) {
+			wp_send_json_error( __( 'Invalid primary source.', 'janzeman-shared-albums-for-google-photos' ), 400 );
+		}
+		update_option( JZSA_PRIMARY_SOURCE_OPTION, $source, false );
+		wp_send_json_success( array( 'source' => $source ) );
 	}
 
 	public function handle_set_default_viewer() {
