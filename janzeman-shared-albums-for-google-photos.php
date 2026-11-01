@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/JanZeman/shared-albums-wp-plugin
  * Author URI: https://github.com/JanZeman
  * Description: Display publicly shared Google Photos and Apple iCloud albums with a modern Swiper-based gallery viewer. Not affiliated with or endorsed by Google LLC or Apple Inc.
- * Version: 2.5.3
+ * Version: 2.6.0
  * Requires at least: 5.5
  * Requires PHP: 7.0
  * Author: Jan Zeman
@@ -32,7 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'JZSA_VERSION', '2.5.3' );
+define( 'JZSA_VERSION', '2.6.0' );
 
 // Community API URL. Local development can override this constant before the plugin loads:
 // define( 'JZSA_COMMUNITY_API_URL', 'http://localhost:3000' );
