@@ -85,6 +85,10 @@ class AdminPagesTest extends TestCase {
 				'handle_set_primary_source',
 				array( 'nonce' => 'test-nonce', 'source' => 'icloud' ),
 			),
+			'sample albums' => array(
+				'handle_save_sample_links',
+				array( 'nonce' => 'test-nonce', 'source' => 'icloud', 'photo' => 'https://photos.icloud.com/shared/album/0X' ),
+			),
 		);
 	}
 
@@ -159,24 +163,65 @@ class AdminPagesTest extends TestCase {
 
 	public function test_guide_samples_follow_the_primary_source(): void {
 		// The Guide markup is built from these sample links; checking its source keeps the test free of a full page render.
-		$guide = (string) file_get_contents( JZSA_PLUGIN_DIR . 'includes/class-admin-pages.php' );
+		$guide  = (string) file_get_contents( JZSA_PLUGIN_DIR . 'includes/class-admin-pages.php' );
+		$google = JZSA_Admin_Pages::SAMPLE_ALBUM_DEFAULTS['google'];
+		$icloud = JZSA_Admin_Pages::SAMPLE_ALBUM_DEFAULTS['icloud'];
 
 		$this->assertSame( $guide, JZSA_Admin_Pages::use_primary_source_samples( $guide ) );
 
 		update_option( JZSA_PRIMARY_SOURCE_OPTION, 'icloud' );
 		$swapped = JZSA_Admin_Pages::use_primary_source_samples( $guide );
-		foreach ( JZSA_Admin_Pages::SAMPLE_ALBUM_LINKS as $google_link => $icloud_link ) {
-			$this->assertGreaterThan( 1, substr_count( $guide, $google_link ) );
-			$this->assertStringContainsString( $icloud_link, $swapped );
+		foreach ( $google as $kind => $google_link ) {
+			$this->assertStringContainsString( $icloud[ $kind ], $swapped );
 		}
 		// Google-only samples keep their own links.
 		$this->assertStringContainsString( 'https://photos.app.goo.gl/', $swapped );
-		// The side-by-side comparison keeps showing both sources.
-		preg_match( '/<!-- jzsa-source-compare -->.*?<!-- \/jzsa-source-compare -->/s', $swapped, $compare );
-		$this->assertNotEmpty( $compare );
-		$this->assertStringContainsString( 'https://photos.google.com/share/', $compare[0] );
-		$this->assertStringContainsString( 'https://photos.icloud.com/shared/album/', $compare[0] );
 		$this->assertStringContainsString( 'https://photos.google.com/share/INVALID-EXAMPLE-LINK', $swapped );
+	}
+
+	public function test_comparison_section_is_never_swapped(): void {
+		update_option( JZSA_PRIMARY_SOURCE_OPTION, 'icloud' );
+		$google = JZSA_Admin_Pages::SAMPLE_ALBUM_DEFAULTS['google']['photo'];
+		$html   = 'a ' . $google . ' <!-- jzsa-source-compare --> ' . $google . ' <!-- /jzsa-source-compare --> b';
+
+		$swapped = JZSA_Admin_Pages::use_primary_source_samples( $html );
+
+		$this->assertSame( 1, substr_count( $swapped, $google ) );
+		$this->assertStringContainsString( '<!-- jzsa-source-compare --> ' . $google, $swapped );
+	}
+
+	public function test_own_sample_albums_replace_the_defaults_and_can_be_restored(): void {
+		$GLOBALS['jzsa_test_current_user_can'] = true;
+		$own = 'https://photos.icloud.com/shared/album/0OwnAlbumGuid';
+		$_POST = array( 'nonce' => 'test-nonce', 'source' => 'icloud', 'photo' => $own, 'video' => '', 'info' => '' );
+
+		$response = $this->callAjax( 'handle_save_sample_links' );
+
+		$this->assertTrue( $response->success );
+		$this->assertSame( $own, JZSA_Admin_Pages::get_sample_links( 'icloud' )['photo'] );
+		$this->assertSame( JZSA_Admin_Pages::SAMPLE_ALBUM_DEFAULTS['icloud']['video'], JZSA_Admin_Pages::get_sample_links( 'icloud' )['video'] );
+		// The other source keeps its own albums.
+		$this->assertSame( JZSA_Admin_Pages::SAMPLE_ALBUM_DEFAULTS['google'], JZSA_Admin_Pages::get_sample_links( 'google' ) );
+
+		// A Google link does not fit an iCloud field.
+		$_POST    = array( 'nonce' => 'test-nonce', 'source' => 'icloud', 'photo' => JZSA_Admin_Pages::SAMPLE_ALBUM_DEFAULTS['google']['photo'] );
+		$response = $this->callAjax( 'handle_save_sample_links' );
+		$this->assertSame( 400, $response->status_code );
+		$this->assertSame( $own, JZSA_Admin_Pages::get_sample_links( 'icloud' )['photo'] );
+
+		// Restoring sends the defaults back, which clears the stored albums.
+		$_POST    = array( 'nonce' => 'test-nonce', 'source' => 'icloud' ) + JZSA_Admin_Pages::SAMPLE_ALBUM_DEFAULTS['icloud'];
+		$response = $this->callAjax( 'handle_save_sample_links' );
+		$this->assertTrue( $response->success );
+		$this->assertSame( JZSA_Admin_Pages::SAMPLE_ALBUM_DEFAULTS['icloud'], JZSA_Admin_Pages::get_sample_links( 'icloud' ) );
+		$this->assertSame( array(), get_option( JZSA_SAMPLE_LINKS_OPTION ) );
+	}
+
+	public function test_guide_samples_use_own_albums_of_the_primary_source(): void {
+		update_option( JZSA_SAMPLE_LINKS_OPTION, array( 'google' => array( 'photo' => 'https://photos.google.com/share/OwnAlbum?key=abc' ) ) );
+		$html = JZSA_Admin_Pages::SAMPLE_ALBUM_DEFAULTS['google']['photo'];
+
+		$this->assertSame( 'https://photos.google.com/share/OwnAlbum?key=abc', JZSA_Admin_Pages::use_primary_source_samples( $html ) );
 	}
 
 	public function test_migration_endpoint_returns_output_for_an_authorized_request(): void {

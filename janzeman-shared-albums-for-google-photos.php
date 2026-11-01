@@ -54,6 +54,7 @@ define( 'JZSA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'JZSA_VERSION_OPTION', 'jzsa_plugin_version' );
 define( 'JZSA_DEFAULT_VIEWER_OPTION', 'jzsa_default_viewer' );
 define( 'JZSA_PRIMARY_SOURCE_OPTION', 'jzsa_primary_source' );
+define( 'JZSA_SAMPLE_LINKS_OPTION', 'jzsa_sample_links' );
 define( 'JZSA_VIEWER_MIGRATION_NOTICE_OPTION', 'jzsa_viewer_migration_notice' );
 define( 'JZSA_VIEWER_MIGRATION_CUTOFF_VERSION', '2.4.0' );
 

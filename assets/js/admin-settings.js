@@ -1833,6 +1833,7 @@ function jzsaSetupMigrationTool() {
 
 	jzsaBindRadioSetting( 'jzsa-primary-source', 'jzsa-primary-source-status', 'jzsa_set_primary_source',
 		jzsaAdminAjax.primarySourceNonce, 'source' );
+	jzsaBindSampleLinks();
 
 	// No separate save button: selecting an option takes effect immediately, matching how a
 	// WordPress admin radio setting like this is normally expected to behave.
@@ -1899,6 +1900,67 @@ function jzsaBindRadioSetting( name, statusId, action, nonce, field ) {
 					if ( current !== sequence ) { return; }
 					Array.prototype.forEach.call( radios, function ( r ) { r.disabled = false; } );
 				} );
+		} );
+	} );
+}
+
+/**
+ * Sample album fields under the Primary Source setting: show the selected
+ * source's fields, save them, and restore the default albums.
+ */
+function jzsaBindSampleLinks() {
+	var fieldsets = document.querySelectorAll( '.jzsa-sample-links' );
+	if ( ! fieldsets.length ) {
+		return;
+	}
+
+	Array.prototype.forEach.call( document.querySelectorAll( 'input[name="jzsa-primary-source"]' ), function ( radio ) {
+		radio.addEventListener( 'change', function () {
+			if ( ! radio.checked ) { return; }
+			Array.prototype.forEach.call( fieldsets, function ( fieldset ) {
+				fieldset.hidden = fieldset.getAttribute( 'data-source' ) !== radio.value;
+			} );
+		} );
+	} );
+
+	Array.prototype.forEach.call( fieldsets, function ( fieldset ) {
+		var inputs = fieldset.querySelectorAll( 'input[data-kind]' );
+		var status = fieldset.querySelector( '.jzsa-sample-links-status' );
+		var buttons = fieldset.querySelectorAll( 'button' );
+
+		var save = function () {
+			var data = { source: fieldset.getAttribute( 'data-source' ) };
+			Array.prototype.forEach.call( inputs, function ( input ) {
+				data[ input.getAttribute( 'data-kind' ) ] = input.value.trim();
+			} );
+			status.textContent = 'Saving…';
+			Array.prototype.forEach.call( buttons, function ( b ) { b.disabled = true; } );
+			jzsaAdminPost( 'jzsa_save_sample_links', jzsaAdminAjax.sampleLinksNonce, data )
+				.then( function ( response ) {
+					if ( response.success && response.data && response.data.links ) {
+						Array.prototype.forEach.call( inputs, function ( input ) {
+							var kind = input.getAttribute( 'data-kind' );
+							if ( response.data.links[ kind ] ) {
+								input.value = response.data.links[ kind ];
+							}
+						} );
+						status.textContent = 'Saved.';
+					} else {
+						status.textContent = ( response && typeof response.data === 'string' ) ? response.data : 'Could not save the albums.';
+					}
+				} ).catch( function () {
+					status.textContent = 'Could not save the albums.';
+				} ).finally( function () {
+					Array.prototype.forEach.call( buttons, function ( b ) { b.disabled = false; } );
+				} );
+		};
+
+		fieldset.querySelector( '.jzsa-sample-links-save' ).addEventListener( 'click', save );
+		fieldset.querySelector( '.jzsa-sample-links-restore' ).addEventListener( 'click', function () {
+			Array.prototype.forEach.call( inputs, function ( input ) {
+				input.value = input.getAttribute( 'data-default' );
+			} );
+			save();
 		} );
 	} );
 }

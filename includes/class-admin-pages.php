@@ -61,6 +61,7 @@ class JZSA_Admin_Pages {
 		add_action( 'wp_ajax_jzsa_migrate_shortcode', array( $this, 'handle_migrate_shortcode' ) );
 		add_action( 'wp_ajax_jzsa_set_default_viewer', array( $this, 'handle_set_default_viewer' ) );
 		add_action( 'wp_ajax_jzsa_set_primary_source', array( $this, 'handle_set_primary_source' ) );
+		add_action( 'wp_ajax_jzsa_save_sample_links', array( $this, 'handle_save_sample_links' ) );
 	}
 
 	/**
@@ -98,29 +99,78 @@ class JZSA_Admin_Pages {
 	}
 
 	/**
-	 * Google sample album links and their iCloud copies, used by the Guide.
+	 * Default sample albums per source: photos, videos, and photos with captions and EXIF.
 	 *
-	 * The iCloud albums hold the same photos, so every sample built on one of
-	 * these links works with either source.
+	 * The iCloud albums hold the same photos as the Google ones, so every
+	 * sample built on these links works with either source.
 	 */
-	const SAMPLE_ALBUM_LINKS = array(
-		'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R' => 'https://photos.icloud.com/shared/album/0c63FLTi0WVdod42GljS2Mmgg',
-		'https://photos.google.com/share/AF1QipM-v19vtjd5NEiD6w40U7XqZoqwMUX4FyPr6p9U-9Ixjw2jy7oYFs7m7vgvvpm3PA?key=ZjhXZDNkc1ZrNmFvZ2tIOW16QXlGal94Y2g2cGJB' => 'https://photos.icloud.com/shared/album/0e7wlLKC7IuNKrCWXiTJgCAyQ',
-		'https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR' => 'https://photos.icloud.com/shared/album/0c7OcXdjceb4X2lbpETJkDVrw',
+	const SAMPLE_ALBUM_DEFAULTS = array(
+		'google' => array(
+			'photo' => 'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R',
+			'video' => 'https://photos.google.com/share/AF1QipM-v19vtjd5NEiD6w40U7XqZoqwMUX4FyPr6p9U-9Ixjw2jy7oYFs7m7vgvvpm3PA?key=ZjhXZDNkc1ZrNmFvZ2tIOW16QXlGal94Y2g2cGJB',
+			'info'  => 'https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR',
+		),
+		'icloud' => array(
+			'photo' => 'https://photos.icloud.com/shared/album/0c63FLTi0WVdod42GljS2Mmgg',
+			'video' => 'https://photos.icloud.com/shared/album/0e7wlLKC7IuNKrCWXiTJgCAyQ',
+			'info'  => 'https://photos.icloud.com/shared/album/0c7OcXdjceb4X2lbpETJkDVrw',
+		),
 	);
 
 	/**
-	 * Point the Guide's sample albums at the primary source.
+	 * Sample albums for a source: the admin's own links where set, defaults otherwise.
 	 *
-	 * Samples are written with the Google links; for iCloud they are swapped
-	 * for the matching iCloud albums. Samples that exist only for Google
-	 * (deprecated short links, the error sample) use other links and stay.
+	 * @param string $source "google" or "icloud".
+	 * @return array{photo:string,video:string,info:string}
+	 */
+	public static function get_sample_links( $source ) {
+		$source   = isset( self::SAMPLE_ALBUM_DEFAULTS[ $source ] ) ? $source : 'google';
+		$links    = self::SAMPLE_ALBUM_DEFAULTS[ $source ];
+		$custom   = get_option( JZSA_SAMPLE_LINKS_OPTION, array() );
+		$custom   = is_array( $custom ) && isset( $custom[ $source ] ) && is_array( $custom[ $source ] ) ? $custom[ $source ] : array();
+		foreach ( $links as $kind => $default ) {
+			if ( ! empty( $custom[ $kind ] ) && is_string( $custom[ $kind ] ) ) {
+				$links[ $kind ] = $custom[ $kind ];
+			}
+		}
+
+		return $links;
+	}
+
+	/**
+	 * Whether a link belongs to a source, so a Google field cannot hold an iCloud album.
+	 *
+	 * @param string $source "google" or "icloud".
+	 * @param string $link   Album link.
+	 * @return bool
+	 */
+	private static function is_sample_link_for_source( $source, $link ) {
+		if ( 'icloud' === $source ) {
+			return JZSA_ICloud_Provider::is_icloud_url( $link );
+		}
+
+		return (bool) preg_match( '#^https://(?:photos\.google\.com/share/|photos\.app\.goo\.gl/)#i', $link );
+	}
+
+	/**
+	 * Point the Guide's sample albums at the primary source's sample albums.
+	 *
+	 * Samples are written with the default Google links and are swapped for the
+	 * configured albums. Samples that exist only for Google (deprecated short
+	 * links, the error sample) use other links and stay.
 	 *
 	 * @param string $html Rendered Guide markup.
 	 * @return string
 	 */
 	public static function use_primary_source_samples( $html ) {
-		if ( 'icloud' !== jzsa_get_primary_source() ) {
+		$map    = array();
+		$target = self::get_sample_links( jzsa_get_primary_source() );
+		foreach ( self::SAMPLE_ALBUM_DEFAULTS['google'] as $kind => $default ) {
+			if ( $default !== $target[ $kind ] ) {
+				$map[ $default ] = $target[ $kind ];
+			}
+		}
+		if ( empty( $map ) ) {
 			return $html;
 		}
 
@@ -128,7 +178,7 @@ class JZSA_Admin_Pages {
 		$parts = preg_split( '/(<!-- jzsa-source-compare -->.*?<!-- \/jzsa-source-compare -->)/s', $html, -1, PREG_SPLIT_DELIM_CAPTURE );
 		foreach ( $parts as $index => $part ) {
 			if ( 0 !== strpos( $part, '<!-- jzsa-source-compare -->' ) ) {
-				$parts[ $index ] = strtr( $part, self::SAMPLE_ALBUM_LINKS );
+				$parts[ $index ] = strtr( $part, $map );
 			}
 		}
 
@@ -137,15 +187,47 @@ class JZSA_Admin_Pages {
 
 	private function render_primary_source_setting_section() {
 		$primary_source = jzsa_get_primary_source();
+		$sources        = array(
+			'google' => __( 'Google Photos', 'janzeman-shared-albums-for-google-photos' ),
+			'icloud' => __( 'Apple iCloud', 'janzeman-shared-albums-for-google-photos' ),
+		);
+		$kinds          = array(
+			'photo' => __( 'Photo album', 'janzeman-shared-albums-for-google-photos' ),
+			'video' => __( 'Video album', 'janzeman-shared-albums-for-google-photos' ),
+			'info'  => __( 'EXIF album (photos with descriptions and camera info)', 'janzeman-shared-albums-for-google-photos' ),
+		);
 		?>
 		<div class="jzsa-section">
 			<h2><?php esc_html_e( 'Primary Source', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 			<div class="jzsa-primary-source-setting">
 				<h3><?php esc_html_e( 'Albums Used by the Samples on the Guide Page', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-				<label><input type="radio" name="jzsa-primary-source" value="google" <?php checked( 'google', $primary_source ); ?>> <?php esc_html_e( 'Google Photos', 'janzeman-shared-albums-for-google-photos' ); ?></label>
-				<label><input type="radio" name="jzsa-primary-source" value="icloud" <?php checked( 'icloud', $primary_source ); ?>> <?php esc_html_e( 'Apple iCloud', 'janzeman-shared-albums-for-google-photos' ); ?></label>
+				<?php foreach ( $sources as $source => $label ) : ?>
+					<label><input type="radio" name="jzsa-primary-source" value="<?php echo esc_attr( $source ); ?>" <?php checked( $source, $primary_source ); ?>> <?php echo esc_html( $label ); ?></label>
+				<?php endforeach; ?>
 				<p><span id="jzsa-primary-source-status" aria-live="polite"></span></p>
 				<p><?php esc_html_e( 'Choose the source you use, and the Guide samples show albums from it. Your own shortcodes are not affected: each one always shows the album its link points to, from Google Photos or iCloud.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+				<?php foreach ( $sources as $source => $label ) : ?>
+					<?php $links = self::get_sample_links( $source ); ?>
+					<fieldset class="jzsa-sample-links" data-source="<?php echo esc_attr( $source ); ?>"<?php echo $source === $primary_source ? '' : ' hidden'; ?>>
+						<legend>
+							<?php
+							/* translators: %s: photo source name. */
+							echo esc_html( sprintf( __( 'Sample albums from %s', 'janzeman-shared-albums-for-google-photos' ), $label ) );
+							?>
+						</legend>
+						<?php foreach ( $kinds as $kind => $kind_label ) : ?>
+							<label class="jzsa-sample-link-field">
+								<span><?php echo esc_html( $kind_label ); ?></span>
+								<input type="url" class="large-text" data-kind="<?php echo esc_attr( $kind ); ?>" data-default="<?php echo esc_attr( self::SAMPLE_ALBUM_DEFAULTS[ $source ][ $kind ] ); ?>" value="<?php echo esc_attr( $links[ $kind ] ); ?>">
+							</label>
+						<?php endforeach; ?>
+						<p class="jzsa-sample-links-actions">
+							<button type="button" class="button button-primary jzsa-sample-links-save"><?php esc_html_e( 'Save sample albums', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<button type="button" class="button jzsa-sample-links-restore"><?php esc_html_e( 'Restore default albums', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<span class="jzsa-sample-links-status" aria-live="polite"></span>
+						</p>
+					</fieldset>
+				<?php endforeach; ?>
 			</div>
 		</div>
 		<?php
@@ -433,6 +515,7 @@ class JZSA_Admin_Pages {
 				'migrateNonce'    => wp_create_nonce( 'jzsa_migrate_shortcode' ),
 				'defaultViewerNonce' => wp_create_nonce( 'jzsa_set_default_viewer' ),
 				'primarySourceNonce' => wp_create_nonce( 'jzsa_set_primary_source' ),
+				'sampleLinksNonce'   => wp_create_nonce( 'jzsa_save_sample_links' ),
 			)
 		);
 	}
@@ -627,10 +710,7 @@ class JZSA_Admin_Pages {
 	 * @return array
 	 */
 	private function get_source_profile( $source ) {
-		$links = array_keys( self::SAMPLE_ALBUM_LINKS );
-		if ( 'icloud' === $source ) {
-			$links = array_values( self::SAMPLE_ALBUM_LINKS );
-		}
+		$links = array_values( self::get_sample_links( $source ) );
 
 		$samples = array(
 			array(
@@ -1015,12 +1095,14 @@ class JZSA_Admin_Pages {
 				<!-- jzsa-source-compare -->
 				<div class="jzsa-section jzsa-source-compare-section">
 					<h2><?php esc_html_e( 'Same Shortcode, Different Source', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
-					<p class="jzsa-intro"><?php esc_html_e( 'The plugin keeps loading your photos separate from displaying them, so every layout and option works the same way wherever your album lives. These two shortcodes are identical except for the link: the left one shows a Google Photos album, the right one an iCloud shared album with the same photos. Every parameter and sample below works the same way for both.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<p class="jzsa-intro"><?php esc_html_e( 'The plugin keeps loading your photos separate from displaying them, so every layout and option works the same way wherever your album lives. These two shortcodes are identical except for the link: the left one shows a Google Photos album, the right one an iCloud shared album. Every parameter and sample below works the same way for both.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-source-compare">
 					<?php
+					$compare_google  = self::get_sample_links( 'google' );
+					$compare_icloud  = self::get_sample_links( 'icloud' );
 					$compare_sources = array(
-						__( 'Google Photos', 'janzeman-shared-albums-for-google-photos' ) => 'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R',
-						__( 'Apple iCloud', 'janzeman-shared-albums-for-google-photos' )  => 'https://photos.icloud.com/shared/album/0c63FLTi0WVdod42GljS2Mmgg',
+						__( 'Google Photos', 'janzeman-shared-albums-for-google-photos' ) => $compare_google['photo'],
+						__( 'Apple iCloud', 'janzeman-shared-albums-for-google-photos' )  => $compare_icloud['photo'],
 					);
 					foreach ( $compare_sources as $compare_label => $compare_link ) :
 						$sample_shortcode = '[jzsa-album link="' . $compare_link . '" viewer="lightbox" limit="6" width="560" gallery-gap="8" corner-radius="16"]';
@@ -2842,6 +2924,47 @@ class JZSA_Admin_Pages {
 		}
 		update_option( JZSA_PRIMARY_SOURCE_OPTION, $source, false );
 		wp_send_json_success( array( 'source' => $source ) );
+	}
+
+	/**
+	 * Save one source's sample albums; empty fields fall back to the defaults.
+	 */
+	public function handle_save_sample_links() {
+		$this->verify_shortcode_tool_request( 'jzsa_save_sample_links' );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by verify_shortcode_tool_request() above.
+		$source = isset( $_POST['source'] ) ? sanitize_key( wp_unslash( $_POST['source'] ) ) : '';
+		if ( ! isset( self::SAMPLE_ALBUM_DEFAULTS[ $source ] ) ) {
+			wp_send_json_error( __( 'Invalid source.', 'janzeman-shared-albums-for-google-photos' ), 400 );
+		}
+
+		$links = array();
+		foreach ( array_keys( self::SAMPLE_ALBUM_DEFAULTS[ $source ] ) as $kind ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by verify_shortcode_tool_request() above.
+			$link = isset( $_POST[ $kind ] ) ? trim( esc_url_raw( wp_unslash( $_POST[ $kind ] ) ) ) : '';
+			if ( '' === $link || self::SAMPLE_ALBUM_DEFAULTS[ $source ][ $kind ] === $link ) {
+				continue;
+			}
+			if ( ! self::is_sample_link_for_source( $source, $link ) ) {
+				wp_send_json_error(
+					'icloud' === $source
+						? __( 'Use an iCloud shared album link (https://photos.icloud.com/shared/album/...).', 'janzeman-shared-albums-for-google-photos' )
+						: __( 'Use a Google Photos album link (https://photos.google.com/share/...).', 'janzeman-shared-albums-for-google-photos' ),
+					400
+				);
+			}
+			$links[ $kind ] = $link;
+		}
+
+		$saved = get_option( JZSA_SAMPLE_LINKS_OPTION, array() );
+		$saved = is_array( $saved ) ? $saved : array();
+		if ( empty( $links ) ) {
+			unset( $saved[ $source ] );
+		} else {
+			$saved[ $source ] = $links;
+		}
+		update_option( JZSA_SAMPLE_LINKS_OPTION, $saved, false );
+
+		wp_send_json_success( array( 'links' => self::get_sample_links( $source ) ) );
 	}
 
 	public function handle_set_default_viewer() {
