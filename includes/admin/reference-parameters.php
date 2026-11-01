@@ -448,9 +448,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<tbody>
 							<tr>
 								<td><code>show-videos</code></td>
-								<td><?php esc_html_e( 'Include videos from mixed albums: "true" or "false". Set to "false" to display only photos and filter out all video items.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Include videos from mixed albums: "true" or "false". Videos are shown by default; set to "false" to display only photos and filter out all video items.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td><code>true</code>, <code>false</code></td>
-								<td>false</td>
+								<td>true</td>
 							</tr>
 							<tr>
 								<td><code>video-controls-autohide</code></td>

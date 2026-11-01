@@ -155,7 +155,9 @@ class OrchestratorShortcodeTest extends TestCase {
     public function test_positional_shortcode_link_is_accepted(): void {
         $html = $this->orchestrator->handle_shortcode( array( self::ALBUM_URL ) );
 
-        $this->assertSame( 'rendered:Fixture Album:1', $html );
+        // Videos are shown by default, so the fixture's photo and video both render.
+        $this->assertSame( 'rendered:Fixture Album:2', $html );
+        $this->assertTrue( $this->renderer->last_config['show-videos'] );
         $this->assertSame( self::ALBUM_URL, $this->renderer->last_config['album-url'] );
     }
 
@@ -199,7 +201,7 @@ class OrchestratorShortcodeTest extends TestCase {
 
         $html = $this->orchestrator->handle_shortcode( array( 'link' => self::ALBUM_URL ) );
 
-        $this->assertSame( 'rendered:Fixture Album:1', $html );
+        $this->assertSame( 'rendered:Fixture Album:2', $html );
         $this->assertSame( 1, $this->provider->calls );
         $this->assertSame( 'Fixture Album', $GLOBALS['jzsa_test_transients'][ $this->cacheKey() ]['title'] );
     }

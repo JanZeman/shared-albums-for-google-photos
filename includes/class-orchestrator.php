@@ -1022,7 +1022,7 @@ class JZSA_Shared_Albums {
 			'lightbox-video-controls-autohide' => $lightbox_video_controls_autohide,
 
 			// Video support
-			'show-videos'            => $this->parse_bool( $atts, 'show-videos', false ),
+			'show-videos'            => $this->parse_bool( $atts, 'show-videos', true ),
 
 			// Gallery mode (thumbnail layout)
 			'gallery-layout'         => $this->parse_gallery_layout( $atts ),

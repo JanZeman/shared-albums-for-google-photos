@@ -52,6 +52,13 @@ class LegacyViewerCompatibilityTest extends TestCase {
 			->getMethod( 'parse_shortcode_config' )
 			->invoke( $this->orchestrator, $atts, self::ALBUM_URL );
 
+		// 2.6.0 intentionally changed the show-videos default from false to true.
+		// The fingerprints were taken before that, so compare with the old default.
+		if ( ! array_key_exists( 'show-videos', $atts ) ) {
+			$this->assertTrue( $config['show-videos'], $case_name . ' should show videos by default' );
+			$config['show-videos'] = false;
+		}
+
 		$legacy_projection = array();
 		foreach ( $legacy_keys as $key ) {
 			$this->assertArrayHasKey( $key, $config, $case_name . ' lost legacy key ' . $key );

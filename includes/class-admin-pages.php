@@ -721,7 +721,7 @@ class JZSA_Admin_Pages {
 			),
 			array(
 				'title'     => __( 'Videos', 'janzeman-shared-albums-for-google-photos' ),
-				'shortcode' => '[jzsa-album link="' . $links[1] . '" mode="slider" viewer="lightbox" show-videos="true" width="800" corner-radius="16"]',
+				'shortcode' => '[jzsa-album link="' . $links[1] . '" mode="slider" viewer="lightbox" width="800" corner-radius="16"]',
 				'preview'   => '',
 			),
 			array(
@@ -2141,7 +2141,7 @@ class JZSA_Admin_Pages {
 						<h3 data-jzsa-anchor="video-blue-accent"><?php echo 'Sample 48: ' . esc_html__( 'Video (Blue Accent)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Baseline video sample in slider mode with videos enabled and blue accent color.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="slider" viewer="lightbox" limit="8" show-videos="true" corner-radius="16" video-controls-color="#00B2FF"]';
+							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="slider" viewer="lightbox" limit="8" corner-radius="16" video-controls-color="#00B2FF"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -2159,7 +2159,7 @@ class JZSA_Admin_Pages {
 							<h3 data-jzsa-anchor="video-in-carousel-auto-hide-controls"><?php echo 'Sample 49: ' . esc_html__( 'Video in Carousel (Auto-Hide Controls)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Demonstrates carousel mode with video controls auto-hiding after inactivity.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="carousel" viewer="lightbox" limit="8" show-videos="true" corner-radius="16" video-controls-color="#FF6B35" video-controls-autohide="true"]';
+							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="carousel" viewer="lightbox" limit="8" corner-radius="16" video-controls-color="#FF6B35" video-controls-autohide="true"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -2177,7 +2177,7 @@ class JZSA_Admin_Pages {
 							<h3 data-jzsa-anchor="video-in-gallery-button-only-to-fullscreen"><?php echo 'Sample 50: ' . esc_html__( 'Video in Gallery (Button-only to Fullscreen)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Gallery mode with videos included. Fullscreen opens via the fullscreen button only. Once in fullscreen, click left or right to navigate between items.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" viewer="fullscreen" limit="6" show-videos="true" width="800" gallery-layout="grid" gallery-gap="8" corner-radius="16" video-controls-color="#00A878"]';
+							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" viewer="fullscreen" limit="6" width="800" gallery-layout="grid" gallery-gap="8" corner-radius="16" video-controls-color="#00A878"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -2195,7 +2195,7 @@ class JZSA_Admin_Pages {
 							<h3 data-jzsa-anchor="video-in-gallery-single-click-to-fullscreen"><?php echo 'Sample 51: ' . esc_html__( 'Video in Gallery (Single-click to Fullscreen)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php echo wp_kses( __( 'Single-click on any thumbnail opens fullscreen. Trade-off: click can no longer navigate between items in fullscreen - use the arrow buttons instead. <strong>Consider double-click instead</strong> to keep click navigation available.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" viewer="fullscreen" viewer-trigger="click" limit="6" show-videos="true" width="800" gallery-layout="grid" gallery-gap="8" corner-radius="16" video-controls-color="#E0527E"]';
+							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" viewer="fullscreen" viewer-trigger="click" limit="6" width="800" gallery-layout="grid" gallery-gap="8" corner-radius="16" video-controls-color="#E0527E"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
@@ -2213,7 +2213,7 @@ class JZSA_Admin_Pages {
 							<h3 data-jzsa-anchor="video-in-gallery-double-click-to-fullscreen"><?php echo 'Sample 52: ' . esc_html__( 'Video in Gallery (Double-click to Fullscreen)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php echo wp_kses( __( 'Double-click (or double-tap) on any thumbnail opens fullscreen; double-click again to exit. <strong>Recommended over single-click</strong>: click still navigates between items in fullscreen, and the gesture is less likely to be triggered accidentally.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" viewer="fullscreen" viewer-trigger="double-click" limit="6" show-videos="true" width="800" gallery-layout="grid" gallery-gap="8" video-controls-color="#7A5CFF"]';
+							$sample_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" viewer="fullscreen" viewer-trigger="double-click" limit="6" width="800" gallery-layout="grid" gallery-gap="8" video-controls-color="#7A5CFF"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>
