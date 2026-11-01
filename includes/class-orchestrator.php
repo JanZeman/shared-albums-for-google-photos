@@ -1566,17 +1566,60 @@ class JZSA_Shared_Albums {
 	/**
 	 * Parse photo order.
 	 *
-	 * Parameter: order="album" (default, the album's own order) or "shuffle".
+	 * Parameter: order="album" (default, the album's own order), "shuffle",
+	 * "oldest" or "newest" (by the date each photo was taken).
 	 *
 	 * @param array $atts Shortcode attributes.
-	 * @return string "album" or "shuffle"
+	 * @return string "album", "shuffle", "oldest" or "newest"
 	 */
 	private function parse_order( $atts ) {
-		if ( isset( $atts['order'] ) && in_array( strtolower( trim( (string) $atts['order'] ) ), array( 'shuffle', 'shuffled' ), true ) ) {
+		$order = isset( $atts['order'] ) ? strtolower( trim( (string) $atts['order'] ) ) : '';
+		if ( in_array( $order, array( 'shuffle', 'shuffled' ), true ) ) {
 			return 'shuffle';
+		}
+		if ( in_array( $order, array( 'oldest', 'newest' ), true ) ) {
+			return $order;
 		}
 
 		return 'album';
+	}
+
+	/**
+	 * Sort items by the date they were taken.
+	 *
+	 * Works the same for every source, since each provider sets "timestamp".
+	 * Items without a date keep their album order after the dated ones, and
+	 * items with the same date keep their album order too.
+	 *
+	 * @param array  $items     Album items.
+	 * @param string $direction "oldest" or "newest".
+	 * @return array
+	 */
+	public static function sort_by_date( $items, $direction ) {
+		$items   = array_values( $items );
+		$indexed = array();
+		foreach ( $items as $index => $item ) {
+			$indexed[] = array( $index, isset( $item['timestamp'] ) && is_numeric( $item['timestamp'] ) ? (float) $item['timestamp'] : null, $item );
+		}
+
+		usort(
+			$indexed,
+			static function ( $a, $b ) use ( $direction ) {
+				if ( null === $a[1] || null === $b[1] ) {
+					if ( null === $a[1] && null === $b[1] ) {
+						return $a[0] - $b[0];
+					}
+					return null === $a[1] ? 1 : -1;
+				}
+				if ( $a[1] === $b[1] ) {
+					return $a[0] - $b[0];
+				}
+				$cmp = $a[1] < $b[1] ? -1 : 1;
+				return 'newest' === $direction ? -$cmp : $cmp;
+			}
+		);
+
+		return array_column( $indexed, 2 );
 	}
 
 	/**
@@ -1592,7 +1635,13 @@ class JZSA_Shared_Albums {
 	 * @return array
 	 */
 	private function apply_photo_order( $base_items, $config ) {
-		if ( ! isset( $config['order'] ) || 'shuffle' !== $config['order'] || ! is_array( $base_items ) ) {
+		if ( ! isset( $config['order'] ) || ! is_array( $base_items ) ) {
+			return $base_items;
+		}
+		if ( in_array( $config['order'], array( 'oldest', 'newest' ), true ) ) {
+			return self::sort_by_date( $base_items, $config['order'] );
+		}
+		if ( 'shuffle' !== $config['order'] ) {
 			return $base_items;
 		}
 
@@ -3545,6 +3594,7 @@ class JZSA_Shared_Albums {
 		$fullscreen_width           = isset( $_POST['fullscreen_source_width'] ) ? intval( wp_unslash( $_POST['fullscreen_source_width'] ) ) : self::DEFAULT_FULLSCREEN_SOURCE_WIDTH;
 		$fullscreen_height          = isset( $_POST['fullscreen_source_height'] ) ? intval( wp_unslash( $_POST['fullscreen_source_height'] ) ) : self::DEFAULT_FULLSCREEN_SOURCE_HEIGHT;
 		$shuffle_seed               = isset( $_POST['shuffle_seed'] ) ? intval( wp_unslash( $_POST['shuffle_seed'] ) ) : 0;
+		$order                      = isset( $_POST['order'] ) ? sanitize_key( wp_unslash( $_POST['order'] ) ) : '';
 
 		$album_result = $this->get_cached_or_fresh_album_data( $album_url );
 		if ( ! $album_result['success'] || empty( $album_result['data']['photos'] ) ) {
@@ -3553,7 +3603,10 @@ class JZSA_Shared_Albums {
 		}
 
 		$base_items = $album_result['data']['photos'];
-		if ( $shuffle_seed > 0 ) {
+		if ( in_array( $order, array( 'oldest', 'newest' ), true ) ) {
+			// Chunks continue the date order the first render used.
+			$base_items = self::sort_by_date( $base_items, $order );
+		} elseif ( $shuffle_seed > 0 ) {
 			// Same seed for every chunk of one visit, so chunks continue one shuffled order.
 			$base_items = self::seeded_shuffle( $base_items, $shuffle_seed );
 		}

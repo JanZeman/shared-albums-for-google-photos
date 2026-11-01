@@ -46,7 +46,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 							</tr>
 							<tr>
 								<td><code>order</code></td>
-								<td>Photo order: "album" keeps the album's own order, "shuffle" shows the photos in a new random order on every page load. With <code>limit</code>, "shuffle" also picks which photos are shown at random.</td>
+								<td>Photo order: "album" keeps the album's own order, "shuffle" shows the photos in a new random order on every page load, "oldest" and "newest" sort by the date each photo was taken, the same way for Google Photos and iCloud. Photos without a date come last. With <code>limit</code>, "shuffle" also picks which photos are shown at random, and "oldest" or "newest" pick the oldest or newest photos.</td>
 								<td>album</td>
 							</tr>
 							<tr>

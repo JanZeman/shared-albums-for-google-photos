@@ -681,7 +681,7 @@ var JZSA_VALUE_RULES = ( function () {
 	], { type: 'bool' } );
 
 	add( [ 'mode' ], { type: 'enum', values: [ 'gallery', 'slider', 'carousel' ] } );
-	add( [ 'order' ], { type: 'enum', values: [ 'album', 'shuffle' ], accept: [ 'shuffled' ] } );
+	add( [ 'order' ], { type: 'enum', values: [ 'album', 'shuffle', 'oldest', 'newest' ], accept: [ 'shuffled' ] } );
 	add( [ 'image-fit', 'fullscreen-image-fit', 'lightbox-image-fit', 'viewer-image-fit' ],
 		{ type: 'enum', values: [ 'cover', 'contain' ] } );
 	add( [ 'gallery-layout' ], { type: 'enum', values: [ 'grid', 'justified' ] } );

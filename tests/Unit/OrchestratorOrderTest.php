@@ -103,4 +103,39 @@ class OrchestratorOrderTest extends TestCase {
         $this->assertStringNotContainsString( 'data-order=', $renderer->render( array( 'mode' => 'slider', 'order' => 'album' ) ) );
         $this->assertStringNotContainsString( 'data-order=', $renderer->render( array( 'mode' => 'gallery' ) ) );
     }
+
+    public function test_order_accepts_oldest_and_newest(): void {
+        $this->assertSame( 'oldest', $this->config( array( 'order' => 'oldest' ) )['order'] );
+        $this->assertSame( 'newest', $this->config( array( 'order' => ' Newest ' ) )['order'] );
+    }
+
+    private function dated( array $timestamps ): array {
+        $items = array();
+        foreach ( $timestamps as $i => $ts ) {
+            $item = array( 'id' => 'ID' . $i );
+            if ( null !== $ts ) {
+                $item['timestamp'] = $ts;
+            }
+            $items[] = $item;
+        }
+        return $items;
+    }
+
+    public function test_sort_by_date_oldest_and_newest_put_undated_last(): void {
+        $items = $this->dated( array( 300, null, 100, 200, null ) );
+        $this->assertSame( array( 'ID2', 'ID3', 'ID0', 'ID1', 'ID4' ), array_column( JZSA_Shared_Albums::sort_by_date( $items, 'oldest' ), 'id' ) );
+        $this->assertSame( array( 'ID0', 'ID3', 'ID2', 'ID1', 'ID4' ), array_column( JZSA_Shared_Albums::sort_by_date( $items, 'newest' ), 'id' ) );
+    }
+
+    public function test_sort_by_date_keeps_album_order_for_equal_dates(): void {
+        $items = $this->dated( array( 500, 100, 500, 100 ) );
+        $this->assertSame( array( 'ID1', 'ID3', 'ID0', 'ID2' ), array_column( JZSA_Shared_Albums::sort_by_date( $items, 'oldest' ), 'id' ) );
+        $this->assertSame( array( 'ID0', 'ID2', 'ID1', 'ID3' ), array_column( JZSA_Shared_Albums::sort_by_date( $items, 'newest' ), 'id' ) );
+    }
+
+    public function test_apply_photo_order_sorts_by_date(): void {
+        $items  = $this->dated( array( 300, 100, 200 ) );
+        $sorted = $this->invoke( 'apply_photo_order', $items, $this->config( array( 'order' => 'oldest' ) ) );
+        $this->assertSame( array( 'ID1', 'ID2', 'ID0' ), array_column( $sorted, 'id' ) );
+    }
 }

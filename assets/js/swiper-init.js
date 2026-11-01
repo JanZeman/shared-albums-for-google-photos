@@ -1620,7 +1620,8 @@
                 source_height: settings.sourceHeight,
                 fullscreen_source_width: settings.fullscreenSourceWidth,
                 fullscreen_source_height: settings.fullscreenSourceHeight,
-                shuffle_seed: parseInt($container.attr('data-shuffle-seed'), 10) || 0
+                shuffle_seed: parseInt($container.attr('data-shuffle-seed'), 10) || 0,
+                order: $container.attr('data-order') || ''
             }
         }).then(function(response) {
             if (!response || !response.success || !response.data || !Array.isArray(response.data.photos)) {
