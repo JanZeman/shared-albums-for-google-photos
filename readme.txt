@@ -138,8 +138,9 @@ Contact: support@janzeman.com
 
 == Changelog ==
 
-= 3.0.0 =
+= 2.6.0 =
 * Added Apple iCloud shared albums. The same shortcode, layouts and options work for Google Photos and iCloud albums, including videos, descriptions, camera info and downloads.
+* Thanks to Peter L. for requesting iCloud support.
 * Added order="oldest" and order="newest" to sort photos by the date they were taken.
 * Added Google Photos and Apple iCloud pages with setup steps, supported features and samples.
 * Added a Primary Source setting and editable sample albums per source in Settings.
@@ -150,6 +151,7 @@ Contact: support@janzeman.com
 = 2.5.3 =
 * Added shuffled photo order with order="shuffle".
 * Improved Guide examples and kept sample links stable when examples are renumbered.
+* Thanks to [@berbux](https://github.com/berbux) for requesting the shuffled photo order.
 
 = 2.5.2 =
 * Fixed slider controls visibility for mouse users in touch-reported browsers.
@@ -172,6 +174,7 @@ Contact: support@janzeman.com
 * Bug fixes
 * Confirmed compatibility with WordPress 7.1.
 * Raised the minimum supported WordPress version from 5.0 to 5.5.
+* Thanks to [@littauer](https://profiles.wordpress.org/littauer/) for reporting arrow keys moving several galleries at once, and to [@markstravels](https://github.com/markstravels) for reporting missing captions caused by negative time zones.
 
 = 2.4.4 =
 * Minor changes
@@ -197,6 +200,7 @@ Contact: support@janzeman.com
 * New: Lightbox - an alternative to native fullscreen
 * Basic shortcode real-time validation
 * Preparation of the Community feature for the release
+* Thanks to [@valterbruno](https://profiles.wordpress.org/valterbruno/) for the original Lightbox request and continued real-world testing.
 
 = 2.2.0 =
 * New: Community Directory - browse, copy, and publish shortcode configurations and inspire others :-)
@@ -208,6 +212,7 @@ Contact: support@janzeman.com
 = 2.1.8 =
 * Fullscreen support of mosaic
 * Warning added: Google truncates descriptions to 100 chars
+* Thanks to [@luisbenitez777](https://profiles.wordpress.org/luisbenitez777/) for requesting mosaic thumbnails in Fullscreen.
 
 = 2.1.7 =
 * Fixed info-wrap bug
@@ -262,6 +267,7 @@ Contact: support@janzeman.com
 * Fullscreen vs inline controls
 * Video download support
 * Download UX & settings improvements
+* Thanks to [@peterpolow](https://profiles.wordpress.org/peterpolow/) for requesting separate inline and Fullscreen controls and video downloads.
 
 = 2.0.4 =
 * New: Mosaic thumbnail strip (`mosaic="true"`) for slider and carousel modes
@@ -271,6 +277,7 @@ Contact: support@janzeman.com
 * Fixed `fullscreen-toggle="click"` for video slides in gallery mode
 * Improved iPhone pseudo-fullscreen behavior, including fullscreen arrow navigation
 * Added restore-to-last-viewed position when closing fullscreen
+* Thanks to [@matiaspl](https://github.com/matiaspl) for a public fork that inspired the mosaic feature.
 
 = 2.0.3 =
 * New parameter: "cache-refresh"
@@ -283,6 +290,7 @@ Contact: support@janzeman.com
 * Gallery mode support
 * Experimental video support
 * Shortcode parameters and their default values changed (Breaking. Apologies!)
+* Thanks to [@peterpolow](https://profiles.wordpress.org/peterpolow/) for the detailed requests and testing behind Gallery mode and video support, and to [@toonwolf](https://profiles.wordpress.org/toonwolf/) for the digital signage requests behind show-navigation and source-width/source-height.
 
 = 1.0.6 =
 * New animated logo
@@ -290,6 +298,7 @@ Contact: support@janzeman.com
 = 1.0.3 =
 * Improved Settings page with more intuitive onboarding and richer, example-driven documentation
 * Added Shortcode Playground on the Settings page to test and preview `[jzsa-album]` shortcodes without leaving admin
+* Thanks to [@gmrobbins](https://profiles.wordpress.org/gmrobbins/) for an early usability review that led to clearer onboarding and helped inspire Gallery mode.
 
 = 1.0.2 =
 * Initial Settings page and onboarding content
@@ -325,17 +334,7 @@ This plugin has been shaped not only by code, but also by people willing to test
 
 Personal note: It has been a genuine pleasure working with you, Naveen!
 
-= Key Contributors =
-
-* **[Peter Berger](https://profiles.wordpress.org/peterpolow/) (`@peterpolow`)** - Detailed feature requests and patient real-device testing that helped drive video support, Gallery mode, separate inline and Fullscreen controls, and more discoverable button behavior on iPhone and other mobile devices.
-* **[Ulf](https://profiles.wordpress.org/toonwolf/) (`@toonwolf`)** - Real-world testing and thoughtful presentation requests based on using the plugin for digital signage on a screen in his tennis club cafe.
-
-= Additional Acknowledgements =
-
-* **[Valter Bruno](https://profiles.wordpress.org/valterbruno/) (`@valterbruno`)** - The original Lightbox feature request and continued real-world testing of the plugin and its shortcode workflow.
-* **[Luis](https://profiles.wordpress.org/luisbenitez777/) (`@luisbenitez777`)** - The request to support mosaic thumbnails in Fullscreen, which became the Fullscreen mosaic feature.
-* **[Mateusz Starzak](https://github.com/matiaspl) (GitHub `@matiaspl`)** - A public fork that inspired the original mosaic feature.
-* **[GMRobbins](https://profiles.wordpress.org/gmrobbins/) (`@gmrobbins`)** - An early usability review that led to clearer onboarding and helped inspire Gallery mode and the carousel-to-single experience.
+Everyone else who helped shape a feature is thanked in the Changelog, next to the version they contributed to.
 
 == Credits ==
 
