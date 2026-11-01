@@ -264,6 +264,8 @@ class JZSA_Shared_Albums {
 
 		$preview_pages = array(
 			JZSA_Admin_Pages::MENU_SLUG,
+			JZSA_Admin_Pages::GOOGLE_SOURCE_SLUG,
+			JZSA_Admin_Pages::ICLOUD_SOURCE_SLUG,
 			JZSA_Admin_Pages::COMMUNITY_SLUG,
 			JZSA_Admin_Pages::SETTINGS_SLUG,
 		);

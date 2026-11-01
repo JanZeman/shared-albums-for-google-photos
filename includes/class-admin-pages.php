@@ -1015,7 +1015,7 @@ class JZSA_Admin_Pages {
 				<!-- jzsa-source-compare -->
 				<div class="jzsa-section jzsa-source-compare-section">
 					<h2><?php esc_html_e( 'Same Shortcode, Different Source', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
-					<p class="jzsa-intro"><?php esc_html_e( 'The plugin does not care where your photos live. These two shortcodes are identical except for the link: the left one shows a Google Photos album, the right one an iCloud shared album with the same photos. Every parameter and sample below works the same way for both.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<p class="jzsa-intro"><?php esc_html_e( 'The plugin keeps loading your photos separate from displaying them, so every layout and option works the same way wherever your album lives. These two shortcodes are identical except for the link: the left one shows a Google Photos album, the right one an iCloud shared album with the same photos. Every parameter and sample below works the same way for both.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-source-compare">
 					<?php
 					$compare_sources = array(
