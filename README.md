@@ -5,7 +5,7 @@
 [![PHP Version](https://img.shields.io/badge/php-7.0%2B-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
 [![License](https://img.shields.io/badge/license-GPL--2.0%2B-blue.svg)](LICENSE)
 
-A WordPress plugin that displays publicly shared Google Photos albums with a modern, responsive Swiper-based gallery viewer.
+A WordPress plugin that displays publicly shared Google Photos and Apple iCloud albums with a modern, responsive Swiper-based gallery viewer.
 
 ---
 
@@ -50,6 +50,7 @@ git clone https://github.com/JanZeman/shared-albums-wp-plugin.git
 
 ``` shortcode
 [jzsa-album link="https://photos.google.com/share/YOUR_ALBUM_ID"]
+[jzsa-album link="https://photos.icloud.com/shared/album/YOUR_ALBUM_ID"]
 ```
 
 **For all shortcode parameters and advanced usage**, see [readme.txt](readme.txt).
@@ -58,6 +59,8 @@ git clone https://github.com/JanZeman/shared-albums-wp-plugin.git
 
 ## Key Features
 
+- Google Photos and Apple iCloud albums with the same shortcode, layouts, and options
+- Photo order: album order, shuffle, or by date taken (`order="oldest"` / `order="newest"`)
 - Multiple display modes - thumbnail gallery mode (default, with optional `gallery-rows` paging/scrolling), single-photo slider, or carousel (multi-photo preview that opens single-photo fullscreen)
 - Touch gestures, zoom support, keyboard navigation
 - Fullscreen image-fit modes with `fit` as the default (no crop, scales to fill one axis)
@@ -120,6 +123,7 @@ janzeman-shared-albums-for-google-photos/
 │   └── js/               # JavaScript (Swiper initialization)
 ├── includes/
 │   ├── class-data-provider.php    # Fetches Google Photos data
+│   ├── class-icloud-provider.php  # Fetches iCloud shared album data
 │   ├── class-orchestrator.php     # Main plugin orchestrator
 │   ├── class-renderer.php         # HTML rendering
 │   ├── class-admin-pages.php      # Admin guide and reference pages
@@ -134,7 +138,7 @@ janzeman-shared-albums-for-google-photos/
 
 - WordPress 5.5 or higher
 - PHP 7.0 or higher
-- Public Google Photos album (shared via link)
+- Google Photos album shared via link, or iCloud shared album with Public Website turned on
 
 ### Contributing
 

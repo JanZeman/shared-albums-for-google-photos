@@ -1,6 +1,6 @@
 === Shared Albums for Google Photos & Apple iCloud ===
 Contributors: janzeman
-Tags: google-photos, album, gallery, embed, swiper
+Tags: google-photos, icloud, gallery, album, embed
 Requires at least: 5.5
 Tested up to: 7.1
 Requires PHP: 7.0
@@ -8,41 +8,43 @@ Stable tag: 2.5.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Embed Google Photos directly from the source, without uploading copies to WordPress.
+Embed shared Google Photos and Apple iCloud albums directly from the source, without uploading copies to WordPress.
 
 == Description ==
 
-Embed a Google Photos shared album directly from the source, without uploading copies to your WordPress media library.
+Embed a shared Google Photos or Apple iCloud album directly from the source, without uploading copies to your WordPress media library.
 Add one shortcode, choose a gallery, slider, or carousel layout, and the plugin turns your album into a responsive photo experience for desktop and mobile visitors.
 
 It is built for photographers, bloggers, clubs, families, travel sites, event pages,
-and anyone who already organizes photos in Google Photos and wants to show them beautifully on a WordPress site.
+and anyone who already organizes photos in Google Photos or iCloud and wants to show them beautifully on a WordPress site.
 
 = Why Install It =
 
-* **No duplicate uploads** - Keep your photos in Google Photos and show them on your WordPress site.
+* **No duplicate uploads** - Keep your photos in Google Photos or iCloud and show them on your WordPress site.
+* **Two sources, one shortcode** - Google Photos and iCloud albums use the same shortcode, layouts, and options.
 * **Less gallery maintenance** - Update the album at the source instead of rebuilding galleries by hand.
 * **A better visitor experience** - Give people a responsive gallery, slider, carousel, fullscreen view, or lightbox.
 * **Photo and video support** - Share mixed albums without splitting them into separate WordPress galleries.
 * **Mobile-friendly browsing** - Let visitors swipe, tap, zoom, navigate, and enjoy slideshows naturally.
-* **Useful presentation options** - Show descriptions, dates, counters, buttons, and image details when they help.
+* **Useful presentation options** - Show descriptions, dates, counters, buttons, and camera details when they help.
+* **Your order** - Keep the album's order, shuffle it, or sort by date taken, oldest or newest first.
 * **Built for real albums** - Caching, lazy loading, and progressive loading help larger albums stay practical.
 
 = Why People Use It =
 
-Google Photos is convenient for storing and sharing albums.
+Google Photos and iCloud are convenient for storing and sharing albums.
 WordPress is where your audience is.
 This plugin connects the two.
 
 Instead of exporting photos, uploading them to the media library, rebuilding galleries,
-and repeating the work after every album change, you can share the Google Photos album once and embed it where you need it.
+and repeating the work after every album change, you can share the album once and embed it where you need it.
 
 = What Happens After Installing =
 
 The plugin adds its own WordPress admin menu with a friendly Guide page,
 ready-to-use examples, a live shortcode playground, and the current parameter reference.
 
-Start with a sample, paste your own Google Photos share link,
+Start with a sample, paste your own Google Photos or iCloud share link,
 preview the result, and place the shortcode where you want the album to appear.
 
 = Community Inspiration =
@@ -80,12 +82,12 @@ Community features are optional. You can use the gallery plugin without joining 
 
 = Does this work with private albums? =
 
-No. The album must be shared by link in Google Photos.
+No. The album must be shared by link: in Google Photos with Create link, in iCloud with Public Website turned on. The source pages in the plugin's admin menu show the exact steps.
 
 = How many photos can I embed? =
 
-The plugin can handle up to 300 photos per album.
-Google Photos usually exposes about 300 items from the shared album page.
+The plugin shows up to 300 photos and videos per album.
+Google Photos usually exposes about 300 items from the shared album page. iCloud shared albums can hold up to 5,000 items; use order="newest" or order="oldest" with limit to choose which ones are shown.
 
 = Will this slow down my site? =
 
@@ -135,6 +137,15 @@ Optional. Used only when a WordPress administrator opens the Community page or c
 Contact: support@janzeman.com
 
 == Changelog ==
+
+= 3.0.0 =
+* Added Apple iCloud shared albums. The same shortcode, layouts and options work for Google Photos and iCloud albums, including videos, descriptions, camera info and downloads.
+* Added order="oldest" and order="newest" to sort photos by the date they were taken.
+* Added Google Photos and Apple iCloud pages with setup steps, supported features and samples.
+* Added a Primary Source setting and editable sample albums per source in Settings.
+* Added a Values column to the shortcode parameter reference.
+* Renamed the plugin to Shared Albums for Google Photos & Apple iCloud. The slug and existing shortcodes are unchanged.
+* Short photos.app.goo.gl links are now described as working but not recommended.
 
 = 2.5.3 =
 * Added shuffled photo order with order="shuffle".
