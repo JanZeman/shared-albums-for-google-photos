@@ -392,7 +392,8 @@
 }
 
 .jzsa-shortcode-migrator,
-.jzsa-default-viewer-setting {
+.jzsa-default-viewer-setting,
+.jzsa-primary-source-setting {
     margin: 20px 0 0;
     padding: 18px 20px;
     border: 1px solid #c3c4c7;
@@ -452,7 +453,8 @@
     font-size: 12px;
 }
 
-.jzsa-default-viewer-setting > label {
+.jzsa-default-viewer-setting > label,
+.jzsa-primary-source-setting > label {
     display: inline-block;
     margin: 4px 18px 4px 0;
 }
