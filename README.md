@@ -1,4 +1,4 @@
-# Shared Albums (Google Photos / Apple iCloud)
+# Shared Albums for Google Photos & Apple iCloud
 
 [![WordPress Plugin Version](https://img.shields.io/badge/version-2.5.3-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
 [![WordPress Compatibility](https://img.shields.io/badge/wordpress-5.5%2B-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
@@ -30,7 +30,7 @@ The `readme.txt` file contains the official WordPress.org plugin documentation w
 **From WordPress.org (Recommended):**
 
 1. Go to **Plugins** > **Add New** in WordPress admin
-2. Search for "Shared Albums (Google Photos / Apple iCloud)"
+2. Search for "Shared Albums for Google Photos & Apple iCloud"
 3. Click **Install Now** and then **Activate**
 
 **Manual Installation:**

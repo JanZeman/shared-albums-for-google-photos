@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-The latest released version of Shared Albums (Google Photos / Apple iCloud) on WordPress.org and this repository is supported with security updates.
+The latest released version of Shared Albums for Google Photos & Apple iCloud on WordPress.org and this repository is supported with security updates.
 
 ## Reporting a Vulnerability
 

@@ -322,7 +322,7 @@ class JZSA_Admin_Pages {
 	 */
 	public function add_admin_pages() {
 		add_menu_page(
-			'Shared Albums (Google Photos / Apple iCloud)',
+			'Shared Albums for Google Photos & Apple iCloud',
 			'Shared Albums',
 			jzsa_get_admin_capability(),
 			self::MENU_SLUG,
@@ -332,7 +332,7 @@ class JZSA_Admin_Pages {
 
 		add_submenu_page(
 			self::MENU_SLUG,
-			'Shared Albums (Google Photos / Apple iCloud)',
+			'Shared Albums for Google Photos & Apple iCloud',
 			'Guide',
 			jzsa_get_admin_capability(),
 			self::MENU_SLUG,

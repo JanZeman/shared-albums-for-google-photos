@@ -1,4 +1,4 @@
-=== Shared Albums (Google Photos / Apple iCloud) ===
+=== Shared Albums for Google Photos & Apple iCloud ===
 Contributors: janzeman
 Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.5
