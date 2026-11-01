@@ -5,7 +5,7 @@
  * Input Phase - same result shape as JZSA_Data_Provider, so the orchestrator
  * and renderer stay source-agnostic.
  *
- * SPIKE: uses the undocumented endpoints that the iCloud web viewers
+ * Uses the undocumented endpoints that the iCloud web viewers
  * themselves call. Old public website links (icloud.com/sharedalbum/#B0...)
  * go through sharedstreams (webstream + webasseturls). iOS 27 album links
  * (photos.icloud.com/shared/album/<id>) go through CloudKit (records/resolve

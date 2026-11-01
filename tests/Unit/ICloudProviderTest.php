@@ -1,6 +1,6 @@
 <?php
 /**
- * Tests for JZSA_ICloud_Provider (SPIKE): URL parsing, partition host,
+ * Tests for JZSA_ICloud_Provider: URL parsing, partition host,
  * webstream + webasseturls parsing, and the orchestrator's fixed-rendition
  * size picking. Fixtures in tests/fixtures/icloud/ follow the shape of the
  * public sharedstreams and CloudKit endpoints, so these tests never call
@@ -78,7 +78,7 @@ class ICloudProviderTest extends TestCase {
 		$result = $this->provider->fetch_album( self::ALBUM_URL );
 
 		$this->assertTrue( $result['success'], (string) $result['error'] );
-		$this->assertSame( 'Spike Album', $result['data']['title'] );
+		$this->assertSame( 'Test Album', $result['data']['title'] );
 		$this->assertSame( 3, $result['data']['count'] );
 
 		$photos = $result['data']['photos'];

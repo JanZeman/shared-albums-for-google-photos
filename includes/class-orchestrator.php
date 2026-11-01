@@ -197,7 +197,7 @@ class JZSA_Shared_Albums {
 	private $provider;
 
 	/**
-	 * iCloud Shared Albums provider instance (SPIKE)
+	 * iCloud Shared Albums provider instance
 	 *
 	 * @var JZSA_ICloud_Provider
 	 */
