@@ -749,7 +749,7 @@ class JZSA_Admin_Pages {
 					__( 'Original file names', 'janzeman-shared-albums-for-google-photos' ) => __( 'Yes.', 'janzeman-shared-albums-for-google-photos' ),
 					__( 'Downloads', 'janzeman-shared-albums-for-google-photos' )         => __( 'Yes, with the original file name.', 'janzeman-shared-albums-for-google-photos' ),
 					__( 'Album size', 'janzeman-shared-albums-for-google-photos' )        => __( 'Up to 5,000 photos and videos per shared album.', 'janzeman-shared-albums-for-google-photos' ),
-					__( 'Order', 'janzeman-shared-albums-for-google-photos' )             => __( 'Newest photo first, by the date it was taken.', 'janzeman-shared-albums-for-google-photos' ),
+					__( 'Order', 'janzeman-shared-albums-for-google-photos' )             => __( 'Newest photo first, by the date it was taken. This cannot be changed in the shared album, so use order="oldest" in the shortcode for the opposite order.', 'janzeman-shared-albums-for-google-photos' ),
 				),
 				'samples'  => $samples,
 			);
@@ -772,7 +772,7 @@ class JZSA_Admin_Pages {
 				__( 'Original file names', 'janzeman-shared-albums-for-google-photos' ) => __( 'Yes, loaded per photo in the background.', 'janzeman-shared-albums-for-google-photos' ),
 				__( 'Downloads', 'janzeman-shared-albums-for-google-photos' )         => __( 'Yes.', 'janzeman-shared-albums-for-google-photos' ),
 				__( 'Album size', 'janzeman-shared-albums-for-google-photos' )        => __( 'Usually up to 300 entries per album.', 'janzeman-shared-albums-for-google-photos' ),
-				__( 'Order', 'janzeman-shared-albums-for-google-photos' )             => __( 'The album\'s own order.', 'janzeman-shared-albums-for-google-photos' ),
+				__( 'Order', 'janzeman-shared-albums-for-google-photos' )             => __( 'The album\'s own order, often oldest photo first. The album owner can change it in the album\'s sort setting (Edit album, then Sort photos), or use order="oldest" or order="newest" in the shortcode.', 'janzeman-shared-albums-for-google-photos' ),
 			),
 			'samples'  => $samples,
 		);
