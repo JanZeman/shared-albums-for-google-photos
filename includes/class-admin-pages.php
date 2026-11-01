@@ -156,7 +156,7 @@ class JZSA_Admin_Pages {
 	 * Point the Guide's sample albums at the primary source's sample albums.
 	 *
 	 * Samples are written with the default Google links and are swapped for the
-	 * configured albums. Samples that exist only for Google (deprecated short
+	 * configured albums. Samples that exist only for Google (short
 	 * links, the error sample) use other links and stay.
 	 *
 	 * @param string $html Rendered Guide markup.
@@ -763,7 +763,7 @@ class JZSA_Admin_Pages {
 				__( 'Click Share, then Create link, and confirm.', 'janzeman-shared-albums-for-google-photos' ),
 				__( 'Copy the full album link from the browser address bar and use it in the shortcode.', 'janzeman-shared-albums-for-google-photos' ),
 			),
-			'links'    => array( 'https://photos.google.com/share/AF1QipN...?key=...', 'https://photos.app.goo.gl/... (deprecated)' ),
+			'links'    => array( 'https://photos.google.com/share/AF1QipN...?key=...', 'https://photos.app.goo.gl/... (works, full link recommended)' ),
 			'features' => array(
 				__( 'Photos', 'janzeman-shared-albums-for-google-photos' )            => __( 'Yes, resized by Google to the requested size.', 'janzeman-shared-albums-for-google-photos' ),
 				__( 'Videos', 'janzeman-shared-albums-for-google-photos' )            => __( 'Yes.', 'janzeman-shared-albums-for-google-photos' ),
@@ -2409,11 +2409,11 @@ class JZSA_Admin_Pages {
 								<li><strong><?php esc_html_e( 'Important:', 'janzeman-shared-albums-for-google-photos' ); ?></strong> <?php esc_html_e( 'Click in the browser address bar and copy the FULL ALBUM LINK', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							</ol>
 							<div class="jzsa-warning-box">
-								<strong><?php esc_html_e( 'Use Full Links Only', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+								<strong><?php esc_html_e( 'Prefer Full Links', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
 								<p><?php esc_html_e( 'Make sure your link looks like this:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 								<code class="jzsa-code-good">https://photos.google.com/share/AF1QipN...</code>
 								<p style="margin-top: 8px;">
-									<?php esc_html_e( 'Short photos.app.goo.gl links are deprecated; for best reliability always use the full https://photos.google.com/share/... link from your browser\'s address bar.', 'janzeman-shared-albums-for-google-photos' ); ?>
+									<?php esc_html_e( 'Short photos.app.goo.gl links work, but the full https://photos.google.com/share/... link from your browser\'s address bar is recommended, because it does not depend on a redirect.', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</p>
 							</div>
 							<h4><?php esc_html_e( 'iCloud', 'janzeman-shared-albums-for-google-photos' ); ?></h4>
@@ -2721,23 +2721,23 @@ class JZSA_Admin_Pages {
 					<div class="jzsa-faq">
 						<h3><?php esc_html_e( 'I See a Yellow Warning Banner', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<ul>
-							<li><?php esc_html_e( 'You are using a short link format (photos.app.goo.gl), which is deprecated by Google Photos.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
-							<li><?php esc_html_e( 'This format works as of today, but it may stop working in the future.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
+							<li><?php esc_html_e( 'You are using a short link (photos.app.goo.gl). It works, but the full link is recommended.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
+							<li><?php esc_html_e( 'A short link only redirects to the full album link, so it adds one more step that could break if Google changes it.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'Only logged-in administrators see this warning. For best reliability, update the shortcode to use the full https://photos.google.com/share/... link from your browser\'s address bar.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 						</ul>
 
 						<div class="jzsa-sample-card">
-							<h3 data-jzsa-anchor="basic-album-with-deprecated-link-format-admin-only-warning"><?php echo 'Sample 72: ' . esc_html__( 'Basic Album with Deprecated Link Format (Admin-Only Warning)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php esc_html_e( 'Same as above, but using the older short link format. Visitors will NOT see this warning, but you as an administrator should update the link to the new format.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<h3 data-jzsa-anchor="basic-album-with-short-link-format-admin-only-warning"><?php echo 'Sample 72: ' . esc_html__( 'Basic Album with Short Link Format (Admin-Only Warning)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php esc_html_e( 'Same as above, but using a short link. Visitors will NOT see this warning; as an administrator, consider replacing the link with the full one.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 							<?php
-								// phpcs:ignore PluginCheck.CodeAnalysis.ShortURL.Found -- Intentional deprecated-link example used by the Guide.
+								// phpcs:ignore PluginCheck.CodeAnalysis.ShortURL.Found -- Intentional short-link example used by the Guide.
 								$sample_shortcode = '[jzsa-album link="https://photos.app.goo.gl/6qmxgmqdouBFKH3i8" viewer="lightbox" limit="6" width="600"]';
 							?>
 							<div class="jzsa-code-block">
 									<code><?php echo esc_html( $sample_shortcode ); ?></code>
 								<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
 							</div>
-							<div class="jzsa-preview-container jzsa-preview-container-basic-deprecated">
+							<div class="jzsa-preview-container jzsa-preview-container-basic-short-link">
 								<?php
 									// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 										echo do_shortcode( $sample_shortcode );

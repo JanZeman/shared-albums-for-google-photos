@@ -102,8 +102,8 @@ class JZSA_Renderer {
 			'<p style="margin: 0; color: #856404; font-size: 12px;">%s</p>' .
 			'</div>',
 			esc_html__( 'Warning (visible to administrators only):', 'janzeman-shared-albums-for-google-photos' ),
-			esc_html__( 'Short Link Detected: The short link format might stop working in the future.', 'janzeman-shared-albums-for-google-photos' ),
-			esc_html__( 'This warning is only shown to logged-in administrators. Please update the shortcode to use the full link format (https://photos.google.com/share/...) to ensure your gallery continues working for visitors.', 'janzeman-shared-albums-for-google-photos' )
+			esc_html__( 'Short Link Detected: The short link works, but the full link is recommended.', 'janzeman-shared-albums-for-google-photos' ),
+			esc_html__( 'This warning is only shown to logged-in administrators. Consider updating the shortcode to the full link (https://photos.google.com/share/...), which does not depend on a redirect.', 'janzeman-shared-albums-for-google-photos' )
 		);
 	}
 
