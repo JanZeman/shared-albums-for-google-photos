@@ -206,6 +206,7 @@ class JZSA_Admin_Pages {
 				<?php endforeach; ?>
 				<p><span id="jzsa-primary-source-status" aria-live="polite"></span></p>
 				<p><?php esc_html_e( 'Choose the source you use, and the Guide samples show albums from it. Your own shortcodes are not affected: each one always shows the album its link points to, from Google Photos or iCloud.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+				<p><?php echo wp_kses_post( __( 'By default, the samples use albums made especially for this plugin. <strong>You can replace them with your own albums below and see every Guide sample with your own photos.</strong> Restore default albums brings the original sample albums back at any time.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 				<?php foreach ( $sources as $source => $label ) : ?>
 					<?php $links = self::get_sample_links( $source ); ?>
 					<fieldset class="jzsa-sample-links" data-source="<?php echo esc_attr( $source ); ?>"<?php echo $source === $primary_source ? '' : ' hidden'; ?>>
