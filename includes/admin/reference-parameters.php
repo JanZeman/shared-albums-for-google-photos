@@ -142,6 +142,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 								<td>0-100</td>
 								<td>4</td>
 							</tr>
+							<tr>
+								<td><code>gallery-caption-gap</code></td>
+								<td><?php esc_html_e( 'Space between a gallery tile and its caption below, in pixels. Used only with gallery-caption.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>0-100</td>
+								<td>6</td>
+							</tr>
 						</tbody>
 					</table>
 

@@ -1060,6 +1060,7 @@ class JZSA_Shortcode_Tools {
 			'info-bottom',
 			'gallery-info-bottom',
 			'gallery-caption',
+			'gallery-caption-gap',
 			'info-font-size',
 			'info-font-family',
 			'info-font-color',

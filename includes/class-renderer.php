@@ -865,6 +865,9 @@ class JZSA_Renderer {
 				}
 			if ( ! empty( $config['gallery-caption'] ) ) {
 				$attrs[] = sprintf( 'data-gallery-caption="%s"', esc_attr( $config['gallery-caption'] ) );
+				if ( isset( $config['gallery-caption-gap'] ) ) {
+					$attrs[] = sprintf( 'data-gallery-caption-gap="%d"', intval( $config['gallery-caption-gap'] ) );
+				}
 			}
 
 		if ( isset( $config['fullscreen-slideshow-delay'] ) ) {

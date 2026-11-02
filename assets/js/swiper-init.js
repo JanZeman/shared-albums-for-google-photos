@@ -3568,6 +3568,18 @@
     }
 
     /**
+     * Pass gallery-caption-gap to CSS as --jzsa-gallery-caption-gap.
+     *
+     * @param {jQuery} $container Gallery album element.
+     */
+    function setGalleryCaptionGap($container) {
+        var gap = parseInt($container.attr('data-gallery-caption-gap'), 10);
+        if (!isNaN(gap) && gap >= 0 && $container[0] && $container[0].style) {
+            $container[0].style.setProperty('--jzsa-gallery-caption-gap', gap + 'px');
+        }
+    }
+
+    /**
      * Wrap a gallery tile in a figure with its caption below, when gallery-caption is set.
      *
      * The tile itself stays unchanged, so overlays and buttons keep their position
@@ -7733,6 +7745,7 @@
         $container[0].style.setProperty('--jzsa-gallery-columns-tablet', columnsTablet);
         $container[0].style.setProperty('--jzsa-gallery-columns-mobile', columnsMobile);
         $container[0].style.setProperty('--jzsa-gallery-gap',            galleryGap + 'px');
+        setGalleryCaptionGap($container);
         var notLocked = $container.attr('data-interaction-lock') !== 'true';
         var thumbLightboxOn = notLocked && !!$container.attr('data-lightbox-toggle') && $container.attr('data-lightbox-toggle') !== 'disabled';
         var thumbFsOn = notLocked && $container.attr('data-fullscreen-toggle') !== 'disabled';
@@ -7857,6 +7870,7 @@
      * @param {number} gap             Gap between thumbnails in pixels.
      */
     function renderJustifiedRows($container, rows, containerWidth, targetHeight, gap) {
+        setGalleryCaptionGap($container);
         var notLocked = $container.attr('data-interaction-lock') !== 'true';
         var thumbLightboxOn = notLocked && !!$container.attr('data-lightbox-toggle') && $container.attr('data-lightbox-toggle') !== 'disabled';
         var thumbFsOn = notLocked && $container.attr('data-fullscreen-toggle') !== 'disabled';

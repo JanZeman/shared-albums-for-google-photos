@@ -1035,6 +1035,7 @@ class JZSA_Shared_Albums {
 			'gallery-scrollable'     => $this->parse_bool( $atts, 'gallery-scrollable', false ),
 			'gallery-buttons-on-mobile' => $this->parse_gallery_buttons_on_mobile( $atts ),
 			'gallery-gap'            => $this->parse_gallery_gap( $atts ),
+			'gallery-caption-gap'    => $this->parse_gallery_caption_gap( $atts ),
 
 			// Mosaic (thumbnail strip alongside the main gallery)
 			'mosaic'          => $this->parse_bool( $atts, 'mosaic', false ),
@@ -2122,6 +2123,22 @@ class JZSA_Shared_Albums {
 		$value = intval( $atts['gallery-gap'] );
 
 		return ( $value >= 0 && $value <= 100 ) ? $value : 4;
+	}
+
+	/**
+	 * Parse gallery-caption-gap attribute: space between a tile and its caption (pixels, 0-100).
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return int Gap in pixels.
+	 */
+	private function parse_gallery_caption_gap( $atts ) {
+		if ( ! isset( $atts['gallery-caption-gap'] ) ) {
+			return 6;
+		}
+
+		$value = intval( $atts['gallery-caption-gap'] );
+
+		return ( $value >= 0 && $value <= 100 ) ? $value : 6;
 	}
 
 	/**

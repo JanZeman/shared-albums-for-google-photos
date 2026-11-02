@@ -552,7 +552,7 @@ var JZSA_KNOWN_PARAMS = [
 	'fullscreen-slideshow-autoresume', 'fullscreen-slideshow-delay',
 	'fullscreen-source-height', 'fullscreen-source-width', 'fullscreen-toggle',
 	'fullscreen-video-controls-autohide', 'fullscreen-video-controls-color',
-	'gallery-buttons-on-mobile', 'gallery-caption', 'gallery-columns', 'gallery-columns-mobile',
+	'gallery-buttons-on-mobile', 'gallery-caption', 'gallery-caption-gap', 'gallery-columns', 'gallery-columns-mobile',
 	'gallery-columns-tablet', 'gallery-gap', 'gallery-info-bottom',
 	'gallery-info-bottom-halo-effect', 'gallery-layout', 'gallery-row-height',
 	'gallery-rows', 'gallery-scrollable', 'gallery-sizing', 'height', 'image-fit',
@@ -748,7 +748,7 @@ var JZSA_VALUE_RULES = ( function () {
 		{ type: 'int', min: 1, max: 12 } );
 	add( [ 'gallery-row-height' ], { type: 'int', min: 50, max: 800 } );
 	add( [
-		'gallery-gap', 'mosaic-gap', 'fullscreen-mosaic-gap',
+		'gallery-gap', 'gallery-caption-gap', 'mosaic-gap', 'fullscreen-mosaic-gap',
 		'lightbox-mosaic-gap', 'viewer-mosaic-gap'
 	],
 		{ type: 'int', min: 0, max: 100 } );

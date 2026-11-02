@@ -231,6 +231,9 @@ class RendererGalleryTest extends TestCase {
         $this->assertStringContainsString( 'data-gallery-caption="{description} &quot;x&quot;"', $html );
 
         $this->assertStringNotContainsString( 'data-gallery-caption', $this->render( [ 'gallery-caption' => '' ] ) );
+
+        $html = $this->render( [ 'gallery-caption' => '{description}', 'gallery-caption-gap' => 12 ] );
+        $this->assertStringContainsString( 'data-gallery-caption-gap="12"', $html );
     }
 
     public function test_gallery_inline_styles_with_background_color(): void {

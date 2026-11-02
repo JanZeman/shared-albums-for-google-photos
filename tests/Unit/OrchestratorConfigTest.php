@@ -824,6 +824,14 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertSame( array(), $config['unknown-attributes'] );
     }
 
+    public function test_gallery_caption_gap_defaults_to_6_and_stays_within_0_to_100(): void {
+        $this->assertSame( 6, $this->config( array() )['gallery-caption-gap'] );
+        $this->assertSame( 0, $this->config( array( 'gallery-caption-gap' => '0' ) )['gallery-caption-gap'] );
+        $this->assertSame( 20, $this->config( array( 'gallery-caption-gap' => '20' ) )['gallery-caption-gap'] );
+        $this->assertSame( 6, $this->config( array( 'gallery-caption-gap' => '250' ) )['gallery-caption-gap'] );
+        $this->assertSame( array(), $this->config( array( 'gallery-caption-gap' => '20' ) )['unknown-attributes'] );
+    }
+
     public function test_unknown_attributes_are_collected_in_written_order(): void {
         $config = $this->config(
             array(
