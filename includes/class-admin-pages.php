@@ -1135,11 +1135,11 @@ class JZSA_Admin_Pages {
 					$compare_google  = self::get_sample_links( 'google' );
 					$compare_icloud  = self::get_sample_links( 'icloud' );
 					$compare_sources = array(
-						__( 'Google Photos', 'janzeman-shared-albums-for-google-photos' ) => $compare_google['photo'],
-						__( 'Apple iCloud', 'janzeman-shared-albums-for-google-photos' )  => $compare_icloud['photo'],
+						__( 'Google Photos', 'janzeman-shared-albums-for-google-photos' ) => $compare_google['info'],
+						__( 'Apple iCloud', 'janzeman-shared-albums-for-google-photos' )  => $compare_icloud['info'],
 					);
 					foreach ( $compare_sources as $compare_label => $compare_link ) :
-						$sample_shortcode = '[jzsa-album link="' . $compare_link . '" viewer="lightbox" limit="6" order="newest" width="560" gallery-gap="8" show-link-button="true" corner-radius="16"]';
+						$sample_shortcode = '[jzsa-album link="' . $compare_link . '" viewer="lightbox" limit="6" width="560" gallery-gap="8" corner-radius="16" info-top="{description}"]';
 						?>
 						<div class="jzsa-source-compare__column">
 							<h3><?php echo esc_html( $compare_label ); ?></h3>
