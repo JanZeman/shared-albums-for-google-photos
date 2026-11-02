@@ -757,7 +757,7 @@ class JZSA_Admin_Pages {
 						'title'      => __( 'Descriptions on iCloud', 'janzeman-shared-albums-for-google-photos' ),
 						'paragraphs' => array(
 							__( 'Apple stores descriptions per shared post, not per photo. A post is created every time you add photos to a shared album, and the comment you type in the Add dialog becomes its caption. Every photo in that post shows the same caption as {description}.', 'janzeman-shared-albums-for-google-photos' ),
-							__( 'To give each photo its own description, add the photos to the album one at a time and type a comment each time. You can change a caption later with Edit Caption on the post in the shared album; the plugin shows the new text after the album cache refreshes.', 'janzeman-shared-albums-for-google-photos' ),
+							__( 'To give each photo its own description, add the photos to the album one at a time and type a comment each time. You can change a caption later in the album\'s Activity view (on icloud.com, open the shared album and choose Activity), where each post has Edit Caption in its menu. The plugin shows the new text after the album cache refreshes.', 'janzeman-shared-albums-for-google-photos' ),
 							__( 'The same photo can have a different description in each shared album. Titles and captions from your Photos library are not shared by Apple.', 'janzeman-shared-albums-for-google-photos' ),
 						),
 					),
