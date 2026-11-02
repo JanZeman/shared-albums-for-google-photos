@@ -816,6 +816,14 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertFalse( $false );
     }
 
+    public function test_gallery_caption_is_parsed_as_text_and_off_by_default(): void {
+        $this->assertSame( '', $this->config( array() )['gallery-caption'] );
+
+        $config = $this->config( array( 'gallery-caption' => '{description} <b>x</b>' ) );
+        $this->assertSame( '{description} x', $config['gallery-caption'] );
+        $this->assertSame( array(), $config['unknown-attributes'] );
+    }
+
     public function test_unknown_attributes_are_collected_in_written_order(): void {
         $config = $this->config(
             array(

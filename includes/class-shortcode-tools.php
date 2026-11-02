@@ -1059,6 +1059,7 @@ class JZSA_Shortcode_Tools {
 			'info-top-secondary',
 			'info-bottom',
 			'gallery-info-bottom',
+			'gallery-caption',
 			'info-font-size',
 			'info-font-family',
 			'info-font-color',

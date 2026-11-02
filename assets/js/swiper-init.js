@@ -2829,7 +2829,13 @@
             fullscreen[zone] = $container.attr('data-fullscreen-' + zone) || inline[zone];
             lightbox[zone] = $container.attr('data-lightbox-' + zone) || inline[zone];
         }
-        return { inline: inline, fullscreen: fullscreen, lightbox: lightbox };
+        return {
+            inline: inline,
+            fullscreen: fullscreen,
+            lightbox: lightbox,
+            // Gallery captions below the tiles use the same placeholders and metadata.
+            galleryCaption: $container.attr('data-gallery-caption') || ''
+        };
     }
 
     function getInfoZoneFormat(zoneFormats, zone, viewerMode) {
@@ -2982,6 +2988,13 @@
             needs.rawCamera = needs.rawCamera || RAW_CAMERA_PLACEHOLDER_RE.test(all[zone] || '') || RAW_CAMERA_PLACEHOLDER_RE.test(fs[zone] || '') || RAW_CAMERA_PLACEHOLDER_RE.test(lb[zone] || '');
             needs.exif = needs.exif || EXIF_PLACEHOLDER_RE.test(all[zone] || '') || EXIF_PLACEHOLDER_RE.test(fs[zone] || '') || EXIF_PLACEHOLDER_RE.test(lb[zone] || '');
             needs.filename = needs.filename || FILENAME_PLACEHOLDER_RE.test(all[zone] || '') || FILENAME_PLACEHOLDER_RE.test(fs[zone] || '') || FILENAME_PLACEHOLDER_RE.test(lb[zone] || '');
+        }
+        var caption = zoneFormats.galleryCaption || '';
+        if (caption) {
+            needs.description = needs.description || DESCRIPTION_PLACEHOLDER_RE.test(caption);
+            needs.rawCamera = needs.rawCamera || RAW_CAMERA_PLACEHOLDER_RE.test(caption);
+            needs.exif = needs.exif || EXIF_PLACEHOLDER_RE.test(caption);
+            needs.filename = needs.filename || FILENAME_PLACEHOLDER_RE.test(caption);
         }
         return needs;
     }
@@ -3531,6 +3544,53 @@
 
     }
 
+    /**
+     * Resolve the gallery-caption text for one tile.
+     *
+     * @param {jQuery} $container Gallery album element.
+     * @param {Object} photo      Photo data.
+     * @param {number} index      Global photo index.
+     * @return {?string} null when captions are off, '' while metadata is still loading or empty.
+     */
+    function resolveGalleryCaption($container, photo, index) {
+        var format = $container.attr('data-gallery-caption') || '';
+        if (!format) {
+            return null;
+        }
+        if (shouldShowPhotoMetaLoading(format, photo)) {
+            return '';
+        }
+        return resolveInfoPlaceholders(format, photo,
+            $.extend(buildSinglePhotoItemPlaceholders(index, getContainerTotalCount($container)), {
+                albumTitle: $container.attr('data-album-title') || ''
+            })
+        );
+    }
+
+    /**
+     * Wrap a gallery tile in a figure with its caption below, when gallery-caption is set.
+     *
+     * The tile itself stays unchanged, so overlays and buttons keep their position
+     * on the image; the caption sits under it in normal page flow.
+     *
+     * @param {jQuery} $container Gallery album element.
+     * @param {string} tileHtml   Markup of the .jzsa-gallery-item tile.
+     * @param {Object} photo      Photo data.
+     * @param {number} index      Global photo index.
+     * @param {string} cellStyle  Optional inline style for the figure.
+     * @return {string}
+     */
+    function wrapGalleryTileWithCaption($container, tileHtml, photo, index, cellStyle) {
+        var text = resolveGalleryCaption($container, photo, index);
+        if (text === null) {
+            return tileHtml;
+        }
+        return '<figure class="jzsa-gallery-cell" data-index="' + index + '"' + (cellStyle ? ' style="' + cellStyle + '"' : '') + '>' +
+            tileHtml +
+            '<figcaption class="jzsa-gallery-caption"' + (text === '' ? ' hidden' : '') + '>' + escapeHtml(text) + '</figcaption>' +
+        '</figure>';
+    }
+
     function updateGalleryThumbnailInfoBoxes($container) {
         if (!$container || !$container.length || $container.attr('data-mode') !== 'gallery') {
             return;
@@ -3571,6 +3631,18 @@
                     );
                 $box.text(text).toggle(text !== '');
             });
+        });
+
+        $container.find('.jzsa-gallery-cell').each(function() {
+            var $cell = $(this);
+            var cellIndex = parseInt($cell.attr('data-index'), 10);
+            if (isNaN(cellIndex) || cellIndex < 0) {
+                return;
+            }
+            var captionText = resolveGalleryCaption($container, getContainerPhoto($container, cellIndex), cellIndex) || '';
+            var $caption = $cell.children('.jzsa-gallery-caption');
+            $caption.text(captionText);
+            $caption.prop('hidden', captionText === '');
         });
 
     }
@@ -7723,12 +7795,12 @@
                 albumTitle: $container.attr('data-album-title') || ''
             }, { bottomOrder: GALLERY_INFO_BOTTOM_ORDER });
 
-            html +=
+            html += wrapGalleryTileWithCaption($container,
                 '<div class="' + itemClass + '" data-index="' + globalIndex + '">' +
                     mediaHtml +
                     thumbZoneHtml +
                     thumbOverlayBtns +
-                '</div>';
+                '</div>', photo, globalIndex, '');
         });
 
         for (var i = 0; i < placeholderCount; i++) {
@@ -7852,12 +7924,12 @@
                     albumTitle: $container.attr('data-album-title') || ''
                 });
 
-                html +=
+                html += wrapGalleryTileWithCaption($container,
                     '<div class="' + itemClass + '" data-index="' + item.index + '" style="width:' + width + 'px;height:' + targetHeight + 'px;">' +
                         mediaHtml +
                         justifiedZoneHtml +
                         thumbOverlayBtns +
-                    '</div>';
+                    '</div>', item.photo, item.index, 'width:' + width + 'px;');
             });
             html += '</div>';
         });
@@ -9331,7 +9403,11 @@
                         var rowHeight = fillUniformRowHeight;
 
                         if (!(rowHeight > 0)) {
-                            var $firstThumb = $container.find('.jzsa-gallery-thumb').first();
+                            // With captions a row is the whole figure, not just the image.
+                            var $firstThumb = $container.find('.jzsa-gallery-cell').first();
+                            if (!$firstThumb.length) {
+                                $firstThumb = $container.find('.jzsa-gallery-thumb').first();
+                            }
                             rowHeight = $firstThumb.length ? $firstThumb.outerHeight() : 0;
                         }
 
@@ -9350,7 +9426,10 @@
                         // of the next row.
                         var adjustedRowHeight = fillUniformRowHeight;
                         if (!(adjustedRowHeight > 0)) {
-                            var $adjustedThumb = $container.find('.jzsa-gallery-thumb').first();
+                            var $adjustedThumb = $container.find('.jzsa-gallery-cell').first();
+                            if (!$adjustedThumb.length) {
+                                $adjustedThumb = $container.find('.jzsa-gallery-thumb').first();
+                            }
                             adjustedRowHeight = $adjustedThumb.length ? $adjustedThumb.outerHeight() : 0;
                         }
                         if (adjustedRowHeight && adjustedRowHeight > 0) {

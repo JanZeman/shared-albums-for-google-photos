@@ -2482,7 +2482,7 @@ class JZSA_Admin_Pages {
 					<h3 style="margin-top: 28px;"><?php esc_html_e( 'Example Shortcodes', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 
 						<details class="jzsa-sample-group jzsa-collapsible-section" open>
-							<summary class="jzsa-collapsible-summary"><?php esc_html_e( 'Photo info and text formatting (Samples 61-70)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
+							<summary class="jzsa-collapsible-summary"><?php esc_html_e( 'Photo info and text formatting (Samples 61-71)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
 							<p class="jzsa-sample-group__description"><?php esc_html_e( 'Use these samples to compare info overlays, EXIF values, wrapping, and per-box alignment.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
 					<div class="jzsa-sample-card">
@@ -2669,6 +2669,24 @@ class JZSA_Admin_Pages {
 						</div>
 					</div>
 
+					<div class="jzsa-sample-card">
+						<h3 data-jzsa-anchor="gallery-with-captions-below-photos"><?php echo 'Sample 71: ' . esc_html__( 'Gallery with Captions Below Photos', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Uses gallery-caption to show each photo\'s description under the tile instead of on top of the image. The caption uses your theme\'s font and color and wraps to as many lines as needed. Photos without a description show no caption.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<?php
+							$sample_shortcode = '[jzsa-album link="' . $info_sample_link . '" mode="gallery" viewer="lightbox" limit="6" width="800" gallery-gap="16" corner-radius="16" gallery-caption="{description}"]';
+						?>
+						<div class="jzsa-code-block">
+							<code><?php echo esc_html( $sample_shortcode ); ?></code>
+							<button class="jzsa-copy-btn" type="button"><?php echo esc_html( $s_copy ); ?></button>
+						</div>
+						<div class="jzsa-preview-container" style="height:auto;">
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( $sample_shortcode );
+							?>
+						</div>
+					</div>
+
 					</div>
 
 				</details>
@@ -2690,11 +2708,11 @@ class JZSA_Admin_Pages {
 						</ul>
 
 						<details class="jzsa-sample-group jzsa-collapsible-section" open>
-							<summary class="jzsa-collapsible-summary"><?php esc_html_e( 'Troubleshooting examples (Samples 71-72)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
+							<summary class="jzsa-collapsible-summary"><?php esc_html_e( 'Troubleshooting examples (Samples 72-73)', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
 							<p class="jzsa-sample-group__description"><?php esc_html_e( 'These examples show the two warning states mentioned above. Open them only when you want to see the exact admin-facing messages.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
 						<div class="jzsa-sample-card">
-							<h3 data-jzsa-anchor="sample-unable-to-load-album-error"><?php echo 'Sample 71: ' . esc_html__( 'Sample "Unable to Load Album" Error', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<h3 data-jzsa-anchor="sample-unable-to-load-album-error"><?php echo 'Sample 72: ' . esc_html__( 'Sample "Unable to Load Album" Error', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'This example intentionally uses an invalid link to demonstrate the red error message visitors will see when the album cannot be loaded.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 							<?php
 								$sample_shortcode = '[jzsa-album link="https://photos.google.com/share/INVALID-EXAMPLE-LINK" viewer="lightbox"]';
@@ -2721,7 +2739,7 @@ class JZSA_Admin_Pages {
 						</ul>
 
 						<div class="jzsa-sample-card">
-							<h3 data-jzsa-anchor="basic-album-with-short-link-format-admin-only-warning"><?php echo 'Sample 72: ' . esc_html__( 'Basic Album with Short Link Format (Admin-Only Warning)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<h3 data-jzsa-anchor="basic-album-with-short-link-format-admin-only-warning"><?php echo 'Sample 73: ' . esc_html__( 'Basic Album with Short Link Format (Admin-Only Warning)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Same as above, but using a short link. Visitors will NOT see this warning; as an administrator, consider replacing the link with the full one.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 							<?php
 								// phpcs:ignore PluginCheck.CodeAnalysis.ShortURL.Found -- Intentional short-link example used by the Guide.

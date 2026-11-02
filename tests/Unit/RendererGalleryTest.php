@@ -226,6 +226,13 @@ class RendererGalleryTest extends TestCase {
         $this->assertStringContainsString( 'data-gallery-info-bottom=""', $html );
     }
 
+    public function test_gallery_caption_emitted_only_when_set(): void {
+        $html = $this->render( [ 'gallery-caption' => '{description} "x"' ] );
+        $this->assertStringContainsString( 'data-gallery-caption="{description} &quot;x&quot;"', $html );
+
+        $this->assertStringNotContainsString( 'data-gallery-caption', $this->render( [ 'gallery-caption' => '' ] ) );
+    }
+
     public function test_gallery_inline_styles_with_background_color(): void {
         $html = $this->render( [ 'background-color' => '#123456' ] );
         $this->assertStringContainsString( '--gallery-bg-color: #123456', $html );

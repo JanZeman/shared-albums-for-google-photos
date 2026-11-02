@@ -142,6 +142,7 @@ Contact: support@janzeman.com
 * Added Apple iCloud shared albums. The same shortcode, layouts and options work for Google Photos and iCloud albums, including videos, descriptions, camera info and downloads.
 * Thanks to [@plauritz](https://profiles.wordpress.org/plauritz/) for requesting iCloud support.
 * Changed: videos are now shown by default (show-videos="true"). Add show-videos="false" to keep showing photos only.
+* Added gallery-caption to show a caption, such as the photo description, below each gallery tile instead of on top of the image.
 * Added order="oldest" and order="newest" to sort photos by the date they were taken.
 * Added Google Photos and Apple iCloud pages with setup steps, supported features and samples.
 * Added a Primary Source setting and editable sample albums per source in Settings.

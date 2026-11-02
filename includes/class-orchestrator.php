@@ -1239,6 +1239,7 @@ class JZSA_Shared_Albums {
 			'fullscreen-info-top-secondary'  => $fullscreen_info_top_secondary,
 			'lightbox-info-top-secondary'    => $this->parse_info_box( $atts, 'lightbox-info-top-secondary', $t2 ),
 			'gallery-info-bottom'             => $gpb,
+			'gallery-caption'                 => $this->parse_info_box( $atts, 'gallery-caption', '' ),
 		);
 	}
 

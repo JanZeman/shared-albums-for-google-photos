@@ -552,7 +552,7 @@ var JZSA_KNOWN_PARAMS = [
 	'fullscreen-slideshow-autoresume', 'fullscreen-slideshow-delay',
 	'fullscreen-source-height', 'fullscreen-source-width', 'fullscreen-toggle',
 	'fullscreen-video-controls-autohide', 'fullscreen-video-controls-color',
-	'gallery-buttons-on-mobile', 'gallery-columns', 'gallery-columns-mobile',
+	'gallery-buttons-on-mobile', 'gallery-caption', 'gallery-columns', 'gallery-columns-mobile',
 	'gallery-columns-tablet', 'gallery-gap', 'gallery-info-bottom',
 	'gallery-info-bottom-halo-effect', 'gallery-layout', 'gallery-row-height',
 	'gallery-rows', 'gallery-scrollable', 'gallery-sizing', 'height', 'image-fit',

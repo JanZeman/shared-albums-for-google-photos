@@ -2100,6 +2100,41 @@ html.jzsa-lightbox-open body {
     user-select: none;
 }
 
+/* gallery-caption: the tile with its caption below, in normal page flow. */
+.jzsa-gallery-album .jzsa-gallery-cell {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.jzsa-gallery-album[data-gallery-layout="justified"] .jzsa-gallery-cell {
+    flex-shrink: 0;
+}
+
+.jzsa-gallery-album .jzsa-gallery-caption {
+    margin: 6px 0 0;
+    padding: 0;
+    font-size: 0.875em;
+    line-height: 1.4;
+    color: inherit;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.jzsa-gallery-album .jzsa-gallery-caption[hidden] {
+    display: none;
+}
+
+.jzsa-gallery-album[data-info-text-align="left"] .jzsa-gallery-caption {
+    text-align: left;
+}
+
+.jzsa-gallery-album[data-info-text-align="right"] .jzsa-gallery-caption {
+    text-align: right;
+}
+
 .jzsa-gallery-item .jzsa-gallery-thumb-fs-btn,
 .jzsa-gallery-item .jzsa-gallery-thumb-link-btn,
 .jzsa-gallery-item .jzsa-gallery-thumb-download-btn {
