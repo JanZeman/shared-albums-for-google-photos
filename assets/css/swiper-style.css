@@ -1423,6 +1423,12 @@ html.jzsa-lightbox-open body {
     outline: none;
 }
 
+/* A gallery is many separate tiles, so a frame around the whole block while
+   loading looks odd; the spinner alone shows the gallery is loading. */
+.jzsa-gallery-album.jzsa-loader-pending {
+    outline: none;
+}
+
 .jzsa-album.jzsa-loader-pending .jzsa-loader {
     opacity: 1;
     visibility: visible;
