@@ -25,6 +25,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 class JZSA_ICloud_Provider {
 
 	/**
+	 * CloudKit file types of movie renditions.
+	 */
+	const MOVIE_TYPES = array( 'com.apple.quicktime-movie', 'public.mpeg-4' );
+
+	/**
 	 * Public shared album link, e.g. https://www.icloud.com/sharedalbum/#B0aGWZuqDGtB9r
 	 *
 	 * @var string
@@ -505,6 +510,12 @@ class JZSA_ICloud_Provider {
 			$video_rendition = '';
 			$video_type      = '';
 
+			// A Live Photo is a still original with short movie renditions next to it
+			// (OriginalVidCompl, VidMed, VidSmall). Only an asset whose original is a
+			// movie is a video; a Live Photo is shown as the still photo.
+			$original_type = isset( $master['resOriginalFileType']['value'] ) ? (string) $master['resOriginalFileType']['value'] : '';
+			$is_still      = '' !== $original_type && ! in_array( $original_type, self::MOVIE_TYPES, true );
+
 			foreach ( $master as $key => $field ) {
 				if ( ! preg_match( '/^res(.+)Res$/', $key, $m ) || empty( $field['value']['downloadURL'] ) ) {
 					continue;
@@ -516,7 +527,10 @@ class JZSA_ICloud_Provider {
 				$height = isset( $master[ 'res' . $name . 'Height' ]['value'] ) ? (int) $master[ 'res' . $name . 'Height' ]['value'] : 0;
 				$url    = str_replace( '${f}', rawurlencode( $this->rendition_filename( $filename, $type ) ), $field['value']['downloadURL'] );
 
-				if ( in_array( $type, array( 'com.apple.quicktime-movie', 'public.mpeg-4' ), true ) ) {
+				if ( in_array( $type, self::MOVIE_TYPES, true ) ) {
+					if ( $is_still ) {
+						continue;
+					}
 					$rank = 'Original' === $name ? 0 : $width;
 					if ( $rank > $video_w ) {
 						$video           = $url;

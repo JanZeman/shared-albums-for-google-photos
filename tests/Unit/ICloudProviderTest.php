@@ -367,6 +367,46 @@ class ICloudProviderTest extends TestCase {
 		$this->assertSame( array( 3024, 4032 ), array( $photos[0]['width'], $photos[0]['height'] ) );
 	}
 
+	public function test_live_photo_is_a_still_photo_and_a_real_video_stays_a_video(): void {
+		$master = static function ( $name, $original_type, $width ) {
+			$fields = array(
+				'filenameEnc'         => array( 'value' => base64_encode( $name ) ),
+				'resOriginalRes'      => array( 'value' => array( 'downloadURL' => 'https://cvws.icloud-content.com/B/orig/${f}' ) ),
+				'resOriginalFileType' => array( 'value' => $original_type ),
+				'resOriginalWidth'    => array( 'value' => $width ),
+				'resOriginalHeight'   => array( 'value' => 1080 ),
+				'resJPEGThumbRes'     => array( 'value' => array( 'downloadURL' => 'https://cvws.icloud-content.com/B/thumb/${f}' ) ),
+				'resJPEGThumbFileType' => array( 'value' => 'public.jpeg' ),
+				'resJPEGThumbWidth'   => array( 'value' => 360 ),
+				'resJPEGThumbHeight'  => array( 'value' => 270 ),
+				'resVidMedRes'        => array( 'value' => array( 'downloadURL' => 'https://cvws.icloud-content.com/B/vid/${f}' ) ),
+				'resVidMedFileType'   => array( 'value' => 'com.apple.quicktime-movie' ),
+				'resVidMedWidth'      => array( 'value' => 1280 ),
+				'resVidMedHeight'     => array( 'value' => 720 ),
+			);
+			if ( 'public.jpeg' === $original_type ) {
+				// Live Photos also carry the paired movie of the original.
+				$fields['resOriginalVidComplRes']      = array( 'value' => array( 'downloadURL' => 'https://cvws.icloud-content.com/B/compl/${f}' ) );
+				$fields['resOriginalVidComplFileType'] = array( 'value' => 'com.apple.quicktime-movie' );
+			}
+			return $fields;
+		};
+		$records = array(
+			array( 'recordName' => 'M1', 'recordType' => 'CPLMaster', 'fields' => $master( 'IMG_1394.JPG', 'public.jpeg', 1440 ) ),
+			array( 'recordName' => 'M2', 'recordType' => 'CPLMaster', 'fields' => $master( 'rafting.mp4', 'public.mpeg-4', 1920 ) ),
+			array( 'recordName' => 'A1', 'recordType' => 'CPLAsset', 'fields' => array( 'masterRef' => array( 'value' => array( 'recordName' => 'M1' ) ) ) ),
+			array( 'recordName' => 'A2', 'recordType' => 'CPLAsset', 'fields' => array( 'masterRef' => array( 'value' => array( 'recordName' => 'M2' ) ) ) ),
+		);
+
+		$items = $this->provider->build_cloudkit_items( $records );
+
+		$this->assertSame( 'image', $items[0]['type'] );
+		$this->assertArrayNotHasKey( 'video', $items[0] );
+		$this->assertStringStartsWith( 'https://cvws.icloud-content.com/B/orig/', $items[0]['url'] );
+		$this->assertSame( 'video', $items[1]['type'] );
+		$this->assertSame( 'VidMed', $items[1]['video_rendition'] );
+	}
+
 	public function test_download_proxy_resolves_stable_media_urls(): void {
 		$orchestrator = new JZSA_Shared_Albums( JZSA_PLUGIN_FILE );
 		$this->stubCloudKitAlbum();
