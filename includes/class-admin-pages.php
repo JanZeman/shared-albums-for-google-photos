@@ -745,12 +745,22 @@ class JZSA_Admin_Pages {
 				'features' => array(
 					__( 'Photos', 'janzeman-shared-albums-for-google-photos' )            => __( 'Yes, in sizes chosen by Apple; the plugin picks the closest one.', 'janzeman-shared-albums-for-google-photos' ),
 					__( 'Videos', 'janzeman-shared-albums-for-google-photos' )            => __( 'Yes, up to 15 minutes, played at up to 720p.', 'janzeman-shared-albums-for-google-photos' ),
-					__( 'Descriptions', 'janzeman-shared-albums-for-google-photos' )      => __( 'Yes. A caption belongs to an upload, so photos added together share it.', 'janzeman-shared-albums-for-google-photos' ),
+					__( 'Descriptions', 'janzeman-shared-albums-for-google-photos' )      => __( 'Yes, one per shared post. See Descriptions on iCloud below.', 'janzeman-shared-albums-for-google-photos' ),
 					__( 'Camera info (EXIF)', 'janzeman-shared-albums-for-google-photos' ) => __( 'Yes, delivered with the album, without extra requests.', 'janzeman-shared-albums-for-google-photos' ),
 					__( 'Original file names', 'janzeman-shared-albums-for-google-photos' ) => __( 'Yes.', 'janzeman-shared-albums-for-google-photos' ),
 					__( 'Downloads', 'janzeman-shared-albums-for-google-photos' )         => __( 'Yes, with the original file name.', 'janzeman-shared-albums-for-google-photos' ),
 					__( 'Album size', 'janzeman-shared-albums-for-google-photos' )        => __( 'Up to 5,000 photos and videos per shared album.', 'janzeman-shared-albums-for-google-photos' ),
 					__( 'Order', 'janzeman-shared-albums-for-google-photos' )             => __( 'Newest photo first, by the date it was taken. This cannot be changed in the shared album, so use order="oldest" in the shortcode for the opposite order.', 'janzeman-shared-albums-for-google-photos' ),
+				),
+				'notes'    => array(
+					array(
+						'title'      => __( 'Descriptions on iCloud', 'janzeman-shared-albums-for-google-photos' ),
+						'paragraphs' => array(
+							__( 'Apple stores descriptions per shared post, not per photo. A post is created every time you add photos to a shared album, and the comment you type in the Add dialog becomes its caption. Every photo in that post shows the same caption as {description}.', 'janzeman-shared-albums-for-google-photos' ),
+							__( 'To give each photo its own description, add the photos to the album one at a time and type a comment each time. You can change a caption later with Edit Caption on the post in the shared album; the plugin shows the new text after the album cache refreshes.', 'janzeman-shared-albums-for-google-photos' ),
+							__( 'The same photo can have a different description in each shared album. Titles and captions from your Photos library are not shared by Apple.', 'janzeman-shared-albums-for-google-photos' ),
+						),
+					),
 				),
 				'samples'  => $samples,
 			);
@@ -768,13 +778,14 @@ class JZSA_Admin_Pages {
 			'features' => array(
 				__( 'Photos', 'janzeman-shared-albums-for-google-photos' )            => __( 'Yes, resized by Google to the requested size.', 'janzeman-shared-albums-for-google-photos' ),
 				__( 'Videos', 'janzeman-shared-albums-for-google-photos' )            => __( 'Yes.', 'janzeman-shared-albums-for-google-photos' ),
-				__( 'Descriptions', 'janzeman-shared-albums-for-google-photos' )      => __( 'Yes, per photo, up to 100 characters.', 'janzeman-shared-albums-for-google-photos' ),
+				__( 'Descriptions', 'janzeman-shared-albums-for-google-photos' )      => __( 'Yes, per photo. Add it in the photo\'s Info panel in Google Photos (up to 100 characters).', 'janzeman-shared-albums-for-google-photos' ),
 				__( 'Camera info (EXIF)', 'janzeman-shared-albums-for-google-photos' ) => __( 'Yes, loaded per photo in the background and then cached.', 'janzeman-shared-albums-for-google-photos' ),
 				__( 'Original file names', 'janzeman-shared-albums-for-google-photos' ) => __( 'Yes, loaded per photo in the background.', 'janzeman-shared-albums-for-google-photos' ),
 				__( 'Downloads', 'janzeman-shared-albums-for-google-photos' )         => __( 'Yes.', 'janzeman-shared-albums-for-google-photos' ),
 				__( 'Album size', 'janzeman-shared-albums-for-google-photos' )        => __( 'Usually up to 300 entries per album.', 'janzeman-shared-albums-for-google-photos' ),
 				__( 'Order', 'janzeman-shared-albums-for-google-photos' )             => __( 'The album\'s own order, often oldest photo first. The album owner can change it in the album\'s sort setting (Edit album, then Sort photos), or use order="oldest" or order="newest" in the shortcode.', 'janzeman-shared-albums-for-google-photos' ),
 			),
+			'notes'    => array(),
 			'samples'  => $samples,
 		);
 	}
@@ -812,6 +823,13 @@ class JZSA_Admin_Pages {
 					<?php endforeach; ?>
 				</tbody>
 			</table>
+
+			<?php foreach ( $profile['notes'] as $note ) : ?>
+				<h3><?php echo esc_html( $note['title'] ); ?></h3>
+				<?php foreach ( $note['paragraphs'] as $paragraph ) : ?>
+					<p><?php echo esc_html( $paragraph ); ?></p>
+				<?php endforeach; ?>
+			<?php endforeach; ?>
 		</div>
 
 		<div class="jzsa-section jzsa-samples-section">

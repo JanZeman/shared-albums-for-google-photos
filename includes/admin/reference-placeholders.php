@@ -83,7 +83,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 							</tr>
 							<tr>
 								<td><code>{description}</code></td>
-								<td><?php esc_html_e( 'Photo description/caption from Google Photos or iCloud, when present. In iCloud the caption belongs to the upload, so photos added together share it.', 'janzeman-shared-albums-for-google-photos' ); ?><br><br><strong style="color: #d32f2f; font-size: 1.1em;">⚠️ IMPORTANT LIMITATION: Google Photos limits descriptions to 100 characters. Longer descriptions are truncated. Use info-wrap="true" to allow wrapping if you have longer descriptions, but be aware of this hard limit from Google.</strong></td>
+								<td><?php esc_html_e( 'Photo description, when present. Google Photos: the description of each photo, set in the photo\'s Info panel (up to 100 characters). iCloud: the caption of the shared post the photo was added with, so photos added together share it.', 'janzeman-shared-albums-for-google-photos' ); ?>
+								<?php
+								printf(
+									/* translators: 1: link to the Google Photos page, 2: link to the Apple iCloud page. */
+									esc_html__( 'Details: %1$s, %2$s.', 'janzeman-shared-albums-for-google-photos' ),
+									'<a href="' . esc_url( admin_url( 'admin.php?page=' . JZSA_Admin_Pages::GOOGLE_SOURCE_SLUG ) ) . '">' . esc_html__( 'Google Photos', 'janzeman-shared-albums-for-google-photos' ) . '</a>',
+									'<a href="' . esc_url( admin_url( 'admin.php?page=' . JZSA_Admin_Pages::ICLOUD_SOURCE_SLUG ) ) . '">' . esc_html__( 'Apple iCloud', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
+								);
+								?><br><br><strong style="color: #d32f2f; font-size: 1.1em;">⚠️ IMPORTANT LIMITATION (Google Photos only): Google Photos limits descriptions to 100 characters. Longer descriptions are truncated. Use info-wrap="true" to allow wrapping if you have longer descriptions, but be aware of this hard limit from Google.</strong></td>
 								<td>Tūī bird, New Zealand</td>
 								<td>⏳ <?php esc_html_e( 'May appear with delay', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>

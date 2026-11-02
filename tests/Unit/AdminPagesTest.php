@@ -300,6 +300,9 @@ class AdminPagesTest extends TestCase {
 
 		$this->assertSame( array_keys( $google ), array_keys( $icloud ) );
 		$this->assertSame( array_keys( $google['features'] ), array_keys( $icloud['features'] ) );
+		$this->assertSame( array(), $google['notes'] );
+		$this->assertSame( 'Descriptions on iCloud', $icloud['notes'][0]['title'] );
+		$this->assertStringContainsString( 'per shared post, not per photo', $icloud['notes'][0]['paragraphs'][0] );
 		foreach ( $google['samples'] as $index => $sample ) {
 			$this->assertStringContainsString( 'https://photos.google.com/share/', $sample['shortcode'] );
 			$this->assertStringContainsString( 'https://photos.icloud.com/shared/album/', $icloud['samples'][ $index ]['shortcode'] );
