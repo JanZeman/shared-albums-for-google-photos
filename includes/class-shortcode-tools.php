@@ -1029,6 +1029,8 @@ class JZSA_Shortcode_Tools {
 			'gallery-rows',
 			'gallery-scrollable',
 			'gallery-gap',
+			'gallery-caption',
+			'gallery-caption-gap',
 			'gallery-buttons-on-mobile',
 
 			// Inline mosaic.
@@ -1059,8 +1061,6 @@ class JZSA_Shortcode_Tools {
 			'info-top-secondary',
 			'info-bottom',
 			'gallery-info-bottom',
-			'gallery-caption',
-			'gallery-caption-gap',
 			'info-font-size',
 			'info-font-family',
 			'info-font-color',
