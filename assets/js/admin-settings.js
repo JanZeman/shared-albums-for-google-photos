@@ -520,7 +520,7 @@ function jzsaSetupLazyPreviews() {
  * documented shortcode parameter is added or removed.
  */
 var JZSA_KNOWN_PARAMS = [
-	'album-cache-refresh', 'album-title-halo-effect', 'background-color',
+	'album-cache-refresh', 'album-heading', 'album-title-halo-effect', 'background-color',
 	'controls-color', 'corner-radius', 'download-size-warning',
 	'viewer-background-color', 'viewer-controls-color',
 	'viewer-corner-radius', 'viewer-image-fit', 'viewer-info-bottom',

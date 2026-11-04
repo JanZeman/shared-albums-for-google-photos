@@ -43,6 +43,8 @@ class JZSA_Renderer {
 			$html .= $this->render_unknown_attribute_notice( $config['unknown-attributes'] );
 		}
 
+		$html .= $this->render_album_heading( $config );
+
 		// Gallery mode: plain thumbnail gallery, no Swiper structure
 		if ( isset( $config['mode'] ) && 'gallery' === $config['mode'] ) {
 			$html .= $this->build_thumbnail_gallery_container( $gallery_id, $config );
@@ -53,6 +55,51 @@ class JZSA_Renderer {
 		$html .= $this->build_gallery_container( $gallery_id, $config );
 
 		return $html;
+	}
+
+	/**
+	 * Render the optional album-heading shown above the album, in any mode.
+	 *
+	 * Supports {album-title} and {items}. The heading gets the album's width so
+	 * it lines up with the album's left edge.
+	 *
+	 * @param array $config Gallery configuration.
+	 * @return string HTML, or '' when album-heading is not set.
+	 */
+	private function render_album_heading( $config ) {
+		$format = isset( $config['album-heading'] ) ? (string) $config['album-heading'] : '';
+		if ( '' === $format ) {
+			return '';
+		}
+
+		if ( isset( $config['progressive-total-count'] ) ) {
+			$items = intval( $config['progressive-total-count'] );
+		} else {
+			$items = isset( $config['photos'] ) && is_array( $config['photos'] ) ? count( $config['photos'] ) : 0;
+		}
+
+		$text = trim(
+			strtr(
+				$format,
+				array(
+					'{album-title}' => isset( $config['album-title'] ) ? (string) $config['album-title'] : '',
+					'{items}'       => (string) $items,
+				)
+			)
+		);
+		if ( '' === $text ) {
+			return '';
+		}
+
+		// Same width rule as the album itself: galleries only take an explicit width.
+		$is_gallery = isset( $config['mode'] ) && 'gallery' === $config['mode'];
+		$has_width  = isset( $config['width'] ) && 'auto' !== $config['width'] && ( ! $is_gallery || ! empty( $config['width-explicit'] ) );
+		$style      = '';
+		if ( $has_width ) {
+			$style = sprintf( ' style="width: %dpx; max-width: 100%%;"', intval( $config['width'] ) );
+		}
+
+		return sprintf( '<h3 class="jzsa-album-heading"%s>%s</h3>', $style, esc_html( $text ) );
 	}
 
 	/**

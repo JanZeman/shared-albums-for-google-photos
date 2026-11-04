@@ -143,6 +143,7 @@ Contact: support@janzeman.com
 * Thanks to [@plauritz](https://profiles.wordpress.org/plauritz/) for requesting iCloud support.
 * Changed: videos are now shown by default (show-videos="true"). Add show-videos="false" to keep showing photos only.
 * Added gallery-caption to show a caption, such as the photo description, below each gallery tile instead of on top of the image, with gallery-caption-gap for the space above it.
+* Added album-heading to show the album title as a heading above the album, in every mode.
 * Added order="oldest" and order="newest" to sort photos by the date they were taken.
 * Added Google Photos and Apple iCloud pages with setup steps, supported features and samples.
 * Added a Primary Source setting and editable sample albums per source in Settings.
@@ -329,7 +330,7 @@ Contact: support@janzeman.com
 == Upgrade Notice ==
 
 = 3.0.0 =
-Adds Apple iCloud shared albums and captions below gallery photos. Videos are now shown by default; add show-videos="false" to your shortcodes to keep showing photos only.
+Adds Apple iCloud shared albums, captions below gallery photos and an optional album heading. Videos are now shown by default; add show-videos="false" to your shortcodes to keep showing photos only.
 
 == Community Acknowledgements ==
 

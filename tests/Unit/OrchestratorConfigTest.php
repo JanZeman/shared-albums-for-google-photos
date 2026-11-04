@@ -824,6 +824,14 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertSame( array(), $config['unknown-attributes'] );
     }
 
+    public function test_album_heading_is_parsed_as_text_and_off_by_default(): void {
+        $this->assertSame( '', $this->config( array() )['album-heading'] );
+
+        $config = $this->config( array( 'album-heading' => '{album-title} <b>x</b>' ) );
+        $this->assertSame( '{album-title} x', $config['album-heading'] );
+        $this->assertSame( array(), $config['unknown-attributes'] );
+    }
+
     public function test_gallery_caption_gap_defaults_to_6_and_stays_within_0_to_100(): void {
         $this->assertSame( 6, $this->config( array() )['gallery-caption-gap'] );
         $this->assertSame( 0, $this->config( array( 'gallery-caption-gap' => '0' ) )['gallery-caption-gap'] );
