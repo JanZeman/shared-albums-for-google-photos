@@ -24,7 +24,7 @@ Live sharing is the default. Add `--dry-run` to show the chosen result, method, 
 
 The helper does not request or read your Apple Account password. You sign in to iCloud.com yourself for the guided web route.
 
-For the Photos app route, the helper checks the target Shared Album before posting. It opens the album's All view, enables its All Items filter, and reads the selected album media. Keep Shared Albums expanded in the Photos sidebar and clear any search text. The original source list is captured before this navigation.
+For the Photos app route, the helper checks the target Shared Album before posting. It opens the album's All view, enables its All Items filter for a populated album, and reads the selected album media. An explicit native No Items title together with an empty media grid establishes an empty album even when Photos omits the usual controls. Keep Shared Albums expanded in the Photos sidebar and clear any search text. The original source list is captured before this navigation.
 
 An item is skipped when its filename, capture timestamp, width, and height match an existing album item. Each skip is logged; remaining items continue normally. The check also prevents repeated matching items within the same run. Dry-run previews skips for items already available in Photos; disk files that have not been imported cannot be checked yet. Existing duplicates are left in place. The helper keeps no local attempt ledger.
 

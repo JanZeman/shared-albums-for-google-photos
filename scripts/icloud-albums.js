@@ -17,9 +17,11 @@ const UI = {
   addToSharedAlbumMenu: "Add to Shared Album",
   sharedAlbumsSidebar: "Shared Albums",
   sharedAlbumAllView: "All",
+  emptyAlbumTitle: "No Items",
   albumFilterButton: "Filter",
   albumAllItemsFilter: "All Items",
-  viewerToggleKey: " ",
+  viewerCanvasIdentifier: "IPXCanvasItemView",
+  viewerBackButton: "Back",
   photoCaptionPlaceholder: "Comment on this photo (optional)",
   videoCaptionPlaceholder: "Comment on this video (optional)",
   captionDialogButtonCount: 3,
@@ -346,9 +348,15 @@ function inspectCaptionDialog(process, albumName) {
 }
 
 function waitForCaptionDialog(process, albumName, fileName) {
+  const deadline = Date.now() + UI.uiTimeoutSeconds * 1000;
   sleep(UI.captionDialogSettleSeconds);
-  const state = findCaptionDialog(process, albumName);
-  if (state.field) return state;
+  let state;
+  do {
+    state = findCaptionDialog(process, albumName);
+    if (state.field) return state;
+    if (Date.now() >= deadline) break;
+    sleep(UI.pollSeconds);
+  } while (Date.now() < deadline);
   throw new Error("One-photo caption dialog for '" + albumName +
     "' was not verified for " + fileName + " (album heading found: " +
     (state.details.headingFound ? "yes" : "no") + "; caption fields: " +
@@ -716,6 +724,16 @@ function mediaFingerprint(item) {
   return JSON.stringify([filename, captured, width, height]);
 }
 
+function photosMainWindow(process) {
+  const windows = [];
+  const count = process.windows.length;
+  for (let i = 0; i < count; i++) {
+    if (process.windows[i].properties().subrole === "AXStandardWindow") windows.push(process.windows[i]);
+  }
+  if (windows.length !== 1) throw new Error("Expected one Photos library window.");
+  return windows[0];
+}
+
 function readSharedAlbumMembership(photos, events, process, albumName) {
   const started = Date.now();
   console.log("Checking existing items in '" + albumName + "'...");
@@ -732,14 +750,8 @@ function readSharedAlbumMembership(photos, events, process, albumName) {
     for (let i = 0; i < count; i++) result.push(root.uiElements[i]);
     return result;
   }
-  const windows = [];
-  const windowCount = process.windows.length;
-  for (let i = 0; i < windowCount; i++) {
-    if (property(process.windows[i]).subrole === "AXStandardWindow") windows.push(process.windows[i]);
-  }
-  if (windows.length !== 1) throw new Error("Expected one Photos library window for the album check.");
-  const window = windows[0];
-  const split = children(window).find(e => property(e).role === "AXSplitGroup");
+  let window = photosMainWindow(process);
+  let split = children(window).find(e => property(e).role === "AXSplitGroup");
   if (!split) throw new Error("Photos did not expose its sidebar; stopped before sharing.");
   const sidebar = children(split).find(e => property(e).role === "AXScrollArea");
   const outline = sidebar && children(sidebar).find(e => property(e).role === "AXOutline");
@@ -754,17 +766,25 @@ function readSharedAlbumMembership(photos, events, process, albumName) {
     }
     if (fields.some(f => f.p.value === UI.sharedAlbumsSidebar)) inSharedAlbums = true;
     if (inSharedAlbums && fields.some(f => f.p.role === "AXTextField" && f.p.value === albumName)) {
-      matches.push(row);
+      matches.push({ row, index: rowIndex });
     }
   }
   if (matches.length !== 1) {
     throw new Error("Expand Shared Albums in the Photos sidebar so exactly one '" + albumName + "' album is visible.");
   }
-  matches[0].selected = true;
+  matches[0].row.selected = true;
   sleep(UI.pollSeconds);
   props.clear();
+  // Photos may remove an auxiliary window during navigation. Reacquire the
+  // indexed main window and sidebar before using any post-navigation selector.
+  window = photosMainWindow(process);
+  split = children(window).find(e => property(e).role === "AXSplitGroup");
+  const currentSidebar = split && children(split).find(e => property(e).role === "AXScrollArea");
+  const currentOutline = currentSidebar && children(currentSidebar).find(e => property(e).role === "AXOutline");
+  if (!currentOutline) throw new Error("Photos sidebar changed during album navigation.");
+  matches[0].row = currentOutline.rows[matches[0].index];
   const title = String(property(window).title || "");
-  if (!(title === albumName || title.indexOf(albumName + " ") === 0) || !matches[0].selected()) {
+  if (!(title === albumName || title.indexOf(albumName + " ") === 0) || !matches[0].row.selected()) {
     throw new Error("Could not verify the target Shared Album; stopped before sharing.");
   }
   const toolbar = children(window).find(e => property(e).role === "AXToolbar");
@@ -778,13 +798,47 @@ function readSharedAlbumMembership(photos, events, process, albumName) {
     }
   }
   if (toolbar) inspectControls(toolbar, 3);
-  const allViews = controls.filter(e => property(e).role === "AXRadioButton" &&
-    (property(e).accessibilityDescription || property(e).description) === UI.sharedAlbumAllView);
+  const allViews = controls.filter(e =>
+    (property(e).role === "AXRadioButton" &&
+      (property(e).accessibilityDescription || property(e).description) === UI.sharedAlbumAllView) ||
+    (property(e).role === "AXPopUpButton" && property(e).value === UI.sharedAlbumAllView &&
+      property(e).accessibilityDescription !== "more toolbar items")
+  );
   if (allViews.length !== 1) throw new Error("Photos did not expose the Shared Album All view.");
-  if (Number(property(allViews[0]).value) !== 1) allViews[0].click();
+  if (property(allViews[0]).role === "AXRadioButton" && Number(property(allViews[0]).value) !== 1) {
+    allViews[0].click();
+  }
   const searches = controls.filter(e => ["AXTextField", "AXSearchField"].indexOf(property(e).role) !== -1);
   if (searches.some(e => typeof property(e).value === "string" && property(e).value.trim())) {
     throw new Error("Clear the Photos search field before checking album duplicates.");
+  }
+  const grids = [];
+  function findGrid(root, depth) {
+    if (property(root).subrole === "AXCollectionList") { grids.push(root); return; }
+    if (depth > 0) for (const child of children(root)) {
+      if (property(child).role !== "AXScrollArea") findGrid(child, depth - 1);
+    }
+  }
+  findGrid(split, 3);
+  // A truly empty album has an explicit native No Items title and an empty
+  // media grid. A missing toolbar control alone never establishes emptiness.
+  function nativeEmptyTitle() {
+    const current = String(window.properties().title || "");
+    return current === albumName + " \u2013 " + UI.emptyAlbumTitle ||
+      current === albumName + " - " + UI.emptyAlbumTitle;
+  }
+  function nativeEmptyGrid() {
+    return grids.length === 1 && grids[0].uiElements.length === 0;
+  }
+  if (nativeEmptyGrid() && nativeEmptyTitle()) {
+    sleep(UI.pollSeconds);
+    props.clear();
+    grids.length = 0;
+    findGrid(split, 3);
+    if (nativeEmptyGrid() && nativeEmptyTitle() && matches[0].row.selected()) {
+      console.log("Checked 0 existing album items: '" + albumName + "' is empty.");
+      return new Set();
+    }
   }
   const filters = controls.filter(e => property(e).role === "AXCheckBox" &&
     property(e).accessibilityDescription === UI.albumFilterButton);
@@ -811,13 +865,7 @@ function readSharedAlbumMembership(photos, events, process, albumName) {
   } finally { events.keyCode(53); }
   sleep(UI.pollSeconds);
   props.clear();
-  const grids = [];
-  function findGrid(root, depth) {
-    if (property(root).subrole === "AXCollectionList") { grids.push(root); return; }
-    if (depth > 0) for (const child of children(root)) {
-      if (property(child).role !== "AXScrollArea") findGrid(child, depth - 1);
-    }
-  }
+  grids.length = 0;
   findGrid(split, 3);
   if (grids.length !== 1) throw new Error("Could not identify the target album's media grid.");
   grids[0].focused = true;
@@ -831,6 +879,51 @@ function readSharedAlbumMembership(photos, events, process, albumName) {
   console.log("Checked " + members.length + " existing album item(s) in " +
     ((Date.now() - started) / 1000).toFixed(1) + "s.");
   return fingerprints;
+}
+
+function closePhotosViewerIfPresent(process) {
+  const windows = [photosMainWindow(process)];
+  for (const window of windows) {
+    const roots = indexedUIChildren(window);
+    const split = roots.find(e => e.properties().role === "AXSplitGroup");
+    if (!split) continue;
+    let canvas = false;
+    function inspectGroup(root, depth) {
+      const p = root.properties();
+      if (p.role !== "AXGroup") return;
+      try {
+        if (root.attributes.byName("AXIdentifier").value() === UI.viewerCanvasIdentifier) {
+          canvas = true;
+          return;
+        }
+      } catch (_) {}
+      if (depth > 0 && !canvas) indexedUIChildren(root).forEach(e => inspectGroup(e, depth - 1));
+    }
+    indexedUIChildren(split).forEach(e => inspectGroup(e, 2));
+    if (!canvas) continue;
+    const toolbar = roots.find(e => e.properties().role === "AXToolbar");
+    const back = toolbar && indexedUIChildren(toolbar).filter(e => {
+      const p = e.properties();
+      return p.role === "AXRadioButton" && p.accessibilityDescription === UI.viewerBackButton;
+    });
+    if (!back || back.length !== 1) throw new Error("Photos Viewer has no verified Back control.");
+    back[0].click();
+    return true;
+  }
+  return false;
+}
+
+function waitForTargetSelection(photos, process, id) {
+  const deadline = Date.now() + UI.uiTimeoutSeconds * 1000;
+  do {
+    if (closePhotosViewerIfPresent(process)) sleep(UI.pollSeconds);
+    try {
+      const selected = photos.selection();
+      if (selected.length === 1 && unwrap(selected[0].id()) === id) return selected;
+    } catch (_) { /* Photos can reject selection reads during view transitions. */ }
+    sleep(UI.pollSeconds);
+  } while (Date.now() < deadline);
+  throw new Error("Photos did not return to a single selection of the target item; stopped before sharing.");
 }
 
 function main(argv) {
@@ -932,7 +1025,8 @@ function main(argv) {
     try {
       photos.activate();
       step = "read the current Photos selection";
-      let focusedSelection = photos.selection();
+      let focusedSelection = [];
+      try { focusedSelection = photos.selection(); } catch (_) {}
       const alreadySelected = focusedSelection.length === 1 &&
         unwrap(focusedSelection[0].id()) === record.id;
       if (!alreadySelected) {
@@ -943,17 +1037,9 @@ function main(argv) {
         }
         photos.spotlight(targetItem);
         sleep(1);
-        // Spotlight opens Photos Viewer. Space closes it and returns to the
-        // grid, where selection() can be queried reliably before sharing.
-        step = "close Photos Viewer after Spotlight";
-        process.frontmost = true;
-        events.keystroke(UI.viewerToggleKey, { using: [] });
-        sleep(UI.pollSeconds);
+        // Inspect Viewer before using Back; never toggle Space blindly.
         step = "verify the focused Photos selection";
-        focusedSelection = photos.selection();
-        if (focusedSelection.length !== 1 || unwrap(focusedSelection[0].id()) !== record.id) {
-          throw new Error("Photos did not return to a single selection of the target item; stopped before sharing.");
-        }
+        focusedSelection = waitForTargetSelection(photos, process, record.id);
       }
       step = "bring Photos to the front";
       process.frontmost = true;
@@ -967,6 +1053,10 @@ function main(argv) {
       step = "find Add to Shared Album in the Image menu";
       const imageMenu = imageMenuItem.menus[0];
       const addToSharedAlbumMenuItem = imageMenu.menuItems.byName(UI.addToSharedAlbumMenu);
+      if (!addToSharedAlbumMenuItem.enabled()) {
+        events.keyCode(53);
+        throw new Error("Photos currently disables Add to Shared Album for this selection. Check the selection in Library and Photos' sharing availability; nothing was shared.");
+      }
       step = "open Add to Shared Album from the Image menu";
       addToSharedAlbumMenuItem.click();
       sleep(UI.pollSeconds);
@@ -974,6 +1064,10 @@ function main(argv) {
       step = "find the target album in the Add to Shared Album submenu";
       const albumSubmenu = addToSharedAlbumMenuItem.menus[0];
       const targetAlbumMenuItem = albumSubmenu.menuItems.byName(options.album);
+      if (!targetAlbumMenuItem.enabled()) {
+        events.keyCode(53);
+        throw new Error("Photos currently disables the target Shared Album; nothing was shared.");
+      }
       step = "choose the target album";
       targetAlbumMenuItem.click();
 
