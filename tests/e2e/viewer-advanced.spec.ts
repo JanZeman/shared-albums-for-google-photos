@@ -101,10 +101,11 @@ test.describe('Random Shortcode Tests', () => {
 
         await album.locator(LIGHTBOX_BUTTON).evaluate((button: HTMLElement) => button.click());
         await expect(backdrop(page)).toBeVisible();
+        const lightboxFullscreenButton = backdrop(page).locator(FULLSCREEN_BUTTON);
         await backdrop(page).locator('.jzsa-album').hover();
-        await expect(backdrop(page).locator(FULLSCREEN_BUTTON)).toBeVisible();
+        await expect(lightboxFullscreenButton).toBeVisible();
 
-        await backdrop(page).locator(FULLSCREEN_BUTTON).click({ force: true });
+        await lightboxFullscreenButton.click();
         await waitForNativeFullscreen(page, true);
         await page.evaluate(() => document.fullscreenElement && document.exitFullscreen());
         await waitForNativeFullscreen(page, false);
