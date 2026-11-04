@@ -46,6 +46,20 @@ class RendererAlbumHeadingTest extends TestCase {
 		$this->assertStringContainsString( '<h3 class="jzsa-album-heading" style="width: 800px; max-width: 100%;">T</h3>', $slider );
 	}
 
+	public function test_heading_alignment_and_indent(): void {
+		$base = array( 'mode' => 'gallery', 'album-title' => 'T', 'album-heading' => '{album-title}' );
+
+		$left = $this->render( $base + array( 'album-heading-text-align' => 'left', 'album-heading-indent' => 10 ) );
+		$this->assertStringContainsString( '<h3 class="jzsa-album-heading" style="padding-left: 10px;">T</h3>', $left );
+
+		$right = $this->render( $base + array( 'album-heading-text-align' => 'right', 'album-heading-indent' => 12 ) );
+		$this->assertStringContainsString( '<h3 class="jzsa-album-heading" style="text-align: right; padding-right: 12px;">T</h3>', $right );
+
+		// Centered text has no edge to keep away from, so the indent is not used.
+		$center = $this->render( $base + array( 'album-heading-text-align' => 'center', 'album-heading-indent' => 10 ) );
+		$this->assertStringContainsString( '<h3 class="jzsa-album-heading" style="text-align: center;">T</h3>', $center );
+	}
+
 	public function test_heading_is_skipped_when_it_resolves_to_nothing(): void {
 		$this->assertStringNotContainsString( 'jzsa-album-heading', $this->render( array( 'mode' => 'gallery', 'album-heading' => '{album-title}' ) ) );
 	}

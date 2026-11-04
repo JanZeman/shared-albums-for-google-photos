@@ -1242,6 +1242,10 @@ class JZSA_Shared_Albums {
 			'gallery-info-bottom'             => $gpb,
 			'gallery-caption'                 => $this->parse_info_box( $atts, 'gallery-caption', '' ),
 			'album-heading'                   => $this->parse_info_box( $atts, 'album-heading', '' ),
+			'album-heading-text-align'        => ( isset( $atts['album-heading-text-align'] ) && in_array( $atts['album-heading-text-align'], array( 'left', 'center', 'right' ), true ) )
+				? $atts['album-heading-text-align']
+				: 'left',
+			'album-heading-indent'            => $this->parse_album_heading_indent( $atts ),
 		);
 	}
 
@@ -2124,6 +2128,22 @@ class JZSA_Shared_Albums {
 		$value = intval( $atts['gallery-gap'] );
 
 		return ( $value >= 0 && $value <= 100 ) ? $value : 4;
+	}
+
+	/**
+	 * Parse album-heading-indent: space between the heading and the album edge it is aligned to (pixels, 0-100).
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return int Indent in pixels.
+	 */
+	private function parse_album_heading_indent( $atts ) {
+		if ( ! isset( $atts['album-heading-indent'] ) ) {
+			return 0;
+		}
+
+		$value = intval( $atts['album-heading-indent'] );
+
+		return ( $value >= 0 && $value <= 100 ) ? $value : 0;
 	}
 
 	/**

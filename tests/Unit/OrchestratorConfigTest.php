@@ -832,6 +832,20 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertSame( array(), $config['unknown-attributes'] );
     }
 
+    public function test_album_heading_alignment_and_indent_are_validated(): void {
+        $defaults = $this->config( array() );
+        $this->assertSame( 'left', $defaults['album-heading-text-align'] );
+        $this->assertSame( 0, $defaults['album-heading-indent'] );
+
+        $config = $this->config( array( 'album-heading-text-align' => 'right', 'album-heading-indent' => '10' ) );
+        $this->assertSame( 'right', $config['album-heading-text-align'] );
+        $this->assertSame( 10, $config['album-heading-indent'] );
+
+        $invalid = $this->config( array( 'album-heading-text-align' => 'middle', 'album-heading-indent' => '500' ) );
+        $this->assertSame( 'left', $invalid['album-heading-text-align'] );
+        $this->assertSame( 0, $invalid['album-heading-indent'] );
+    }
+
     public function test_gallery_caption_gap_defaults_to_6_and_stays_within_0_to_100(): void {
         $this->assertSame( 6, $this->config( array() )['gallery-caption-gap'] );
         $this->assertSame( 0, $this->config( array( 'gallery-caption-gap' => '0' ) )['gallery-caption-gap'] );

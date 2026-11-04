@@ -1058,6 +1058,8 @@ class JZSA_Shortcode_Tools {
 
 			// Inline information.
 			'album-heading',
+			'album-heading-text-align',
+			'album-heading-indent',
 			'info-top',
 			'info-top-secondary',
 			'info-bottom',

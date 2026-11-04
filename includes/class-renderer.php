@@ -94,10 +94,26 @@ class JZSA_Renderer {
 		// Same width rule as the album itself: galleries only take an explicit width.
 		$is_gallery = isset( $config['mode'] ) && 'gallery' === $config['mode'];
 		$has_width  = isset( $config['width'] ) && 'auto' !== $config['width'] && ( ! $is_gallery || ! empty( $config['width-explicit'] ) );
-		$style      = '';
+		$styles     = array();
 		if ( $has_width ) {
-			$style = sprintf( ' style="width: %dpx; max-width: 100%%;"', intval( $config['width'] ) );
+			$styles[] = sprintf( 'width: %dpx', intval( $config['width'] ) );
+			$styles[] = 'max-width: 100%';
 		}
+
+		$align = isset( $config['album-heading-text-align'] ) && in_array( $config['album-heading-text-align'], array( 'center', 'right' ), true )
+			? $config['album-heading-text-align']
+			: 'left';
+		if ( 'left' !== $align ) {
+			$styles[] = 'text-align: ' . $align;
+		}
+
+		// The indent moves the text away from the edge it is aligned to.
+		$indent = isset( $config['album-heading-indent'] ) ? intval( $config['album-heading-indent'] ) : 0;
+		if ( $indent > 0 && 'center' !== $align ) {
+			$styles[] = sprintf( 'padding-%s: %dpx', $align, $indent );
+		}
+
+		$style = ! empty( $styles ) ? sprintf( ' style="%s;"', esc_attr( implode( '; ', $styles ) ) ) : '';
 
 		return sprintf( '<h3 class="jzsa-album-heading"%s>%s</h3>', $style, esc_html( $text ) );
 	}
