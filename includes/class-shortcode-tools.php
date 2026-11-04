@@ -1057,6 +1057,7 @@ class JZSA_Shortcode_Tools {
 			'video-controls-autohide',
 
 			// Inline information.
+			'album-heading',
 			'info-top',
 			'info-top-secondary',
 			'info-bottom',

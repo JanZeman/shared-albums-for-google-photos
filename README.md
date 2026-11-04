@@ -61,7 +61,7 @@ git clone https://github.com/JanZeman/shared-albums-wp-plugin.git
 
 - Google Photos and Apple iCloud albums with the same shortcode, layouts, and options
 - Photo order: album order, shuffle, or by date taken (`order="oldest"` / `order="newest"`)
-- Photo descriptions, dates and camera info as overlays, or as captions below gallery tiles (`gallery-caption="{description}"`)
+- Photo descriptions, dates and camera info as overlays, or as captions below gallery tiles (`gallery-caption="{description}"`), plus an optional album heading (`album-heading="{album-title}"`)
 - Multiple display modes - thumbnail gallery mode (default, with optional `gallery-rows` paging/scrolling), single-photo slider, or carousel (multi-photo preview that opens single-photo fullscreen)
 - Touch gestures, zoom support, keyboard navigation
 - Fullscreen image-fit modes with `fit` as the default (no crop, scales to fill one axis)

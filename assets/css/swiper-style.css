@@ -2106,6 +2106,14 @@ html.jzsa-lightbox-open body {
     user-select: none;
 }
 
+/* album-heading: a heading above the album, in the theme's heading style. */
+.jzsa-album-heading {
+    box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+}
+
 /* gallery-caption: the tile with its caption below, in normal page flow. */
 .jzsa-gallery-album .jzsa-gallery-cell {
     display: flex;
