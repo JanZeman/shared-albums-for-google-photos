@@ -158,7 +158,8 @@ let clearAccessibilityCache = null;
 
 function attribute(element, name) {
   if (clearAccessibilityCache) {
-    if (!clearAccessibilityCache.has(element)) {
+    if (!clearAccessibilityCache.has(element) ||
+        (clearAccessibilityCache.get(element).partial && name !== "AXRole")) {
       clearAccessibilityCache.set(element, element.properties());
     }
     const p = clearAccessibilityCache.get(element);
@@ -379,25 +380,46 @@ function waitForDialogToClose(process, fileName, albumName) {
     "'. Check Activity before deciding whether to retry.");
 }
 
+function indexedUIChildren(root) {
+  const result = [];
+  const roles = root.uiElements.role();
+  for (let i = 0; i < roles.length; i++) {
+    const child = root.uiElements[i];
+    if (clearAccessibilityCache) clearAccessibilityCache.set(child, { role: roles[i], partial: true });
+    result.push(child);
+  }
+  return result;
+}
+
 function allProcessElements(process) {
   const elements = [];
-  const windows = process.windows();
-  function walk(root, depth) {
-    if (elements.length >= 500) throw new Error("Activity inspection exceeded 500 controls.");
-    elements.push(root);
-    if (depth > 0) root.uiElements().forEach(child => walk(child, depth - 1));
+  const parents = new Map();
+  const children = new Map();
+  const windows = [];
+  const count = process.windows.length;
+  for (let i = 0; i < count; i++) windows.push(process.windows[i]);
+  let visited = 0;
+  function walk(root, depth, parent) {
+    if (++visited > 500) throw new Error("Activity inspection exceeded 500 controls.");
+    const role = attribute(root, "AXRole");
+    if (role === "AXStaticText" || role === "AXMenuButton") elements.push(root);
+    if (parent) parents.set(root, parent);
+    if (depth > 0 && ["AXGroup", "AXScrollArea", "AXOpaqueProviderGroup", "AXList"].indexOf(role) !== -1) {
+      const direct = indexedUIChildren(root);
+      children.set(root, direct);
+      direct.forEach(child => walk(child, depth - 1, root));
+    }
   }
   for (const window of windows) {
     if (attribute(window, "AXSubrole") !== "AXStandardWindow") continue;
     elements.push(window);
-    const split = window.uiElements().find(e => attribute(e, "AXRole") === "AXSplitGroup");
+    const split = indexedUIChildren(window).find(e => attribute(e, "AXRole") === "AXSplitGroup");
     if (!split) continue;
-    // System Events exposes Activity inside AXHostingView, beside the sidebar.
-    // Keep direct child references; flattened entireContents references can fail on click.
-    const hosting = split.uiElements().filter(e => attribute(e, "AXSubrole") === "AXHostingView");
-    hosting.forEach(root => walk(root, 5));
+    // Indexed paths distinguish identically named Activity headings and menus.
+    const hosting = indexedUIChildren(split).filter(e => attribute(e, "AXSubrole") === "AXHostingView");
+    hosting.forEach(root => walk(root, 5, null));
   }
-  return { windows, elements };
+  return { windows, elements, parents, children };
 }
 
 function labelsFor(element) {
@@ -454,7 +476,6 @@ function readActivityState(process, albumName) {
     }
   }
   const headings = [];
-  const seen = {};
   const diagnosticLabels = [];
   const diagnosticSeen = {};
   const roleCounts = {};
@@ -474,18 +495,14 @@ function readActivityState(process, albumName) {
         }
       }
     }
+    if (role !== "AXStaticText") continue;
     const value = labels.find(isSharedPostHeading);
     if (!value) continue;
-    const position = elementPosition(element);
-    const key = value + "|" + (position ? Math.round(position.y) : "unknown");
-    if (seen[key]) continue;
-    seen[key] = true;
-    headings.push({ element, value, position });
+    const siblings = snapshot.children.get(snapshot.parents.get(element)) || [];
+    headings.push({ element, value, position: elementPosition(element), siblings });
   }
-  headings.sort((left, right) => {
-    if (!left.position || !right.position) return 0;
-    return left.position.y - right.position.y;
-  });
+  // Preserve UI sibling order. Identical headings and off-screen coordinates
+  // do not identify a post and must never merge separate Activity entries.
   const targetPosts = headings.filter(post =>
     headingMatchesAlbum(post.value, albumName)
   );
@@ -500,49 +517,30 @@ function readActivityState(process, albumName) {
 }
 
 function activityMoreButton(state, post) {
-  if (!post.position) throw new Error("Photos did not expose the Activity post position.");
-  const nextHeading = state.headings.find(candidate => candidate.position &&
-    candidate.position.y > post.position.y + 1
+  const siblings = post.siblings;
+  const start = siblings.indexOf(post.element);
+  if (start < 0) throw new Error("The Activity heading has no verified parent.");
+  let end = siblings.length;
+  for (let i = start + 1; i < siblings.length; i++) {
+    if (attribute(siblings[i], "AXRole") === "AXStaticText" &&
+        labelsFor(siblings[i]).some(isSharedPostHeading)) { end = i; break; }
+  }
+  const menus = siblings.slice(start + 1, end).filter(element =>
+    attribute(element, "AXRole") === "AXMenuButton" && labelsFor(element).some(label =>
+      /^(more|more options|more actions|additional options|options)$/i.test(label.trim())
+    )
   );
-  const upperY = nextHeading ? nextHeading.position.y : post.position.y + 1200;
-  const buttons = state.elements.filter(element => {
-    const role = attribute(element, "AXRole");
-    if (role !== "AXButton" && role !== "AXMenuButton") return false;
-    const position = elementPosition(element);
-    return position && position.y > post.position.y && position.y < upperY;
-  });
-  const namedMoreButtons = buttons.filter(button => labelsFor(button).some(label =>
-    /^(more|more options|more actions|additional options|options)$/i.test(label.trim())
-  ));
-  if (namedMoreButtons.length === 1) return namedMoreButtons[0];
-  if (namedMoreButtons.length > 1) {
-    throw new Error("Photos exposed multiple More buttons for this Activity post.");
+  if (menus.length !== 1) {
+    throw new Error("Expected one Options menu within this Activity post; found " + menus.length + ".");
   }
-
-  const rows = [];
-  for (const button of buttons) {
-    const position = elementPosition(button);
-    let row = rows.find(candidate => Math.abs(candidate.y - position.y) <= 20);
-    if (!row) {
-      row = { y: position.y, buttons: [] };
-      rows.push(row);
-    }
-    row.buttons.push({ element: button, x: position.x });
-  }
-  const actionRows = rows.filter(row => row.buttons.length === 3)
-    .sort((left, right) => right.y - left.y);
-  if (actionRows.length !== 1) {
-    throw new Error("Could not identify one Activity action row with its three controls.");
-  }
-  actionRows[0].buttons.sort((left, right) => left.x - right.x);
-  return actionRows[0].buttons[2].element;
+  return menus[0];
 }
 
 function findDeleteMenuItem(moreButton) {
   // The open Options menu is a child of this menu button. Search only that
   // small subtree instead of traversing every control in the Photos window.
   clearAccessibilityCache = new Map();
-  const menus = moreButton.uiElements().filter(e => attribute(e, "AXRole") === "AXMenu");
+  const menus = indexedUIChildren(moreButton).filter(e => attribute(e, "AXRole") === "AXMenu");
   if (menus.length !== 1) return null;
   const item = menus[0].menuItems.byName("Delete");
   return item.exists() ? item : null;
@@ -604,16 +602,6 @@ function waitForDeletePostDialog(process) {
   return state.button;
 }
 
-function waitForPostRemoval(process, albumName, previousCount, postText) {
-  const deadline = Date.now() + UI.deleteDialogTimeoutSeconds * 1000;
-  while (Date.now() < deadline) {
-    const state = readActivityState(process, albumName);
-    if (state.targetPosts.length < previousCount) return;
-    sleep(UI.pollSeconds);
-  }
-  throw new Error("The Activity entry did not disappear after Delete for '" + postText +
-    "'. Stop and inspect Photos before continuing.");
-}
 
 function clearAlbumActivity(options) {
   clearAccessibilityCache = new Map();
@@ -684,8 +672,11 @@ function clearAlbumActivity(options) {
       const deleteButton = waitForDeletePostDialog(process);
       step = "delete the Activity post and its album media";
       deleteButton.click();
-      step = "verify Activity post removal";
-      waitForPostRemoval(process, options.album, state.targetPosts.length, post.value);
+      step = "wait for the Delete Post confirmation to close";
+      // Activity virtualizes its rows: another post can fill the removed row,
+      // leaving the visible count unchanged. Wait for native confirmation to
+      // close, then inspect a fresh Activity snapshot instead of comparing counts.
+      waitForDialogToClose(process, "Activity post", options.album);
       deleted++;
       console.log("Deleted Activity post " + deleted + " from '" + options.album + "'.");
       state = readActivityState(process, options.album);
