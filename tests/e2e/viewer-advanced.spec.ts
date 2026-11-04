@@ -228,7 +228,10 @@ test.describe('Random Shortcode Tests', () => {
         await expect(lightboxAlbum.locator('.swiper-button-prev')).not.toBeVisible();
         await expect(lightboxAlbum.locator('.swiper-button-next')).not.toBeVisible();
 
-        await backdrop(page).locator(FULLSCREEN_BUTTON).click({ force: true });
+        const lightboxFullscreenButton = backdrop(page).locator(FULLSCREEN_BUTTON);
+        await lightboxAlbum.hover();
+        await expect(lightboxFullscreenButton).toBeVisible();
+        await lightboxFullscreenButton.click();
         await waitForNativeFullscreen(page, true);
         await expect(album.locator('.swiper-button-prev')).not.toBeVisible();
         await expect(album.locator('.swiper-button-next')).not.toBeVisible();

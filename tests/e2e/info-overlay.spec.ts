@@ -172,17 +172,44 @@ test.describe('Info overlay - lazy photo metadata', () => {
 
         await expect.poll(() => payloads.length, { timeout: 10_000 }).toBeGreaterThan(0);
 
-        const firstPayload = payloads[0];
-        expect(firstPayload.action).toBe('jzsa_fetch_photo_meta');
-        expect(firstPayload.nonce).toBeTruthy();
-        expect(firstPayload.photo_url).toMatch(/^https:\/\/photos\.google\.com\/share\/.+\/photo\/.+\?key=.+/);
-        expect(firstPayload.media_url).toContain('googleusercontent.com');
-        expect(firstPayload.media_type).toBe('photo');
-        expect(firstPayload.need_description).toBe('true');
-        expect(firstPayload.need_exif).toBe('true');
-        // The fixture's album data already includes filenames for early slides, so
-        // the lazy request should avoid asking for filename again for this photo.
-        expect(firstPayload.need_filename).toBe('false');
+        // The fixture album is backed by live Google Photos data, so its first item
+        // may already have some metadata. Match a request that actually needed the
+        // description and camera fields instead of assuming the first item did.
+        const metadataPayload = payloads.find(
+            (payload) => payload.need_description === 'true' && payload.need_exif === 'true',
+        );
+        expect(metadataPayload).toBeTruthy();
+        expect(metadataPayload?.action).toBe('jzsa_fetch_photo_meta');
+        expect(metadataPayload?.nonce).toBeTruthy();
+        expect(metadataPayload?.photo_url).toMatch(/^https:\/\/photos\.google\.com\/share\/.+\/photo\/.+\?key=.+/);
+        expect(metadataPayload?.media_url).toContain('googleusercontent.com');
+        expect(metadataPayload?.media_type).toBe('photo');
+
+        const photoId = metadataPayload?.photo_url.match(/\/photo\/([^?]+)/)?.[1];
+        expect(photoId).toBeTruthy();
+        const photosJson = await album.getAttribute('data-all-photos');
+        const photos = JSON.parse(photosJson ?? '[]') as Array<Record<string, unknown>>;
+        const photoIndex = photos.findIndex((photo) => photo.id === photoId);
+        expect(photoIndex).toBeGreaterThanOrEqual(0);
+        expect(photos[photoIndex].description).toBe('Lazy caption from metadata');
+        expect(photos[photoIndex].camera).toBe('Nikon Z6');
+        expect(photos[photoIndex].filename).toBe('lazy-fixture-photo.jpg');
+
+        // Bring the photo whose request we checked into view before asserting the
+        // container-level info boxes refresh with its newly fetched metadata.
+        await album.evaluate((element, index) => {
+            const swiper = (element as HTMLElement & {
+                swiper?: { slideTo: (index: number, speed?: number) => void; slideToLoop?: (index: number, speed?: number) => void };
+            }).swiper;
+            if (!swiper) {
+                throw new Error('Info fixture Swiper instance was not exposed on its container.');
+            }
+            if (swiper.slideToLoop) {
+                swiper.slideToLoop(index, 0);
+            } else {
+                swiper.slideTo(index, 0);
+            }
+        }, photoIndex);
 
         await expect(album.locator('.jzsa-info-box.jzsa-info-top')).toContainText('lazy-fixture-photo.jpg', {
             timeout: 10_000,
@@ -190,12 +217,6 @@ test.describe('Info overlay - lazy photo metadata', () => {
         const secondary = album.locator('.jzsa-info-box.jzsa-info-top-secondary');
         await expect(secondary).toContainText('Nikon Z6', { timeout: 10_000 });
         await expect(secondary).toContainText('Lazy caption from metadata');
-
-        const photosJson = await album.getAttribute('data-all-photos');
-        const photos = JSON.parse(photosJson ?? '[]') as Array<Record<string, unknown>>;
-        expect(photos.some((photo) => photo.filename === 'lazy-fixture-photo.jpg')).toBe(true);
-        expect(photos.some((photo) => photo.camera === 'Nikon Z6')).toBe(true);
-        expect(photos.some((photo) => photo.description === 'Lazy caption from metadata')).toBe(true);
     });
 
     test('metadata request failure leaves slider navigation usable', async ({ page }) => {
