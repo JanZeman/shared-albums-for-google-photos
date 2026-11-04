@@ -1,6 +1,6 @@
 #!/usr/bin/osascript -l JavaScript
 /*
- * Add Photos selections or disk files one at a time to an iCloud Shared Album.
+ * Add individual media to an iCloud Shared Album, or clear its Activity posts.
  * Live sharing is the default; --dry-run previews without changes. The iCloud.com route is user-guided.
  * Run with osascript -l JavaScript so choices can be entered as ordinary Terminal lines.
  */
@@ -1047,10 +1047,10 @@ function runGuidedWebRoute(records, albumName) {
 
 function run(argv) {
   if (argv.length === 1 && argv[0] === "--help") {
-    console.log("Usage: osascript -l JavaScript scripts/share-selected-photos-to-shared-album.js --album NAME");
-    console.log("       osascript -l JavaScript scripts/share-selected-photos-to-shared-album.js --dry-run --album NAME");
-    console.log("       osascript -l JavaScript scripts/share-selected-photos-to-shared-album.js --album NAME --clear-album");
-    console.log("       osascript -l JavaScript scripts/share-selected-photos-to-shared-album.js --dry-run --album NAME --clear-album");
+    console.log("Usage: osascript -l JavaScript scripts/icloud-albums.js --album NAME");
+    console.log("       osascript -l JavaScript scripts/icloud-albums.js --dry-run --album NAME");
+    console.log("       osascript -l JavaScript scripts/icloud-albums.js --album NAME --clear-album");
+    console.log("       osascript -l JavaScript scripts/icloud-albums.js --dry-run --album NAME --clear-album");
     console.log("Live sharing is the default. Add --dry-run to preview without importing or sharing.");
     console.log("For --clear-album, first open the Photos Activity view. Live mode removes matching posts and their media without an extra terminal confirmation.");
     console.log("Enter a choice number in Terminal.");

@@ -1,6 +1,6 @@
 # macOS Shared Album helper
 
-`share-selected-photos-to-shared-album.js` prepares and adds photos one at a time to an iCloud Shared Album. The helper asks for the source and desired result, then selects the method automatically. Enter the choice number and press Return. The file picker is the only native dialog. Each prompt explains what the answer will do.
+`icloud-albums.js` prepares and adds photos one at a time to an iCloud Shared Album. The helper asks for the source and desired result, then selects the method automatically. Enter the choice number and press Return. The file picker is the only native dialog. Each prompt explains what the answer will do.
 
 The helper is source code for technically comfortable Mac users. It is not a signed or notarized app. Read the source before running it and grant only the permissions required by the route you choose. It is not included in the WordPress plugin ZIP.
 
@@ -35,7 +35,7 @@ This is a metadata match, not a comparison of file contents. Different files wit
 To remove every photo or video post for one Shared Album, open **Shared Albums > Activity** in Photos, then run:
 
 ```sh
-osascript -l JavaScript scripts/share-selected-photos-to-shared-album.js --album "Test" --clear-album
+osascript -l JavaScript scripts/icloud-albums.js --album "Test" --clear-album
 ```
 
 The helper processes matching Activity posts one at a time. For each post it opens `…` > **Delete**, then chooses Photos' **Delete Post and N Photo/Video** action, which removes the Activity post and its media from the Shared Album. The album and its subscribers remain. There is no additional terminal confirmation; use `--dry-run --album "Test" --clear-album` to see how many matching posts Photos exposes before deleting them. If the interface does not match the expected Activity post or Delete Post dialog, the helper stops.
@@ -59,13 +59,13 @@ Use a dedicated Shared Album named `Test` and photos that are safe to post there
 From the public plugin repository root, run:
 
 ```sh
-osascript -l JavaScript scripts/share-selected-photos-to-shared-album.js --help
+osascript -l JavaScript scripts/icloud-albums.js --help
 ```
 
 Select three test photos in Photos, then run:
 
 ```sh
-osascript -l JavaScript scripts/share-selected-photos-to-shared-album.js --dry-run --album "Test"
+osascript -l JavaScript scripts/icloud-albums.js --dry-run --album "Test"
 ```
 
 At the Terminal prompt, enter `1` for **Photos Library selection** and press Return. Verify that the count and order match your selection. If Caption and Title are empty, each proposed caption should be a readable file name stem marked `[from filename]`. The helper must report that nothing was shared, and Activity must remain unchanged.
@@ -81,7 +81,7 @@ For the other dry-run plan, repeat with test files and choose **Use Photos Libra
 Sign in to iCloud.com yourself and open the `Test` Shared Album. In Terminal, run:
 
 ```sh
-osascript -l JavaScript scripts/share-selected-photos-to-shared-album.js --album "Test"
+osascript -l JavaScript scripts/icloud-albums.js --album "Test"
 ```
 
 Press `2` for **Files from disk**, select one new file that has not been posted before, then choose **Keep files outside Photos Library**. The helper selects iCloud.com and shows the caption. Follow the Terminal instructions: upload exactly that one file, open Activity, use `…` > **Edit Caption**, and enter the proposed text. Press `1` for **Continue after verifying** only after you can see the one new Activity item with its caption. Then verify the same item and text on iCloud.com and confirm it did not appear in Photos Library.
