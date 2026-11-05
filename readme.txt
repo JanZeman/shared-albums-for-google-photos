@@ -4,7 +4,7 @@ Tags: google-photos, icloud, gallery, album, embed
 Requires at least: 5.5
 Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 3.0.0
+Stable tag: 3.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -137,6 +137,9 @@ Optional. Used only when a WordPress administrator opens the Community page or c
 Contact: support@janzeman.com
 
 == Changelog ==
+
+= 3.0.1 =
+* Fixed: the lightbox could stop working with WP Rocket's "Delay JavaScript execution". On pages that show an album, the plugin now keeps its scripts and jQuery out of the delay, so no manual exclusions are needed. Thanks to [@plauritz](https://profiles.wordpress.org/plauritz/) for reporting it.
 
 = 3.0.0 =
 * Added Apple iCloud shared albums after [@plauritz](https://profiles.wordpress.org/plauritz/) requested support for Apple iCloud. The same shortcode, layouts and options work for Google Photos and iCloud albums, including videos, descriptions, camera info and downloads.
@@ -327,6 +330,9 @@ Contact: support@janzeman.com
 * Responsive design with touch gestures
 
 == Upgrade Notice ==
+
+= 3.0.1 =
+Fixes the lightbox on sites that use WP Rocket's "Delay JavaScript execution".
 
 = 3.0.0 =
 Adds Apple iCloud shared albums, captions below gallery photos and an optional album heading. Videos are now shown by default; add show-videos="false" to your shortcodes to keep showing photos only.

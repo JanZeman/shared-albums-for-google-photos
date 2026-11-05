@@ -218,6 +218,13 @@ class JZSA_Shared_Albums {
 	private $plugin_file;
 
 	/**
+	 * Whether an album was rendered on this page.
+	 *
+	 * @var bool
+	 */
+	private $album_rendered = false;
+
+	/**
 	 * Constructor - Initialize plugin
 	 *
 	 * @param string $plugin_file Plugin base file path
@@ -230,6 +237,9 @@ class JZSA_Shared_Albums {
 
 		add_shortcode( 'jzsa-album', array( $this, 'handle_shortcode' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+		// WP Rocket's Delay JavaScript execution must leave the album scripts alone,
+		// or the lightbox can stop working.
+		add_filter( 'rocket_delay_js_exclusions', array( $this, 'exclude_from_wp_rocket_delay_js' ) );
 		add_action( 'save_post', array( $this, 'clear_cache' ) );
 		add_action( 'wp_ajax_jzsa_download_image', array( $this, 'handle_download_image' ) );
 		add_action( 'wp_ajax_nopriv_jzsa_download_image', array( $this, 'handle_download_image' ) );
@@ -274,6 +284,42 @@ class JZSA_Shared_Albums {
 		}
 
 		$this->enqueue_assets();
+	}
+
+	/**
+	 * Keep the album scripts out of WP Rocket's "Delay JavaScript execution".
+	 *
+	 * WP Rocket matches each pattern as a regular expression against the whole
+	 * script tag. Only pages that show an album are changed, so other pages keep
+	 * the full delay.
+	 *
+	 * @param mixed $exclusions Exclusion patterns.
+	 * @return mixed
+	 */
+	public function exclude_from_wp_rocket_delay_js( $exclusions ) {
+		if ( ! $this->album_rendered || ! is_array( $exclusions ) ) {
+			return $exclusions;
+		}
+
+		return array_merge(
+			$exclusions,
+			array(
+				preg_quote( $this->get_plugin_dir_name(), '#' ),
+				'jzsa-init-js',
+				'jquery-core-js',
+				'jquery-migrate-js',
+				'/jquery-?[0-9.]*(\.min|\.slim|\.slim\.min)?\.js',
+			)
+		);
+	}
+
+	/**
+	 * Folder name of the plugin, as it appears in its asset URLs.
+	 *
+	 * @return string
+	 */
+	private function get_plugin_dir_name() {
+		return basename( dirname( $this->plugin_file ) );
 	}
 
 	/**
@@ -400,6 +446,8 @@ class JZSA_Shared_Albums {
 		if ( empty( $album_url ) ) {
 			return null;
 		}
+
+		$this->album_rendered = true;
 
 		// Parse configuration from shortcode attributes
 		$config = $this->parse_shortcode_config( $atts, $album_url );
