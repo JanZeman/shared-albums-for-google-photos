@@ -246,6 +246,8 @@ class JZSA_Shared_Albums {
 		// The plugin itself is created on init, so the earliest hook still ahead is wp_loaded.
 		add_action( 'wp_loaded', array( $this, 'handle_media_redirect' ) );
 		add_action( 'wp_ajax_jzsa_refresh_urls', array( $this, 'handle_refresh_urls' ) );
+		add_action( 'wp_ajax_jzsa_media_urls', array( $this, 'handle_media_urls' ) );
+		add_action( 'wp_ajax_nopriv_jzsa_media_urls', array( $this, 'handle_media_urls' ) );
 		add_action( 'wp_ajax_nopriv_jzsa_refresh_urls', array( $this, 'handle_refresh_urls' ) );
 		add_action( 'wp_ajax_jzsa_shortcode_preview', array( $this, 'handle_shortcode_preview' ) );
 		add_action( 'wp_ajax_jzsa_clear_cache', array( $this, 'handle_clear_cache' ) );
@@ -2392,11 +2394,46 @@ class JZSA_Shared_Albums {
 	 * @return string Direct URL, or '' when unknown.
 	 */
 	public function resolve_media_url( $album_url, $id, $rendition ) {
-		if ( '' === $album_url || '' === $id || '' === $rendition || ! JZSA_ICloud_Provider::is_icloud_url( $album_url ) ) {
+		if ( '' === $id || '' === $rendition ) {
 			return '';
 		}
-		if ( false === get_transient( $this->get_cache_key( $album_url ) ) && false === get_transient( $this->get_backup_cache_key( $album_url ) ) ) {
+		$map = $this->get_media_map( $album_url );
+		if ( false === $map ) {
 			return '';
+		}
+
+		$url = isset( $map[ $id ][ $rendition ] ) ? (string) $map[ $id ][ $rendition ] : '';
+
+		return $this->is_icloud_media_url( $url ) ? $url : '';
+	}
+
+	/**
+	 * Whether a URL points to iCloud media over HTTPS.
+	 *
+	 * @param string $url URL.
+	 * @return bool
+	 */
+	private function is_icloud_media_url( $url ) {
+		$host = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+
+		return 'https' === wp_parse_url( $url, PHP_URL_SCHEME ) && '.icloud-content.com' === substr( $host, -strlen( '.icloud-content.com' ) );
+	}
+
+	/**
+	 * Current direct media URLs of an album the plugin has rendered.
+	 *
+	 * See resolve_media_url() for which albums are served and refresh_media_map()
+	 * for how long URLs are kept.
+	 *
+	 * @param string $album_url Album URL.
+	 * @return array|false Map of item ID => rendition => URL; false when unknown.
+	 */
+	private function get_media_map( $album_url ) {
+		if ( '' === $album_url || ! JZSA_ICloud_Provider::is_icloud_url( $album_url ) ) {
+			return false;
+		}
+		if ( false === get_transient( $this->get_cache_key( $album_url ) ) && false === get_transient( $this->get_backup_cache_key( $album_url ) ) ) {
+			return false;
 		}
 
 		$map_key  = 'jzsa_media_' . md5( $album_url );
@@ -2440,17 +2477,10 @@ class JZSA_Shared_Albums {
 		}
 
 		if ( false === $stored ) {
-			return '';
-		}
-		$map = $stored['urls'];
-
-		$url  = isset( $map[ $id ][ $rendition ] ) ? (string) $map[ $id ][ $rendition ] : '';
-		$host = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
-		if ( 'https' !== wp_parse_url( $url, PHP_URL_SCHEME ) || '.icloud-content.com' !== substr( $host, -strlen( '.icloud-content.com' ) ) ) {
-			return '';
+			return false;
 		}
 
-		return $url;
+		return $stored['urls'];
 	}
 
 	/**
@@ -2632,6 +2662,58 @@ class JZSA_Shared_Albums {
 		// phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- host checked in resolve_media_url().
 		wp_redirect( $url, 302, 'Shared Albums' );
 		exit;
+	}
+
+	/**
+	 * Answer the current direct media URLs of one album in a single request.
+	 *
+	 * The browser uses them in place of the stable URLs (?jzsa_media=1) for the
+	 * images it shows first, so it does not need one redirect per image. Public
+	 * and read-only like the redirect itself, and limited the same way: only
+	 * albums the plugin has rendered, only iCloud media hosts.
+	 *
+	 * Response: urls (item ID => rendition => URL) and ttl, the seconds the
+	 * URLs may still be used.
+	 *
+	 * @return void
+	 */
+	public function handle_media_urls() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- public, read-only; same data as the media redirect. Pages may be cached for longer than a nonce lives.
+		$album_url  = isset( $_GET['album'] ) ? esc_url_raw( wp_unslash( $_GET['album'] ) ) : '';
+		$renditions = isset( $_GET['r'] ) ? explode( ',', sanitize_text_field( wp_unslash( $_GET['r'] ) ) ) : array();
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		$wanted = array();
+		foreach ( $renditions as $rendition ) {
+			$rendition = preg_replace( '/[^A-Za-z0-9]/', '', $rendition );
+			if ( '' !== $rendition ) {
+				$wanted[ $rendition ] = true;
+			}
+		}
+
+		$map = empty( $wanted ) ? false : $this->get_media_map( $album_url );
+		nocache_headers();
+		if ( false === $map ) {
+			wp_send_json_error( null, 404 );
+		}
+
+		$urls = array();
+		$ttl  = PHP_INT_MAX;
+		foreach ( $map as $id => $item_renditions ) {
+			foreach ( (array) $item_renditions as $rendition => $url ) {
+				if ( isset( $wanted[ $rendition ] ) && $this->is_icloud_media_url( (string) $url ) ) {
+					$urls[ $id ][ $rendition ] = (string) $url;
+					$ttl                       = min( $ttl, $this->media_url_lifetime( (string) $url ) );
+				}
+			}
+		}
+
+		wp_send_json_success(
+			array(
+				'urls' => (object) $urls,
+				'ttl'  => empty( $urls ) ? 0 : $ttl,
+			)
+		);
 	}
 
 	/**

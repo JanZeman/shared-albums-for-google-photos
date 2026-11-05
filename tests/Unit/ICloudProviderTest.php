@@ -340,6 +340,66 @@ class ICloudProviderTest extends TestCase {
 		$this->assertSame( '', $orchestrator->resolve_media_url( self::CLOUDKIT_ALBUM_URL, 'A1', 'JPEGThumb' ) );
 	}
 
+	private function callMediaUrls( JZSA_Shared_Albums $orchestrator, array $get ): \JZSA_Test_JSON_Response {
+		$_GET = $get;
+		try {
+			$orchestrator->handle_media_urls();
+		} catch ( \JZSA_Test_JSON_Response $response ) {
+			return $response;
+		} finally {
+			$_GET = array();
+		}
+		$this->fail( 'Expected handle_media_urls to send a JSON response.' );
+	}
+
+	public function test_media_urls_answer_the_requested_renditions_of_a_rendered_album(): void {
+		$orchestrator = new JZSA_Shared_Albums( JZSA_PLUGIN_FILE );
+		$this->cacheCloudKitAlbum();
+		$expiry = time() + 900;
+		$GLOBALS['jzsa_test_transients'][ 'jzsa_media_' . md5( self::CLOUDKIT_ALBUM_URL ) ] = array(
+			'urls'        => array(
+				'A1' => array(
+					'JPEGThumb' => 'https://cvws.icloud-content.com/B/t1/a.jpg?o=1&e=' . $expiry,
+					'JPEGMed'   => 'https://cvws.icloud-content.com/B/m1/a.jpg?o=1&e=' . $expiry,
+					'Original'  => 'https://cvws.icloud-content.com/B/o1/a.jpg?o=1&e=' . ( $expiry - 300 ),
+				),
+				'A2' => array( 'JPEGMed' => 'https://evil.example/x.jpg' ),
+			),
+			'fresh_until' => time() + 600,
+		);
+
+		$response = $this->callMediaUrls( $orchestrator, array( 'album' => self::CLOUDKIT_ALBUM_URL, 'r' => 'JPEGMed,JPEGThumb' ) );
+
+		$this->assertTrue( $response->success );
+		$this->assertEquals(
+			(object) array(
+				'A1' => array(
+					'JPEGThumb' => 'https://cvws.icloud-content.com/B/t1/a.jpg?o=1&e=' . $expiry,
+					'JPEGMed'   => 'https://cvws.icloud-content.com/B/m1/a.jpg?o=1&e=' . $expiry,
+				),
+			),
+			$response->data['urls']
+		);
+		// Lifetime of the earliest returned URL, minus the safety buffer; the Original is not returned.
+		$this->assertEqualsWithDelta( 900 - JZSA_Shared_Albums::MEDIA_URL_EXPIRY_BUFFER, $response->data['ttl'], 2 );
+	}
+
+	public function test_media_urls_refuse_albums_the_plugin_has_not_rendered(): void {
+		$orchestrator = new JZSA_Shared_Albums( JZSA_PLUGIN_FILE );
+		$this->stubCloudKitAlbum();
+
+		$this->assertFalse( $this->callMediaUrls( $orchestrator, array( 'album' => self::CLOUDKIT_ALBUM_URL, 'r' => 'JPEGMed' ) )->success );
+		$this->assertFalse( $this->callMediaUrls( $orchestrator, array( 'album' => 'https://photos.google.com/share/AF1Qip?key=abc', 'r' => 'JPEGMed' ) )->success );
+		$this->assertSame( array(), $GLOBALS['jzsa_test_http_requests'] );
+	}
+
+	public function test_media_urls_need_renditions(): void {
+		$orchestrator = new JZSA_Shared_Albums( JZSA_PLUGIN_FILE );
+		$this->cacheCloudKitAlbum();
+
+		$this->assertFalse( $this->callMediaUrls( $orchestrator, array( 'album' => self::CLOUDKIT_ALBUM_URL, 'r' => ',%' ) )->success );
+	}
+
 	public function test_rotated_original_reports_displayed_dimensions(): void {
 		$records = array(
 			array(

@@ -139,6 +139,7 @@ Contact: support@janzeman.com
 == Changelog ==
 
 = 3.0.1 =
+* Faster iCloud albums: the first photos now load straight from Apple, with one request to WordPress for the whole album instead of one per photo. This matters most on busy or slower hosts.
 * Fixed: the lightbox could stop working with WP Rocket's "Delay JavaScript execution". On pages that show an album, the plugin now keeps its scripts and jQuery out of the delay, so no manual exclusions are needed. Thanks to [@plauritz](https://profiles.wordpress.org/plauritz/) for reporting it.
 
 = 3.0.0 =
@@ -332,7 +333,7 @@ Contact: support@janzeman.com
 == Upgrade Notice ==
 
 = 3.0.1 =
-Fixes the lightbox on sites that use WP Rocket's "Delay JavaScript execution".
+Loads iCloud albums faster and fixes the lightbox on sites that use WP Rocket's "Delay JavaScript execution".
 
 = 3.0.0 =
 Adds Apple iCloud shared albums, captions below gallery photos and an optional album heading. Videos are now shown by default; add show-videos="false" to your shortcodes to keep showing photos only.

@@ -26,6 +26,156 @@
 		return (typeof jzsaAjax !== 'undefined' && jzsaAjax.i18n && jzsaAjax.i18n[key]) || '';
 	}
 
+	// ============================================================================
+	// DIRECT MEDIA URLS (iCloud)
+	// ============================================================================
+	//
+	// iCloud media URLs expire after about 15 minutes, so the page carries stable
+	// URLs (?jzsa_media=1) that WordPress redirects to the current Apple URL. Each
+	// redirect starts WordPress once, which is slow on busy hosts. Before showing
+	// an album, one request asks for the current Apple URLs of all its images, and
+	// the first images shown use them directly. Everything else keeps the stable
+	// URLs, and any direct URL that fails falls back to its stable URL.
+
+	var DIRECT_MEDIA_WAIT_MS = 4000;
+	var DIRECT_MEDIA_MIN_TTL_S = 60;
+	var _directMediaByAlbum = {};
+	var _directMediaRequests = {};
+	var _stableByDirectUrl = {};
+
+	function parseStableMediaUrl(url) {
+		if (typeof url !== 'string' || url.indexOf('jzsa_media=1') === -1 || typeof URL === 'undefined') {
+			return null;
+		}
+		try {
+			var params = new URL(url, window.location.href).searchParams;
+			if (params.get('jzsa_media') !== '1' || !params.get('album') || !params.get('id') || !params.get('r')) {
+				return null;
+			}
+			return { album: params.get('album'), id: params.get('id'), rendition: params.get('r') };
+		} catch (e) {
+			return null;
+		}
+	}
+
+	// Direct Apple URL for a stable media URL while it is known to be valid,
+	// otherwise the URL itself.
+	function directMediaUrl(url) {
+		var parsed = parseStableMediaUrl(url);
+		if (!parsed) {
+			return url;
+		}
+		var entry = _directMediaByAlbum[parsed.album];
+		if (!entry || Date.now() >= entry.validUntil) {
+			return url;
+		}
+		var direct = entry.urls[parsed.id] && entry.urls[parsed.id][parsed.rendition];
+		if (typeof direct !== 'string' || direct.indexOf('https://') !== 0) {
+			return url;
+		}
+		_stableByDirectUrl[direct] = url;
+		return direct;
+	}
+
+	// The stable URL behind a direct URL handed out by directMediaUrl().
+	function stableMediaUrl(url) {
+		return (url && _stableByDirectUrl[url]) || url;
+	}
+
+	// Album URL and the renditions its first images use, when the album has stable media URLs.
+	function getDirectMediaRequest($container) {
+		var photos;
+		try {
+			photos = JSON.parse($container.attr('data-all-photos') || '[]');
+		} catch (e) {
+			return null;
+		}
+		if (!Array.isArray(photos)) {
+			return null;
+		}
+		var album = '';
+		var renditions = {};
+		photos.forEach(function(photo) {
+			if (!photo || photo.type === 'video') {
+				return;
+			}
+			[photo.preview || photo.full, photo.thumb].forEach(function(url) {
+				var parsed = parseStableMediaUrl(url);
+				if (parsed && (!album || parsed.album === album)) {
+					album = parsed.album;
+					renditions[parsed.rendition] = true;
+				}
+			});
+		});
+		var list = Object.keys(renditions).sort();
+		return album && list.length ? { album: album, renditions: list } : null;
+	}
+
+	// One request per album; resolves when the direct URLs are stored or the request failed.
+	function loadDirectMediaUrls(request) {
+		var key = request.album + '|' + request.renditions.join(',');
+		if (_directMediaRequests[key]) {
+			return _directMediaRequests[key];
+		}
+		var deferred = $.Deferred();
+		_directMediaRequests[key] = deferred.promise();
+		if (typeof jzsaAjax === 'undefined' || !jzsaAjax.ajaxUrl) {
+			deferred.resolve();
+			return _directMediaRequests[key];
+		}
+		var requestedAt = Date.now();
+		$.ajax({
+			url: jzsaAjax.ajaxUrl,
+			type: 'GET',
+			dataType: 'json',
+			timeout: 15000,
+			data: { action: 'jzsa_media_urls', album: request.album, r: request.renditions.join(',') }
+		}).done(function(response) {
+			var data = response && response.success ? response.data : null;
+			var ttl = data ? parseInt(data.ttl, 10) : 0;
+			if (data && data.urls && typeof data.urls === 'object' && ttl >= DIRECT_MEDIA_MIN_TTL_S) {
+				// Count the lifetime from when the request started, to stay on the safe side.
+				var existing = _directMediaByAlbum[request.album];
+				var urls = existing && Date.now() < existing.validUntil ? $.extend(true, {}, existing.urls, data.urls) : data.urls;
+				_directMediaByAlbum[request.album] = { urls: urls, validUntil: requestedAt + ttl * 1000 };
+			}
+		}).always(function() {
+			deferred.resolve();
+		});
+		return _directMediaRequests[key];
+	}
+
+	// Run callback once the album's direct URLs are known, or after a short wait at most.
+	function whenDirectMediaReady($container, callback) {
+		var request = getDirectMediaRequest($container);
+		if (!request) {
+			callback();
+			return;
+		}
+		var done = false;
+		function finish() {
+			if (!done) {
+				done = true;
+				callback();
+			}
+		}
+		loadDirectMediaUrls(request).always(finish);
+		window.setTimeout(finish, DIRECT_MEDIA_WAIT_MS);
+	}
+
+	// A direct URL that fails (expired, clock skew) falls back to its stable URL.
+	document.addEventListener('error', function(event) {
+		var el = event.target;
+		if (!el || el.tagName !== 'IMG') {
+			return;
+		}
+		var src = el.getAttribute('src') || '';
+		var stable = _stableByDirectUrl[src];
+		if (stable && stable !== src) {
+			el.setAttribute('src', stable);
+		}
+	}, true);
+
 	function jzsaFormatI18n(key, value) {
 		return jzsaI18n(key).replace('%d', String(value));
 	}
@@ -3467,7 +3617,8 @@
                     '</div>';
             } else {
                 // Photo format: object with preview and full URLs
-                var previewUrl = photo.preview || photo.full;
+                var baseUrl = photo.preview || photo.full;
+                var previewUrl = directMediaUrl(baseUrl);
                 var fullUrl = photo.full;
                 var loadingAttr = '';
                 if (useLazyHints) {
@@ -3477,7 +3628,7 @@
                 html += '<div class="swiper-slide" data-carousel-photo-index="' + globalIndex + '" data-jzsa-global-index="' + globalIndex + '">' +
                     '<div class="swiper-zoom-container">' +
                     '<img src="' + previewUrl + '" ' +
-                    (previewUrl !== fullUrl ? 'data-full-src="' + fullUrl + '" ' : '') +
+                    (baseUrl !== fullUrl ? 'data-full-src="' + fullUrl + '" ' : '') +
                     'alt="' + escapeHtml(altText) + '" class="jzsa-progressive-image"' + loadingAttr + ' decoding="async" referrerpolicy="no-referrer" />' +
                     '</div>' +
                     tileInfoHtml +
@@ -4723,8 +4874,8 @@
                 var requestData = {
                     action: 'jzsa_download_image',
                     nonce: jzsaAjax.downloadNonce,
-                    media_url: mediaUrl,
-                    image_url: mediaUrl,
+                    media_url: stableMediaUrl(mediaUrl),
+                    image_url: stableMediaUrl(mediaUrl),
                     filename: filename
                 };
                 if (downloadWarningSizeBytes !== null) {
@@ -6220,7 +6371,9 @@
                 // Build thumb slides
                 var thumbSlidesHtml = '';
                 allPhotos.forEach(function(photo) {
-                    var thumbUrl = photo.thumb || photo.preview || photo.full;
+                    var thumbUrl = photo.type === 'video'
+                        ? (photo.thumb || photo.preview || photo.full)
+                        : directMediaUrl(photo.thumb || photo.preview || photo.full);
                     thumbSlidesHtml += '<div class="swiper-slide">' +
                         '<span class="jzsa-mosaic-thumb-inner">' +
                         '<img src="' + thumbUrl + '" alt="Thumb" loading="lazy" referrerpolicy="no-referrer" />' +
@@ -7761,8 +7914,9 @@
         pageItems.forEach(function(item) {
             var photo = item.photo;
             var globalIndex = item.index;
-            var src = photo.preview || photo.full;
             var isVideo = photo.type === 'video';
+            var baseSrc = photo.preview || photo.full;
+            var src = isVideo ? baseSrc : directMediaUrl(baseSrc);
             var itemClass = 'jzsa-gallery-item' + (isVideo ? ' jzsa-gallery-item-video' : '');
             var mediaLabel = isVideo ? 'video' : 'photo';
             var mediaHtml;
@@ -7774,7 +7928,7 @@
                 mediaHtml =
                     '<img class="jzsa-gallery-thumb' + tileFillClass + '"' +
                     ' src="' + src + '"' +
-                    (src !== photo.full ? ' data-full-src="' + photo.full + '"' : '') +
+                    (baseSrc !== photo.full ? ' data-full-src="' + photo.full + '"' : '') +
                     ' data-index="' + globalIndex + '"' +
                     ' alt="' + mediaLabel.charAt(0).toUpperCase() + mediaLabel.slice(1) + ' ' + (globalIndex + 1) + '"' +
                     ' draggable="false"' +
@@ -9959,8 +10113,8 @@
                     var requestData = {
                         action: 'jzsa_download_image',
                         nonce: jzsaAjax.downloadNonce,
-                        media_url: mediaUrl,
-                        image_url: mediaUrl,
+                        media_url: stableMediaUrl(mediaUrl),
+                        image_url: stableMediaUrl(mediaUrl),
                         filename: filename
                     };
                     if (galleryDownloadWarningSizeBytes !== null) {
@@ -10212,11 +10366,28 @@
 
     function initializeGalleryElement(element, fallbackIndex) {
         var $gallery = $(element);
-        if (!$gallery.length || isGalleryInitialized($gallery)) {
+        if (!$gallery.length || isGalleryInitialized($gallery) || $gallery.data('jzsaDirectMediaPending')) {
             return;
         }
 
         ensureGalleryId($gallery, fallbackIndex);
+
+        if (getDirectMediaRequest($gallery)) {
+            $gallery.data('jzsaDirectMediaPending', true);
+            whenDirectMediaReady($gallery, function() {
+                $gallery.removeData('jzsaDirectMediaPending');
+                if (!isGalleryInitialized($gallery) && $gallery.closest('html').length) {
+                    initializeGalleryMode(element);
+                }
+            });
+            return;
+        }
+
+        initializeGalleryMode(element);
+    }
+
+    function initializeGalleryMode(element) {
+        var $gallery = $(element);
 
         var mode = $gallery.attr('data-mode') || 'gallery';
         if (mode === 'gallery') {
@@ -10239,6 +10410,11 @@
 
         $galleries.each(function(index) {
             ensureGalleryId($(this), index + 1);
+            // Ask for direct media URLs right away, while the page is still settling.
+            var directMediaRequest = getDirectMediaRequest($(this));
+            if (directMediaRequest) {
+                loadDirectMediaUrls(directMediaRequest);
+            }
         });
 
         if (typeof IntersectionObserver === 'undefined') {
