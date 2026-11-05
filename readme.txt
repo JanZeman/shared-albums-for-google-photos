@@ -140,6 +140,7 @@ Contact: support@janzeman.com
 
 = 3.0.1 =
 * Faster iCloud albums: the first photos now load straight from Apple, with one request to WordPress for the whole album instead of one per photo. This matters most on busy or slower hosts.
+* Loading spinners now appear only when loading takes more than a second, and fade in gently, so fast loads show no spinner at all.
 * Fixed: the lightbox could stop working with WP Rocket's "Delay JavaScript execution". On pages that show an album, the plugin now keeps its scripts and jQuery out of the delay, so no manual exclusions are needed. Thanks to [@plauritz](https://profiles.wordpress.org/plauritz/) for reporting it.
 
 = 3.0.0 =

@@ -1610,6 +1610,34 @@ html.jzsa-lightbox-open body {
     }
 }
 
+/* Loaders appear only when loading takes a while: nothing for the first
+   second, then a slow fade in, so fast loads show no spinner at all. The
+   delay starts each time the album starts waiting. */
+.jzsa-loader-inner {
+    opacity: 0;
+}
+
+.jzsa-album.jzsa-loader-pending .jzsa-loader-inner,
+.jzsa-album.jzsa-fullscreen-waiting .jzsa-loader-inner {
+    animation: jzsa-loader-appear 1.5s ease-in 1s forwards;
+}
+
+@keyframes jzsa-loader-appear {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .jzsa-album.jzsa-loader-pending .jzsa-loader-inner,
+    .jzsa-album.jzsa-fullscreen-waiting .jzsa-loader-inner {
+        animation-duration: 0.01s;
+    }
+}
+
 /* Gesture hints overlay */
 .jzsa-hint {
     position: absolute;
@@ -2922,7 +2950,9 @@ html.jzsa-lightbox-open body {
     border: 3px solid rgba(255, 255, 255, 0.3);
     border-top-color: #fff;
     border-radius: 50%;
-    animation: jzsa-plyr-spin 0.8s linear infinite;
+    opacity: 0;
+    /* The pause icon shows the click was taken; the ring follows only for slow starts. */
+    animation: jzsa-plyr-spin 0.8s linear infinite, jzsa-loader-appear 1.5s ease-in 1s forwards;
 }
 
 @keyframes jzsa-plyr-pulse {

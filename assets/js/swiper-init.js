@@ -1045,10 +1045,12 @@
 
     // Time conversion constant (shared by all helpers and initializers)
     var MILLISECONDS_PER_SECOND = 1000; // Conversion factor from seconds to milliseconds
-    // Loader UX: show immediate visual feedback, then progressively reveal copy.
+    // Loader UX: the spinner fades in only after a second (see .jzsa-loader-inner
+    // in the CSS), then the copy is revealed progressively. Fast loads show nothing,
+    // so the album never waits just to keep the spinner on screen.
     var LOADER_TEXT_SHOW_DELAY_MS = 1400;
     var LOADER_SLOW_MESSAGE_DELAY_MS = 8000;
-    var LOADER_MIN_VISIBLE_MS = 250;
+    var LOADER_MIN_VISIBLE_MS = 0;
 
     // Helper: Run after the next paint cycle (double RAF) to avoid synchronous
     // layout flushes when restarting CSS transitions.
@@ -7991,10 +7993,14 @@
             }
         });
         destroyPlyrInContainer($container);
-        var $loader = $container.children('.jzsa-loader').detach();
-        $container.html(html);
+        // Keep the loader in place: taking it out of the page would restart its
+        // delayed fade-in, so a spinner already on screen would blink.
+        var $loader = $container.children('.jzsa-loader').first();
         if ($loader.length) {
-            $container.append($loader);
+            $container.contents().not($loader).remove();
+            $loader.before(html);
+        } else {
+            $container.html(html);
         }
         initPlyrInContainer($container);
         scheduleDurationPrefetch($container);
@@ -10374,6 +10380,13 @@
 
         if (getDirectMediaRequest($gallery)) {
             $gallery.data('jzsaDirectMediaPending', true);
+            // Same loader the album shows while it initializes, so the wait looks the same.
+            // A gallery is wrapped in its shell first: moving it later would restart the
+            // loader's delayed fade-in and make a visible spinner blink.
+            if (($gallery.attr('data-mode') || 'gallery') === 'gallery') {
+                ensureGalleryShell($gallery);
+            }
+            activateLoaderState($gallery, 'Loading content...', 'This is taking longer than usual...');
             whenDirectMediaReady($gallery, function() {
                 $gallery.removeData('jzsaDirectMediaPending');
                 if (!isGalleryInitialized($gallery) && $gallery.closest('html').length) {
