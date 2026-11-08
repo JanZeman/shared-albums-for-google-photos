@@ -1090,7 +1090,7 @@ html.jzsa-lightbox-open body {
     display: block;
     width: 26px;
     height: 26px;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3zM10.5 10.5h3v3h-3z' fill='%23ffffff' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>");
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z' fill='%23ffffff' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>");
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;

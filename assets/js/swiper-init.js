@@ -235,7 +235,7 @@
 			fullscreen:   "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z' fill='" + enc + "' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>\")",
 			exitFs:       "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z' fill='" + enc + "' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>\")",
 			enterLightbox:"url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5zM10.5 10.5h3v3h-3z' fill='" + enc + "' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>\")",
-			exitLightbox: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3zM10.5 10.5h3v3h-3z' fill='" + enc + "' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>\")",
+			exitLightbox: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z' fill='" + enc + "' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>\")",
 			link:         "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z' fill='" + enc + "' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>\")",
 			download:     "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z' fill='" + enc + "' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>\")"
 		};
@@ -7140,7 +7140,7 @@
             if (config.lightboxToggle && config.lightboxToggle !== 'button-only' && config.lightboxToggle !== 'disabled') {
                 showHintsOnLightbox = createHintSystem(galleryId, 'jzsa-lightbox-hints-counter', [
                     'Click / tap / swipe left or right to browse photos',
-                    'Press Esc or tap \u29C9 to close Lightbox'
+                    'Press Esc or tap \u00D7 to close Lightbox'
                 ]);
             }
 
@@ -9890,7 +9890,7 @@
         if (lightboxMode !== 'button-only' && lightboxMode !== 'disabled') {
             showHintsOnGalleryLightbox = createHintSystem(slideshowId, 'jzsa-lightbox-hints-counter', [
                 'Click / tap / swipe left or right to browse photos',
-                'Press Esc or tap \u29C9 to close Lightbox'
+                'Press Esc or tap \u00D7 to close Lightbox'
             ]);
         }
 

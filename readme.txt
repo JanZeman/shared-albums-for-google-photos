@@ -4,7 +4,7 @@ Tags: google-photos, icloud, gallery, album, embed
 Requires at least: 5.5
 Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 3.0.1
+Stable tag: 3.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -137,6 +137,9 @@ Optional. Used only when a WordPress administrator opens the Community page or c
 Contact: support@janzeman.com
 
 == Changelog ==
+
+= 3.0.2 =
+* The lightbox close button is now a clear X instead of the "exit" arrows, so visitors on phones recognize it right away. Thanks to [@plauritz](https://profiles.wordpress.org/plauritz/) for the feedback.
 
 = 3.0.1 =
 * Faster iCloud albums: the first photos now load straight from Apple, with one request to WordPress for the whole album instead of one per photo. This matters most on busy or slower hosts.
@@ -332,6 +335,9 @@ Contact: support@janzeman.com
 * Responsive design with touch gestures
 
 == Upgrade Notice ==
+
+= 3.0.2 =
+The lightbox close button is now a clear X.
 
 = 3.0.1 =
 Loads iCloud albums faster and fixes the lightbox on sites that use WP Rocket's "Delay JavaScript execution".
