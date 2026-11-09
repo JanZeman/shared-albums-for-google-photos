@@ -1295,7 +1295,12 @@ class JZSA_Shared_Albums {
 			'album-heading-text-align'        => ( isset( $atts['album-heading-text-align'] ) && in_array( $atts['album-heading-text-align'], array( 'left', 'center', 'right' ), true ) )
 				? $atts['album-heading-text-align']
 				: 'left',
-			'album-heading-indent'            => $this->parse_album_heading_indent( $atts ),
+			'album-heading-indent'            => $this->parse_album_text_indent( $atts, 'album-heading-indent' ),
+			'album-link'                      => $this->parse_info_box( $atts, 'album-link', '' ),
+			'album-link-text-align'           => ( isset( $atts['album-link-text-align'] ) && in_array( $atts['album-link-text-align'], array( 'left', 'center', 'right' ), true ) )
+				? $atts['album-link-text-align']
+				: 'left',
+			'album-link-indent'               => $this->parse_album_text_indent( $atts, 'album-link-indent' ),
 		);
 	}
 
@@ -2181,17 +2186,18 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse album-heading-indent: space between the heading and the album edge it is aligned to (pixels, 0-100).
+	 * Parse album-heading-indent or album-link-indent: space between the text and the album edge it is aligned to (pixels, 0-100).
 	 *
-	 * @param array $atts Shortcode attributes.
+	 * @param array  $atts Shortcode attributes.
+	 * @param string $key  Parameter name.
 	 * @return int Indent in pixels.
 	 */
-	private function parse_album_heading_indent( $atts ) {
-		if ( ! isset( $atts['album-heading-indent'] ) ) {
+	private function parse_album_text_indent( $atts, $key ) {
+		if ( ! isset( $atts[ $key ] ) ) {
 			return 0;
 		}
 
-		$value = intval( $atts['album-heading-indent'] );
+		$value = intval( $atts[ $key ] );
 
 		return ( $value >= 0 && $value <= 100 ) ? $value : 0;
 	}

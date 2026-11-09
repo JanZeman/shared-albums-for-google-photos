@@ -48,13 +48,13 @@ class JZSA_Renderer {
 		// Gallery mode: plain thumbnail gallery, no Swiper structure
 		if ( isset( $config['mode'] ) && 'gallery' === $config['mode'] ) {
 			$html .= $this->build_thumbnail_gallery_container( $gallery_id, $config );
-			return $html;
+			return $html . $this->render_album_link( $config );
 		}
 
 		// Build Swiper gallery container
 		$html .= $this->build_gallery_container( $gallery_id, $config );
 
-		return $html;
+		return $html . $this->render_album_link( $config );
 	}
 
 	/**
@@ -67,7 +67,47 @@ class JZSA_Renderer {
 	 * @return string HTML, or '' when album-heading is not set.
 	 */
 	private function render_album_heading( $config ) {
-		$format = isset( $config['album-heading'] ) ? (string) $config['album-heading'] : '';
+		$text = $this->resolve_album_text( $config, 'album-heading' );
+		if ( '' === $text ) {
+			return '';
+		}
+
+		return sprintf( '<h3 class="jzsa-album-heading"%s>%s</h3>', $this->style_attribute( $this->album_text_styles( $config, 'album-heading' ) ), esc_html( $text ) );
+	}
+
+	/**
+	 * Render the optional album-link shown below the album, in any mode.
+	 *
+	 * A text link to the album on its source (Google Photos or iCloud), so
+	 * visitors can open it there. Supports {album-title} and {items}.
+	 *
+	 * @param array $config Gallery configuration.
+	 * @return string HTML, or '' when album-link is not set or the album has no URL.
+	 */
+	private function render_album_link( $config ) {
+		$text = $this->resolve_album_text( $config, 'album-link' );
+		$url  = isset( $config['album-url'] ) ? esc_url( $config['album-url'] ) : '';
+		if ( '' === $text || '' === $url ) {
+			return '';
+		}
+
+		return sprintf(
+			'<p class="jzsa-album-link"%s><a href="%s" target="_blank" rel="noopener noreferrer">%s</a></p>',
+			$this->style_attribute( $this->album_text_styles( $config, 'album-link' ) ),
+			$url,
+			esc_html( $text )
+		);
+	}
+
+	/**
+	 * Resolve {album-title} and {items} in an album-level text parameter.
+	 *
+	 * @param array  $config Gallery configuration.
+	 * @param string $key    Parameter name.
+	 * @return string Resolved, trimmed text ('' when not set).
+	 */
+	private function resolve_album_text( $config, $key ) {
+		$format = isset( $config[ $key ] ) ? (string) $config[ $key ] : '';
 		if ( '' === $format ) {
 			return '';
 		}
@@ -78,7 +118,7 @@ class JZSA_Renderer {
 			$items = isset( $config['photos'] ) && is_array( $config['photos'] ) ? count( $config['photos'] ) : 0;
 		}
 
-		$text = trim(
+		return trim(
 			strtr(
 				$format,
 				array(
@@ -87,10 +127,30 @@ class JZSA_Renderer {
 				)
 			)
 		);
-		if ( '' === $text ) {
-			return '';
-		}
+	}
 
+	/**
+	 * Alignment of an album-level text: 'left', 'center' or 'right'.
+	 *
+	 * @param array  $config Gallery configuration.
+	 * @param string $key    Parameter name, for example 'album-heading'.
+	 * @return string
+	 */
+	private function album_text_align( $config, $key ) {
+		$align_key = $key . '-text-align';
+		return isset( $config[ $align_key ] ) && in_array( $config[ $align_key ], array( 'center', 'right' ), true )
+			? $config[ $align_key ]
+			: 'left';
+	}
+
+	/**
+	 * Width, alignment and indent styles that line an album-level text up with the album.
+	 *
+	 * @param array  $config Gallery configuration.
+	 * @param string $key    Parameter name, for example 'album-heading'.
+	 * @return string[] CSS declarations.
+	 */
+	private function album_text_styles( $config, $key ) {
 		// Same width rule as the album itself: galleries only take an explicit width.
 		$is_gallery = isset( $config['mode'] ) && 'gallery' === $config['mode'];
 		$has_width  = isset( $config['width'] ) && 'auto' !== $config['width'] && ( ! $is_gallery || ! empty( $config['width-explicit'] ) );
@@ -100,22 +160,28 @@ class JZSA_Renderer {
 			$styles[] = 'max-width: 100%';
 		}
 
-		$align = isset( $config['album-heading-text-align'] ) && in_array( $config['album-heading-text-align'], array( 'center', 'right' ), true )
-			? $config['album-heading-text-align']
-			: 'left';
+		$align = $this->album_text_align( $config, $key );
 		if ( 'left' !== $align ) {
 			$styles[] = 'text-align: ' . $align;
 		}
 
 		// The indent moves the text away from the edge it is aligned to.
-		$indent = isset( $config['album-heading-indent'] ) ? intval( $config['album-heading-indent'] ) : 0;
+		$indent = isset( $config[ $key . '-indent' ] ) ? intval( $config[ $key . '-indent' ] ) : 0;
 		if ( $indent > 0 && 'center' !== $align ) {
 			$styles[] = sprintf( 'padding-%s: %dpx', $align, $indent );
 		}
 
-		$style = ! empty( $styles ) ? sprintf( ' style="%s;"', esc_attr( implode( '; ', $styles ) ) ) : '';
+		return $styles;
+	}
 
-		return sprintf( '<h3 class="jzsa-album-heading"%s>%s</h3>', $style, esc_html( $text ) );
+	/**
+	 * Build a style attribute from CSS declarations.
+	 *
+	 * @param string[] $styles CSS declarations.
+	 * @return string ' style="..."' or ''.
+	 */
+	private function style_attribute( $styles ) {
+		return ! empty( $styles ) ? sprintf( ' style="%s;"', esc_attr( implode( '; ', $styles ) ) ) : '';
 	}
 
 	/**

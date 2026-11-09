@@ -2671,9 +2671,9 @@ class JZSA_Admin_Pages {
 
 					<div class="jzsa-sample-card">
 						<h3 data-jzsa-anchor="gallery-with-album-heading-and-captions-below-photos"><?php echo 'Sample 71: ' . esc_html__( 'Gallery with Album Heading and Captions Below Photos', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Uses gallery-caption to show each photo\'s description under the tile instead of on top of the image, and gallery-caption-gap to set the space between them. album-heading adds the album title above the gallery. The caption uses your theme\'s font and color and wraps to as many lines as needed. Photos without a description show no caption.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<p><?php esc_html_e( 'Uses gallery-caption to show each photo\'s description under the tile instead of on top of the image, and gallery-caption-gap to set the space between them. album-heading adds the album title above the gallery, and album-link adds a link to the album below it. The caption uses your theme\'s font and color and wraps to as many lines as needed. Photos without a description show no caption.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<?php
-							$sample_shortcode = '[jzsa-album link="' . $info_sample_link . '" mode="gallery" viewer="lightbox" limit="6" width="800" gallery-gap="16" gallery-caption="{description}" gallery-caption-gap="8" corner-radius="16" album-heading="{album-title}"]';
+							$sample_shortcode = '[jzsa-album link="' . $info_sample_link . '" mode="gallery" viewer="lightbox" limit="6" width="800" gallery-gap="16" gallery-caption="{description}" gallery-caption-gap="8" corner-radius="16" album-heading="{album-title}" album-link="Open the whole album"]';
 						?>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $sample_shortcode ); ?></code>

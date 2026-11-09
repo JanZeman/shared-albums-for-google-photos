@@ -63,4 +63,40 @@ class RendererAlbumHeadingTest extends TestCase {
 	public function test_heading_is_skipped_when_it_resolves_to_nothing(): void {
 		$this->assertStringNotContainsString( 'jzsa-album-heading', $this->render( array( 'mode' => 'gallery', 'album-heading' => '{album-title}' ) ) );
 	}
+
+	public function test_no_album_link_by_default(): void {
+		$this->assertStringNotContainsString( 'jzsa-album-link', $this->render( array( 'mode' => 'gallery', 'album-url' => 'https://photos.icloud.com/shared/album/abc' ) ) );
+	}
+
+	public function test_album_link_opens_the_album_below_the_gallery(): void {
+		$html = $this->render(
+			array(
+				'mode'                  => 'gallery',
+				'album-title'           => 'Blådal',
+				'album-url'             => 'https://photos.icloud.com/shared/album/abc',
+				'album-link'            => 'Open {album-title} in iCloud',
+				'album-link-text-align' => 'center',
+				'width'                 => 966,
+				'width-explicit'        => true,
+			)
+		);
+
+		$this->assertStringContainsString( '<p class="jzsa-album-link" style="width: 966px; max-width: 100%; text-align: center;"><a href="https://photos.icloud.com/shared/album/abc" target="_blank" rel="noopener noreferrer">Open Blådal in iCloud</a></p>', $html );
+		$this->assertGreaterThan( strpos( $html, 'jzsa-gallery-album' ), strpos( $html, 'jzsa-album-link' ) );
+	}
+
+	public function test_album_link_follows_slider_albums_too(): void {
+		$html = $this->render( array( 'mode' => 'slider', 'album-url' => 'https://photos.google.com/share/x', 'album-link' => 'Open album' ) );
+		$this->assertStringEndsWith( '<p class="jzsa-album-link"><a href="https://photos.google.com/share/x" target="_blank" rel="noopener noreferrer">Open album</a></p>', $html );
+	}
+
+	public function test_album_link_alignment_and_indent(): void {
+		$base = array( 'mode' => 'gallery', 'album-url' => 'https://photos.icloud.com/shared/album/abc', 'album-link' => 'Open' );
+
+		$right = $this->render( $base + array( 'album-link-text-align' => 'right', 'album-link-indent' => 12 ) );
+		$this->assertStringContainsString( '<p class="jzsa-album-link" style="text-align: right; padding-right: 12px;">', $right );
+
+		$center = $this->render( $base + array( 'album-link-text-align' => 'center', 'album-link-indent' => 12 ) );
+		$this->assertStringContainsString( '<p class="jzsa-album-link" style="text-align: center;">', $center );
+	}
 }

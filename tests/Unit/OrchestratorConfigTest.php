@@ -846,6 +846,23 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertSame( 0, $invalid['album-heading-indent'] );
     }
 
+    public function test_album_link_is_parsed_as_text_and_off_by_default(): void {
+        $defaults = $this->config( array() );
+        $this->assertSame( '', $defaults['album-link'] );
+        $this->assertSame( 'left', $defaults['album-link-text-align'] );
+
+        $config = $this->config( array( 'album-link' => 'Open <b>album</b>', 'album-link-text-align' => 'center' ) );
+        $this->assertSame( 'Open album', $config['album-link'] );
+        $this->assertSame( 'center', $config['album-link-text-align'] );
+        $this->assertSame( array(), $config['unknown-attributes'] );
+
+        $this->assertSame( 0, $defaults['album-link-indent'] );
+        $this->assertSame( 20, $this->config( array( 'album-link-indent' => '20' ) )['album-link-indent'] );
+        $this->assertSame( 0, $this->config( array( 'album-link-indent' => '500' ) )['album-link-indent'] );
+
+        $this->assertSame( 'left', $this->config( array( 'album-link-text-align' => 'middle' ) )['album-link-text-align'] );
+    }
+
     public function test_gallery_caption_gap_defaults_to_6_and_stays_within_0_to_100(): void {
         $this->assertSame( 6, $this->config( array() )['gallery-caption-gap'] );
         $this->assertSame( 0, $this->config( array( 'gallery-caption-gap' => '0' ) )['gallery-caption-gap'] );

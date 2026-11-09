@@ -1,6 +1,6 @@
 # Shared Albums for Google Photos & Apple iCloud
 
-[![WordPress Plugin Version](https://img.shields.io/badge/version-3.0.2-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
+[![WordPress Plugin Version](https://img.shields.io/badge/version-3.0.3-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
 [![WordPress Compatibility](https://img.shields.io/badge/wordpress-5.5%2B-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
 [![PHP Version](https://img.shields.io/badge/php-7.0%2B-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
 [![License](https://img.shields.io/badge/license-GPL--2.0%2B-blue.svg)](LICENSE)
@@ -61,7 +61,7 @@ git clone https://github.com/JanZeman/shared-albums-wp-plugin.git
 
 - Google Photos and Apple iCloud albums with the same shortcode, layouts, and options
 - Photo order: album order, shuffle, or by date taken (`order="oldest"` / `order="newest"`)
-- Photo descriptions, dates and camera info as overlays, or as captions below gallery tiles (`gallery-caption="{description}"`), plus an optional album heading (`album-heading="{album-title}"`)
+- Photo descriptions, dates and camera info as overlays, or as captions below gallery tiles (`gallery-caption="{description}"`), plus an optional album heading (`album-heading="{album-title}"`) and a link to the album below it (`album-link="Open album in iCloud"`)
 - Multiple display modes - thumbnail gallery mode (default, with optional `gallery-rows` paging/scrolling), single-photo slider, or carousel (multi-photo preview that opens single-photo fullscreen)
 - Touch gestures, zoom support, keyboard navigation
 - Fullscreen image-fit modes with `fit` as the default (no crop, scales to fill one axis)

@@ -2134,8 +2134,10 @@ html.jzsa-lightbox-open body {
     user-select: none;
 }
 
-/* album-heading: a heading above the album, in the theme's heading style. */
-.jzsa-album-heading {
+/* album-heading: a heading above the album, in the theme's heading style.
+   album-link: a text link to the album below it, in the theme's link style. */
+.jzsa-album-heading,
+.jzsa-album-link {
     box-sizing: border-box;
     margin-left: auto;
     margin-right: auto;
