@@ -520,7 +520,7 @@ function jzsaSetupLazyPreviews() {
  * documented shortcode parameter is added or removed.
  */
 var JZSA_KNOWN_PARAMS = [
-	'album-cache-refresh', 'album-heading', 'album-heading-indent', 'album-heading-text-align', 'album-link', 'album-link-indent', 'album-link-text-align', 'album-title-halo-effect', 'background-color',
+	'album-cache-refresh', 'album-heading', 'album-heading-indent', 'album-heading-position', 'album-heading-text-align', 'album-link', 'album-link-indent', 'album-link-position', 'album-link-text-align', 'album-title-halo-effect', 'background-color',
 	'controls-color', 'corner-radius', 'download-size-warning',
 	'viewer-background-color', 'viewer-controls-color',
 	'viewer-corner-radius', 'viewer-image-fit', 'viewer-info-bottom',
@@ -711,6 +711,8 @@ var JZSA_VALUE_RULES = ( function () {
 		'info-text-align', 'info-top-text-align', 'info-top-secondary-text-align',
 		'info-bottom-text-align', 'album-heading-text-align', 'album-link-text-align'
 	], { type: 'enum', values: [ 'left', 'center', 'right' ] } );
+	add( [ 'album-heading-position', 'album-link-position' ],
+		{ type: 'enum', values: [ 'top', 'bottom' ] } );
 
 	add( [
 		'background-color', 'controls-color', 'video-controls-color', 'info-font-color',

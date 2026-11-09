@@ -2139,9 +2139,44 @@ html.jzsa-lightbox-open body {
 .jzsa-album-heading,
 .jzsa-album-link {
     box-sizing: border-box;
+    /* Full width unless the album has one (inline style); also inside flex
+       containers, where the auto margins would otherwise shrink it. */
+    width: 100%;
     margin-left: auto;
     margin-right: auto;
     text-align: left;
+}
+
+/* album-heading and album-link on the same side of the album share one row
+   (.jzsa-album-bar) with a left, center and right place, picked by each
+   text's -text-align. Texts in the same place stack. Narrow screens stack
+   them all, each keeping its alignment. */
+.jzsa-album-bar {
+    box-sizing: border-box;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: baseline;
+    column-gap: 1em;
+}
+.jzsa-album-bar > .jzsa-album-bar-left {
+    grid-column: 1;
+    text-align: left;
+}
+.jzsa-album-bar > .jzsa-album-bar-center {
+    grid-column: 2;
+    text-align: center;
+}
+.jzsa-album-bar > .jzsa-album-bar-right {
+    grid-column: 3;
+    text-align: right;
+}
+@media (max-width: 480px) {
+    .jzsa-album-bar {
+        display: block;
+    }
 }
 
 /* album-link opens a new tab, so it ends with the usual "open in new window" icon,

@@ -857,6 +857,12 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertSame( array(), $config['unknown-attributes'] );
 
         $this->assertSame( 0, $defaults['album-link-indent'] );
+        $this->assertSame( 'bottom', $defaults['album-link-position'] );
+        $this->assertSame( 'top', $defaults['album-heading-position'] );
+        $positions = $this->config( array( 'album-link-position' => 'TOP', 'album-heading-position' => 'bottom' ) );
+        $this->assertSame( 'top', $positions['album-link-position'] );
+        $this->assertSame( 'bottom', $positions['album-heading-position'] );
+        $this->assertSame( 'bottom', $this->config( array( 'album-link-position' => 'left' ) )['album-link-position'] );
         $this->assertSame( 20, $this->config( array( 'album-link-indent' => '20' ) )['album-link-indent'] );
         $this->assertSame( 0, $this->config( array( 'album-link-indent' => '500' ) )['album-link-indent'] );
 

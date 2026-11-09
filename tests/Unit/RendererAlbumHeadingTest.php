@@ -99,4 +99,42 @@ class RendererAlbumHeadingTest extends TestCase {
 		$center = $this->render( $base + array( 'album-link-text-align' => 'center', 'album-link-indent' => 12 ) );
 		$this->assertStringContainsString( '<p class="jzsa-album-link" style="text-align: center;">', $center );
 	}
+
+	public function test_heading_and_link_on_the_same_side_share_a_row(): void {
+		$html = $this->render(
+			array(
+				'mode'                  => 'gallery',
+				'album-title'           => 'T',
+				'album-url'             => 'https://photos.icloud.com/shared/album/abc',
+				'album-heading'         => '{album-title}',
+				'album-link'            => 'Open',
+				'album-link-position'   => 'top',
+				'album-link-text-align' => 'right',
+				'album-link-indent'     => 8,
+				'width'                 => 600,
+				'width-explicit'        => true,
+			)
+		);
+
+		$this->assertStringStartsWith(
+			'<div class="jzsa-album-bar jzsa-album-bar-top" style="width: 600px; max-width: 100%;">'
+			. '<h3 class="jzsa-album-heading jzsa-album-bar-left">T</h3>'
+			. '<p class="jzsa-album-link jzsa-album-bar-right" style="text-align: right; padding-right: 8px;"><a href="https://photos.icloud.com/shared/album/abc" target="_blank" rel="noopener noreferrer">Open</a></p>'
+			. '</div>',
+			$html
+		);
+		$this->assertStringNotContainsString( 'jzsa-album-bar-bottom', $html );
+	}
+
+	public function test_heading_can_move_below_the_album(): void {
+		$html = $this->render( array( 'mode' => 'slider', 'album-title' => 'T', 'album-heading' => '{album-title}', 'album-heading-position' => 'bottom' ) );
+		$this->assertStringEndsWith( '<h3 class="jzsa-album-heading">T</h3>', $html );
+	}
+
+	public function test_a_lone_text_on_a_shared_side_keeps_its_plain_markup(): void {
+		// The link has no album URL, so the heading is alone at the top.
+		$html = $this->render( array( 'mode' => 'gallery', 'album-title' => 'T', 'album-heading' => '{album-title}', 'album-link' => 'Open', 'album-link-position' => 'top' ) );
+		$this->assertStringStartsWith( '<h3 class="jzsa-album-heading">T</h3>', $html );
+		$this->assertStringNotContainsString( 'jzsa-album-bar', $html );
+	}
 }

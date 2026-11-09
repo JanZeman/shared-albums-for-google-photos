@@ -43,18 +43,114 @@ class JZSA_Renderer {
 			$html .= $this->render_unknown_attribute_notice( $config['unknown-attributes'] );
 		}
 
-		$html .= $this->render_album_heading( $config );
+		$html .= $this->render_album_texts( $config, 'top' );
 
 		// Gallery mode: plain thumbnail gallery, no Swiper structure
 		if ( isset( $config['mode'] ) && 'gallery' === $config['mode'] ) {
 			$html .= $this->build_thumbnail_gallery_container( $gallery_id, $config );
-			return $html . $this->render_album_link( $config );
+			return $html . $this->render_album_texts( $config, 'bottom' );
 		}
 
 		// Build Swiper gallery container
 		$html .= $this->build_gallery_container( $gallery_id, $config );
 
-		return $html . $this->render_album_link( $config );
+		return $html . $this->render_album_texts( $config, 'bottom' );
+	}
+
+	/**
+	 * Render the album-heading and album-link placed above or below the album.
+	 *
+	 * album-heading defaults to the top and album-link to the bottom. A text
+	 * alone keeps its plain markup. When both share a position they go into
+	 * one row (.jzsa-album-bar) with left, center and right places, chosen by
+	 * each text's -text-align.
+	 *
+	 * @param array  $config   Gallery configuration.
+	 * @param string $position 'top' or 'bottom'.
+	 * @return string HTML.
+	 */
+	private function render_album_texts( $config, $position ) {
+		$keys = array();
+		foreach ( array( 'album-heading' => 'top', 'album-link' => 'bottom' ) as $key => $default ) {
+			$key_position = isset( $config[ $key . '-position' ] ) && in_array( $config[ $key . '-position' ], array( 'top', 'bottom' ), true )
+				? $config[ $key . '-position' ]
+				: $default;
+			if ( $key_position === $position ) {
+				$keys[] = $key;
+			}
+		}
+
+		// Only texts that will actually show count, so a lone text keeps its plain markup.
+		$keys = array_values(
+			array_filter(
+				$keys,
+				function ( $key ) use ( $config ) {
+					return '' !== $this->render_album_text( $config, $key, false );
+				}
+			)
+		);
+		if ( empty( $keys ) ) {
+			return '';
+		}
+		if ( 1 === count( $keys ) ) {
+			return $this->render_album_text( $config, $keys[0], false );
+		}
+
+		$parts = array();
+		foreach ( $keys as $key ) {
+			$parts[] = $this->render_album_text( $config, $key, true );
+		}
+
+		return sprintf(
+			'<div class="jzsa-album-bar jzsa-album-bar-%s"%s>%s</div>',
+			esc_attr( $position ),
+			$this->style_attribute( $this->album_width_styles( $config ) ),
+			implode( '', $parts )
+		);
+	}
+
+	/**
+	 * Render album-heading or album-link.
+	 *
+	 * @param array  $config Gallery configuration.
+	 * @param string $key    'album-heading' or 'album-link'.
+	 * @param bool   $in_bar Whether it shares a row.
+	 * @return string HTML, or '' when it is not shown.
+	 */
+	private function render_album_text( $config, $key, $in_bar ) {
+		return 'album-heading' === $key ? $this->render_album_heading( $config, $in_bar ) : $this->render_album_link( $config, $in_bar );
+	}
+
+	/**
+	 * CSS class of an album-level text; in a shared row it also names its place.
+	 *
+	 * @param array  $config Gallery configuration.
+	 * @param string $key    Parameter name.
+	 * @param bool   $in_bar Whether it shares a row.
+	 * @return string
+	 */
+	private function album_text_class( $config, $key, $in_bar ) {
+		$class = 'jzsa-' . $key;
+		if ( $in_bar ) {
+			$class .= ' jzsa-album-bar-' . $this->album_text_align( $config, $key );
+		}
+		return $class;
+	}
+
+	/**
+	 * Width styles that make an album-level text or row as wide as the album.
+	 *
+	 * @param array $config Gallery configuration.
+	 * @return string[] CSS declarations.
+	 */
+	private function album_width_styles( $config ) {
+		// Same width rule as the album itself: galleries only take an explicit width.
+		$is_gallery = isset( $config['mode'] ) && 'gallery' === $config['mode'];
+		$has_width  = isset( $config['width'] ) && 'auto' !== $config['width'] && ( ! $is_gallery || ! empty( $config['width-explicit'] ) );
+		if ( ! $has_width ) {
+			return array();
+		}
+		return array( sprintf( 'width: %dpx', intval( $config['width'] ) ), 'max-width: 100%' );
 	}
 
 	/**
@@ -64,15 +160,16 @@ class JZSA_Renderer {
 	 * it lines up with the album's left edge.
 	 *
 	 * @param array $config Gallery configuration.
+	 * @param bool  $in_bar Whether it shares a row with album-link.
 	 * @return string HTML, or '' when album-heading is not set.
 	 */
-	private function render_album_heading( $config ) {
+	private function render_album_heading( $config, $in_bar = false ) {
 		$text = $this->resolve_album_text( $config, 'album-heading' );
 		if ( '' === $text ) {
 			return '';
 		}
 
-		return sprintf( '<h3 class="jzsa-album-heading"%s>%s</h3>', $this->style_attribute( $this->album_text_styles( $config, 'album-heading' ) ), esc_html( $text ) );
+		return sprintf( '<h3 class="%s"%s>%s</h3>', $this->album_text_class( $config, 'album-heading', $in_bar ), $this->style_attribute( $this->album_text_styles( $config, 'album-heading', $in_bar ) ), esc_html( $text ) );
 	}
 
 	/**
@@ -82,9 +179,10 @@ class JZSA_Renderer {
 	 * visitors can open it there. Supports {album-title} and {items}.
 	 *
 	 * @param array $config Gallery configuration.
+	 * @param bool  $in_bar Whether it shares a row with album-heading.
 	 * @return string HTML, or '' when album-link is not set or the album has no URL.
 	 */
-	private function render_album_link( $config ) {
+	private function render_album_link( $config, $in_bar = false ) {
 		$text = $this->resolve_album_text( $config, 'album-link' );
 		$url  = isset( $config['album-url'] ) ? esc_url( $config['album-url'] ) : '';
 		if ( '' === $text || '' === $url ) {
@@ -92,8 +190,9 @@ class JZSA_Renderer {
 		}
 
 		return sprintf(
-			'<p class="jzsa-album-link"%s><a href="%s" target="_blank" rel="noopener noreferrer">%s</a></p>',
-			$this->style_attribute( $this->album_text_styles( $config, 'album-link' ) ),
+			'<p class="%s"%s><a href="%s" target="_blank" rel="noopener noreferrer">%s</a></p>',
+			$this->album_text_class( $config, 'album-link', $in_bar ),
+			$this->style_attribute( $this->album_text_styles( $config, 'album-link', $in_bar ) ),
 			$url,
 			esc_html( $text )
 		);
@@ -148,17 +247,11 @@ class JZSA_Renderer {
 	 *
 	 * @param array  $config Gallery configuration.
 	 * @param string $key    Parameter name, for example 'album-heading'.
+	 * @param bool   $in_bar Whether the text shares a row, which then carries the width.
 	 * @return string[] CSS declarations.
 	 */
-	private function album_text_styles( $config, $key ) {
-		// Same width rule as the album itself: galleries only take an explicit width.
-		$is_gallery = isset( $config['mode'] ) && 'gallery' === $config['mode'];
-		$has_width  = isset( $config['width'] ) && 'auto' !== $config['width'] && ( ! $is_gallery || ! empty( $config['width-explicit'] ) );
-		$styles     = array();
-		if ( $has_width ) {
-			$styles[] = sprintf( 'width: %dpx', intval( $config['width'] ) );
-			$styles[] = 'max-width: 100%';
-		}
+	private function album_text_styles( $config, $key, $in_bar = false ) {
+		$styles = $in_bar ? array() : $this->album_width_styles( $config );
 
 		$align = $this->album_text_align( $config, $key );
 		if ( 'left' !== $align ) {

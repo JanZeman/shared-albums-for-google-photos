@@ -139,7 +139,9 @@ Contact: support@janzeman.com
 == Changelog ==
 
 = 3.0.3 =
-* Added album-link to show a text link below the album that opens it on Google Photos or iCloud, for example album-link="Open album in iCloud", with album-link-text-align and album-link-indent.
+* Added album-link to show a text link below the album that opens it on Google Photos or iCloud, for example album-link="Open album in iCloud", with album-link-text-align and album-link-indent. It opens in a new tab and shows the usual "new window" icon.
+* Added album-heading-position and album-link-position ("top" or "bottom") to show the heading and the link above or below the album. On the same side they share one row, placed left, center or right by their text-align.
+* Fixed: in the Settings Playground, album-heading appeared beside the preview instead of above it.
 
 = 3.0.2 =
 * The lightbox close button is now a clear X instead of the "exit" arrows, so visitors on phones recognize it right away.
@@ -340,7 +342,7 @@ Contact: support@janzeman.com
 == Upgrade Notice ==
 
 = 3.0.3 =
-Adds album-link, a text link below the album that opens it on Google Photos or iCloud.
+Adds album-link, a text link to the album on Google Photos or iCloud, and lets you place the album heading and link above or below the album.
 
 = 3.0.2 =
 The lightbox close button is now a clear X.

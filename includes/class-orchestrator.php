@@ -1296,11 +1296,13 @@ class JZSA_Shared_Albums {
 				? $atts['album-heading-text-align']
 				: 'left',
 			'album-heading-indent'            => $this->parse_album_text_indent( $atts, 'album-heading-indent' ),
+			'album-heading-position'          => $this->parse_album_text_position( $atts, 'album-heading-position', 'top' ),
 			'album-link'                      => $this->parse_info_box( $atts, 'album-link', '' ),
 			'album-link-text-align'           => ( isset( $atts['album-link-text-align'] ) && in_array( $atts['album-link-text-align'], array( 'left', 'center', 'right' ), true ) )
 				? $atts['album-link-text-align']
 				: 'left',
 			'album-link-indent'               => $this->parse_album_text_indent( $atts, 'album-link-indent' ),
+			'album-link-position'             => $this->parse_album_text_position( $atts, 'album-link-position', 'bottom' ),
 		);
 	}
 
@@ -2183,6 +2185,19 @@ class JZSA_Shared_Albums {
 		$value = intval( $atts['gallery-gap'] );
 
 		return ( $value >= 0 && $value <= 100 ) ? $value : 4;
+	}
+
+	/**
+	 * Parse album-heading-position or album-link-position: 'top' (above the album) or 'bottom' (below it).
+	 *
+	 * @param array  $atts    Shortcode attributes.
+	 * @param string $key     Parameter name.
+	 * @param string $default Default position.
+	 * @return string
+	 */
+	private function parse_album_text_position( $atts, $key, $default ) {
+		$value = isset( $atts[ $key ] ) ? strtolower( trim( (string) $atts[ $key ] ) ) : '';
+		return in_array( $value, array( 'top', 'bottom' ), true ) ? $value : $default;
 	}
 
 	/**
