@@ -230,14 +230,14 @@ class JZSA_Renderer {
 	}
 
 	/**
-	 * Name of the service the album comes from, for {source}: "iCloud" or "Google Photos".
+	 * Name of the service the album comes from, for {source}: "iCloud Photos" or "Google Photos".
 	 *
 	 * @param array $config Gallery configuration.
 	 * @return string
 	 */
 	private function album_source_name( $config ) {
 		$url = isset( $config['album-url'] ) ? (string) $config['album-url'] : '';
-		return ( '' !== $url && JZSA_ICloud_Provider::is_icloud_url( $url ) ) ? 'iCloud' : 'Google Photos';
+		return ( '' !== $url && JZSA_ICloud_Provider::is_icloud_url( $url ) ) ? 'iCloud Photos' : 'Google Photos';
 	}
 
 	/**
