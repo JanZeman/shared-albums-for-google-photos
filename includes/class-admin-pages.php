@@ -481,6 +481,20 @@ class JZSA_Admin_Pages {
 	}
 
 	/**
+	 * Cache-busting version for an admin asset: the plugin version plus the file's
+	 * modification time, so a rebuilt file is never served from a stale browser cache.
+	 * The front end does the same.
+	 *
+	 * @param string $relative_path Path inside the plugin folder.
+	 * @return string
+	 */
+	private function admin_asset_version( $relative_path ) {
+		$full_path = dirname( __DIR__ ) . '/' . $relative_path;
+		$mtime     = file_exists( $full_path ) ? filemtime( $full_path ) : false;
+		return false !== $mtime ? JZSA_VERSION . '.' . intval( $mtime ) : JZSA_VERSION;
+	}
+
+	/**
 	 * Enqueue admin styles and scripts
 	 *
 	 * @param string $hook Current admin page hook
@@ -494,14 +508,14 @@ class JZSA_Admin_Pages {
 			'jzsa-admin-styles',
 			plugins_url( 'assets/css/admin-settings.css', dirname( __FILE__ ) ),
 			array(),
-			JZSA_VERSION
+			$this->admin_asset_version( 'assets/css/admin-settings.css' )
 		);
 
 		wp_enqueue_script(
 			'jzsa-admin-settings',
 			plugins_url( 'assets/js/admin-settings.js', dirname( __FILE__ ) ),
 			array(),
-			JZSA_VERSION,
+			$this->admin_asset_version( 'assets/js/admin-settings.js' ),
 			true
 		);
 
