@@ -176,7 +176,7 @@ class JZSA_Renderer {
 	 * Render the optional album-link shown below the album, in any mode.
 	 *
 	 * A text link to the album on its source (Google Photos or iCloud), so
-	 * visitors can open it there. Supports {album-title} and {items}.
+	 * visitors can open it there. Supports {album-title}, {items} and {source}.
 	 *
 	 * @param array $config Gallery configuration.
 	 * @param bool  $in_bar Whether it shares a row with album-heading.
@@ -199,7 +199,7 @@ class JZSA_Renderer {
 	}
 
 	/**
-	 * Resolve {album-title} and {items} in an album-level text parameter.
+	 * Resolve {album-title}, {items} and {source} in an album-level text parameter.
 	 *
 	 * @param array  $config Gallery configuration.
 	 * @param string $key    Parameter name.
@@ -223,9 +223,21 @@ class JZSA_Renderer {
 				array(
 					'{album-title}' => isset( $config['album-title'] ) ? (string) $config['album-title'] : '',
 					'{items}'       => (string) $items,
+					'{source}'      => $this->album_source_name( $config ),
 				)
 			)
 		);
+	}
+
+	/**
+	 * Name of the service the album comes from, for {source}: "iCloud" or "Google Photos".
+	 *
+	 * @param array $config Gallery configuration.
+	 * @return string
+	 */
+	private function album_source_name( $config ) {
+		$url = isset( $config['album-url'] ) ? (string) $config['album-url'] : '';
+		return ( '' !== $url && JZSA_ICloud_Provider::is_icloud_url( $url ) ) ? 'iCloud' : 'Google Photos';
 	}
 
 	/**

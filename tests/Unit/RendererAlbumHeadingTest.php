@@ -137,4 +137,12 @@ class RendererAlbumHeadingTest extends TestCase {
 		$this->assertStringStartsWith( '<h3 class="jzsa-album-heading">T</h3>', $html );
 		$this->assertStringNotContainsString( 'jzsa-album-bar', $html );
 	}
+
+	public function test_source_names_the_service_the_album_comes_from(): void {
+		$icloud = $this->render( array( 'mode' => 'gallery', 'album-url' => 'https://photos.icloud.com/shared/album/abc', 'album-link' => 'Open album in {source}' ) );
+		$this->assertStringContainsString( '>Open album in iCloud</a>', $icloud );
+
+		$google = $this->render( array( 'mode' => 'gallery', 'album-url' => 'https://photos.google.com/share/x', 'album-link' => 'Open album in {source}' ) );
+		$this->assertStringContainsString( '>Open album in Google Photos</a>', $google );
+	}
 }

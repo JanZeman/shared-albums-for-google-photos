@@ -139,7 +139,7 @@ Contact: support@janzeman.com
 == Changelog ==
 
 = 3.0.3 =
-* Added album-link to show a text link below the album that opens it on Google Photos or iCloud, for example album-link="Open album in iCloud", with album-link-text-align and album-link-indent. It opens in a new tab and shows the usual "new window" icon.
+* Added album-link to show a text link below the album that opens it on Google Photos or iCloud, for example album-link="Open album in {source}", where {source} becomes "iCloud" or "Google Photos", with album-link-text-align and album-link-indent. It opens in a new tab and shows the usual "new window" icon.
 * Added album-heading-position and album-link-position ("top" or "bottom") to show the heading and the link above or below the album. On the same side they share one row, placed left, center or right by their text-align.
 * Fixed: in the Settings Playground, album-heading appeared beside the preview instead of above it.
 
