@@ -2144,6 +2144,20 @@ html.jzsa-lightbox-open body {
     text-align: left;
 }
 
+/* album-link opens a new tab, so it ends with the usual "open in new window" icon,
+   drawn in the link's own color. */
+.jzsa-album-link a::after {
+    content: "";
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    margin-left: 0.3em;
+    vertical-align: -0.05em;
+    background-color: currentColor;
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z'/></svg>") no-repeat center / contain;
+    mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z'/></svg>") no-repeat center / contain;
+}
+
 /* gallery-caption: the tile with its caption below, in normal page flow. */
 .jzsa-gallery-album .jzsa-gallery-cell {
     display: flex;
