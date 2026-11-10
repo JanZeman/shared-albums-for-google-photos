@@ -4,7 +4,7 @@ Tags: google-photos, icloud, gallery, album, embed
 Requires at least: 5.5
 Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 3.0.3
+Stable tag: 3.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -137,6 +137,9 @@ Optional. Used only when a WordPress administrator opens the Community page or c
 Contact: support@janzeman.com
 
 == Changelog ==
+
+= 3.0.4 =
+* Fixed: on some sites (for example with Elementor), an empty area the height of the screen appeared below a gallery, and album-link below the gallery could end up in the wrong place. The hidden slideshow behind the gallery's viewer now always stays out of the page layout.
 
 = 3.0.3 =
 * Added album-link to show a text link below the album that opens it on Google Photos or iCloud, for example album-link="Open album in {source}", where {source} becomes "iCloud Photos" or "Google Photos", with album-link-text-align and album-link-indent. It opens in a new tab and shows the usual "new window" icon.
@@ -340,6 +343,9 @@ Contact: support@janzeman.com
 * Responsive design with touch gestures
 
 == Upgrade Notice ==
+
+= 3.0.4 =
+Fixes an empty area below galleries on some sites, for example with Elementor.
 
 = 3.0.3 =
 Adds album-link, a text link to the album on Google Photos or iCloud, and lets you place the album heading and link above or below the album.

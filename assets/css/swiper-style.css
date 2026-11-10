@@ -2827,7 +2827,10 @@ html.jzsa-lightbox-open body {
    measure dimensions during init. The existing .jzsa-album:fullscreen and
    .jzsa-album.jzsa-pseudo-fullscreen CSS handles the rest - exactly the same
    mechanism used by slideshow/carousel/gallery modes. */
-.jzsa-gallery-slideshow {
+/* .jzsa-album and :not() raise the specificity above a theme's or page builder's
+   own Swiper CSS (.swiper { position: relative }), which would otherwise put this
+   viewport-sized box into the page flow below the gallery. */
+.jzsa-album.jzsa-gallery-slideshow:not(.jzsa-pseudo-fullscreen) {
     position: fixed;
     left: -200vw;
     width: 100vw;
