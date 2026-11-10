@@ -145,4 +145,36 @@ class RendererAlbumHeadingTest extends TestCase {
 		$google = $this->render( array( 'mode' => 'gallery', 'album-url' => 'https://photos.google.com/share/x', 'album-link' => 'Open album in {source}' ) );
 		$this->assertStringContainsString( '>Open album in Google Photos</a>', $google );
 	}
+
+	public function test_gap_sets_the_margin_facing_the_album(): void {
+		$base = array( 'mode' => 'gallery', 'album-title' => 'T', 'album-url' => 'https://photos.icloud.com/shared/album/abc', 'album-heading' => '{album-title}', 'album-link' => 'Open' );
+
+		$html = $this->render( $base + array( 'album-heading-gap' => 12, 'album-link-gap' => 24 ) );
+		$this->assertStringContainsString( '<h3 class="jzsa-album-heading" style="margin-bottom: 12px;">T</h3>', $html );
+		$this->assertStringContainsString( '<p class="jzsa-album-link" style="margin-top: 24px;">', $html );
+
+		// A heading below the album keeps its gap on the album side, above it.
+		$below = $this->render( array_merge( $base, array( 'album-heading-position' => 'bottom', 'album-link' => '', 'album-heading-gap' => 5 ) ) );
+		$this->assertStringContainsString( '<h3 class="jzsa-album-heading" style="margin-top: 5px;">T</h3>', $below );
+
+		// Without a gap the theme's margin applies, so no margin is written.
+		$this->assertStringNotContainsString( 'margin', $this->render( $base ) );
+	}
+
+	public function test_a_shared_row_takes_the_larger_gap(): void {
+		$html = $this->render(
+			array(
+				'mode'                => 'gallery',
+				'album-title'         => 'T',
+				'album-url'           => 'https://photos.icloud.com/shared/album/abc',
+				'album-heading'       => '{album-title}',
+				'album-heading-gap'   => 10,
+				'album-link'          => 'Open',
+				'album-link-position' => 'top',
+				'album-link-gap'      => 20,
+			)
+		);
+		$this->assertStringContainsString( '<div class="jzsa-album-bar jzsa-album-bar-top" style="margin-bottom: 20px;">', $html );
+		$this->assertStringContainsString( '<h3 class="jzsa-album-heading jzsa-album-bar-left" style="margin-bottom: 0px;">T</h3>', $html );
+	}
 }

@@ -520,7 +520,7 @@ function jzsaSetupLazyPreviews() {
  * documented shortcode parameter is added or removed.
  */
 var JZSA_KNOWN_PARAMS = [
-	'album-cache-refresh', 'album-heading', 'album-heading-indent', 'album-heading-position', 'album-heading-text-align', 'album-link', 'album-link-indent', 'album-link-position', 'album-link-text-align', 'album-title-halo-effect', 'background-color',
+	'album-cache-refresh', 'album-heading', 'album-heading-gap', 'album-heading-indent', 'album-heading-position', 'album-heading-text-align', 'album-link', 'album-link-gap', 'album-link-indent', 'album-link-position', 'album-link-text-align', 'album-title-halo-effect', 'background-color',
 	'controls-color', 'corner-radius', 'download-size-warning',
 	'viewer-background-color', 'viewer-controls-color',
 	'viewer-corner-radius', 'viewer-image-fit', 'viewer-info-bottom',
@@ -750,7 +750,7 @@ var JZSA_VALUE_RULES = ( function () {
 		{ type: 'int', min: 1, max: 12 } );
 	add( [ 'gallery-row-height' ], { type: 'int', min: 50, max: 800 } );
 	add( [
-		'gallery-gap', 'gallery-caption-gap', 'album-heading-indent', 'album-link-indent', 'mosaic-gap', 'fullscreen-mosaic-gap',
+		'gallery-gap', 'gallery-caption-gap', 'album-heading-indent', 'album-link-indent', 'album-heading-gap', 'album-link-gap', 'mosaic-gap', 'fullscreen-mosaic-gap',
 		'lightbox-mosaic-gap', 'viewer-mosaic-gap'
 	],
 		{ type: 'int', min: 0, max: 100 } );

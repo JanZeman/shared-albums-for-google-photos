@@ -71,11 +71,8 @@ class JZSA_Renderer {
 	 */
 	private function render_album_texts( $config, $position ) {
 		$keys = array();
-		foreach ( array( 'album-heading' => 'top', 'album-link' => 'bottom' ) as $key => $default ) {
-			$key_position = isset( $config[ $key . '-position' ] ) && in_array( $config[ $key . '-position' ], array( 'top', 'bottom' ), true )
-				? $config[ $key . '-position' ]
-				: $default;
-			if ( $key_position === $position ) {
+		foreach ( array( 'album-heading', 'album-link' ) as $key ) {
+			if ( $this->album_text_position( $config, $key ) === $position ) {
 				$keys[] = $key;
 			}
 		}
@@ -101,10 +98,16 @@ class JZSA_Renderer {
 			$parts[] = $this->render_album_text( $config, $key, true );
 		}
 
+		$bar_styles = $this->album_width_styles( $config );
+		$bar_gap    = $this->album_bar_gap( $config, $position );
+		if ( null !== $bar_gap ) {
+			$bar_styles[] = sprintf( '%s: %dpx', $this->album_gap_property( $position ), $bar_gap );
+		}
+
 		return sprintf(
 			'<div class="jzsa-album-bar jzsa-album-bar-%s"%s>%s</div>',
 			esc_attr( $position ),
-			$this->style_attribute( $this->album_width_styles( $config ) ),
+			$this->style_attribute( $bar_styles ),
 			implode( '', $parts )
 		);
 	}
@@ -255,7 +258,7 @@ class JZSA_Renderer {
 	}
 
 	/**
-	 * Width, alignment and indent styles that line an album-level text up with the album.
+	 * Width, alignment, indent and gap styles that line an album-level text up with the album.
 	 *
 	 * @param array  $config Gallery configuration.
 	 * @param string $key    Parameter name, for example 'album-heading'.
@@ -276,7 +279,70 @@ class JZSA_Renderer {
 			$styles[] = sprintf( 'padding-%s: %dpx', $align, $indent );
 		}
 
+		// The gap is the space between the text and the album. In a shared row the
+		// row carries it, so the texts drop their own margin on that side.
+		$position = $this->album_text_position( $config, $key );
+		$gap      = $in_bar ? $this->album_bar_gap( $config, $position ) : $this->album_text_gap( $config, $key );
+		if ( null !== $gap ) {
+			$styles[] = sprintf( '%s: %dpx', $this->album_gap_property( $position ), $in_bar ? 0 : $gap );
+		}
+
 		return $styles;
+	}
+
+	/**
+	 * Side of the album an album-level text is on: 'top' or 'bottom'.
+	 * album-heading defaults to the top, album-link to the bottom.
+	 *
+	 * @param array  $config Gallery configuration.
+	 * @param string $key    'album-heading' or 'album-link'.
+	 * @return string
+	 */
+	private function album_text_position( $config, $key ) {
+		$position_key = $key . '-position';
+		if ( isset( $config[ $position_key ] ) && in_array( $config[ $position_key ], array( 'top', 'bottom' ), true ) ) {
+			return $config[ $position_key ];
+		}
+		return 'album-link' === $key ? 'bottom' : 'top';
+	}
+
+	/**
+	 * album-heading-gap or album-link-gap in pixels, or null when not set (the theme's margin applies).
+	 *
+	 * @param array  $config Gallery configuration.
+	 * @param string $key    'album-heading' or 'album-link'.
+	 * @return int|null
+	 */
+	private function album_text_gap( $config, $key ) {
+		return isset( $config[ $key . '-gap' ] ) && null !== $config[ $key . '-gap' ] ? intval( $config[ $key . '-gap' ] ) : null;
+	}
+
+	/**
+	 * Gap of a shared row: the larger gap of the texts on that side, or null when neither sets one.
+	 *
+	 * @param array  $config   Gallery configuration.
+	 * @param string $position 'top' or 'bottom'.
+	 * @return int|null
+	 */
+	private function album_bar_gap( $config, $position ) {
+		$gap = null;
+		foreach ( array( 'album-heading', 'album-link' ) as $key ) {
+			$key_gap = $this->album_text_gap( $config, $key );
+			if ( null !== $key_gap && $this->album_text_position( $config, $key ) === $position ) {
+				$gap = null === $gap ? $key_gap : max( $gap, $key_gap );
+			}
+		}
+		return $gap;
+	}
+
+	/**
+	 * CSS margin that faces the album: below a text on top, above a text at the bottom.
+	 *
+	 * @param string $position 'top' or 'bottom'.
+	 * @return string
+	 */
+	private function album_gap_property( $position ) {
+		return 'top' === $position ? 'margin-bottom' : 'margin-top';
 	}
 
 	/**

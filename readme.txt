@@ -139,6 +139,7 @@ Contact: support@janzeman.com
 == Changelog ==
 
 = 3.0.4 =
+* Added album-heading-gap and album-link-gap to set the space in pixels between the album and its heading or link.
 * Fixed: on some sites (for example with Elementor), an empty area the height of the screen appeared below a gallery, and album-link below the gallery could end up in the wrong place. The hidden slideshow behind the gallery's viewer now always stays out of the page layout.
 
 = 3.0.3 =
@@ -345,7 +346,7 @@ Contact: support@janzeman.com
 == Upgrade Notice ==
 
 = 3.0.4 =
-Fixes an empty area below galleries on some sites, for example with Elementor.
+Adds album-heading-gap and album-link-gap, and fixes an empty area below galleries on some sites, for example with Elementor.
 
 = 3.0.3 =
 Adds album-link, a text link to the album on Google Photos or iCloud, and lets you place the album heading and link above or below the album.

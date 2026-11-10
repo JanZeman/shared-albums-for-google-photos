@@ -859,6 +859,12 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertSame( 0, $defaults['album-link-indent'] );
         $this->assertSame( 'bottom', $defaults['album-link-position'] );
         $this->assertSame( 'top', $defaults['album-heading-position'] );
+        $this->assertNull( $defaults['album-link-gap'] );
+        $this->assertNull( $defaults['album-heading-gap'] );
+        $this->assertSame( 24, $this->config( array( 'album-link-gap' => '24' ) )['album-link-gap'] );
+        $this->assertSame( 0, $this->config( array( 'album-heading-gap' => '0' ) )['album-heading-gap'] );
+        $this->assertNull( $this->config( array( 'album-link-gap' => '500' ) )['album-link-gap'] );
+        $this->assertNull( $this->config( array( 'album-link-gap' => 'big' ) )['album-link-gap'] );
         $positions = $this->config( array( 'album-link-position' => 'TOP', 'album-heading-position' => 'bottom' ) );
         $this->assertSame( 'top', $positions['album-link-position'] );
         $this->assertSame( 'bottom', $positions['album-heading-position'] );

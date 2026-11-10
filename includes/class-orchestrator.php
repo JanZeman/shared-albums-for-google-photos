@@ -1297,12 +1297,14 @@ class JZSA_Shared_Albums {
 				: 'left',
 			'album-heading-indent'            => $this->parse_album_text_indent( $atts, 'album-heading-indent' ),
 			'album-heading-position'          => $this->parse_album_text_position( $atts, 'album-heading-position', 'top' ),
+			'album-heading-gap'               => $this->parse_album_text_gap( $atts, 'album-heading-gap' ),
 			'album-link'                      => $this->parse_info_box( $atts, 'album-link', '' ),
 			'album-link-text-align'           => ( isset( $atts['album-link-text-align'] ) && in_array( $atts['album-link-text-align'], array( 'left', 'center', 'right' ), true ) )
 				? $atts['album-link-text-align']
 				: 'left',
 			'album-link-indent'               => $this->parse_album_text_indent( $atts, 'album-link-indent' ),
 			'album-link-position'             => $this->parse_album_text_position( $atts, 'album-link-position', 'bottom' ),
+			'album-link-gap'                  => $this->parse_album_text_gap( $atts, 'album-link-gap' ),
 		);
 	}
 
@@ -2185,6 +2187,21 @@ class JZSA_Shared_Albums {
 		$value = intval( $atts['gallery-gap'] );
 
 		return ( $value >= 0 && $value <= 100 ) ? $value : 4;
+	}
+
+	/**
+	 * Parse album-heading-gap or album-link-gap: space between the text and the album (pixels, 0-100).
+	 *
+	 * @param array  $atts Shortcode attributes.
+	 * @param string $key  Parameter name.
+	 * @return int|null Gap in pixels, or null when not set or invalid (the theme's margin applies).
+	 */
+	private function parse_album_text_gap( $atts, $key ) {
+		if ( ! isset( $atts[ $key ] ) || '' === trim( (string) $atts[ $key ] ) || ! is_numeric( trim( (string) $atts[ $key ] ) ) ) {
+			return null;
+		}
+		$value = intval( $atts[ $key ] );
+		return ( $value >= 0 && $value <= 100 ) ? $value : null;
 	}
 
 	/**
