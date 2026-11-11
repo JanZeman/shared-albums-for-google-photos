@@ -427,6 +427,45 @@ class ICloudProviderTest extends TestCase {
 		$this->assertSame( array( 3024, 4032 ), array( $photos[0]['width'], $photos[0]['height'] ) );
 	}
 
+	public function test_a_photo_edited_in_photos_uses_its_rendered_edit(): void {
+		$records = array(
+			array(
+				'recordName' => 'M1',
+				'recordType' => 'CPLMaster',
+				'fields'     => array(
+					'filenameEnc'         => array( 'value' => base64_encode( '20261010_124125.jpg' ) ),
+					'resOriginalRes'      => array( 'value' => array( 'downloadURL' => 'https://cvws.icloud-content.com/B/orig/${f}' ) ),
+					'resOriginalFileType' => array( 'value' => 'public.jpeg' ),
+					'resOriginalWidth'    => array( 'value' => 3024 ),
+					'resOriginalHeight'   => array( 'value' => 3024 ),
+				),
+			),
+			array(
+				'recordName' => 'A1',
+				'recordType' => 'CPLAsset',
+				'fields'     => array(
+					'masterRef'            => array( 'value' => array( 'recordName' => 'M1' ) ),
+					'adjustmentType'       => array( 'value' => 'com.apple.photo' ),
+					'resJPEGFullRes'       => array( 'value' => array( 'downloadURL' => 'https://cvws.icloud-content.com/B/full/${f}' ) ),
+					'resJPEGFullFileType'  => array( 'value' => 'public.jpeg' ),
+					'resJPEGFullWidth'     => array( 'value' => 1565 ),
+					'resJPEGFullHeight'    => array( 'value' => 1565 ),
+					'resJPEGThumbRes'      => array( 'value' => array( 'downloadURL' => 'https://cvws.icloud-content.com/B/thumb/${f}' ) ),
+					'resJPEGThumbFileType' => array( 'value' => 'public.jpeg' ),
+					'resJPEGThumbWidth'    => array( 'value' => 414 ),
+					'resJPEGThumbHeight'   => array( 'value' => 414 ),
+				),
+			),
+		);
+
+		$photos = $this->provider->build_cloudkit_items( $records );
+
+		// The original is the unedited photo (here upside down), so only the edit is offered.
+		$this->assertStringStartsWith( 'https://cvws.icloud-content.com/B/full/', $photos[0]['url'] );
+		$this->assertSame( array( 'JPEGThumb', 'JPEGFull' ), array_column( $photos[0]['sources'], 'rendition' ) );
+		$this->assertSame( array( 1565, 1565 ), array( $photos[0]['width'], $photos[0]['height'] ) );
+	}
+
 	public function test_live_photo_is_a_still_photo_and_a_real_video_stays_a_video(): void {
 		$master = static function ( $name, $original_type, $width ) {
 			$fields = array(

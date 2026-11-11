@@ -464,6 +464,35 @@ class JZSA_ICloud_Provider {
 	}
 
 	/**
+	 * Image renditions a browser can show from a record's res<Name>Res fields.
+	 *
+	 * @param array  $fields   Record fields.
+	 * @param string $filename Original filename, for the download name in the URL.
+	 * @return array Sources: url, width, height, rendition, type.
+	 */
+	private function image_sources( $fields, $filename ) {
+		$sources = array();
+		foreach ( $fields as $key => $field ) {
+			if ( ! preg_match( '/^res(.+)Res$/', $key, $m ) || empty( $field['value']['downloadURL'] ) ) {
+				continue;
+			}
+			$name = $m[1];
+			$type = isset( $fields[ 'res' . $name . 'FileType' ]['value'] ) ? (string) $fields[ 'res' . $name . 'FileType' ]['value'] : '';
+			if ( ! in_array( $type, array( 'public.jpeg', 'public.png', 'com.compuserve.gif' ), true ) ) {
+				continue;
+			}
+			$sources[] = array(
+				'url'       => str_replace( '${f}', rawurlencode( $this->rendition_filename( $filename, $type ) ), $field['value']['downloadURL'] ),
+				'width'     => isset( $fields[ 'res' . $name . 'Width' ]['value'] ) ? (int) $fields[ 'res' . $name . 'Width' ]['value'] : 0,
+				'height'    => isset( $fields[ 'res' . $name . 'Height' ]['value'] ) ? (int) $fields[ 'res' . $name . 'Height' ]['value'] : 0,
+				'rendition' => $name,
+				'type'      => $type,
+			);
+		}
+		return $sources;
+	}
+
+	/**
 	 * Turn CloudKit CPLAsset + CPLMaster records into media items.
 	 *
 	 * Renditions are the master's res<Name>Res fields (resJPEGThumbRes,
@@ -552,6 +581,16 @@ class JZSA_ICloud_Provider {
 					'rendition' => $name,
 					'type'      => $type,
 				);
+			}
+
+			// A photo edited in Photos (rotated, cropped, filtered) carries its rendered
+			// edit as renditions on the asset itself (resJPEGFullRes, ...). The master's
+			// renditions, the original above all, are the unedited photo, so the edit wins.
+			if ( '' === $video ) {
+				$edited = $this->image_sources( $fields, $filename );
+				if ( ! empty( $edited ) ) {
+					$sources = $edited;
+				}
 			}
 
 			if ( empty( $sources ) ) {

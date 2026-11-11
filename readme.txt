@@ -4,7 +4,7 @@ Tags: google-photos, icloud, gallery, album, embed
 Requires at least: 5.5
 Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 3.0.4
+Stable tag: 3.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -137,6 +137,9 @@ Optional. Used only when a WordPress administrator opens the Community page or c
 Contact: support@janzeman.com
 
 == Changelog ==
+
+= 3.0.5 =
+* Fixed: iCloud photos edited in Photos (rotated, cropped or adjusted) were shown unedited in the lightbox and fullscreen, for example upside down. The plugin now shows the edited version, as iCloud does.
 
 = 3.0.4 =
 * Added album-heading-gap and album-link-gap to set the space in pixels between the album and its heading or link.
@@ -344,6 +347,9 @@ Contact: support@janzeman.com
 * Responsive design with touch gestures
 
 == Upgrade Notice ==
+
+= 3.0.5 =
+Shows iCloud photos edited in Photos (rotated, cropped or adjusted) as edited, also in the lightbox.
 
 = 3.0.4 =
 Adds album-heading-gap and album-link-gap, and fixes an empty area below galleries on some sites, for example with Elementor.
