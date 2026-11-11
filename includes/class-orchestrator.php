@@ -3212,6 +3212,7 @@ class JZSA_Shared_Albums {
 
 		delete_transient( $this->get_cache_key( $album_url ) );
 		delete_transient( $this->get_backup_cache_key( $album_url ) );
+		delete_transient( 'jzsa_media_' . md5( $album_url ) );
 		delete_option( $this->get_expiration_key( $album_url ) );
 
 		foreach ( $media_ids as $media_id ) {

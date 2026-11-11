@@ -144,6 +144,7 @@ require_once JZSA_PLUGIN_DIR . 'includes/plugin-lifecycle.php';
  *
  * This includes:
  * - album transients
+ * - iCloud media URL maps
  * - stored album expiry options
  *
  * @return array<string,int>
@@ -154,7 +155,7 @@ function jzsa_clear_album_caches() {
 	// Direct database queries are safe here as we are deleting only this plugin's own cache keys.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	$deleted_album_rows = (int) $wpdb->query(
-		"DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_jzsa_album_%' OR option_name LIKE '_transient_timeout_jzsa_album_%' OR option_name LIKE '_transient_jzsa_backup_album_%' OR option_name LIKE '_transient_timeout_jzsa_backup_album_%'"
+		"DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_jzsa_album_%' OR option_name LIKE '_transient_timeout_jzsa_album_%' OR option_name LIKE '_transient_jzsa_backup_album_%' OR option_name LIKE '_transient_timeout_jzsa_backup_album_%' OR option_name LIKE '_transient_jzsa_media_%' OR option_name LIKE '_transient_timeout_jzsa_media_%'"
 	);
 
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
