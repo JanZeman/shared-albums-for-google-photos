@@ -466,7 +466,7 @@ class JZSA_Renderer {
 			),
 			sprintf(
 				/* translators: %s: comma-separated list of video filenames. */
-				wp_kses_post( __( 'These videos are in a format web browsers cannot play (for example AVI from older cameras), so they are shown as photos: %s. iCloud web shows them with a warning icon as well.', 'janzeman-shared-albums-for-google-photos' ) ),
+				wp_kses_post( __( 'These videos are in a format most browsers (Chrome, Firefox, Edge) cannot play, for example AVI from older cameras, so they are shown as photos: %s. On iCloud web only Safari plays them; other browsers show a warning icon.', 'janzeman-shared-albums-for-google-photos' ) ),
 				$list
 			),
 			esc_html__( 'To fix it, convert them to MP4 or MOV (for example with QuickTime Player "Export As" or the free HandBrake), replace them in the album, then clear the album cache.', 'janzeman-shared-albums-for-google-photos' ),
