@@ -182,7 +182,7 @@ class RendererWarningsTest extends TestCase {
 		$html = $this->render( array( 'unplayable-videos' => array( 'a.avi', 'b.avi', 'c.avi', 'd.avi' ) ) );
 
 		$this->assertStringContainsString( '4 Videos Cannot Be Played', $html );
-		$this->assertStringContainsString( '<code>c.avi</code>, &hellip;', $html );
+		$this->assertStringContainsString( '<code>c.avi</code> and 1 more', $html );
 		$this->assertStringNotContainsString( 'd.avi', $html );
 	}
 

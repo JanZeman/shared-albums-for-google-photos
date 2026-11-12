@@ -440,38 +440,54 @@ class JZSA_Renderer {
 	 * @return string HTML
 	 */
 	private function render_unplayable_video_notice( $names ) {
+		$total  = count( $names );
 		$shown  = array_slice( $names, 0, 3 );
 		$quoted = array();
 		foreach ( $shown as $name ) {
 			$quoted[] = '<code>' . esc_html( $name ) . '</code>';
 		}
 		$list = implode( ', ', $quoted );
-		if ( count( $names ) > count( $shown ) ) {
-			$list .= ', &hellip;';
+		if ( $total > count( $shown ) ) {
+			$list = sprintf(
+				/* translators: 1: comma-separated filenames, 2: number of further videos. */
+				esc_html__( '%1$s and %2$d more', 'janzeman-shared-albums-for-google-photos' ),
+				$list,
+				$total - count( $shown )
+			);
 		}
 
 		$cache_url = JZSA_Admin_Pages::get_guide_page_url() . '#jzsa-plugin-cache';
+		$text      = 'margin: 0 0 10px 0; color: #856404; font-size: 13px; line-height: 1.5;';
 
 		return sprintf(
-			'<div class="jzsa-warning" style="border: 2px solid #f0ad4e; border-radius: 4px; padding: 12px; margin: 8px; background: #fff9e6; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif;">' .
-			'<p style="margin: 0 0 6px 0; color: #856404; font-size: 13px; font-weight: 600;">%1$s %2$s</p>' .
-			'<p style="margin: 0 0 6px 0; color: #856404; font-size: 12px;">%3$s</p>' .
-			'<p style="margin: 0; color: #856404; font-size: 12px;">%4$s <a href="%5$s" style="color: #856404;">%6$s</a></p>' .
+			'<div class="jzsa-warning" style="border: 2px solid #f0ad4e; border-radius: 4px; padding: 14px 16px; margin: 8px; background: #fff9e6; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif;">' .
+			'<p style="margin: 0 0 10px 0; color: #856404; font-size: 14px; font-weight: 600; line-height: 1.4;">%1$s %2$s</p>' .
+			'<p style="' . $text . '">%3$s</p>' .
+			'<p style="' . $text . '">%4$s</p>' .
+			'<p style="' . $text . ' margin-bottom: 4px; font-weight: 600;">%5$s</p>' .
+			'<ol style="' . $text . ' padding-left: 22px;">' .
+			'<li>%6$s</li><li>%7$s</li><li><a href="%8$s" style="color: #856404;">%9$s</a></li>' .
+			'</ol>' .
+			'<p style="' . $text . ' margin-bottom: 0;">%10$s</p>' .
 			'</div>',
 			esc_html__( 'Warning (visible to administrators only):', 'janzeman-shared-albums-for-google-photos' ),
 			sprintf(
 				/* translators: %d: number of videos browsers cannot play. */
-				esc_html( _n( '%d Video Cannot Be Played', '%d Videos Cannot Be Played', count( $names ), 'janzeman-shared-albums-for-google-photos' ) ),
-				count( $names )
+				esc_html( _n( '%d Video Cannot Be Played', '%d Videos Cannot Be Played', $total, 'janzeman-shared-albums-for-google-photos' ) ),
+				$total
 			),
+			esc_html__( 'This album contains videos in an old format, such as AVI from older cameras. Chrome, Firefox and Edge cannot play it. Only Safari can. The gallery therefore shows these videos as photos.', 'janzeman-shared-albums-for-google-photos' ),
 			sprintf(
-				/* translators: %s: comma-separated list of video filenames. */
-				wp_kses_post( __( 'These videos are in a format most browsers (Chrome, Firefox, Edge) cannot play, for example AVI from older cameras, so they are shown as photos: %s. On iCloud web only Safari plays them; other browsers show a warning icon.', 'janzeman-shared-albums-for-google-photos' ) ),
+				/* translators: %s: list of video filenames. */
+				esc_html__( 'Affected videos: %s.', 'janzeman-shared-albums-for-google-photos' ),
 				$list
 			),
-			esc_html__( 'To fix it, convert them to MP4 or MOV (for example with QuickTime Player "Export As" or the free HandBrake), replace them in the album, then clear the album cache.', 'janzeman-shared-albums-for-google-photos' ),
+			esc_html__( 'How to fix it:', 'janzeman-shared-albums-for-google-photos' ),
+			esc_html__( 'Convert the videos to MP4 or MOV, for example with QuickTime Player (File > Export As) or the free HandBrake.', 'janzeman-shared-albums-for-google-photos' ),
+			esc_html__( 'Replace the old videos in the album with the converted ones.', 'janzeman-shared-albums-for-google-photos' ),
 			esc_url( $cache_url ),
-			esc_html__( 'Clear the cache on the Guide page.', 'janzeman-shared-albums-for-google-photos' )
+			esc_html__( 'Clear the album cache on the Guide page.', 'janzeman-shared-albums-for-google-photos' ),
+			esc_html__( 'Converting pays off twice. The videos play everywhere, and they become many times smaller, so they load much faster. That is also why the plugin does not play the old format, not even in Safari.', 'janzeman-shared-albums-for-google-photos' )
 		);
 	}
 
