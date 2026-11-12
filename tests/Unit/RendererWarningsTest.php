@@ -158,4 +158,39 @@ class RendererWarningsTest extends TestCase {
 
 		$this->assertStringNotContainsString( 'Were Ignored', $html );
 	}
+
+	// -------------------------------------------------------------------------
+	// Unplayable video notice
+	// -------------------------------------------------------------------------
+
+	public function test_unplayable_video_notice_names_the_videos_and_the_fix(): void {
+		$GLOBALS['jzsa_test_is_user_logged_in'] = true;
+		$GLOBALS['jzsa_test_current_user_can']  = true;
+
+		$html = $this->render( array( 'unplayable-videos' => array( 'MVI_6384.AVI', 'MVI_6385.AVI' ) ) );
+
+		$this->assertStringContainsString( '2 Videos Cannot Be Played', $html );
+		$this->assertStringContainsString( '<code>MVI_6384.AVI</code>', $html );
+		$this->assertStringContainsString( 'MP4 or MOV', $html );
+		$this->assertStringContainsString( '#jzsa-plugin-cache', $html );
+	}
+
+	public function test_unplayable_video_notice_lists_at_most_three_names(): void {
+		$GLOBALS['jzsa_test_is_user_logged_in'] = true;
+		$GLOBALS['jzsa_test_current_user_can']  = true;
+
+		$html = $this->render( array( 'unplayable-videos' => array( 'a.avi', 'b.avi', 'c.avi', 'd.avi' ) ) );
+
+		$this->assertStringContainsString( '4 Videos Cannot Be Played', $html );
+		$this->assertStringContainsString( '<code>c.avi</code>, &hellip;', $html );
+		$this->assertStringNotContainsString( 'd.avi', $html );
+	}
+
+	public function test_unplayable_video_notice_not_shown_to_visitors(): void {
+		$GLOBALS['jzsa_test_is_user_logged_in'] = false;
+
+		$html = $this->render( array( 'unplayable-videos' => array( 'MVI_6384.AVI' ) ) );
+
+		$this->assertStringNotContainsString( 'MVI_6384.AVI', $html );
+	}
 }

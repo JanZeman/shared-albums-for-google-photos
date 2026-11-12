@@ -4,7 +4,7 @@ Tags: google-photos, icloud, gallery, album, embed
 Requires at least: 5.5
 Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 3.0.5
+Stable tag: 3.0.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -137,6 +137,9 @@ Optional. Used only when a WordPress administrator opens the Community page or c
 Contact: support@janzeman.com
 
 == Changelog ==
+
+= 3.0.6 =
+* Added an administrator-only warning when an iCloud album contains videos that web browsers cannot play (for example AVI from older cameras). It names the videos and explains how to convert them to MP4 or MOV.
 
 = 3.0.5 =
 * Fixed: iCloud photos edited in Photos (rotated, cropped or adjusted) were shown unedited in the lightbox and fullscreen, for example upside down. The plugin now shows the edited version, as iCloud does.
@@ -347,6 +350,9 @@ Contact: support@janzeman.com
 * Responsive design with touch gestures
 
 == Upgrade Notice ==
+
+= 3.0.6 =
+Warns administrators when an iCloud album contains videos browsers cannot play, with advice on how to fix them.
 
 = 3.0.5 =
 Shows iCloud photos edited in Photos (rotated, cropped or adjusted) as edited, also in the lightbox.

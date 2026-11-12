@@ -30,6 +30,27 @@ class JZSA_ICloud_Provider {
 	const MOVIE_TYPES = array( 'com.apple.quicktime-movie', 'public.mpeg-4' );
 
 	/**
+	 * Movie originals (AVI, WMV, MPEG-1/2, Matroska, ...) that iCloud stores without
+	 * any MP4 or MOV rendition. Browsers cannot play them, so they are shown as
+	 * stills and flagged for the admin-only notice.
+	 */
+	const UNPLAYABLE_MOVIE_TYPES = array(
+		'public.avi',
+		'public.mpeg',
+		'public.mpeg-2-video',
+		'public.mpeg-2-transport-stream',
+		'public.3gpp',
+		'public.3gpp2',
+		'public.dv-movie',
+		'com.microsoft.windows-media-wmv',
+		'org.matroska.mkv',
+		'com.adobe.flash.video',
+		'org.webmproject.webm',
+		'public.movie',
+		'public.video',
+	);
+
+	/**
 	 * Public shared album link, e.g. https://www.icloud.com/sharedalbum/#B0aGWZuqDGtB9r
 	 *
 	 * @var string
@@ -628,6 +649,11 @@ class JZSA_ICloud_Provider {
 			if ( '' !== $video ) {
 				$item['video']           = $video;
 				$item['video_rendition'] = $video_rendition;
+			}
+			if ( '' === $video && $is_still && ( in_array( $original_type, self::UNPLAYABLE_MOVIE_TYPES, true ) || preg_match( '/[.-](movie|video)$/', $original_type ) ) ) {
+				// Admin hint only: the plugin shows these as photos (iCloud web shows a warning icon).
+				// Keep the original name (MVI_0001.AVI), not the .jpg name the still downloads as.
+				$item['unplayable_video'] = '' !== $filename ? $filename : $original_type;
 			}
 			if ( '' !== $filename ) {
 				// Name the file after what a download gets: the video, or the largest image rendition.

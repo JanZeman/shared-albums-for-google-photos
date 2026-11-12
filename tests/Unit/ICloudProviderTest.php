@@ -466,6 +466,54 @@ class ICloudProviderTest extends TestCase {
 		$this->assertSame( array( 1565, 1565 ), array( $photos[0]['width'], $photos[0]['height'] ) );
 	}
 
+	public function test_an_avi_video_without_web_renditions_is_a_flagged_still(): void {
+		$records = array(
+			array(
+				'recordName' => 'M1',
+				'recordType' => 'CPLMaster',
+				'fields'     => array(
+					'filenameEnc'          => array( 'value' => base64_encode( 'MVI_6384.AVI' ), 'type' => 'ENCRYPTED_BYTES' ),
+					'resOriginalRes'       => array( 'value' => array( 'downloadURL' => 'https://cvws.icloud-content.com/B/orig/${f}' ) ),
+					'resOriginalFileType'  => array( 'value' => 'public.avi' ),
+					'resOriginalWidth'     => array( 'value' => 640 ),
+					'resOriginalHeight'    => array( 'value' => 480 ),
+					'resJPEGMedRes'        => array( 'value' => array( 'downloadURL' => 'https://cvws.icloud-content.com/B/med/${f}' ) ),
+					'resJPEGMedFileType'   => array( 'value' => 'public.jpeg' ),
+					'resJPEGMedWidth'      => array( 'value' => 640 ),
+					'resJPEGMedHeight'     => array( 'value' => 480 ),
+				),
+			),
+			array(
+				'recordName' => 'M2',
+				'recordType' => 'CPLMaster',
+				'fields'     => array(
+					'filenameEnc'         => array( 'value' => base64_encode( 'IMG_0001.HEIC' ) ),
+					'resJPEGMedRes'       => array( 'value' => array( 'downloadURL' => 'https://cvws.icloud-content.com/B/med2/${f}' ) ),
+					'resJPEGMedFileType'  => array( 'value' => 'public.jpeg' ),
+					'resJPEGMedWidth'     => array( 'value' => 640 ),
+					'resJPEGMedHeight'    => array( 'value' => 480 ),
+					'resOriginalFileType' => array( 'value' => 'public.heic' ),
+				),
+			),
+			array(
+				'recordName' => 'A1',
+				'recordType' => 'CPLAsset',
+				'fields'     => array( 'masterRef' => array( 'value' => array( 'recordName' => 'M1' ) ) ),
+			),
+			array(
+				'recordName' => 'A2',
+				'recordType' => 'CPLAsset',
+				'fields'     => array( 'masterRef' => array( 'value' => array( 'recordName' => 'M2' ) ) ),
+			),
+		);
+
+		$photos = $this->provider->build_cloudkit_items( $records );
+
+		$this->assertSame( 'image', $photos[0]['type'] );
+		$this->assertSame( 'MVI_6384.AVI', $photos[0]['unplayable_video'] );
+		$this->assertArrayNotHasKey( 'unplayable_video', $photos[1] );
+	}
+
 	public function test_live_photo_is_a_still_photo_and_a_real_video_stays_a_video(): void {
 		$master = static function ( $name, $original_type, $width ) {
 			$fields = array(

@@ -1093,7 +1093,7 @@ class JZSA_Admin_Pages {
 				</div>
 
 				<!-- Plugin Cache Section -->
-				<div class="jzsa-section jzsa-cache-section">
+				<div class="jzsa-section jzsa-cache-section" id="jzsa-plugin-cache">
 					<h2><?php esc_html_e( 'Plugin Cache', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 
 					<div class="jzsa-cache-row">

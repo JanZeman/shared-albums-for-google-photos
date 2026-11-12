@@ -486,6 +486,7 @@ class JZSA_Shared_Albums {
 				);
 			$config['album-title']              = $cached_data['title'] ?? null;
 			$config['show-deprecation-warning'] = $cached_data['is_deprecated'];
+			$config['unplayable-videos']        = $this->unplayable_video_names( $cached_data['photos'] );
 			$config                            = $this->apply_progressive_slider_loading_config( $config );
 
 			return $this->renderer->render( $config );
@@ -524,6 +525,7 @@ class JZSA_Shared_Albums {
 				);
 				$config['album-title']              = $backup_data['title'] ?? null;
 				$config['show-deprecation-warning'] = $backup_data['is_deprecated'];
+				$config['unplayable-videos']        = $this->unplayable_video_names( $backup_data['photos'] );
 				$config                            = $this->apply_progressive_slider_loading_config( $config );
 
 				return $this->renderer->render( $config );
@@ -567,6 +569,7 @@ class JZSA_Shared_Albums {
 
 		$config['album-title']              = $result['data']['title'] ?? null;
 		$config['show-deprecation-warning'] = $result['is_deprecated'];
+		$config['unplayable-videos']        = $this->unplayable_video_names( $result['data']['photos'] );
 		$config                            = $this->apply_progressive_slider_loading_config( $config );
 
 		// Render output (OUTPUT PHASE)
@@ -3372,6 +3375,26 @@ class JZSA_Shared_Albums {
 		}
 
 		return $meta;
+	}
+
+	/**
+	 * Filenames of album items flagged as videos that browsers cannot play
+	 * (for example AVI from older cameras), for the admin-only notice.
+	 *
+	 * @param array $items Base album items.
+	 * @return array Original filenames.
+	 */
+	private function unplayable_video_names( $items ) {
+		$names = array();
+		if ( ! is_array( $items ) ) {
+			return $names;
+		}
+		foreach ( $items as $item ) {
+			if ( is_array( $item ) && ! empty( $item['unplayable_video'] ) ) {
+				$names[] = is_string( $item['unplayable_video'] ) ? $item['unplayable_video'] : (string) ( $item['id'] ?? '' );
+			}
+		}
+		return $names;
 	}
 
 	/**

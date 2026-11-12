@@ -43,6 +43,10 @@ class JZSA_Renderer {
 			$html .= $this->render_unknown_attribute_notice( $config['unknown-attributes'] );
 		}
 
+		if ( ! empty( $config['unplayable-videos'] ) && is_user_logged_in() && current_user_can( jzsa_get_admin_capability() ) ) {
+			$html .= $this->render_unplayable_video_notice( $config['unplayable-videos'] );
+		}
+
 		$html .= $this->render_album_texts( $config, 'top' );
 
 		// Gallery mode: plain thumbnail gallery, no Swiper structure
@@ -421,6 +425,53 @@ class JZSA_Renderer {
 			esc_html__( 'Warning (visible to administrators only):', 'janzeman-shared-albums-for-google-photos' ),
 			esc_html__( 'Mosaic Requires Slider or Carousel Mode', 'janzeman-shared-albums-for-google-photos' ),
 			esc_html__( 'The mosaic="true" parameter only works with mode="slider" or mode="carousel". It is ignored in the default gallery mode. Please add mode="slider" or mode="carousel" to your shortcode.', 'janzeman-shared-albums-for-google-photos' )
+		);
+	}
+
+	/**
+	 * Render unplayable video warning (admins only)
+	 *
+	 * iCloud keeps some camera videos (AVI and similar) without any MP4 or MOV
+	 * rendition, so no browser can play them and the gallery shows their still.
+	 * iCloud web marks them with a warning icon too. The notice tells the admin
+	 * how to fix the album without having to ask for support.
+	 *
+	 * @param array $names Original filenames of the affected videos.
+	 * @return string HTML
+	 */
+	private function render_unplayable_video_notice( $names ) {
+		$shown  = array_slice( $names, 0, 3 );
+		$quoted = array();
+		foreach ( $shown as $name ) {
+			$quoted[] = '<code>' . esc_html( $name ) . '</code>';
+		}
+		$list = implode( ', ', $quoted );
+		if ( count( $names ) > count( $shown ) ) {
+			$list .= ', &hellip;';
+		}
+
+		$cache_url = JZSA_Admin_Pages::get_guide_page_url() . '#jzsa-plugin-cache';
+
+		return sprintf(
+			'<div class="jzsa-warning" style="border: 2px solid #f0ad4e; border-radius: 4px; padding: 12px; margin: 8px; background: #fff9e6; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif;">' .
+			'<p style="margin: 0 0 6px 0; color: #856404; font-size: 13px; font-weight: 600;">%1$s %2$s</p>' .
+			'<p style="margin: 0 0 6px 0; color: #856404; font-size: 12px;">%3$s</p>' .
+			'<p style="margin: 0; color: #856404; font-size: 12px;">%4$s <a href="%5$s" style="color: #856404;">%6$s</a></p>' .
+			'</div>',
+			esc_html__( 'Warning (visible to administrators only):', 'janzeman-shared-albums-for-google-photos' ),
+			sprintf(
+				/* translators: %d: number of videos browsers cannot play. */
+				esc_html( _n( '%d Video Cannot Be Played', '%d Videos Cannot Be Played', count( $names ), 'janzeman-shared-albums-for-google-photos' ) ),
+				count( $names )
+			),
+			sprintf(
+				/* translators: %s: comma-separated list of video filenames. */
+				wp_kses_post( __( 'These videos are in a format web browsers cannot play (for example AVI from older cameras), so they are shown as photos: %s. iCloud web shows them with a warning icon as well.', 'janzeman-shared-albums-for-google-photos' ) ),
+				$list
+			),
+			esc_html__( 'To fix it, convert them to MP4 or MOV (for example with QuickTime Player "Export As" or the free HandBrake), replace them in the album, then clear the album cache.', 'janzeman-shared-albums-for-google-photos' ),
+			esc_url( $cache_url ),
+			esc_html__( 'Clear the cache on the Guide page.', 'janzeman-shared-albums-for-google-photos' )
 		);
 	}
 
